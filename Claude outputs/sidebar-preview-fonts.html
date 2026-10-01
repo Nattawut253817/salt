@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sidebar Font Picker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700&family=Mitr:wght@500;600;700&family=Prompt:wght@500;600;700&family=Sriracha&family=Krub:wght@500;600;700&family=Athiti:wght@400;500;600;700&family=Pridi:wght@500;600;700&family=Itim&family=Pattaya&family=Trirong:wght@400;500;600;700&family=Chonburi&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Fahkwang:wght@500;600;700&family=Noto+Serif+Thai:wght@400;500;600;700&family=Kodchasan:wght@500;600;700&family=Maitree:wght@400;500;600;700&family=K2D:wght@500;600;700&family=Mali:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page-bg: #eef1f8;
+    --sidebar-bg: #ffffff;
+    --ink-1: #1e2939;
+    --ink-2: #64748b;
+    --ink-3: #94a3b8;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-soft-2: #e0e4ff;
+    --danger: #ef4444;
+    --danger-soft: #fef2f2;
+    --divider: #eef0f6;
+    --sidebar-width: 292px;
+    --font-heading: 'Prompt', sans-serif;
+    --font-body: 'IBM Plex Sans Thai', sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--page-bg);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 20px 60px;
+  }
+
+  /* ============ Control panel ============ */
+  .panel {
+    width: 100%;
+    max-width: 640px;
+    background: #ffffff;
+    border: 1px solid #e2e6f2;
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 28px;
+    box-shadow: 0 1px 2px rgba(30,41,59,0.04);
+  }
+
+  .panel-title {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: var(--ink-1);
+    margin-bottom: 4px;
+  }
+
+  .panel-sub {
+    font-size: 0.78rem;
+    color: var(--ink-3);
+    margin-bottom: 16px;
+  }
+
+  .field-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .field {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.5px solid #e2e6f2;
+    background: #f8f9fd;
+    color: var(--ink-1);
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  select:focus { outline: none; border-color: var(--accent); }
+
+  .current-pair {
+    margin-top: 14px;
+    font-size: 0.76rem;
+    color: var(--ink-3);
+  }
+  .current-pair b { color: var(--accent-hover); font-weight: 700; }
+
+  /* ============ Sidebar shell (same structure as previous preview) ============ */
+  .sidebar {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-radius: 20px;
+    box-shadow: 0 1px 2px rgba(30, 41, 59, 0.04), 0 20px 40px -20px rgba(30, 41, 59, 0.18);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 22px 22px 18px;
+  }
+
+  .brand-mark {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, var(--accent) 0%, #6366f1 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 6px 14px -4px rgba(79, 70, 229, 0.45);
+  }
+  .brand-mark svg { width: 21px; height: 21px; }
+
+  .brand-name {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.95rem;
+    line-height: 1.32;
+    color: var(--ink-1);
+    letter-spacing: 0.01em;
+  }
+  .brand-name span {
+    display: block;
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.66rem;
+    color: var(--ink-3);
+    margin-top: 3px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .profile {
+    margin: 4px 18px 18px;
+    padding: 14px 16px;
+    background: linear-gradient(180deg, #fafbff 0%, #f4f6ff 100%);
+    border: 1px solid #e7eaff;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .avatar {
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #6366f1, var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .avatar svg { width: 18px; height: 18px; }
+
+  .profile-name {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 0.88rem;
+    color: var(--ink-1);
+    line-height: 1.3;
+  }
+
+  .rank-pill {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 9px;
+    background: var(--accent-soft-2);
+    color: var(--accent-hover);
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-family: var(--font-body);
+  }
+
+  .nav-scroll { padding: 2px 14px 18px; flex: 1; }
+  .nav-section + .nav-section { margin-top: 4px; }
+
+  .nav-title {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 16px 10px 8px;
+  }
+
+  ul { list-style: none; margin: 0; padding: 0; }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    color: var(--ink-2);
+    text-decoration: none;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    position: relative;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .nav-link:hover { background: #f6f7fb; color: var(--ink-1); }
+
+  .nav-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #f1f3f9;
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .nav-icon svg { width: 15px; height: 15px; }
+
+  .nav-link.active {
+    background: var(--accent);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 8px 16px -6px rgba(79, 70, 229, 0.55);
+  }
+  .nav-link.active .nav-icon { background: rgba(255,255,255,0.18); color: #fff; }
+
+  .nav-sub {
+    margin: 2px 0 6px 14px;
+    padding-left: 15px;
+    border-left: 1.5px solid var(--divider);
+  }
+  .nav-sub .nav-link { font-size: 0.8rem; padding: 7px 10px; }
+  .nav-sub .nav-icon { width: 26px; height: 26px; background: transparent; color: var(--ink-3); }
+
+  .nav-badge {
+    margin-left: auto;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.66rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-body);
+  }
+
+  .divider-line { height: 1px; background: var(--divider); margin: 10px 4px 0; }
+
+  .sidebar-footer { padding: 14px 18px 18px; border-top: 1px solid var(--divider); }
+
+  .logout-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1px solid #fde0e0;
+    background: var(--danger-soft);
+    color: #dc2626;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .logout-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+  .logout-btn svg { width: 15px; height: 15px; }
+
+</style>
+</head>
+<body>
+
+  <div class="panel">
+    <div class="panel-title">ลองฟอนต์ภาษาไทยแบบสด (Live Font Preview)</div>
+    <div class="panel-sub">เลือกฟอนต์สำหรับ "หัวข้อ/ชื่อ" และ "เมนู/เนื้อหา" แยกกัน แล้วดูผลลัพธ์บน sidebar ด้านล่างได้ทันที</div>
+    <div class="field-row">
+      <div class="field">
+        <label for="headingFont">ฟอนต์หัวข้อ / โลโก้ / ชื่อผู้ใช้</label>
+        <select id="headingFont">
+          <option value="'Kanit', sans-serif">Kanit</option>
+          <option value="'Mitr', sans-serif">Mitr</option>
+          <option value="'Prompt', sans-serif" selected>Prompt</option>
+          <option value="'Sriracha', cursive">Sriracha</option>
+          <option value="'Krub', sans-serif">Krub</option>
+          <option value="'Athiti', sans-serif">Athiti</option>
+          <option value="'Pridi', serif">Pridi</option>
+          <option value="'Itim', cursive">Itim</option>
+          <option value="'Pattaya', sans-serif">Pattaya</option>
+          <option value="'Trirong', serif">Trirong</option>
+          <option value="'Chonburi', cursive">Chonburi</option>
+          <option value="'IBM Plex Sans Thai', sans-serif">IBM Plex Thai</option>
+          <option value="'Fahkwang', sans-serif">Fahkwang</option>
+          <option value="'Noto Serif Thai', serif">Noto Serif Thai</option>
+          <option value="'Kodchasan', sans-serif">Kodchasan</option>
+          <option value="'Maitree', serif">Maitree</option>
+          <option value="'K2D', sans-serif">K2D</option>
+          <option value="'Mali', cursive">Mali</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="bodyFont">ฟอนต์เมนู / เนื้อหาทั่วไป</label>
+        <select id="bodyFont">
+          <option value="'Kanit', sans-serif">Kanit</option>
+          <option value="'Mitr', sans-serif">Mitr</option>
+          <option value="'Prompt', sans-serif">Prompt</option>
+          <option value="'Sriracha', cursive">Sriracha</option>
+          <option value="'Krub', sans-serif">Krub</option>
+          <option value="'Athiti', sans-serif">Athiti</option>
+          <option value="'Pridi', serif">Pridi</option>
+          <option value="'Itim', cursive">Itim</option>
+          <option value="'Pattaya', sans-serif">Pattaya</option>
+          <option value="'Trirong', serif">Trirong</option>
+          <option value="'Chonburi', cursive">Chonburi</option>
+          <option value="'IBM Plex Sans Thai', sans-serif" selected>IBM Plex Thai</option>
+          <option value="'Fahkwang', sans-serif">Fahkwang</option>
+          <option value="'Noto Serif Thai', serif">Noto Serif Thai</option>
+          <option value="'Kodchasan', sans-serif">Kodchasan</option>
+          <option value="'Maitree', serif">Maitree</option>
+          <option value="'K2D', sans-serif">K2D</option>
+          <option value="'Mali', cursive">Mali</option>
+        </select>
+      </div>
+    </div>
+    <div class="current-pair">คู่ที่กำลังดู: <b id="pairLabel">Prompt + IBM Plex Thai</b></div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3C8 6 6 9.5 6 13a6 6 0 0 0 12 0c0-3.5-2-7-6-10Z" stroke="white" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 21v-7" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div class="brand-name">
+        SMART SALT SODIUM
+        <span>Monitor · DDDC</span>
+      </div>
+    </div>
+
+    <div class="profile">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="white" stroke-width="1.8"/><path d="M5 19c1.4-3.6 4-5.4 7-5.4s5.6 1.8 7 5.4" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
+      <div>
+        <div class="profile-name">สคร จ้า</div>
+        <span class="rank-pill">สคร.</span>
+      </div>
+    </div>
+
+    <nav class="nav-scroll">
+      <div class="nav-section">
+        <div class="nav-title">จัดการข้อมูล</div>
+        <ul>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 17.5 14 7.5l2.5 2.5L6.5 20H4v-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M13 8.5 15.5 6 18 8.5 15.5 11" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            การประเมินความตระหนักรู้
+          </a></li>
+        </ul>
+        <div class="nav-sub">
+          <ul>
+            <li><a href="#" class="nav-link">
+              <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 7h10M4 12h16M4 17h7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="16" cy="7" r="1.6" fill="currentColor"/><circle cx="9" cy="17" r="1.6" fill="currentColor"/></svg></span>
+              ตั้งค่าเกณฑ์ความตระหนักรู้
+            </a></li>
+            <li><a href="#" class="nav-link">
+              <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="4" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="4" y="13" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/><rect x="13" y="13" width="7" height="7" rx="1.6" stroke="currentColor" stroke-width="1.7"/></svg></span>
+              ตั้งค่าแดชบอร์ด
+            </a></li>
+          </ul>
+        </div>
+        <ul>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 19V10M12 19V5M19 19v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+            เมนูลดโซเดียม
+          </a></li>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M10 3h4v3.2c0 .6.24 1.16.66 1.58l1.08 1.08c.42.42.66.98.66 1.58V19a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2V10.44c0-.6.24-1.16.66-1.58l1.08-1.08c.42-.42.66-.98.66-1.58V3Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            ผลิตภัณฑ์ลดโซเดียม
+          </a></li>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M4 15l4-5 3 3 4-6 5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            อัตราป่วยรายใหม่ HT
+          </a></li>
+        </ul>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <div class="nav-section">
+        <div class="nav-title">จัดการแบบประเมิน</div>
+        <ul>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3.5V7a1 1 0 0 0 1 1h3.5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg></span>
+            แบบประเมินพชอ.ไต
+          </a></li>
+          <li><a href="#" class="nav-link active">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M8 12.5l2.6 2.6L16.5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="4" width="16" height="16" rx="5" stroke="currentColor" stroke-width="1.7"/></svg></span>
+            แบบประเมินลดการบริโภคเกลือ
+          </a></li>
+        </ul>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <div class="nav-section">
+        <div class="nav-title">จัดการระบบ</div>
+        <ul>
+          <li><a href="#" class="nav-link">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="2.6" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 19c1-3 3-4.6 5.5-4.6S14.5 16 15.5 19" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="17" cy="8.5" r="2.1" stroke="currentColor" stroke-width="1.7"/><path d="M15.5 14.6c2 .2 3.4 1.6 4.2 3.9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></span>
+            จัดการผู้ใช้งาน
+            <span class="nav-badge">3</span>
+          </a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="logout-btn">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 8l4 4-4 4M18 12H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        ออกจากระบบ
+      </button>
+    </div>
+  </aside>
+
+  <script>
+    const headingSel = document.getElementById('headingFont');
+    const bodySel = document.getElementById('bodyFont');
+    const pairLabel = document.getElementById('pairLabel');
+    const root = document.documentElement;
+
+    function nameOf(select) {
+      return select.options[select.selectedIndex].text;
+    }
+
+    function apply() {
+      root.style.setProperty('--font-heading', headingSel.value);
+      root.style.setProperty('--font-body', bodySel.value);
+      pairLabel.textContent = nameOf(headingSel) + ' + ' + nameOf(bodySel);
+    }
+
+    headingSel.addEventListener('change', apply);
+    bodySel.addEventListener('change', apply);
+    apply();
+  </script>
+</body>
+</html>

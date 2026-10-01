@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ออกแบบใหม่ — รายการข้อมูล พชอ.ไต</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --ink: #1e293b;
+    --ink-soft: #334155;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --page-bg: #f4f5fa;
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-soft: #eef2ff;
+    --violet: #7c3aed;
+    --violet-soft: #f5f3ff;
+    --amber: #b45309;
+    --amber-soft: #fffbeb;
+    --green: #059669;
+    --radius: 16px;
+    --radius-sm: 11px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); font-family: 'Sarabun', 'Noto Serif Thai', sans-serif; color: var(--ink); }
+  h1,h2,h3 { font-family: 'Noto Serif Thai', 'Sarabun', serif; }
+
+  .meta-bar {
+    background: var(--ink); color: #cbd5e1; font-size: 0.82rem; padding: 10px 24px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .meta-bar strong { color: #fff; }
+  .meta-bar .tag { margin-left: auto; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18); padding: 3px 12px; border-radius: 999px; font-weight: 600; }
+
+  .page-shell { max-width: 1300px; margin: 0 auto; padding: 26px 20px 80px; }
+
+  .page-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+  .page-header-accent { width: 5px; height: 36px; background: linear-gradient(180deg, #818cf8 0%, #4338ca 100%); border-radius: 4px; flex-shrink: 0; }
+  .page-header-title { font-weight: 700; font-size: 1.25rem; color: #3730a3; }
+  .page-header-sub { display: inline-flex; align-items: center; gap: 6px; width: fit-content; font-weight: 600; color: #6366a8; font-size: 0.78rem; margin-top: 6px; padding: 4px 13px; background: rgba(255,255,255,0.65); border: 1px solid #dfe3fb; border-radius: 999px; }
+
+  /* ---- filter toolbar: grouped clusters on a responsive grid, instead
+     of 6 equal-flex selects fighting for space in one row ---- */
+  .toolbar-card {
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(15,23,42,0.06); padding: 20px 22px; margin-bottom: 18px;
+  }
+  .toolbar-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .toolbar-title { font-weight: 700; font-size: 0.94rem; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .toolbar-title i { color: var(--primary); }
+  .toolbar-actions { display: flex; gap: 10px; }
+  .btn-pill {
+    display: inline-flex; align-items: center; gap: 8px; border: none; border-radius: 10px;
+    padding: 9px 16px; font-family: inherit; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    text-decoration: none; white-space: nowrap;
+  }
+  .btn-import { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,0.28); }
+  .btn-reset { background: #fff; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-reset:hover { border-color: #cbd5e1; color: var(--ink); }
+
+  .filter-groups { display: flex; flex-direction: column; gap: 14px; }
+  .filter-cluster { display: flex; gap: 14px; flex-wrap: wrap; }
+  .filter-cluster-label {
+    flex: 0 0 108px; font-size: 0.76rem; font-weight: 700; color: var(--muted);
+    display: flex; align-items: center; gap: 6px; padding-top: 10px;
+  }
+  .filter-cluster-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; flex: 1; }
+  .filter-field label {
+    display: block; margin-bottom: 6px; font-size: 0.74rem; font-weight: 600; color: #94a3b8;
+  }
+  .filter-field select {
+    width: 100%; border-radius: 10px; border: 1.5px solid var(--border); font-family: inherit;
+    font-size: 0.82rem; padding: 9px 12px; background: #f8fafc; font-weight: 600; color: var(--ink-soft);
+    transition: all .15s ease;
+  }
+  .filter-field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); outline: none; background: #fff; }
+  .cluster-divider { border: none; border-top: 1px dashed var(--border); margin: 0; }
+
+  @media (max-width: 760px) {
+    .filter-cluster { flex-direction: column; gap: 8px; }
+    .filter-cluster-label { padding-top: 0; }
+  }
+
+  /* ---- stats row ---- */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
+  .stat-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: 0 4px 14px rgba(15,23,42,0.05); padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
+  .stat-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; }
+  .stat-label { font-size: 0.74rem; font-weight: 700; color: var(--muted); }
+  .stat-value { font-size: 1.28rem; font-weight: 800; color: var(--ink); line-height: 1.3; }
+  .stat-value span { font-size: 0.68rem; font-weight: 600; color: var(--muted); }
+  @media (max-width: 760px) { .stats-row { grid-template-columns: 1fr; } }
+
+  /* ---- table card ---- */
+  .table-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); box-shadow: 0 4px 20px rgba(15,23,42,0.06); overflow: hidden; }
+  .table-title-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 20px; border-bottom: 1px solid #eef1f6; }
+  .table-title { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.98rem; color: var(--ink); }
+  .table-title-icon { width: 32px; height: 32px; border-radius: 10px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+
+  .legend-toggle { display: inline-flex; align-items: center; gap: 7px; font-size: 0.78rem; font-weight: 700; color: var(--primary); background: var(--primary-soft); border: 1px solid #c7d2fe; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .legend-bar { display: none; padding: 14px 20px; background: #f8fafc; border-bottom: 1px solid #eef1f6; flex-wrap: wrap; gap: 10px 26px; }
+  .legend-bar.is-open { display: flex; }
+  .legend-group { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+  .legend-group-label { font-size: 0.7rem; font-weight: 700; color: #94a3b8; white-space: nowrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; font-weight: 600; color: var(--ink-soft); }
+  .legend-dot { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.55rem; flex-shrink: 0; }
+  .legend-divider { width: 1px; height: 18px; background: var(--border); }
+
+  /* Scrolls the same as the real site's .table-responsive tables (hidden
+     scrollbar, still swipe/drag-scrollable) - no visible slider under
+     the table, per request. */
+  .table-scroll { overflow-x: auto; -ms-overflow-style: none; scrollbar-width: none; }
+  .table-scroll::-webkit-scrollbar { display: none; }
+  /* table-layout: fixed + a <colgroup> below gives every column a fixed
+     share of the card's own width, so the full 18 columns lay out inside
+     it with no overflow - long Thai text wraps onto a second line inside
+     its cell instead of pushing the table wider. */
+  table.report-table { border-collapse: collapse; width: 100%; table-layout: fixed; font-size: 0.8rem; }
+  table.report-table th, table.report-table td { padding: 8px 4px; text-align: center; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f8fafc; word-break: break-word; }
+  table.report-table th:first-child, table.report-table td:first-child { text-align: left; padding-left: 14px; }
+  table.report-table th:nth-child(2), table.report-table td:nth-child(2),
+  table.report-table th:nth-child(3), table.report-table td:nth-child(3) { text-align: left; }
+
+  .grp-org { background: #fff; }
+  .grp-cat17 { background: var(--primary-soft); }
+  .grp-cat8 { background: var(--violet-soft); }
+  .grp-confirm { background: var(--amber-soft); }
+  .grp-actions { background: #fff; }
+
+  thead .col-label-row th { font-weight: 700; font-size: 0.78rem; color: #475569; }
+  .col-index-badge { display: inline-flex; align-items: baseline; gap: 3px; background: #fff; border: 1px solid #c7d2fe; color: var(--primary); border-radius: 20px; padding: 3px 7px; font-size: 0.66rem; font-weight: 700; cursor: help; white-space: nowrap; }
+  .col-index-badge.v8 { border-color: #ddd6fe; color: var(--violet); }
+
+  tbody tr:hover td { background: #f8fafc; }
+  tbody tr:hover td.grp-cat17 { background: #e8eaff; }
+  tbody tr:hover td.grp-cat8 { background: #efe9fe; }
+  tbody tr:hover td.grp-confirm { background: #fef6e3; }
+
+  .org-name { font-weight: 640; font-size: 0.8rem; color: #334155; line-height: 1.35; }
+  .area-name { font-size: 0.78rem; color: #475569; line-height: 1.35; }
+  .badge-new { display: inline-block; background: #ef4444; color: #fff; font-size: 0.6rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 4px; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+
+  .status-badge { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; font-size: 0.6rem; }
+  .status-badge.status-done { background: linear-gradient(135deg, #a78bfa, #6d28d9); color: #fff; box-shadow: 0 2px 4px rgba(109,40,217,0.3); }
+  .status-badge.status-empty { background: #fff; color: #cbd5e1; border: 1.5px dashed #e2e8f0; }
+
+  .confirm-badge { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 0.6rem; }
+  .confirm-badge.confirm-done { background: radial-gradient(circle at 32% 28%, #fef3c7 0%, #f59e0b 45%, #b45309 100%); color: #78350f; box-shadow: 0 3px 6px rgba(180,83,9,0.4), inset 0 1px 1px rgba(255,255,255,0.6); border: 1px solid rgba(180,83,9,0.3); }
+  .confirm-badge.confirm-pending { background: #fff; color: #c2410c; border: 1.5px solid #fdba74; }
+  .confirm-badge.confirm-none { background: #fff; color: #cbd5e1; border: 1.5px dashed #e2e8f0; }
+
+  .row-actions { display: flex; gap: 5px; justify-content: center; }
+  .btn-action { width: 25px; height: 25px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; border: none; color: #fff; font-size: 0.68rem; text-decoration: none; flex-shrink: 0; }
+  .btn-view { background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%); }
+  .btn-delete { background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%); }
+
+  .table-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; flex-wrap: wrap; }
+  .footer-hint { font-size: 0.78rem; color: var(--muted); }
+  .pagination-fake { display: flex; gap: 6px; }
+  .pagination-fake span { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.8rem; font-weight: 700; color: var(--ink-soft); border: 1px solid var(--border); }
+  .pagination-fake span.is-active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .notes { margin-top: 40px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; font-size: 0.84rem; color: var(--ink-soft); line-height: 1.8; }
+  .notes h3 { font-size: 0.95rem; margin: 0 0 10px; color: var(--ink); }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="meta-bar">
+  <i class="fa-solid fa-pen-ruler"></i>
+  <span>ตัวอย่างออกแบบหน้า <strong>รายการข้อมูล พชอ.ไต</strong> (admin/kidney-dhb-list) — ยังไม่ได้แก้ไขเว็บจริง</span>
+  <span class="tag">Design mockup</span>
+</div>
+
+<div class="page-shell">
+
+  <div class="page-header">
+    <div class="page-header-accent"></div>
+    <div>
+      <div class="page-header-title">รายการข้อมูล พชอ.ไต</div>
+      <div class="page-header-sub"><i class="fa-solid fa-circle-info"></i> แบบรายงานความก้าวหน้าผลการดำเนินงานป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน</div>
+    </div>
+  </div>
+
+  <!-- filter toolbar -->
+  <div class="toolbar-card">
+    <div class="toolbar-head">
+      <div class="toolbar-title"><i class="fa-solid fa-filter"></i> ตัวกรองข้อมูล</div>
+      <div class="toolbar-actions">
+        <a class="btn-pill btn-import"><i class="fa-solid fa-file-word"></i> นำเข้าไฟล์ Word</a>
+        <button class="btn-pill btn-reset"><i class="fa-solid fa-arrows-rotate"></i> ล้างตัวกรอง</button>
+      </div>
+    </div>
+    <div class="filter-groups">
+      <div class="filter-cluster">
+        <div class="filter-cluster-label"><i class="fa-solid fa-calendar-days"></i> ช่วงเวลา</div>
+        <div class="filter-cluster-fields">
+          <div class="filter-field">
+            <label>ปีงบประมาณ</label>
+            <select><option>ทั้งหมด</option><option selected>2569</option><option>2568</option><option>2567</option></select>
+          </div>
+          <div class="filter-field">
+            <label>ไตรมาส</label>
+            <select><option selected>ทั้งหมด</option><option>ไตรมาส 1 (เดือน 3)</option><option>ไตรมาส 2 (เดือน 6)</option><option>ไตรมาส 3 (เดือน 9)</option><option>ไตรมาส 4 (เดือน 12)</option></select>
+          </div>
+        </div>
+      </div>
+      <hr class="cluster-divider">
+      <div class="filter-cluster">
+        <div class="filter-cluster-label"><i class="fa-solid fa-hospital"></i> หน่วยงาน / พื้นที่</div>
+        <div class="filter-cluster-fields">
+          <div class="filter-field">
+            <label>ประเภทหน่วยงาน</label>
+            <select><option selected>ทั้งหมด</option><option>สำนักงานสาธารณสุขจังหวัด</option><option>สำนักงานสาธารณสุขอำเภอ</option><option>โรงพยาบาล</option><option>โรงพยาบาลส่งเสริมสุขภาพตำบล</option></select>
+          </div>
+          <div class="filter-field">
+            <label>จังหวัด</label>
+            <select><option selected>ทั้งหมด</option><option>อุบลราชธานี</option><option>ศรีสะเกษ</option><option>ยโสธร</option><option>อำนาจเจริญ</option><option>มุกดาหาร</option></select>
+          </div>
+          <div class="filter-field">
+            <label>อำเภอ</label>
+            <select><option selected>ทั้งหมด</option></select>
+          </div>
+          <div class="filter-field">
+            <label>พื้นที่การดำเนินงาน</label>
+            <select><option selected>ทั้งหมด</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#3b82f6;"><i class="fa-solid fa-file-lines"></i></div>
+      <div><div class="stat-label">ข้อมูลทั้งหมด</div><div class="stat-value">128 <span>รายการ</span></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#10b981;"><i class="fa-solid fa-check-double"></i></div>
+      <div><div class="stat-label">ดำเนินการเรียบร้อย</div><div class="stat-value">84 <span>รายการ</span></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:#f59e0b;"><i class="fa-solid fa-hourglass-half"></i></div>
+      <div><div class="stat-label">กำลังดำเนินการ</div><div class="stat-value">44 <span>รายการ</span></div></div>
+    </div>
+  </div>
+
+  <!-- table -->
+  <div class="table-card">
+    <div class="table-title-bar">
+      <div class="table-title"><span class="table-title-icon"><i class="fa-solid fa-list"></i></span> รายการข้อมูลที่บันทึกแล้ว</div>
+      <div class="legend-toggle" onclick="document.getElementById('legend').classList.toggle('is-open')">
+        <i class="fa-solid fa-circle-question"></i> คำอธิบายสัญลักษณ์
+      </div>
+    </div>
+
+    <div class="legend-bar is-open" id="legend">
+      <div class="legend-group">
+        <span class="legend-group-label">สถานะรายข้อ</span>
+        <div class="legend-item"><span class="legend-dot" style="background:linear-gradient(135deg,#a78bfa,#6d28d9); color:#fff;"><i class="fa-solid fa-check"></i></span> ทำแล้ว</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#fff; color:#cbd5e1; border:1.5px dashed #e2e8f0;"><i class="fa-solid fa-minus"></i></span> ยังไม่ดำเนินการ</div>
+      </div>
+      <div class="legend-divider"></div>
+      <div class="legend-group">
+        <span class="legend-group-label">สถานะการยืนยัน (รายไตรมาส)</span>
+        <div class="legend-item"><span class="legend-dot confirm-badge confirm-done" style="width:18px;height:18px;"><i class="fa-solid fa-stamp"></i></span> ยืนยันแล้ว</div>
+        <div class="legend-item"><span class="legend-dot confirm-badge confirm-pending" style="width:18px;height:18px;"><i class="fa-solid fa-hourglass-half"></i></span> รอการยืนยัน</div>
+        <div class="legend-item"><span class="legend-dot confirm-badge confirm-none" style="width:18px;height:18px;"><i class="fa-solid fa-minus"></i></span> ยังไม่มีข้อมูล</div>
+      </div>
+    </div>
+
+    <div class="table-scroll">
+      <table class="report-table">
+        <colgroup>
+          <col style="width:6%">
+          <col style="width:16%">
+          <col style="width:11%">
+          <col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%">
+          <col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%">
+          <col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%">
+          <col style="width:8.8%">
+        </colgroup>
+        <thead>
+          <tr class="col-label-row">
+            <th class="grp-org">ปีงบประมาณ</th>
+            <th class="grp-org">หน่วยงาน</th>
+            <th class="grp-org">พื้นที่การดำเนินงาน</th>
+            <th class="grp-cat17" title="การขับเคลื่อนการดำเนินงานป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง(ระดับอำเภอ)"><span class="col-index-badge">ข้อ 1</span></th>
+            <th class="grp-cat17" title="การจัดการข้อมูลเฝ้าระวัง"><span class="col-index-badge">ข้อ 2</span></th>
+            <th class="grp-cat17" title="การกำหนดประเด็นปัญหา เป้าหมาย พร้อมทั้งแผนงานและกิจกรรม"><span class="col-index-badge">ข้อ 3</span></th>
+            <th class="grp-cat17" title="สนับสนุนการสร้างนโยบายสาธารณะที่เกี่ยวข้องกับการป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน"><span class="col-index-badge">ข้อ 4</span></th>
+            <th class="grp-cat17" title="การจัดการสิ่งแวดล้อมที่เอื้อต่อสุขภาพ"><span class="col-index-badge">ข้อ 5</span></th>
+            <th class="grp-cat17" title="การสร้างความเข้มแข็งของชุมชนในการลดปัจจัยเสี่ยงของการเกิดโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน"><span class="col-index-badge">ข้อ 6</span></th>
+            <th class="grp-cat17" title="การจัดบริการเชิงรุกในชุมชน"><span class="col-index-badge">ข้อ 7</span></th>
+            <th class="grp-cat8" title="ร้อยละของผู้ป่วยโรคเบาหวานและ/หรือความดันโลหิตสูง ได้รับการค้นหาและคัดกรองโรคไตเรื้อรัง"><span class="col-index-badge v8">ข้อ 8.1</span></th>
+            <th class="grp-cat8" title="การประเมินความตระหนักรู้การลดการบริโภคเกลือโซเดียมของประชาชนในพื้นที่"><span class="col-index-badge v8">ข้อ 8.2</span></th>
+            <th class="grp-cat8" title="นวัตกรรม/บุคคลต้นแบบ/ภูมิปัญญาท้องถิ่น/งานวิจัยที่สนับสนุนการลดการบริโภคเกลือโซเดียมและ/หรือการป้องกันและชะลอภาวะไตเรื้อรัง"><span class="col-index-badge v8">ข้อ 8.3</span></th>
+            <th class="grp-confirm">Q1</th>
+            <th class="grp-confirm">Q2</th>
+            <th class="grp-confirm">Q3</th>
+            <th class="grp-confirm">Q4</th>
+            <th class="grp-actions">จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2569 <span class="badge-new">ใหม่</span></td>
+            <td class="org-name">สำนักงานสาธารณสุขจังหวัดอุบลราชธานี</td>
+            <td class="area-name">อำเภอเมืองอุบลราชธานี</td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-pending"><i class="fa-solid fa-hourglass-half"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td><div class="row-actions"><a class="btn-action btn-view"><i class="fa-solid fa-eye"></i></a><button class="btn-action btn-delete"><i class="fa-solid fa-trash-alt"></i></button></div></td>
+          </tr>
+          <tr>
+            <td>2569</td>
+            <td class="org-name">โรงพยาบาลส่งเสริมสุขภาพตำบลบ้านท่าลาด</td>
+            <td class="area-name">อำเภอวารินชำราบ</td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-pending"><i class="fa-solid fa-hourglass-half"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td><div class="row-actions"><a class="btn-action btn-view"><i class="fa-solid fa-eye"></i></a><button class="btn-action btn-delete"><i class="fa-solid fa-trash-alt"></i></button></div></td>
+          </tr>
+          <tr>
+            <td>2568</td>
+            <td class="org-name">สำนักงานสาธารณสุขอำเภอเดชอุดม</td>
+            <td class="area-name">อำเภอเดชอุดม</td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-done"><i class="fa-solid fa-check"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-done"><i class="fa-solid fa-stamp"></i></span></td>
+            <td><div class="row-actions"><a class="btn-action btn-view"><i class="fa-solid fa-eye"></i></a><button class="btn-action btn-delete"><i class="fa-solid fa-trash-alt"></i></button></div></td>
+          </tr>
+          <tr>
+            <td>2569</td>
+            <td class="org-name">โรงพยาบาลศรีสะเกษ</td>
+            <td class="area-name">อำเภอเมืองศรีสะเกษ</td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat17"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-cat8"><span class="status-badge status-empty"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td class="grp-confirm"><span class="confirm-badge confirm-none"><i class="fa-solid fa-minus"></i></span></td>
+            <td><div class="row-actions"><a class="btn-action btn-view"><i class="fa-solid fa-eye"></i></a><button class="btn-action btn-delete"><i class="fa-solid fa-trash-alt"></i></button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-footer">
+      <div class="footer-hint">แสดง 1–4 จาก 128 รายการ</div>
+      <div class="pagination-fake">
+        <span><i class="fa-solid fa-angle-left"></i></span>
+        <span class="is-active">1</span><span>2</span><span>3</span><span>…</span><span>32</span>
+        <span><i class="fa-solid fa-angle-right"></i></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>สิ่งที่ปรับจากหน้าเดิม</h3>
+    <ul>
+      <li><strong>แถบตัวกรอง:</strong> เดิมมี 6 ช่อง (ปีงบประมาณ/ประเภทหน่วยงาน/ไตรมาส/จังหวัด/อำเภอ/พื้นที่การดำเนินงาน) เรียงแถวเดียวแบบแบ่งพื้นที่เท่ากันหมด ทำให้แคบมากเมื่อจอไม่กว้างพอ ปรับใหม่เป็นการ์ดตัวกรองที่แบ่งเป็น 2 กลุ่มตามความหมาย คือ "ช่วงเวลา" (ปีงบประมาณ/ไตรมาส) และ "หน่วยงาน/พื้นที่" (ประเภทหน่วยงาน/จังหวัด/อำเภอ/พื้นที่) พร้อมป้ายกลุ่มกำกับด้านซ้าย และใช้กริดแบบยืดหยุ่น (auto-fit) แทน flex เท่ากันตายตัว ทำให้อ่านง่ายขึ้นและไม่บีบเมื่อจอแคบ</li>
+      <li><strong>ปุ่ม "นำเข้าไฟล์ Word" และ "ล้างตัวกรอง"</strong> ย้ายขึ้นไปอยู่แถวหัวการ์ดตัวกรอง (มุมขวาบน) แยกจากช่องตัวกรองอย่างชัดเจน แทนที่จะแทรกอยู่ปลายแถวเดียวกับฟอร์ม</li>
+      <li><strong>ตารางข้อมูล (จุดที่หนาแน่นที่สุดของหน้า):</strong> ใช้สีพื้นหลังอ่อนกำกับแต่ละกลุ่มคอลัมน์โดยตรงที่หัวตาราง/ตัวข้อมูล — "ข้อมูลหน่วยงาน" (ขาว) · "หมวดการดำเนินงาน ข้อ 1–7" (ม่วงคราม) · "ตัวชี้วัดที่ 8" (ม่วง) · "การยืนยันรายไตรมาส" (เหลืองอำพัน) — ช่วยให้กวาดสายตาข้ามคอลัมน์สถานะทั้ง 13 คอลัมน์ได้ง่ายขึ้น โดยไม่ต้องมีแถบสีคาดหัวตารางเพิ่มอีกชั้น (ตัดออกตามที่แจ้ง) ชื่อกลุ่มเต็มยังดูได้จาก tooltip เมื่อชี้ที่ป้าย "ข้อ" แต่ละอัน</li>
+      <li><strong>แถบคำอธิบายสัญลักษณ์ (legend):</strong> เดิมแสดงตลอดเวลาเป็นแถบเต็มความกว้างใต้หัวตาราง ปรับเป็นปุ่ม "คำอธิบายสัญลักษณ์" ที่กดเปิด/ปิดได้ ประหยัดพื้นที่แนวตั้งเมื่อผู้ใช้คุ้นเคยกับสัญลักษณ์แล้ว</li>
+      <li>สีหลักทั้งหน้าคงโทนม่วงคราม (indigo) เดิมไว้ตามแบรนด์ของแผงแอดมิน เพิ่มเฉดม่วง (violet) และเหลืองอำพัน (amber) เฉพาะกับกลุ่มคอลัมน์ที่มีความหมายต่างกันเท่านั้น</li>
+      <li>ปรับรัศมีขอบและระยะห่างให้เป็นชุดเดียวกันทั้งหน้า (การ์ดหลัก 16px, การ์ดย่อย 11px) และจัดปุ่มดู/ลบท้ายแถวให้ชิดกันเป็นกลุ่มเดียว อ่านง่ายกว่าเดิม</li>
+      <li><strong>ตารางแสดงพอดีในกรอบการ์ด ไม่ต้องเลื่อนแนวนอน:</strong> กำหนดความกว้างแต่ละคอลัมน์ตายตัวเป็น % (table-layout: fixed) แทนการปล่อยให้ความกว้างขยายตามเนื้อหาแล้วล้นออกนอกกรอบ ข้อความยาวๆ อย่างชื่อหน่วยงาน/พื้นที่การดำเนินงานจะตัดขึ้นบรรทัดใหม่ในช่องของตัวเองแทน ทำให้ทั้ง 18 คอลัมน์ (ข้อมูลหน่วยงาน 3 + ข้อ 1–8.3 รวม 10 + Q1–Q4 4 + จัดการ 1) แสดงครบในความกว้างเดียวโดยไม่ต้องมีแถบเลื่อนเลย</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

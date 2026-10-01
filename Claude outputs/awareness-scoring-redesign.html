@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ออกแบบใหม่ — ตั้งค่าคะแนนความตระหนักรู้</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@400;500;600;700;800&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --ink: #1e293b;
+    --ink-soft: #334155;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --surface: #ffffff;
+    --page-bg: #f4f5fa;
+    --primary: #4f46e5;
+    --primary-dark: #4338ca;
+    --primary-soft: #eef2ff;
+    --primary-softer: #e0e7ff;
+    --radius: 16px;
+    --radius-sm: 11px;
+    --behavior: #16a34a;
+    --label: #0ea5e9;
+    --belief: #7c3aed;
+    --environment: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page-bg);
+    font-family: 'Sarabun', 'Noto Serif Thai', sans-serif;
+    color: var(--ink);
+  }
+  h1, h2, h3, .display-face { font-family: 'Noto Serif Thai', 'Sarabun', serif; }
+
+  /* ---- meta bar explaining this is a mockup, not the live site ---- */
+  .meta-bar {
+    background: var(--ink);
+    color: #cbd5e1;
+    font-size: 0.82rem;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .meta-bar strong { color: #fff; }
+  .meta-bar .tag {
+    margin-left: auto;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+
+  .page-shell { max-width: 1180px; margin: 0 auto; padding: 26px 20px 80px; }
+
+  /* ---- view switch (Overview vs Category editor) — for comparing the
+     two states of this mockup only, not part of the real page ---- */
+  .view-switch {
+    display: inline-flex; background: #fff; border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px; gap: 4px; margin-bottom: 22px;
+  }
+  .view-switch button {
+    border: none; background: transparent; font-family: inherit; font-weight: 700;
+    font-size: 0.86rem; color: var(--muted); padding: 8px 18px; border-radius: 999px; cursor: pointer;
+  }
+  .view-switch button.is-active { background: var(--primary); color: #fff; }
+
+  /* ---- step tracker: overview -> pick category -> edit scores ---- */
+  .flow-tracker {
+    display: flex; align-items: center; gap: 0; margin-bottom: 22px;
+    background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 22px;
+  }
+  .flow-step { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; white-space: nowrap; }
+  .flow-step-num {
+    width: 26px; height: 26px; min-width: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.76rem; font-weight: 800; background: var(--primary-soft); color: var(--primary);
+  }
+  .flow-step.is-done .flow-step-num { background: var(--primary); color: #fff; }
+  .flow-step.is-current .flow-step-num { background: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--primary-softer); }
+  .flow-step-label { font-size: 0.86rem; font-weight: 700; color: var(--muted); }
+  .flow-step.is-current .flow-step-label, .flow-step.is-done .flow-step-label { color: var(--ink); }
+  .flow-connector { flex: 1 1 auto; height: 2px; background: var(--border); margin: 0 16px; min-width: 24px; }
+  .flow-step.is-done + .flow-connector { background: var(--primary); }
+  @media (max-width: 700px) {
+    .flow-tracker { flex-wrap: wrap; gap: 10px 0; }
+    .flow-connector { display: none; }
+  }
+
+  /* ---- hero / command bar ---- */
+  .hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 14px 30px -18px rgba(79, 70, 229, 0.55);
+  }
+  .hero-icon {
+    width: 54px; height: 54px; min-width: 54px; border-radius: 15px;
+    background: rgba(255,255,255,0.16); display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; border: 1px solid rgba(255,255,255,0.24);
+  }
+  .hero-text { flex: 1; min-width: 240px; }
+  .hero-title { font-weight: 800; font-size: 1.28rem; }
+  .hero-sub { font-size: 0.86rem; color: #e0e7ff; margin-top: 4px; line-height: 1.6; max-width: 62ch; }
+
+  .hero-progress {
+    display: flex; align-items: center; gap: 12px; flex-shrink: 0;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 14px; padding: 10px 18px;
+  }
+  .progress-ring { position: relative; width: 46px; height: 46px; }
+  .progress-ring svg { transform: rotate(-90deg); }
+  .progress-ring-value {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.68rem; font-weight: 800;
+  }
+  .hero-progress-label { font-size: 0.76rem; color: #e0e7ff; line-height: 1.4; }
+  .hero-progress-label strong { display: block; font-size: 0.92rem; color: #fff; font-weight: 800; }
+
+  .hero-year {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    background: #fff; color: var(--primary-dark); border-radius: 12px;
+    padding: 9px 16px; font-weight: 800; font-size: 0.92rem;
+  }
+  .hero-year i { font-size: 0.85rem; }
+  .hero-year i.fa-chevron-down { font-size: 0.66rem; color: var(--primary); margin-left: 4px; }
+
+  @media (max-width: 760px) {
+    .hero { flex-wrap: wrap; }
+    .hero-progress, .hero-year { margin-left: 0; }
+  }
+
+  /* ---- category grid ---- */
+  .section-label {
+    font-size: 0.78rem; font-weight: 800; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.04em; margin: 6px 2px 10px;
+  }
+  .section-card-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+  .section-card {
+    background: #fff; border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 18px; text-decoration: none; display: flex; flex-direction: column; gap: 12px;
+    transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+  }
+  .section-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -12px rgba(15,23,42,0.18); border-color: var(--card-c); text-decoration: none; }
+  .section-card.is-active { border-color: var(--card-c); background: color-mix(in srgb, var(--card-c) 6%, #fff); box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--card-c) 35%, transparent); }
+  .section-card-top { display: flex; align-items: center; justify-content: space-between; }
+  .section-card-icon {
+    width: 40px; height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--card-c) 14%, #fff); color: var(--card-c); font-size: 1.05rem;
+  }
+  .section-card-code {
+    font-size: 0.66rem; font-weight: 800; letter-spacing: 0.05em; color: var(--card-c);
+    background: color-mix(in srgb, var(--card-c) 10%, #fff); border: 1px solid color-mix(in srgb, var(--card-c) 35%, #fff);
+    border-radius: 999px; padding: 3px 9px;
+  }
+  .section-card-title { font-weight: 800; font-size: 0.94rem; color: var(--ink); line-height: 1.4; }
+  .section-card-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.55; flex: 1; }
+  .section-card-foot { display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; font-weight: 700; }
+  .section-card-foot .count { color: var(--ink-soft); }
+  .section-card-foot .cta { color: var(--card-c); display: inline-flex; align-items: center; gap: 5px; }
+  @media (max-width: 1020px) { .section-card-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .section-card-grid { grid-template-columns: 1fr; } }
+
+  /* ---- overview: role cards as a 2-col grid instead of long rows ---- */
+  .overview-group { margin-bottom: 30px; }
+  .group-title {
+    font-weight: 800; font-size: 1rem; color: var(--ink); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .group-title-icon {
+    width: 30px; height: 30px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in srgb, var(--grp-c) 14%, #fff); color: var(--grp-c); font-size: 0.85rem;
+  }
+  .group-title .count-chip {
+    margin-left: auto; font-size: 0.72rem; font-weight: 700; color: #fff;
+    background: var(--grp-c); border-radius: 999px; padding: 3px 11px;
+  }
+  .role-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .role-card {
+    background: #fff; border-radius: var(--radius-sm); border: 1px solid var(--border);
+    border-left: 4px solid var(--grp-c); padding: 14px 16px; display: flex; flex-direction: column; gap: 9px;
+  }
+  .role-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .role-card-title { font-weight: 700; font-size: 0.85rem; color: var(--ink); line-height: 1.4; }
+  .role-card-max { flex-shrink: 0; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--grp-c); border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+  .role-card-question {
+    font-size: 0.78rem; font-weight: 700; color: var(--grp-c);
+    background: color-mix(in srgb, var(--grp-c) 8%, #fff); border: 1px solid color-mix(in srgb, var(--grp-c) 30%, #fff);
+    border-radius: 8px; padding: 7px 10px; line-height: 1.5;
+  }
+  .role-card-answers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .answer-pill { font-size: 0.72rem; font-weight: 600; color: var(--ink-soft); background: #f1f5f9; border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+  .role-card-foot { display: flex; align-items: center; gap: 6px; font-size: 0.74rem; font-weight: 700; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .role-card-foot.is-complete { color: #166534; }
+  .role-card-foot.is-incomplete { color: #92400e; }
+  @media (max-width: 760px) { .role-grid { grid-template-columns: 1fr; } }
+
+  /* ---- category editor ---- */
+  .category-banner {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 18px;
+    background: linear-gradient(120deg, color-mix(in srgb, var(--belief) 14%, #fff), color-mix(in srgb, var(--belief) 3%, #fff));
+    border: 1.5px solid color-mix(in srgb, var(--belief) 30%, #fff); border-radius: var(--radius); padding: 16px 22px;
+  }
+  .category-banner-icon { width: 46px; height: 46px; min-width: 46px; border-radius: 13px; background: var(--belief); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; }
+  .category-banner-title { font-weight: 800; font-size: 1rem; color: var(--ink); }
+  .category-banner-desc { font-size: 0.82rem; color: var(--ink-soft); margin-top: 2px; }
+  .category-banner-chip { margin-left: auto; font-size: 0.78rem; font-weight: 700; color: #fff; background: var(--belief); border-radius: 999px; padding: 5px 14px; flex-shrink: 0; }
+
+  .editor-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .back-link { display: inline-flex; align-items: center; gap: 8px; font-size: 0.86rem; font-weight: 700; color: var(--muted); text-decoration: none; padding: 8px 14px; border-radius: 10px; background: #eef2f7; }
+  .save-btn { border: none; background: var(--belief); color: #fff; font-weight: 700; font-size: 0.88rem; padding: 10px 20px; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+
+  .role-editor-card { background: #fff; border-radius: var(--radius); border: 1px solid var(--border); border-top: 3px solid var(--belief); margin-bottom: 14px; overflow: hidden; }
+  .role-editor-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; flex-wrap: wrap; }
+  .role-editor-title { font-weight: 700; font-size: 0.92rem; color: var(--ink); }
+  .role-editor-question-tag {
+    font-size: 0.76rem; font-weight: 700; color: var(--belief); background: color-mix(in srgb, var(--belief) 8%, #fff);
+    border: 1px solid color-mix(in srgb, var(--belief) 30%, #fff); border-radius: 999px; padding: 4px 12px;
+  }
+  .role-editor-body { border-top: 1px solid #f1f5f9; padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  .step-block { display: flex; gap: 14px; }
+  .step-num {
+    width: 26px; height: 26px; min-width: 26px; border-radius: 50%; background: var(--belief); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 0.78rem; font-weight: 800; margin-top: 2px;
+  }
+  .step-content { flex: 1; min-width: 0; }
+  .step-heading { font-weight: 700; font-size: 0.84rem; color: var(--ink); margin-bottom: 8px; }
+  .step-hint { font-size: 0.76rem; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+
+  .question-radio-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; border-radius: 9px; margin-bottom: 5px; background: #f8fafc; }
+  .question-radio-row.is-checked { background: color-mix(in srgb, var(--belief) 6%, #fff); }
+  .question-radio-row input { margin-top: 3px; accent-color: var(--belief); }
+  .question-radio-row label { font-size: 0.86rem; color: var(--ink); }
+
+  .step-divider { border: none; border-top: 1px dashed var(--border); margin: 2px 0; }
+
+  .score-table { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .score-row { display: grid; grid-template-columns: 1.3fr 0.8fr 0.8fr; gap: 10px; align-items: center; padding: 8px 12px; font-size: 0.82rem; }
+  .score-row.head { background: #f8fafc; font-size: 0.68rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.03em; }
+  .score-row:not(.head):nth-child(even) { background: #fafafa; }
+  .score-row select { width: 100%; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); font-weight: 700; font-size: 0.8rem; background: #fff; color: var(--ink); }
+  .score-row .answer-name { font-weight: 600; color: var(--ink); }
+  .suggested-tag { font-size: 0.64rem; font-weight: 700; color: var(--belief); background: color-mix(in srgb, var(--belief) 10%, #fff); border-radius: 999px; padding: 1px 8px; margin-left: 6px; }
+
+  .knowledge-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 14px 16px; }
+  .knowledge-box label { display: block; font-size: 0.8rem; font-weight: 700; color: #1e3a5f; margin-bottom: 7px; }
+  .knowledge-box input { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 0.86rem; }
+  .knowledge-box .hint { font-size: 0.74rem; color: #475569; margin-top: 7px; line-height: 1.55; }
+
+  .notes {
+    margin-top: 46px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px 24px; font-size: 0.84rem; color: var(--ink-soft); line-height: 1.8;
+  }
+  .notes h3 { font-size: 0.95rem; margin: 0 0 10px; color: var(--ink); }
+  .notes ul { margin: 0; padding-left: 20px; }
+  .notes li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<div class="meta-bar">
+  <i class="fa-solid fa-pen-ruler"></i>
+  <span>ตัวอย่างออกแบบหน้า <strong>ตั้งค่าคะแนนความตระหนักรู้</strong> (admin/awareness/settings/scoring) — ยังไม่ได้แก้ไขเว็บจริง</span>
+  <span class="tag">Design mockup</span>
+</div>
+
+<div class="page-shell">
+
+  <div class="view-switch">
+    <button class="is-active" data-view="overview" onclick="setView(this,'overview')">มุมมองภาพรวม</button>
+    <button data-view="editor" onclick="setView(this,'editor')">มุมมองแก้ไขคะแนน (ตัวอย่างหมวด "การรับรู้ส่วนบุคคล")</button>
+  </div>
+
+  <!-- flow tracker -->
+  <div class="flow-tracker" id="tracker">
+    <div class="flow-step is-done" id="step1">
+      <div class="flow-step-num"><i class="fa-solid fa-check" style="font-size:.65rem;"></i></div>
+      <div class="flow-step-label">ภาพรวมทุกหมวด</div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step is-current" id="step2">
+      <div class="flow-step-num">2</div>
+      <div class="flow-step-label">เลือกหมวดหมู่</div>
+    </div>
+    <div class="flow-connector"></div>
+    <div class="flow-step" id="step3">
+      <div class="flow-step-num">3</div>
+      <div class="flow-step-label">ตั้งค่าคำถาม &amp; คะแนน</div>
+    </div>
+  </div>
+
+  <!-- hero -->
+  <div class="hero">
+    <div class="hero-icon"><i class="fa-solid fa-calculator"></i></div>
+    <div class="hero-text">
+      <div class="hero-title">ตั้งค่าคะแนนความตระหนักรู้</div>
+      <div class="hero-sub">เลือกคำถามของแต่ละบทบาทคะแนน (26 รายการ) แล้วกำหนดคะแนนของคำตอบจริงที่มีอยู่ — ระบบจะรวมคะแนนและตัดสินผ่าน/ไม่ผ่าน (≥ 19.2 จาก 32 คะแนน) ให้อัตโนมัติ</div>
+    </div>
+    <div class="hero-progress">
+      <div class="progress-ring">
+        <svg width="46" height="46" viewBox="0 0 46 46">
+          <circle cx="23" cy="23" r="19" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="5"/>
+          <circle cx="23" cy="23" r="19" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"
+            stroke-dasharray="119.4" stroke-dashoffset="35.8"/>
+        </svg>
+        <div class="progress-ring-value">70%</div>
+      </div>
+      <div class="hero-progress-label">ตั้งค่าแล้ว<strong>18 / 26 รายการ</strong></div>
+    </div>
+    <div class="hero-year"><i class="fa-solid fa-calendar-days"></i> 2569 <i class="fa-solid fa-chevron-down"></i></div>
+  </div>
+
+  <div class="section-label">หมวดหมู่คำถาม</div>
+  <div class="section-card-grid">
+    <a class="section-card" style="--card-c:var(--behavior)">
+      <div class="section-card-top">
+        <span class="section-card-icon"><i class="fa-solid fa-utensils"></i></span>
+        <span class="section-card-code">CAT-01</span>
+      </div>
+      <div class="section-card-title">พฤติกรรมการบริโภค</div>
+      <div class="section-card-desc">ความถี่และพฤติกรรมการเลือกบริโภคอาหารเค็มและโซเดียมสูง</div>
+      <div class="section-card-foot"><span class="count">4/4 ข้อ</span><span class="cta">เลือก <i class="fa-solid fa-arrow-right"></i></span></div>
+    </a>
+    <a class="section-card" style="--card-c:var(--label)">
+      <div class="section-card-top">
+        <span class="section-card-icon"><i class="fa-solid fa-tags"></i></span>
+        <span class="section-card-code">CAT-02</span>
+      </div>
+      <div class="section-card-title">ฉลากโภชนาการ</div>
+      <div class="section-card-desc">การอ่านและใช้ฉลากโภชนาการประกอบการเลือกซื้อ</div>
+      <div class="section-card-foot"><span class="count">4/6 ข้อ</span><span class="cta">เลือก <i class="fa-solid fa-arrow-right"></i></span></div>
+    </a>
+    <a class="section-card is-active" style="--card-c:var(--belief)">
+      <div class="section-card-top">
+        <span class="section-card-icon"><i class="fa-solid fa-brain"></i></span>
+        <span class="section-card-code">CAT-03</span>
+      </div>
+      <div class="section-card-title">การรับรู้ส่วนบุคคล</div>
+      <div class="section-card-desc">ความเข้าใจเรื่องปริมาณโซเดียมและผลกระทบต่อสุขภาพ</div>
+      <div class="section-card-foot"><span class="count">7/9 ข้อ</span><span class="cta" style="color:var(--belief)">กำลังแสดงข้อมูล</span></div>
+    </a>
+    <a class="section-card" style="--card-c:var(--environment)">
+      <div class="section-card-top">
+        <span class="section-card-icon"><i class="fa-solid fa-tree-city"></i></span>
+        <span class="section-card-code">CAT-04</span>
+      </div>
+      <div class="section-card-title">ปัจจัยสิ่งแวดล้อม</div>
+      <div class="section-card-desc">การเข้าถึงอาหารเอื้อสุขภาพและร้านค้าทางเลือกในพื้นที่</div>
+      <div class="section-card-foot"><span class="count">3/7 ข้อ</span><span class="cta">เลือก <i class="fa-solid fa-arrow-right"></i></span></div>
+    </a>
+  </div>
+
+  <!-- ===================== OVERVIEW VIEW ===================== -->
+  <div id="view-overview">
+
+    <div class="overview-group" style="--grp-c:var(--behavior)">
+      <div class="group-title">
+        <span class="group-title-icon"><i class="fa-solid fa-utensils"></i></span>
+        ส่วนที่ 2: พฤติกรรมการบริโภคโซเดียม (คะแนนเต็ม 8)
+        <span class="count-chip">4/4</span>
+      </div>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">2.1 การเติมน้ำปลา/เครื่องปรุงเพิ่ม</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">2.1 ท่านเติมน้ำปลาหรือเครื่องปรุงรสเพิ่มระหว่างรับประทานอาหารบ่อยเพียงใด</div>
+          <div class="role-card-answers">
+            <span class="answer-pill">ไม่ทานเลย</span><span class="answer-pill">นานๆ ครั้ง</span><span class="answer-pill">บางครั้ง</span><span class="answer-pill">บ่อยครั้ง</span><span class="answer-pill">ทุกวัน</span>
+          </div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">2.2 การบริโภคผลิตภัณฑ์อาหารสำเร็จรูป</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">2.2 ท่านบริโภคอาหารแปรรูป/กึ่งสำเร็จรูปบ่อยเพียงใด</div>
+          <div class="role-card-answers">
+            <span class="answer-pill">ไม่ทานเลย</span><span class="answer-pill">นานๆ ครั้ง</span><span class="answer-pill">บางครั้ง</span><span class="answer-pill">บ่อยครั้ง</span><span class="answer-pill">ทุกวัน</span>
+          </div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">2.3 การบริโภคอาหารแปรรูปหรือหมักดอง</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">2.3 ท่านบริโภคอาหารหมักดอง/ดองเค็มบ่อยเพียงใด</div>
+          <div class="role-card-answers">
+            <span class="answer-pill">ไม่ทานเลย</span><span class="answer-pill">นานๆ ครั้ง</span><span class="answer-pill">บางครั้ง</span><span class="answer-pill">บ่อยครั้ง</span><span class="answer-pill">ทุกวัน</span>
+          </div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">2.4 การพยายามจำกัดการบริโภคโซเดียม</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">2.4 ท่านพยายามจำกัดการบริโภคโซเดียมมากน้อยเพียงใด</div>
+          <div class="role-card-answers">
+            <span class="answer-pill">ไม่ทานเลย</span><span class="answer-pill">นานๆ ครั้ง</span><span class="answer-pill">บางครั้ง</span><span class="answer-pill">+2 คำตอบ</span>
+          </div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overview-group" style="--grp-c:var(--label)">
+      <div class="group-title">
+        <span class="group-title-icon"><i class="fa-solid fa-tags"></i></span>
+        การรับรู้และใช้ฉลากโภชนาการ (คะแนนเต็ม 2 — รวมกับด้านบนเป็นคะแนนเต็ม 10)
+        <span class="count-chip">4/6</span>
+      </div>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">เคยเห็นฉลากโภชนาการ</span><span class="role-card-max">เต็ม 1</span></div>
+          <div class="role-card-question">ท่านเคยเห็นฉลากโภชนาการบนผลิตภัณฑ์อาหารหรือไม่</div>
+          <div class="role-card-answers"><span class="answer-pill">เคย</span><span class="answer-pill">ไม่เคย</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 2/2 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">เคยเห็นฉลาก GDA</span><span class="role-card-max">เต็ม 1</span></div>
+          <div class="role-card-question">ท่านเคยเห็นฉลาก GDA บนผลิตภัณฑ์อาหารหรือไม่</div>
+          <div class="role-card-answers"><span class="answer-pill">เคย</span><span class="answer-pill">ไม่เคย</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 2/2 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">เคยใช้ฉลากโภชนาการ</span><span class="role-card-max">เต็ม 1</span></div>
+          <div class="role-card-question is-empty" style="color:#94a3b8;background:#f8fafc;border-color:#e2e8f0;">ยังไม่ได้กำหนดคำถาม</div>
+          <div class="role-card-answers"></div>
+          <div class="role-card-foot is-incomplete"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีข้อมูลคำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">เคยใช้สัญลักษณ์ทางเลือกสุขภาพ</span><span class="role-card-max">เต็ม 1</span></div>
+          <div class="role-card-question is-empty" style="color:#94a3b8;background:#f8fafc;border-color:#e2e8f0;">ยังไม่ได้กำหนดคำถาม</div>
+          <div class="role-card-answers"></div>
+          <div class="role-card-foot is-incomplete"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีข้อมูลคำตอบ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overview-group" style="--grp-c:var(--belief)">
+      <div class="group-title">
+        <span class="group-title-icon"><i class="fa-solid fa-brain"></i></span>
+        ส่วนที่ 3: การรับรู้ส่วนบุคคล (คะแนนเต็ม 10)
+        <span class="count-chip">7/9</span>
+      </div>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.1 ความรู้: ปริมาณโซเดียมที่แนะนำต่อวัน</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">3.1 ปริมาณโซเดียมในอาหารที่แนะนำต่อวันคือเท่าใด (มก.)</div>
+          <div class="role-card-answers"><span class="answer-pill">2000</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ระบุค่าคำตอบที่ถูกต้องแล้ว</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.2 การรับรู้ความเสี่ยง</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">3.2 การรับประทานเกลือมากทำให้เสี่ยงเป็นโรคความดันโลหิตสูง</div>
+          <div class="role-card-answers"><span class="answer-pill">เฉยๆ</span><span class="answer-pill">เห็นด้วย</span><span class="answer-pill">+3 คำตอบ</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.9 ความมั่นใจในการปรับพฤติกรรม</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question is-empty" style="color:#94a3b8;background:#f8fafc;border-color:#e2e8f0;">ยังไม่ได้กำหนดคำถาม</div>
+          <div class="role-card-answers"></div>
+          <div class="role-card-foot is-incomplete"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีข้อมูลคำตอบ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="overview-group" style="--grp-c:var(--environment)">
+      <div class="group-title">
+        <span class="group-title-icon"><i class="fa-solid fa-tree-city"></i></span>
+        ส่วนที่ 3: ปัจจัยสิ่งแวดล้อม (คะแนนเต็ม 8)
+        <span class="count-chip">3/7</span>
+      </div>
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.12 แรงกระตุ้นให้ปรับพฤติกรรม</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">3.12 คนใกล้ชิดของท่านป่วยเป็นโรค NCDs ทำให้ท่านปรับพฤติกรรมการบริโภค</div>
+          <div class="role-card-answers"><span class="answer-pill">เฉยๆ</span><span class="answer-pill">เห็นด้วย</span><span class="answer-pill">+3 คำตอบ</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 5/5 คำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.15 การรับสื่อรณรงค์ลดโซเดียม</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question is-empty" style="color:#94a3b8;background:#f8fafc;border-color:#e2e8f0;">ยังไม่ได้กำหนดคำถาม</div>
+          <div class="role-card-answers"></div>
+          <div class="role-card-foot is-incomplete"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีข้อมูลคำตอบ</div>
+        </div>
+        <div class="role-card">
+          <div class="role-card-top"><span class="role-card-title">3.16 สภาพแวดล้อมทางกายภาพ</span><span class="role-card-max">เต็ม 2</span></div>
+          <div class="role-card-question">3.16 ร้านอาหารหรือร้านค้าใกล้บ้านมีเมนู/สินค้าลดโซเดียมให้เลือก</div>
+          <div class="role-card-answers"><span class="answer-pill">ใช่</span><span class="answer-pill">ไม่ใช่</span></div>
+          <div class="role-card-foot is-complete"><i class="fa-solid fa-circle-check"></i> ตั้งคะแนนแล้ว 2/2 คำตอบ</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===================== EDITOR VIEW ===================== -->
+  <div id="view-editor" style="display:none;">
+
+    <div class="category-banner">
+      <div class="category-banner-icon"><i class="fa-solid fa-brain"></i></div>
+      <div>
+        <div class="category-banner-title">หมวดหมู่: ส่วนที่ 3: การรับรู้ส่วนบุคคล (Individual belief, คะแนนเต็ม 10)</div>
+        <div class="category-banner-desc">ความเข้าใจเรื่องปริมาณโซเดียมและผลกระทบต่อสุขภาพ</div>
+      </div>
+      <div class="category-banner-chip">9 คำถาม</div>
+    </div>
+
+    <div class="editor-toolbar">
+      <a class="back-link"><i class="fa-solid fa-arrow-left"></i> ดูภาพรวมทุกหมวด</a>
+      <button class="save-btn"><i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนนหมวดนี้ทั้งหมด (9 ข้อ)</button>
+    </div>
+
+    <!-- role 1: knowledge type -->
+    <div class="role-editor-card">
+      <div class="role-editor-summary">
+        <span class="role-editor-title">3.1 ความรู้: ปริมาณโซเดียมที่แนะนำต่อวัน (Knowledge)</span>
+        <span class="role-editor-question-tag">3.1 ปริมาณโซเดียมในอาหารที่แนะนำต่อวันคือเท่าใด (มก.)</span>
+      </div>
+      <div class="role-editor-body">
+        <div class="step-block">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-heading">เลือกคำถามที่จะใช้สำหรับข้อนี้</div>
+            <div class="question-radio-row is-checked">
+              <input type="radio" checked>
+              <label>3.1 ปริมาณโซเดียมในอาหารที่แนะนำต่อวันคือเท่าใด (มก.)</label>
+            </div>
+            <div class="question-radio-row">
+              <input type="radio">
+              <label style="color:#94a3b8;">ยังไม่กำหนดคำถามสำหรับข้อนี้</label>
+            </div>
+          </div>
+        </div>
+        <hr class="step-divider">
+        <div class="step-block">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-heading">ระบุค่าคำตอบที่ถือว่า "ถูกต้อง"</div>
+            <div class="knowledge-box">
+              <label><i class="fa-solid fa-circle-check"></i> ค่าคำตอบที่ถูกต้อง (คั่นด้วยจุลภาคถ้ามีหลายค่า)</label>
+              <input type="text" value="2000">
+              <div class="hint">คำตอบจะได้คะแนนเต็ม (2) เมื่อตัวเลขตัวแรกในคำตอบตรงกับค่าที่ระบุนี้พอดี (เช่น "2000" หรือ "2000-2500" ได้คะแนนเต็ม แต่ "1900" หรือ "2500" ได้ 0 คะแนน)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- role 2: per_answer type -->
+    <div class="role-editor-card">
+      <div class="role-editor-summary">
+        <span class="role-editor-title">3.2 การรับรู้ความเสี่ยง (Perceived susceptibility)</span>
+        <span class="role-editor-question-tag">3.2 การรับประทานเกลือมากทำให้เสี่ยงเป็นโรคความดันโลหิตสูง</span>
+      </div>
+      <div class="role-editor-body">
+        <div class="step-block">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-heading">เลือกคำถามที่จะใช้สำหรับข้อนี้</div>
+            <div class="question-radio-row is-checked">
+              <input type="radio" checked>
+              <label>3.2 การรับประทานเกลือมากทำให้เสี่ยงเป็นโรคความดันโลหิตสูง</label>
+            </div>
+          </div>
+        </div>
+        <hr class="step-divider">
+        <div class="step-block">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-heading">กำหนดคะแนนของแต่ละคำตอบจริงที่มีอยู่ (เต็ม 2 คะแนน)</div>
+            <div class="score-table">
+              <div class="score-row head"><span>คำตอบ</span><span>คะแนนดิบ</span><span>คะแนนแปลง</span></div>
+              <div class="score-row"><span class="answer-name">เฉยๆ</span>
+                <select><option>1</option></select>
+                <select><option selected>1</option></select>
+              </div>
+              <div class="score-row"><span class="answer-name">เห็นด้วย <span class="suggested-tag">แนะนำ</span></span>
+                <select><option selected>2</option></select>
+                <select><option selected>2</option></select>
+              </div>
+              <div class="score-row"><span class="answer-name">เห็นด้วยอย่างยิ่ง</span>
+                <select><option selected>3</option></select>
+                <select><option selected>2</option></select>
+              </div>
+              <div class="score-row"><span class="answer-name">ไม่เห็นด้วย</span>
+                <select><option selected>0</option></select>
+                <select><option selected>0</option></select>
+              </div>
+              <div class="score-row"><span class="answer-name">ไม่เห็นด้วยอย่างยิ่ง</span>
+                <select><option selected>0</option></select>
+                <select><option selected>0</option></select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- role 3: unconfigured -->
+    <div class="role-editor-card">
+      <div class="role-editor-summary">
+        <span class="role-editor-title">3.9 ความมั่นใจในการปรับพฤติกรรม (Self-Efficacy)</span>
+        <span class="role-editor-question-tag" style="color:#94a3b8;background:#f8fafc;border-color:#e2e8f0;">ยังไม่ได้กำหนดคำถาม</span>
+      </div>
+      <div class="role-editor-body">
+        <div class="step-block">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-heading">เลือกคำถามที่จะใช้สำหรับข้อนี้</div>
+            <div class="step-hint">คำถามในแบบฟอร์มปีงบประมาณ 2569 ที่ตรงกับข้อนี้โดยทั่วไปคือ "3.9 มั่นใจว่าปรับเปลี่ยนพฤติกรรมได้" (ใช้เทียบเพื่อช่วยเลือกเท่านั้น)</div>
+            <div class="question-radio-row is-checked">
+              <input type="radio" checked>
+              <label style="color:#94a3b8;">ยังไม่กำหนดคำถามสำหรับข้อนี้</label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-toolbar">
+      <a class="back-link"><i class="fa-solid fa-arrow-left"></i> ดูภาพรวมทุกหมวด</a>
+      <button class="save-btn"><i class="fa-solid fa-floppy-disk"></i> บันทึกคะแนนหมวดนี้ทั้งหมด (9 ข้อ)</button>
+    </div>
+
+  </div>
+
+  <div class="notes">
+    <h3>สิ่งที่ปรับจากหน้าเดิม</h3>
+    <ul>
+      <li><strong>สีหลักของหน้าเปลี่ยนจากเขียวอมฟ้า (teal) เป็นสีม่วงคราม (indigo #4f46e5)</strong> ให้ตรงกับสีหลักของแผงแอดมิน (ตัวอย่างเช่น แถบสีข้าง page-header, ปุ่มเมนู sidebar) หมวดหมู่ทั้ง 4 ยังคงใช้สีเดิม (เขียว/ฟ้า/ม่วง/ส้ม) เพราะช่วยแยกหมวดได้ดีอยู่แล้ว</li>
+      <li><strong>เพิ่มแถบขั้นตอน (ภาพรวม → เลือกหมวดหมู่ → ตั้งค่าคำถาม/คะแนน)</strong> ด้านบนสุด เพื่อให้เห็นตำแหน่งปัจจุบันในกระบวนการตั้งค่า แทนที่จะมีแค่ลิงก์ข้อความเล็กๆ "ดูภาพรวมทุกหมวด"</li>
+      <li><strong>เปลี่ยนแถบความคืบหน้าจากตัวหนังสือเป็นวงแหวน % + ตัวเลข</strong> เพื่อให้เห็นสัดส่วนได้เร็วขึ้นกว่าการอ่านข้อความ "ตั้งค่าแล้ว 18/26 รายการ"</li>
+      <li><strong>การ์ดหมวดหมู่ (CAT-01..04):</strong> ตัดแถบความคืบหน้า (progress bar) ใต้คำอธิบายออกตามที่แจ้ง เหลือเพียงตัวเลขสัดส่วน (เช่น "4/6 ข้อ") ที่มุมล่างของการ์ดเหมือนหน้าเดิม</li>
+      <li><strong>มุมมองภาพรวม:</strong> เปลี่ยนจากการ์ดแถวยาวแนวนอน (บีบข้อความคำถาม/คำตอบ/สถานะให้แคบ) เป็นตารางการ์ดแนวตั้ง 2 คอลัมน์ พร้อมแถบสีด้านซ้ายบอกหมวด อ่านง่ายและสแกนสถานะได้เร็วขึ้น</li>
+      <li><strong>มุมมองแก้ไขคะแนน:</strong> แบ่งแต่ละคำถามเป็น 2 ขั้นตอนชัดเจน — ① เลือกคำถาม ② กำหนดคะแนน — ด้วยเลขวงกลมกำกับ แทนการซ้อนกล่องคะแนนไว้ใต้ตัวเลือกแบบเยื้อง 26px ที่ไม่มีจุดอ้างอิงชัดเจน</li>
+      <li>ปรับรัศมีขอบ (border-radius) ให้เป็นชุดเดียวกันทั้งหน้า (16px สำหรับการ์ดหลัก, 11px สำหรับการ์ดย่อย) จากเดิมที่มีหลายค่าปนกัน (18/16/14/12px)</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+  function setView(btn, view) {
+    document.querySelectorAll('.view-switch button').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    document.getElementById('view-overview').style.display = view === 'overview' ? '' : 'none';
+    document.getElementById('view-editor').style.display = view === 'editor' ? '' : 'none';
+    var step2 = document.getElementById('step2'), step3 = document.getElementById('step3');
+    if (view === 'editor') {
+      step2.classList.remove('is-current'); step2.classList.add('is-done');
+      step2.querySelector('.flow-step-num').innerHTML = '<i class="fa-solid fa-check" style="font-size:.65rem;"></i>';
+      step3.classList.add('is-current');
+    } else {
+      step3.classList.remove('is-current');
+      step2.classList.remove('is-done'); step2.classList.add('is-current');
+      step2.querySelector('.flow-step-num').textContent = '2';
+    }
+  }
+</script>
+
+</body>
+</html>

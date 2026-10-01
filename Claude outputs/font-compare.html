@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>เปรียบเทียบฟอนต์ - หน้า Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700;800&family=Kanit:wght@400;500;600;700;800&family=Prompt:wght@400;500;600;700;800&family=Mitr:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #7c3aed;
+    --accent-2: #ec4899;
+    --ink: #1e293b;
+    --sub: #64748b;
+    --line: #e2e8f0;
+    --bg: #f4f5fa;
+    --card: #ffffff;
+    --good: #16a34a;
+    --good-bg: #ecfdf3;
+    --warn: #b45309;
+    --warn-bg: #fffbeb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    padding: 28px 20px 60px;
+    font-family: system-ui, sans-serif;
+  }
+  .page-intro {
+    max-width: 1400px;
+    margin: 0 auto 24px;
+  }
+  .page-intro h1 {
+    font-size: 1.3rem;
+    margin: 0 0 6px;
+  }
+  .page-intro p {
+    margin: 0;
+    color: var(--sub);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 22px;
+  }
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--line);
+    border-radius: 18px;
+    padding: 22px 22px 26px;
+    box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+  }
+  .card-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .card-label .name {
+    font-family: system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .card-label .tag {
+    font-family: system-ui, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 10%, #fff);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, #fff);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  /* --- sample UI block, styled loosely after the admin panel --- */
+  .sample-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 3px;
+  }
+  .sample-subtitle {
+    font-size: 0.82rem;
+    color: var(--sub);
+    margin: 0 0 16px;
+  }
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    flex: 1;
+    background: #f8fafc;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .stat .stat-label {
+    font-size: 0.7rem;
+    color: var(--sub);
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .stat .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  th {
+    text-align: left;
+    color: var(--sub);
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  td {
+    padding: 9px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--ink);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .badge.good { color: var(--good); background: var(--good-bg); }
+  .badge.warn { color: var(--warn); background: var(--warn-bg); }
+  .badge::before {
+    content: "";
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 16px;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+</style>
+</head>
+<body>
+
+  <div class="page-intro">
+    <h1>เปรียบเทียบฟอนต์สำหรับหน้า Admin</h1>
+    <p>ตัวอย่างข้อความจริงจากหน้าจัดการผู้ใช้งาน จัดวางเหมือนกันทุกการ์ด ต่างกันแค่ฟอนต์ ลองดูแล้วเลือกอันที่ถูกใจแจ้งกลับมาได้เลยครับ (การ์ดแรก "Sarabun" คือฟอนต์เดิมที่ใช้อยู่บางจุดตอนนี้ ไว้เทียบ)</p>
+  </div>
+
+  <div class="grid">
+
+    <div class="card" style="font-family: 'Sarabun', sans-serif;">
+      <div class="card-label"><span class="name">Sarabun</span><span class="tag">ฟอนต์เดิม (บางจุด)</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+    <div class="card" style="font-family: 'IBM Plex Sans Thai', sans-serif;">
+      <div class="card-label"><span class="name">IBM Plex Sans Thai</span><span class="tag">ที่ทำไปแล้ว</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+    <div class="card" style="font-family: 'Noto Sans Thai', sans-serif;">
+      <div class="card-label"><span class="name">Noto Sans Thai</span><span class="tag">ตัวเลือก</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+    <div class="card" style="font-family: 'Kanit', sans-serif;">
+      <div class="card-label"><span class="name">Kanit</span><span class="tag">ตัวเลือก</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+    <div class="card" style="font-family: 'Prompt', sans-serif;">
+      <div class="card-label"><span class="name">Prompt</span><span class="tag">ตัวเลือก</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+    <div class="card" style="font-family: 'Mitr', sans-serif;">
+      <div class="card-label"><span class="name">Mitr</span><span class="tag">ตัวเลือก</span></div>
+      <div class="sample-title">จัดการผู้ใช้งาน</div>
+      <div class="sample-subtitle">รายชื่อผู้ใช้งานทั้งหมดในระบบ เขตสุขภาพที่ 10</div>
+      <div class="stat-row">
+        <div class="stat"><div class="stat-label">ผู้ใช้งานทั้งหมด</div><div class="stat-value">128</div></div>
+        <div class="stat"><div class="stat-label">ใช้งานอยู่</div><div class="stat-value">104</div></div>
+        <div class="stat"><div class="stat-label">ระงับใช้งาน</div><div class="stat-value">24</div></div>
+      </div>
+      <table>
+        <tr><th>ชื่อ-นามสกุล</th><th>หน่วยงาน</th><th>สถานะ</th></tr>
+        <tr><td>นายสมชาย ใจดี</td><td>สสจ.อุบลราชธานี</td><td><span class="badge good">ใช้งาน</span></td></tr>
+        <tr><td>นางสาวปิยะดา รักเรียน</td><td>รพ.สต.บ้านนาโพธิ์</td><td><span class="badge warn">รอตรวจสอบ</span></td></tr>
+      </table>
+      <div style="margin-top:14px;"><span class="btn">+ เพิ่มผู้ใช้งาน</span></div>
+    </div>
+
+  </div>
+
+</body>
+</html>

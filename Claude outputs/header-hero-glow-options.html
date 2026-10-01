@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ตัวเลือกความต่อเนื่องของสี (แนวฟุ้ง/เรืองแสง)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Itim&family=Sarabun:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --pink-a: #d81e4a;
+    --pink-b: #f0527f;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --page-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --select-green: #16a34a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page-bg); font-family: 'Sarabun', sans-serif; color: var(--ink); }
+
+  .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: #ffffff; border-bottom: 1px solid #e2e8f0;
+    padding: 16px 28px; display: flex; flex-direction: column; gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .topbar h1 { margin: 0; font-size: 20px; font-weight: 800; }
+  .topbar p { margin: 0; font-size: 13px; color: var(--muted); }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toc a {
+    text-decoration: none; font-size: 12.5px; font-weight: 600; color: var(--ink);
+    background: #f1f5f9; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 999px;
+  }
+  .toc a:hover { background: #e2e8f0; }
+  .status { font-size: 12.5px; font-weight: 700; color: var(--select-green); min-height: 16px; }
+
+  main { padding: 28px; display: flex; flex-direction: column; gap: 20px; max-width: 1180px; margin: 0 auto; }
+
+  .option {
+    background: var(--card-bg); border-radius: 20px; padding: 26px 30px 30px;
+    border: 2px solid transparent; box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease; scroll-margin-top: 130px;
+  }
+  .option.selected { border-color: var(--select-green); box-shadow: 0 4px 20px rgba(22,163,74,0.18); }
+  .option-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .option-head h2 { margin: 0 0 4px; font-size: 19px; font-weight: 800; }
+  .option-head p { margin: 0; font-size: 13px; color: var(--muted); max-width: 660px; }
+  .pick-btn {
+    flex-shrink: 0; border: 1.5px solid #cbd5e1; background: #ffffff; color: var(--ink);
+    font-family: 'Sarabun', sans-serif; font-size: 13px; font-weight: 700; padding: 9px 18px;
+    border-radius: 999px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .pick-btn:hover { border-color: var(--select-green); color: var(--select-green); }
+  .option.selected .pick-btn { background: var(--select-green); border-color: var(--select-green); color: #ffffff; }
+
+  .examples { display: flex; flex-direction: column; gap: 22px; }
+  .example-wrap {
+    position: relative; border-radius: 16px; overflow: hidden;
+    box-shadow: 0 10px 24px -12px rgba(0,0,0,0.4);
+  }
+
+  .navbar {
+    width: 100%; height: 58px; box-sizing: border-box; padding: 0 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(90deg, var(--pink-a) 0%, var(--pink-b) 100%);
+    position: relative; z-index: 3;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-logo {
+    width: 34px; height: 34px; min-width: 34px; border-radius: 50%; background: #ffffff;
+    display: flex; align-items: center; justify-content: center; color: #e11d48; font-size: 14px;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+  .brand-text b { font-family: 'Itim', sans-serif; font-weight: 400; font-size: 12.5px; color: #ffffff; }
+  .brand-text small { font-family: 'Itim', sans-serif; font-size: 7.5px; letter-spacing: 1px; color: rgba(255,255,255,0.85); }
+  .navlinks { display: flex; align-items: center; gap: 6px; }
+  .navlinks span {
+    font-family: 'Itim', 'Sarabun', sans-serif; font-size: 11.5px; padding: 6px 11px;
+    border-radius: 999px; color: rgba(255,255,255,0.9); display: flex; align-items: center; gap: 5px;
+  }
+  .navlinks span.active { background: #ffffff; color: #e11d48; font-weight: 600; }
+  .navlinks span.cta { margin-left: 6px; background: #ffffff; color: #e11d48; font-weight: 600; }
+
+  .hero {
+    padding: 18px 22px 22px; display: flex; align-items: center; gap: 14px;
+    position: relative; z-index: 3;
+  }
+  .hero-icon {
+    width: 46px; height: 46px; min-width: 46px; border-radius: 14px;
+    background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center;
+    color: #ffffff; font-size: 19px;
+  }
+  .hero-text h3 { margin: 0; font-size: 18px; font-weight: 800; color: #ffffff; }
+  .hero-text p { margin: 2px 0 0; font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.9); }
+
+  /* Option E: soft pink glow bleeding from the header seam into the hero */
+  .glow-blob {
+    position: absolute; left: 50%; top: 58px; width: 460px; height: 190px;
+    transform: translate(-50%, -46%);
+    background: radial-gradient(circle, rgba(240,82,127,0.85) 0%, rgba(240,82,127,0.55) 32%, rgba(240,82,127,0) 68%);
+    filter: blur(26px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* Option G: glowing light strip at the seam */
+  .glow-cap-wrap { position: relative; height: 0; z-index: 3; }
+  .glow-cap {
+    position: absolute; left: 6%; right: 6%; top: -2px; height: 3px; border-radius: 3px;
+    background: linear-gradient(90deg, var(--pink-a), var(--pink-b));
+    box-shadow: 0 0 22px 7px rgba(240,82,127,0.6), 0 0 54px 16px rgba(216,30,74,0.28);
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>ชุดที่ 2: ปรับหัวข้อให้ "ฟุ้ง" เข้ากับแถบเมนู</h1>
+  <p>ต่อจากชุดแรก คราวนี้ลองแนวฟุ้ง/เรืองแสง ให้สีชมพูจากแถบเมนูซึมเข้าไปในหัวข้อของแต่ละหน้าแบบนุ่มๆ ไม่มีเส้นแบ่งชัด แทนที่จะเป็นไล่สีเป็นเส้นตรง กด "เลือกแบบนี้" ที่ชอบได้เลยครับ</p>
+  <div class="toc">
+    <a href="#optionE">Option E — แสงฟุ้งจากรอยต่อ</a>
+    <a href="#optionF">Option F — หมอกสีผสาน</a>
+    <a href="#optionG">Option G — ขอบเรืองแสง</a>
+  </div>
+  <div class="status" id="status"></div>
+</div>
+
+<main id="options"></main>
+
+<script>
+const PAGES = [
+  { title: 'แดชบอร์ดภาพรวมเขตสุขภาพที่ 10', subtitle: 'ระบบติดตามและสรุปผลข้อมูลสุขภาพ', accent: '#0e7490', heroA: '#0891b2', heroB: '#155e75', icon: 'fa-chart-line' },
+  { title: 'การประเมินความตระหนักรู้', subtitle: 'ผลการประเมินและระดับความรู้พฤติกรรมสุขภาพ', accent: '#9333ea', heroA: '#8b5cf6', heroB: '#c026d3', icon: 'fa-brain' },
+  { title: 'แบบรายงานลดการบริโภคเกลือ', subtitle: 'ข้อมูลการบันทึกรายงานและการประเมินผลลดเค็ม', accent: '#7c3aed', heroA: '#6366f1', heroB: '#8b5cf6', icon: 'fa-file-contract' },
+];
+
+const NAVBAR_HTML = `
+  <div class="brand">
+    <div class="brand-logo">S</div>
+    <div class="brand-text">
+      <b>ระบบเฝ้าระวังฯ เขตสุขภาพที่ 10</b>
+      <small>SMART SALT &amp; SODIUM MONITOR</small>
+    </div>
+  </div>
+  <div class="navlinks">
+    <span class="active"><i class="fa-solid fa-chart-line"></i>หน้าหลัก</span>
+    <span><i class="fa-solid fa-brain"></i>ความตระหนักรู้</span>
+    <span><i class="fa-solid fa-bowl-food"></i>เมนูลดโซเดียม</span>
+    <span class="cta"><i class="fa-solid fa-user-shield"></i>สำหรับเจ้าหน้าที่</span>
+  </div>
+`;
+
+function heroInner(p) {
+  return `
+    <div class="hero-icon"><i class="fa-solid ${p.icon}"></i></div>
+    <div class="hero-text">
+      <h3>${p.title}</h3>
+      <p>${p.subtitle}</p>
+    </div>
+  `;
+}
+
+const OPTIONS = [
+  {
+    id: 'optionE',
+    name: 'Option E — แสงฟุ้งจากรอยต่อ',
+    desc: 'วางกลุ่มแสงสีชมพูที่เบลอฟุ้ง (blur) ไว้ตรงรอยต่อระหว่างแถบเมนูกับหัวข้อ ให้สีชมพูซึมกระจายลงไปคลุมส่วนบนของหัวข้อ ก่อนจางหายเข้ากับสีเดิมของหน้านั้นๆ เหมือนแสงไฟส่องลงมา',
+    build(p) {
+      const heroBg = `linear-gradient(120deg, ${p.heroA} 0%, ${p.accent} 55%, ${p.heroB} 100%)`;
+      return `
+        <div class="example-wrap">
+          <div class="navbar">${NAVBAR_HTML}</div>
+          <div class="glow-blob"></div>
+          <div class="hero" style="background:${heroBg}">${heroInner(p)}</div>
+        </div>
+      `;
+    }
+  },
+  {
+    id: 'optionF',
+    name: 'Option F — หมอกสีผสาน',
+    desc: 'ผสานสีชมพูจากแถบเมนูเข้ากับสีของหัวข้อด้วยการซ้อนไล่สีแบบหมอก (background-blend-mode) แทนการไล่สีเป็นเส้นตรง ทำให้ช่วงบนของหัวข้อมีสีชมพูจางๆ ปนอยู่แบบนุ่มนวล แล้วค่อยๆ กลืนเป็นสีประจำหน้าด้านล่าง',
+    build(p) {
+      return `
+        <div class="example-wrap">
+          <div class="navbar">${NAVBAR_HTML}</div>
+          <div class="hero" style="
+            background-image: linear-gradient(180deg, var(--pink-b) 0%, rgba(240,82,127,0) 60%), linear-gradient(120deg, ${p.heroA} 0%, ${p.accent} 55%, ${p.heroB} 100%);
+            background-blend-mode: soft-light, normal;
+          ">${heroInner(p)}</div>
+        </div>
+      `;
+    }
+  },
+  {
+    id: 'optionG',
+    name: 'Option G — ขอบเรืองแสง',
+    desc: 'เส้นบางสีชมพูตรงรอยต่อ เปลี่ยนจากเส้นทึบธรรมดาให้เป็นเส้นเรืองแสง (glow) นุ่มๆ แทน ให้ความรู้สึกเหมือนแสงจากแถบเมนูส่องลงมาเป็นจุดเริ่มของหัวข้อ โดยตัวหัวข้อเองยังคงสีเดิมของหน้านั้นไว้ทั้งหมด',
+    build(p) {
+      const heroBg = `linear-gradient(120deg, ${p.heroA} 0%, ${p.accent} 55%, ${p.heroB} 100%)`;
+      return `
+        <div class="example-wrap">
+          <div class="navbar">${NAVBAR_HTML}</div>
+          <div class="glow-cap-wrap"><div class="glow-cap"></div></div>
+          <div class="hero" style="background:${heroBg};padding-top:22px">${heroInner(p)}</div>
+        </div>
+      `;
+    }
+  },
+];
+
+const root = document.getElementById('options');
+OPTIONS.forEach((opt) => {
+  const section = document.createElement('section');
+  section.className = 'option';
+  section.id = opt.id;
+  const examplesHtml = PAGES.map((p) => `<div class="example">${opt.build(p)}</div>`).join('');
+  section.innerHTML = `
+    <div class="option-head">
+      <div>
+        <h2>${opt.name}</h2>
+        <p>${opt.desc}</p>
+      </div>
+      <button class="pick-btn" type="button"><i class="fa-regular fa-circle-check"></i>เลือกแบบนี้</button>
+    </div>
+    <div class="examples">${examplesHtml}</div>
+  `;
+  root.appendChild(section);
+
+  section.querySelector('.pick-btn').addEventListener('click', () => {
+    document.querySelectorAll('.option').forEach((s) => s.classList.remove('selected'));
+    section.classList.add('selected');
+    document.getElementById('status').textContent = `เลือกไว้: ${opt.name}`;
+  });
+});
+</script>
+
+</body>
+</html>
