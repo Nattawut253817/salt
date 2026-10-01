@@ -18,6 +18,7 @@ use App\Models\FiscalYear;
 use App\Models\AwarenessPassSetting;
 use App\Services\AwarenessPassResolver;
 use App\Services\AwarenessScoreCalculator;
+use App\Support\DbCompat;
 
 class MainController extends Controller
 {
@@ -823,11 +824,42 @@ class MainController extends Controller
         // reducedSodiumProducts()/mapData above. leftJoin (not join) keeps
         // rows whose own province_name is set even when the user has no
         // matching province row.
-        $effectiveProductProvince = "COALESCE(NULLIF(reduced_sodium_products.province_name, ''), provinces.province_name)";
+        $effectiveProductProvince = "COALESCE(NULLIF(reduced_sodium_products.province_name, ''), province.province_name)";
         $productCountQuery = \App\Models\ReducedSodiumProduct::leftJoin('users', 'reduced_sodium_products.user_id', '=', 'users.id')
-            ->leftJoin('provinces', function($join) {
-    $join->on(DB::raw('users."Province_id"::text'), '=', DB::raw('provinces.province_id::text'));
-});
+            ->leftJoin('province', function ($join) {
+                // Table name: the real table is "province" (singular) -
+                // that's what App\Models\Province::$table points at,
+                // and the only reason the rest of this app's province
+                // lookups (dropdowns, the map, etc.) work is that they
+                // all go through that model rather than a raw table
+                // name. This query bypassed the model and hardcoded
+                // "provinces" (plural, matching the create_provinces_
+                // table migration's own name, but not the table that
+                // actually exists) - on this local MySQL database that
+                // literal join failed outright with "Base table or
+                // view not found", which on render.com would show up
+                // the same way or as missing data, depending on
+                // whether its database has the same table under the
+                // singular or plural name.
+                //
+                // Column cast: users.Province_id is a VARCHAR column
+                // while province.province_id is an INTEGER primary key
+                // (see their migrations), so comparing them needs a
+                // cast on PostgreSQL (which has no implicit
+                // varchar<->integer comparison) but not on MySQL/
+                // MariaDB (which coerces the types implicitly). This
+                // used to hardcode the Postgres-only `::text` cast +
+                // double-quoted column name, which is invalid syntax
+                // under MySQL and would break this join a second way
+                // even once the table name above is corrected - see
+                // App\Support\DbCompat::castTextExpr().
+                $driver = DB::connection()->getDriverName();
+                $join->on(
+                    DB::raw(DbCompat::castTextExpr($driver, 'users', 'Province_id')),
+                    '=',
+                    DB::raw(DbCompat::castTextExpr($driver, 'province', 'province_id'))
+                );
+            });
 
         // This chart had no fiscal-year filtering at all - changing the
         // ปีงบประมาณ selector above never touched it, unlike every other
@@ -2434,7 +2466,7 @@ class MainController extends Controller
         $legacyYearValues = (clone $dropdownQuery)->where(function ($q) {
                 $q->whereNull('fiscal_year')->orWhere('fiscal_year', 0);
             })
-            ->selectRaw('YEAR(update_date) as year')
+            ->selectRaw(DbCompat::yearExpr(DB::connection()->getDriverName(), 'update_date') . ' as year')
             ->distinct()
             ->pluck('year')
             ->filter()
