@@ -35,4 +35,4 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 80
-CMD php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=80
+CMD php artisan config:clear && php artisan cache:clear && php artisan config:cache && php artisan route:cache && php artisan serve --host=0.0.0.0 --port=80
