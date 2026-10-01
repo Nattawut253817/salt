@@ -823,9 +823,9 @@ class MainController extends Controller
         // reducedSodiumProducts()/mapData above. leftJoin (not join) keeps
         // rows whose own province_name is set even when the user has no
         // matching province row.
-        $effectiveProductProvince = "COALESCE(NULLIF(reduced_sodium_products.province_name, ''), province.province_name)";
+        $effectiveProductProvince = "COALESCE(NULLIF(reduced_sodium_products.province_name, ''), provinces.province_name)";
         $productCountQuery = \App\Models\ReducedSodiumProduct::leftJoin('users', 'reduced_sodium_products.user_id', '=', 'users.id')
-            ->leftJoin('province', 'users.Province_id', '=', 'province.province_id');
+            ->leftJoin('provinces', 'users.Province_id', '=', 'provinces.province_id');
 
         // This chart had no fiscal-year filtering at all - changing the
         // ปีงบประมาณ selector above never touched it, unlike every other
