@@ -9,20 +9,17 @@ return new class extends Migration {
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('subdistrict_hospital', function (Blueprint $table) {
-            $table->string('cup_code')->nullable()->after('subdistrict_code')->comment('รหัสแม่ข่าย(CUP)');
-            $table->string('affiliation')->nullable()->after('cup_code')->comment('สังกัด_ปัจจุบัน');
-        });
-    }
+{
+    Schema::table('subdistrict_hospitals', function (Blueprint $table) { // เติม s ตรงนี้
+        $table->string('cup_code')->nullable();
+        $table->string('affiliation')->nullable();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('subdistrict_hospital', function (Blueprint $table) {
-            $table->dropColumn(['cup_code', 'affiliation']);
-        });
-    }
+public function down(): void
+{
+    Schema::table('subdistrict_hospitals', function (Blueprint $table) { // เติม s ตรงนี้
+        $table->dropColumn(['cup_code', 'affiliation']);
+    });
+}
 };
