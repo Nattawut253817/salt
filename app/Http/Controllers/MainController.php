@@ -825,7 +825,9 @@ class MainController extends Controller
         // matching province row.
         $effectiveProductProvince = "COALESCE(NULLIF(reduced_sodium_products.province_name, ''), provinces.province_name)";
         $productCountQuery = \App\Models\ReducedSodiumProduct::leftJoin('users', 'reduced_sodium_products.user_id', '=', 'users.id')
-            ->leftJoin('provinces', 'users.Province_id', '=', 'provinces.province_id');
+            ->leftJoin('provinces', function($join) {
+    $join->on(DB::raw('users."Province_id"::text'), '=', DB::raw('provinces.province_id::text'));
+});
 
         // This chart had no fiscal-year filtering at all - changing the
         // ปีงบประมาณ selector above never touched it, unlike every other
