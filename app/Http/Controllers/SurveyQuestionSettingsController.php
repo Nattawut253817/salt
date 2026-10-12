@@ -82,8 +82,8 @@ class SurveyQuestionSettingsController extends Controller
         // change (see Cache::forget('scoring_distinct_answers:...') in
         // AwarenessAssessmentController::import()/deleteFiltered() and
         // SurveyQuestionSettingsController::resetQuestionMappings()) and
-        // also self-expires after 5 minutes as a backstop.
-        return Cache::remember("scoring_distinct_answers:{$selectedYear}", now()->addMinutes(5), function () use ($questions, $selectedYear) {
+        // also self-expires after 60 minutes as a backstop (was 5: the cold scan is ~26 JSON queries, ~1.6 s).
+        return Cache::remember("scoring_distinct_answers:{$selectedYear}", now()->addMinutes(60), function () use ($questions, $selectedYear) {
             $distinctAnswers = [];
             foreach ($questions as $q) {
                 $expr = "JSON_UNQUOTE(JSON_EXTRACT(survey_data, '$.{$q->question_key}'))";

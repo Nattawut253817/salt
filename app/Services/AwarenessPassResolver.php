@@ -6,6 +6,7 @@ use App\Models\AwarenessPassSetting;
 use App\Models\SodiumSurvey;
 use App\Models\SurveyYearMapping;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Single place that decides "is this respondent ตระหนักรู้/ผ่านเกณฑ์", per
@@ -60,39 +61,128 @@ class AwarenessPassResolver
      */
     public static function isPass(SodiumSurvey $row, array &$cache): ?bool
     {
-        $year = $row->fiscal_year;
+        return self::isPassData($row->fiscal_year, $row->survey_data ?? [], $cache);
+    }
 
-        if (self::methodFor($year) === AwarenessPassSetting::METHOD_SCORE) {
+    /**
+     * เหมือน isPass() แต่รับปีงบ + คำตอบ (survey_data ที่ถอด JSON แล้ว) ตรง ๆ
+     * ใช้กับงานที่ไล่ทั้งปีงบจากแถวดิบ - ไม่ต้องสร้างโมเดล Eloquent ต่อแถว
+     */
+    public static function isPassData($year, array $data, array &$cache): ?bool
+    {
+        // วิธีตั้งเกณฑ์ของปีนี้ - ถามฐานข้อมูลครั้งเดียวต่อปีต่อ $cache (เดิมถามใหม่ "ทุกแถว" = หลายหมื่น query ตอนไล่ทั้งปี)
+        if (!isset($cache['method'][$year])) {
+            $cache['method'][$year] = self::methodFor($year);
+        }
+
+        if ($cache['method'][$year] === AwarenessPassSetting::METHOD_SCORE) {
             if (!array_key_exists($year, $cache['score'] ?? [])) {
                 $cache['score'][$year] = new AwarenessScoreCalculator($year);
             }
-            $result = $cache['score'][$year]->compute($row);
+            $result = $cache['score'][$year]->computeFromData($data);
             return $result['is_pass'] ?? null;
         }
 
         if (!array_key_exists($year, $cache['questions'] ?? [])) {
-            $cache['questions'][$year] = [
-                SurveyYearMapping::criteriaMappingsFor($year, 'is_aware_health'),
-                SurveyYearMapping::criteriaMappingsFor($year, 'is_know_limit'),
-            ];
+            // [คำถาม => ค่าที่ถือว่าผ่าน] ของแต่ละเกณฑ์ - ถอด JSON ของ criteria_pass_values ครั้งเดียวที่นี่ ไม่ใช่ทุกแถว
+            $pairs = fn ($mappings) => $mappings->map(fn ($m) => [
+                $m->question_key,
+                !empty($m->criteria_pass_values) ? $m->criteria_pass_values : SurveyYearMapping::DEFAULT_CRITERIA_PASS_VALUES,
+            ])->all();
+            $aware = SurveyYearMapping::criteriaMappingsFor($year, 'is_aware_health');
+            $limit = SurveyYearMapping::criteriaMappingsFor($year, 'is_know_limit');
+            $cache['questions'][$year] = ($aware->isEmpty() || $limit->isEmpty())
+                ? null
+                : [$pairs($aware), $pairs($limit)];
         }
-        [$awareMappings, $limitMappings] = $cache['questions'][$year];
-        if ($awareMappings->isEmpty() || $limitMappings->isEmpty()) {
+        if ($cache['questions'][$year] === null) {
             return null;
         }
+        [$awarePairs, $limitPairs] = $cache['questions'][$year];
 
-        $data = $row->survey_data ?? [];
-        $passesRole = function ($mappings) use ($data) {
-            foreach ($mappings as $m) {
-                $values = !empty($m->criteria_pass_values) ? $m->criteria_pass_values : SurveyYearMapping::DEFAULT_CRITERIA_PASS_VALUES;
-                if (in_array($data[$m->question_key] ?? null, $values, true)) {
+        $passesRole = function (array $pairs) use ($data) {
+            foreach ($pairs as [$questionKey, $values]) {
+                if (in_array($data[$questionKey] ?? null, $values, true)) {
                     return true;
                 }
             }
             return false;
         };
 
-        return $passesRole($awareMappings) && $passesRole($limitMappings);
+        return $passesRole($awarePairs) && $passesRole($limitPairs);
+    }
+
+    /**
+     * ลายเซ็นของข้อมูล + การตั้งค่าของปีงบหนึ่ง (จำนวนแถว, id ล่าสุด, เวลาแก้ mapping/เกณฑ์ล่าสุด)
+     * ใช้เป็นส่วนหนึ่งของ cache key - นำเข้าข้อมูลใหม่หรือแก้เกณฑ์แล้ว key เปลี่ยนเอง
+     * จึงเก็บ cache ได้นานโดยไม่ต้องกลัวข้อมูลเก่า
+     */
+    public static function dataStamp($fiscalYear): string
+    {
+        $rows = SodiumSurvey::query()->where('fiscal_year', $fiscalYear)
+            ->selectRaw('COUNT(*) as c, MAX(id) as m')->first();
+
+        return md5(json_encode([
+            $fiscalYear,
+            SurveyYearMapping::where('fiscal_year', $fiscalYear)->max('updated_at'),
+            AwarenessPassSetting::max('updated_at'),
+            $rows->c ?? 0,
+            $rows->m ?? 0,
+        ]));
+    }
+
+    /**
+     * id ของผู้ตอบ "ผ่าน" และ "ไม่ผ่าน" ของปีงบหนึ่ง ตามวิธีที่ปีนั้นตั้งไว้ (แถวที่ยังตัดสินไม่ได้ไม่อยู่ในทั้งสองชุด)
+     * ใช้กรอง "ตระหนักรู้สุขภาพ" ในหน้ารายการ - เดิมไล่ทุกแถวใหม่ทุกครั้งที่กดกรอง ตอนนี้ไล่ครั้งเดียวแล้วแคช
+     * คีย์แคชเปลี่ยนเมื่อ: ตั้งค่าคำถาม/เกณฑ์เปลี่ยน, หรือจำนวนแถว/id ล่าสุดของปีนั้นเปลี่ยน (นำเข้า/ลบข้อมูล)
+     *
+     * @return array{pass: int[], fail: int[]}
+     */
+    public static function passIdSets($fiscalYear): array
+    {
+        $key = 'awareness_passids_v2:' . self::dataStamp($fiscalYear);
+
+        return Cache::remember($key, now()->addMinutes(60), function () use ($fiscalYear) {
+            $sets = ['pass' => [], 'fail' => []];
+            $scratch = [];
+            \Illuminate\Support\Facades\DB::table((new SodiumSurvey)->getTable())->where('fiscal_year', $fiscalYear)
+                ->select(['id', 'survey_data'])
+                ->chunkById(2000, function ($rows) use (&$sets, &$scratch, $fiscalYear) {
+                    foreach ($rows as $row) {
+                        $data = json_decode((string) $row->survey_data, true);
+                        $verdict = self::isPassData($fiscalYear, is_array($data) ? $data : [], $scratch);
+                        if ($verdict === true) {
+                            $sets['pass'][] = (int) $row->id;
+                        } elseif ($verdict === false) {
+                            $sets['fail'][] = (int) $row->id;
+                        }
+                    }
+                });
+
+            return $sets;
+        });
+    }
+
+    /**
+     * METHOD_SCORE pass/total for ONE fiscal year as [province][district] =>
+     * ['pass' => n, 'total' => n], cached for 60 minutes. The per-row PHP
+     * scoring is the slow part of every dashboard that needs a score-method
+     * year, so it runs once per year (not once per province/district/filter
+     * combination) and every caller folds the small grid instead. The key
+     * is shared with /awareness (MainController::awareness()) so both pages
+     * warm the same entry; it changes whenever the year's question mapping
+     * or any pass setting is saved. Returns [] when the score rubric is not
+     * fully configured yet ("pending").
+     */
+    public static function scoreGrid($fiscalYear): array
+    {
+        $calculator = new AwarenessScoreCalculator($fiscalYear);
+        if (!$calculator->isFullyConfigured()) {
+            return [];
+        }
+
+        // ตารางเดียวกับที่ /awareness ใช้ (คีย์แคชเดียวกัน) - โค้ดสแกนอยู่ที่ AwarenessYearGrid::scoreGrid() ที่เดียว
+        return AwarenessYearGrid::scoreGrid($fiscalYear, $calculator);
     }
 
     /**

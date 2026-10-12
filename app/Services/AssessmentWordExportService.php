@@ -219,6 +219,102 @@ class AssessmentWordExportService
         return $idx === false ? 0 : $idx + 1;
     }
 
+    // ---------------------------------------------------------------
+    // รูปภาพประกอบ (inline pictures) - ไฟล์เก็บใน word/media + relationship ต่อรูป
+    // ---------------------------------------------------------------
+
+    /** @var array<int,array{name:string,ext:string,binary:string}> รูปที่ต้องใส่ใน word/media ของเอกสารที่กำลังสร้าง */
+    private static array $media = [];
+    private static int $drawingId = 1;
+
+    /** กรอบรูปต่อ 1 ภาพ (twips): 3 รูปต่อแถวพอดีกับคอลัมน์ผลการดำเนินงาน (7080) */
+    private const IMG_BOX_W = 2150;
+    private const IMG_BOX_H = 1700;
+    private const EMU_PER_TWIP = 635;
+
+    /**
+     * Paragraph ที่มีรูปของข้อหนึ่ง (สูงสุด 3 รูป เรียงในบรรทัดเดียว) - ย่อให้พอดีกรอบโดยรักษาสัดส่วน
+     * คืนค่า '' ถ้าข้อนั้นไม่มีรูป
+     *
+     * @param \Illuminate\Support\Collection|array $images KidneyAssessmentImage ของข้อนั้น
+     */
+    private static function imagesParagraph($images): string
+    {
+        $runs = '';
+        $count = 0;
+        foreach ($images as $img) {
+            $run = self::imageRun($img);
+            if ($run === '') {
+                continue;
+            }
+            $runs .= ($count > 0 ? self::run('  ') : '') . $run;
+            $count++;
+        }
+
+        return $count > 0 ? self::paragraph($runs, null, 80) : '';
+    }
+
+    private static function imageRun($img): string
+    {
+        try {
+            $binary = \Illuminate\Support\Facades\Storage::disk('public')->get($img->path);
+        } catch (\Throwable $e) {
+            return '';
+        }
+        if (!$binary) {
+            return '';
+        }
+
+        $ext = strtolower(pathinfo($img->path, PATHINFO_EXTENSION));
+        if ($ext === 'jpeg') {
+            $ext = 'jpg';
+        }
+        if (!in_array($ext, ['jpg', 'png', 'gif'], true)) {
+            return ''; // Word ไม่รองรับ webp ฯลฯ - ไฟล์ที่ผ่านระบบอัปโหลดจะเป็น JPEG เสมอเมื่อมี GD
+        }
+
+        $w = (int) $img->width;
+        $h = (int) $img->height;
+        if ($w <= 0 || $h <= 0) {
+            $info = @getimagesizefromstring($binary);
+            $w = (int) ($info[0] ?? 0);
+            $h = (int) ($info[1] ?? 0);
+        }
+        if ($w <= 0 || $h <= 0) {
+            return '';
+        }
+
+        $scale = min(self::IMG_BOX_W / $w, self::IMG_BOX_H / $h);
+        $cx = max(1, (int) round($w * $scale * self::EMU_PER_TWIP));
+        $cy = max(1, (int) round($h * $scale * self::EMU_PER_TWIP));
+
+        $n = count(self::$media) + 1;
+        $name = 'image' . $n . '.' . $ext;
+        self::$media[$n] = ['name' => $name, 'ext' => $ext, 'binary' => $binary];
+        $rid = 'rIdImg' . $n;
+        $docId = self::$drawingId++;
+
+        return '<w:r><w:drawing>'
+            . '<wp:inline distT="0" distB="0" distL="0" distR="0">'
+            . '<wp:extent cx="' . $cx . '" cy="' . $cy . '"/>'
+            . '<wp:docPr id="' . $docId . '" name="Picture ' . $docId . '"/>'
+            . '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>'
+            . '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+            . '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            . '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+            . '<pic:nvPicPr><pic:cNvPr id="' . $docId . '" name="' . $name . '"/><pic:cNvPicPr/></pic:nvPicPr>'
+            . '<pic:blipFill><a:blip r:embed="' . $rid . '"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'
+            . '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="' . $cx . '" cy="' . $cy . '"/></a:xfrm>'
+            . '<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>'
+            . '</pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>';
+    }
+
+    private static function resetMedia(): void
+    {
+        self::$media = [];
+        self::$drawingId = 1;
+    }
+
     /** Renders freeform multi-line text (problems/suggestions/etc.) as one plain paragraph per line, exactly as the user typed it - no added bullets, no border. */
     private static function textLines(?string $text): string
     {
@@ -246,6 +342,9 @@ class AssessmentWordExportService
             . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
             . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
             . '<Default Extension="xml" ContentType="application/xml"/>'
+            . '<Default Extension="jpg" ContentType="image/jpeg"/>'
+            . '<Default Extension="png" ContentType="image/png"/>'
+            . '<Default Extension="gif" ContentType="image/gif"/>'
             . '<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>'
             . '<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>'
             . '<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>'
@@ -266,7 +365,17 @@ class AssessmentWordExportService
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
             . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
             . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            . self::imageRelationshipsXml()
             . '</Relationships>';
+    }
+
+    private static function imageRelationshipsXml(): string
+    {
+        $xml = '';
+        foreach (self::$media as $n => $m) {
+            $xml .= '<Relationship Id="rIdImg' . $n . '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/' . $m['name'] . '"/>';
+        }
+        return $xml;
     }
 
     private static function stylesXml(): string
@@ -293,7 +402,7 @@ class AssessmentWordExportService
     private static function documentXml(string $bodyXml): string
     {
         return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            . '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
             . '<w:body>' . $bodyXml
             . '<w:sectPr>'
             . '<w:pgSz w:w="' . self::PAGE_W . '" w:h="' . self::PAGE_H . '"/>'
@@ -315,7 +424,11 @@ class AssessmentWordExportService
         $zip->addFromString('word/_rels/document.xml.rels', self::documentRelsXml());
         $zip->addFromString('word/styles.xml', self::stylesXml());
         $zip->addFromString('word/document.xml', self::documentXml($bodyXml));
+        foreach (self::$media as $m) {
+            $zip->addFromString('word/media/' . $m['name'], $m['binary']);
+        }
         $zip->close();
+        self::resetMedia();
 
         $binary = file_get_contents($tempPath);
         @unlink($tempPath);
@@ -334,6 +447,9 @@ class AssessmentWordExportService
     public static function buildKidneyDocx($assessment, array $reporter): string
     {
         self::$font = self::FONT_KIDNEY;
+        self::resetMedia();
+        // รูปภาพประกอบของรายงานฉบับนี้ จัดกลุ่มตามข้อ ('1'..'7','8_1'..'8_3')
+        $kimgs = \App\Services\KidneyImageService::groupedFor($assessment->id);
 
         $unitName = self::resolveUnitName($assessment->user);
         $districtName = $assessment->user->district->district_name ?? '-';
@@ -397,7 +513,8 @@ class AssessmentWordExportService
                 $leftCell,
                 self::tableCell(
                     self::paragraph(self::run($label, true), null, 40)
-                    . self::paragraph(self::run(trim((string) ($assessment->$field ?? '')) ?: '-')),
+                    . self::paragraph(self::run(trim((string) ($assessment->$field ?? '')) ?: '-'))
+                    . self::imagesParagraph($kimgs[(string) $num] ?? []),
                     $wResult
                 ),
             ]);
@@ -413,11 +530,21 @@ class AssessmentWordExportService
             trim((string) ($assessment->category_8_3 ?? '')),
         ], fn ($v) => $v !== '')));
 
+        // รูปของข้อ 8.1-8.3: ใต้ข้อความรวม เรียงตามข้อ มีป้ายกำกับ "8.1" ฯลฯ กำกับก่อนแถวรูปของแต่ละข้อย่อย
+        $cat8Images = '';
+        foreach (['8_1' => '8.1', '8_2' => '8.2', '8_3' => '8.3'] as $key => $caption) {
+            $para = self::imagesParagraph($kimgs[$key] ?? []);
+            if ($para !== '') {
+                $cat8Images .= self::paragraph(self::run('รูปภาพประกอบ ' . $caption, true, false, 28), null, 40) . $para;
+            }
+        }
+
         $rows[] = self::tableRow([
             self::tableCell('', $wLabel, 'restart'),
             self::tableCell(
                 self::paragraph(self::run('การประเมินผลลัพธ์การดำเนินงาน', true), null, 40)
-                . self::paragraph(self::run($cat8Text !== '' ? $cat8Text : 'รอดำเนินการ')),
+                . self::paragraph(self::run($cat8Text !== '' ? $cat8Text : 'รอดำเนินการ'))
+                . $cat8Images,
                 $wResult
             ),
         ]);

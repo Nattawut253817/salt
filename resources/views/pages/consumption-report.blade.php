@@ -54,6 +54,180 @@
             min-height: 100vh;
         }
 
+        /* --- แถวบน: การ์ดอันดับรายจังหวัด (ซ้าย) + การ์ดตัวชี้วัด 2 ใบ (ขวา ซ้อนกัน) --- */
+        .cr-top-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.75fr) minmax(300px, 1fr);
+            gap: 18px;
+            align-items: stretch;
+            margin-bottom: 20px;
+        }
+
+        .cr-top-grid > .cr-card {
+            margin-bottom: 0;
+        }
+
+        .cr-side-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            min-width: 0;
+        }
+
+        @media (max-width: 1100px) {
+            .cr-top-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .cr-ind-card {
+            flex: 1 1 0;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 22px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            min-width: 0;
+        }
+
+        .cr-ind-icon {
+            flex: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: var(--ind-accent);
+            background: color-mix(in srgb, var(--ind-accent) 12%, white);
+            border: 1px solid color-mix(in srgb, var(--ind-accent) 28%, white);
+        }
+
+        .cr-ind-body {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .cr-ind-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .cr-ind-title {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #334155;
+            line-height: 1.3;
+        }
+
+        .cr-ind-pill {
+            flex: none;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #9a3412;
+            background: #ffedd5;
+            border: 1px solid #fed7aa;
+            border-radius: 999px;
+            padding: 1px 10px;
+            white-space: nowrap;
+        }
+
+        .cr-ind-row {
+            display: grid;
+            grid-template-columns: 22px minmax(0, 1.6fr) minmax(36px, 1fr) auto;
+            align-items: center;
+            gap: 9px;
+            padding: 4px 0;
+        }
+
+        .cr-ind-row.is-plain {
+            grid-template-columns: 22px minmax(0, 1fr) auto;
+        }
+
+        .cr-ind-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: #fff;
+            background: var(--ind-accent);
+        }
+
+        .cr-ind-name {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cr-ind-track {
+            height: 7px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .cr-ind-fill {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--ind-accent);
+        }
+
+        .cr-ind-value {
+            min-width: 38px;
+            text-align: right;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .cr-ind-value small {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .cr-ind-more {
+            margin-top: 2px;
+            padding-left: 31px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .cr-ind-empty {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .cr-ind-ok {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #16a34a;
+        }
+
+        .cr-ind-ok-sub {
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
         /* --- Chart + leaderboard split --- */
         .cr-chart-split {
             display: grid;
@@ -973,7 +1147,8 @@
             </a>
         </form>
 
-        {{-- ── ROW 3: PROGRESS CHART ── --}}
+        {{-- ── ROW 3: PROGRESS CHART + ตัวชี้วัด 2 การ์ด ── --}}
+        <div class="cr-top-grid">
         <div class="cr-card cr-card-chart">
             <div class="cr-card-header">
                 <div class="cr-card-header-main" style="--cr-accent:#6366f1;">
@@ -1007,6 +1182,57 @@
                 </div>
             </div>
         </div>
+            <div class="cr-side-stack">
+                {{-- ตัวชี้วัดที่ดำเนินการได้ดี: 3 ขั้นตอนที่มีหน่วยงานดำเนินการมากที่สุด --}}
+                <div class="cr-ind-card" style="--ind-accent:#16a34a;">
+                    <div class="cr-ind-icon"><i class="fas fa-award"></i></div>
+                    <div class="cr-ind-body">
+                        <div class="cr-ind-head"><div class="cr-ind-title">ตัวชี้วัดที่ดำเนินการได้ดี</div></div>
+                        @forelse($indicatorTop as $ind)
+                            <div class="cr-ind-row" title="ขั้นที่ {{ $ind['key'] }} {{ $ind['title'] }} - {{ $ind['done'] }} จาก {{ $ind['total'] }} หน่วยงาน">
+                                <span class="cr-ind-badge">{{ $ind['key'] }}</span>
+                                <span class="cr-ind-name">{{ $ind['title'] }}</span>
+                                <span class="cr-ind-track"><span class="cr-ind-fill" style="width: {{ max($ind['percent'], 4) }}%;"></span></span>
+                                <span class="cr-ind-value">{{ $ind['done'] }}<small>/{{ $ind['total'] }}</small></span>
+                            </div>
+                        @empty
+                            <div class="cr-ind-empty">{{ $indicatorTotal === 0 ? 'ยังไม่มีหน่วยงานตามตัวกรองที่เลือก' : 'ยังไม่มีหน่วยงานที่ดำเนินการขั้นตอนใดเลย' }}</div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- ตัวชี้วัดที่ต้องเร่งดำเนินการ: ขั้นตอนที่หน่วยงานทำน้อยกว่า 60% เรียงจากน้อยสุด --}}
+                <div class="cr-ind-card" style="--ind-accent:#ea580c;">
+                    <div class="cr-ind-icon"><i class="fas fa-flag"></i></div>
+                    <div class="cr-ind-body">
+                        <div class="cr-ind-head">
+                            <div class="cr-ind-title">ตัวชี้วัดที่ต้องเร่งดำเนินการ</div>
+                            @if($indicatorTotal > 0 && $indicatorPending->isNotEmpty())
+                                <span class="cr-ind-pill">{{ $indicatorPending->count() }} / 5 ข้อ</span>
+                            @endif
+                        </div>
+                        @if($indicatorTotal === 0)
+                            <div class="cr-ind-empty">ยังไม่มีหน่วยงานตามตัวกรองที่เลือก</div>
+                        @elseif($indicatorPending->isEmpty())
+                            <div class="cr-ind-ok">ผ่านเกณฑ์ทุกข้อ</div>
+                            <div class="cr-ind-ok-sub">ทั้ง 5 ขั้นตอนมีหน่วยงานดำเนินการตั้งแต่ 60% ขึ้นไป</div>
+                        @else
+                            @foreach($indicatorPending->take(3) as $ind)
+                                <div class="cr-ind-row is-plain" title="ขั้นที่ {{ $ind['key'] }} {{ $ind['title'] }} - ดำเนินการแล้ว {{ $ind['done'] }} จาก {{ $ind['total'] }} หน่วยงาน">
+                                    <span class="cr-ind-badge">{{ $ind['key'] }}</span>
+                                    <span class="cr-ind-name">{{ $ind['title'] }}</span>
+                                    <span class="cr-ind-value">{{ $ind['done'] }}<small>/{{ $ind['total'] }}</small></span>
+                                </div>
+                            @endforeach
+                            @if($indicatorPending->count() > 3)
+                                <div class="cr-ind-more" title="{{ $indicatorPending->skip(3)->map(fn($i) => 'ขั้นที่ ' . $i['key'] . ' ' . $i['title'])->implode("\n") }}">และอีก {{ $indicatorPending->count() - 3 }} ข้อ</div>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         {{-- ── ROW 4: DETAIL TABLE ── --}}
         <div class="cr-card">

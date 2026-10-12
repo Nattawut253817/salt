@@ -283,6 +283,49 @@
             box-shadow: 0 3px 8px rgba(225, 29, 72, 0.35);
         }
 
+        /* ปุ่มมอบ/ถอนสิทธิ์ SuperAdmin (เห็นเฉพาะ SuperAdmin) */
+        .btn-super {
+            background: #fffbeb;
+            color: #b45309;
+            border-color: #fde68a;
+        }
+
+        .btn-super:hover:not(:disabled) {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: #ffffff;
+            border-color: transparent;
+            box-shadow: 0 3px 8px rgba(217, 119, 6, 0.35);
+        }
+
+        .btn-super.is-super {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+
+        .btn-super:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .btn-super:disabled:hover {
+            transform: none;
+        }
+
+        .superadmin-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-left: 6px;
+            padding: 1px 8px;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            color: #92400e;
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            vertical-align: middle;
+        }
+
         /* Helper animations */
         @keyframes fadeIn {
             from {
@@ -753,14 +796,21 @@
         </div>
         <!-- User Table Card -->
         <div class="premium-card">
-            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between px-4">
+            <div class="card-header bg-white py-3 border-0 d-flex align-items-center justify-content-between flex-wrap px-4" style="gap: 10px;">
                 <h6 class="mb-0 font-weight-bold" style="color: #1e293b;">
                     <i class="fas fa-users-cog mr-2 text-indigo"></i> ตารางรายชื่อผู้ใช้งาน
                 </h6>
+                <div class="d-flex align-items-center" style="gap: 10px;">
+                @if (auth()->user()->isSuperAdmin())
+                    <button type="button" id="addSuperAdminBtn" class="btn-action btn-super">
+                        <i class="fas fa-crown"></i> เพิ่ม SuperAdmin
+                    </button>
+                @endif
                 <span class="badge badge-info shadow-sm px-3 py-2" id="total-badge"
                     style="font-size: 0.75rem; border-radius: 20px; background-color: #4f46e5; color: white;">
                     ทั้งหมด {{ number_format($users->total()) }} รายการ
                 </span>
+                </div>
             </div>
 
             <div id="table-wrapper">
@@ -1143,6 +1193,117 @@
                     '<div class="text-center py-5 text-muted" id="editUserModalLoading">' +
                     '<i class="fas fa-spinner fa-spin fa-2x"></i></div>'
                 );
+            });
+
+            // ปุ่มบนหัวตาราง: เลือกผู้ใช้ สคร. จากรายชื่อแล้วตั้งเป็น SuperAdmin
+            $('#addSuperAdminBtn').on('click', async function () {
+                let list = [];
+                try {
+                    const res = await fetch(`{{ url('/admin/users/super-admin-candidates') }}`, {
+                        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                    });
+                    if (!res.ok) throw new Error();
+                    list = await res.json();
+                } catch (e) {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'โหลดรายชื่อไม่สำเร็จ', confirmButtonText: 'ตกลง' });
+                    return;
+                }
+
+                if (!list.length) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'ไม่มีผู้ใช้ให้เลือก',
+                        text: 'ต้องมีผู้ใช้ระดับ สคร. ที่อนุมัติแล้วและยังไม่เป็น SuperAdmin',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    return;
+                }
+
+                const options = {};
+                list.forEach(u => { options[u.id] = u.label; });
+
+                const pick = await Swal.fire({
+                    title: 'เพิ่ม SuperAdmin',
+                    text: 'เลือกผู้ใช้ระดับ สคร. ที่ต้องการให้เป็น SuperAdmin',
+                    input: 'select',
+                    inputOptions: options,
+                    inputPlaceholder: 'เลือกผู้ใช้งาน',
+                    inputValidator: (v) => !v && 'กรุณาเลือกผู้ใช้งาน',
+                    showCancelButton: true,
+                    confirmButtonText: 'ตั้งเป็น SuperAdmin',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'modern-confirm',
+                        confirmButton: 'modern-confirm-confirm',
+                        cancelButton: 'modern-confirm-cancel'
+                    }
+                });
+                if (!pick.isConfirmed) return;
+
+                try {
+                    const response = await fetch(`{{ url('/admin/users') }}/${pick.value}/toggle-super-admin`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    const data = await response.json();
+                    if (!response.ok || !data.success) throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                    Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message, timer: 1800, showConfirmButton: false });
+                    fastSearch($('.page-item.active .page-link').text() || 1);
+                } catch (error) {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: error.message || 'ไม่สามารถดำเนินการได้', confirmButtonText: 'ตกลง' });
+                }
+            });
+
+            // มอบ/ถอนสิทธิ์ SuperAdmin
+            $(document).on('click', '.toggle-super-admin', function () {
+                const button = $(this);
+                const userId = button.data('id');
+                const userName = button.data('name');
+                const isSuper = Number(button.data('super')) === 1;
+
+                Swal.fire({
+                    title: isSuper ? 'ถอนสิทธิ์ SuperAdmin?' : 'ตั้งเป็น SuperAdmin?',
+                    html: isSuper
+                        ? `ถอนสิทธิ์ SuperAdmin ของ <strong>"${userName}"</strong><br>ผู้ใช้นี้จะกลับเป็น สคร. ปกติ และเข้าเมนู "จัดการระบบ" ไม่ได้`
+                        : `ตั้ง <strong>"${userName}"</strong> เป็น SuperAdmin<br>จะเห็นและจัดการได้ทุกเมนู รวมถึง "จัดการระบบ" และมอบสิทธิ์ให้ผู้อื่นต่อได้`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: isSuper ? 'ถอนสิทธิ์' : 'ตั้งเป็น SuperAdmin',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'modern-confirm',
+                        confirmButton: 'modern-confirm-confirm',
+                        cancelButton: 'modern-confirm-cancel'
+                    }
+                }).then(async (result) => {
+                    if (!result.isConfirmed) return;
+                    try {
+                        const response = await fetch(`{{ url('/admin/users') }}/${userId}/toggle-super-admin`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.json();
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                        }
+                        Swal.fire({ icon: 'success', title: 'สำเร็จ', text: data.message, timer: 1800, showConfirmButton: false });
+                        fastSearch($('.page-item.active .page-link').text() || 1);
+                    } catch (error) {
+                        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: error.message || 'ไม่สามารถดำเนินการได้', confirmButtonText: 'ตกลง' });
+                    }
+                });
             });
 
             // Handle Delete User

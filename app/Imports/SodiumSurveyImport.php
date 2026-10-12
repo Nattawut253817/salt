@@ -7,6 +7,7 @@ use App\Models\SodiumSurvey;
 use App\Models\SurveyYearMapping;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
@@ -102,6 +103,14 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
     protected int $replacedCount = 0;
     protected int $updatedCount = 0;
 
+    // จำนวนแถวที่บันทึกต่อ 1 รอบ (INSERT หลายแถวใน 1 คำสั่ง)
+    const BATCH_SIZE = 500;
+
+    /** @var array<string, int> คีย์แถวซ้ำ => id ของแถวที่มีอยู่แล้วในฐานข้อมูล (แถวแรกสุดของคีย์นั้น) - โหลดครั้งเดียวตอนเริ่มนำเข้า */
+    protected array $knownRowIds = [];
+    protected bool $knownRowsLoaded = false;
+    protected int $lastSeenId = 0;
+
     public function __construct($fiscal_year, $duplicate_action = 'skip')
     {
         $this->fiscal_year = (string) $fiscal_year;
@@ -134,8 +143,22 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
         $questionKeys = $synced['questionKeys'];
         $fixedIndices = $synced['fixedIndices'];
 
+        // บันทึกเป็นชุดละ BATCH_SIZE แถว: ตรวจซ้ำในหน่วยความจำ + INSERT หลายแถวต่อคำสั่ง
+        // (เดิม SELECT 1 + INSERT 1 ต่อแถว ผ่านโมเดล Eloquent ทีละแถว)
+        $batch = [];
         foreach ($dataRows as $row) {
-            $this->importRow($row, $questionKeys, $fixedIndices);
+            $rowData = $this->buildRowData($row, $questionKeys, $fixedIndices);
+            if ($rowData === null) {
+                continue;
+            }
+            $batch[] = $rowData;
+            if (count($batch) >= self::BATCH_SIZE) {
+                $this->saveBatch($batch);
+                $batch = [];
+            }
+        }
+        if ($batch !== []) {
+            $this->saveBatch($batch);
         }
     }
 
@@ -360,11 +383,12 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
         return ['questionKeys' => $questionKeys, 'fixedIndices' => $fixedIndices];
     }
 
-    protected function importRow(Collection $row, array $questionKeys, array $fixedIndices): void
+    /** แปลง 1 แถวของไฟล์เป็นข้อมูลพร้อมบันทึก - null เมื่อเป็นแถวว่าง (ไม่มีชื่อหน่วยบริการ) */
+    protected function buildRowData(Collection $row, array $questionKeys, array $fixedIndices): ?array
     {
         $hospitalName = trim((string) ($row[$fixedIndices['hospital_name'] ?? 0] ?? ''));
         if ($hospitalName === '') {
-            return;
+            return null;
         }
 
         $hcode = $this->cellToString($row[$fixedIndices['hcode'] ?? 1] ?? null);
@@ -409,57 +433,158 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
             'update_date' => now(),
         ], $optional);
 
-        // 'replace' mode = "บันทึกลงใหม่เลย" - the admin explicitly chose
-        // to skip the duplicate check entirely, so every row must become
-        // its own brand-new record. Previously this still ran the lookup
-        // below and, when a matching row was found, overwrote it with
-        // fill()->save() instead of inserting - which meant a re-upload
-        // in "replace" mode silently produced zero new rows, identical to
-        // 'skip' mode from the admin's point of view. Insert unconditionally
-        // here so the row count actually grows, matching the UI's promise
-        // ("บันทึกข้อมูลใหม่ลงไปทันทีโดยไม่มีการตรวจสอบข้อมูลซ้ำ").
+        return $newData;
+    }
+
+    /**
+     * บันทึก 1 ชุด ตามโหมดที่เลือก
+     *  - replace ("บันทึกลงใหม่เลย"): ทุกแถวเป็นแถวใหม่ ไม่ตรวจซ้ำ
+     *  - skip: แถวที่ซ้ำกับของเดิม (หรือซ้ำกันเองในไฟล์) จะอัปเดตเฉพาะเมื่อข้อมูลเปลี่ยน ไม่เช่นนั้นข้าม
+     */
+    protected function saveBatch(array $batch): void
+    {
         if ($this->duplicate_action === 'replace') {
-            SodiumSurvey::create(array_merge(['fiscal_year' => $this->fiscal_year], $newData));
-            $this->replacedCount++;
+            $this->insertRows($batch);
+            $this->replacedCount += count($batch);
+
             return;
         }
 
-        $existing = SodiumSurvey::where('fiscal_year', $this->fiscal_year)
-            ->where('hcode', $hcode)
-            ->where('survey_date', $surveyDate)
-            ->where('gender', $gender)
-            ->where('age_range', $age)
-            ->where('education', $edu)
-            ->first();
+        $this->loadKnownRows();
 
-        if ($existing) {
-            // 'skip' mode: only touch the row if something actually
-            // changed, so a re-upload of the same file is a true no-op.
-            $changed = $existing->hospital_name !== $newData['hospital_name']
-                || $existing->province_name !== $newData['province_name']
-                || $existing->district_name !== $newData['district_name']
-                || $existing->sub_district !== $newData['sub_district']
-                || $existing->congenital_disease !== $newData['congenital_disease']
-                || $existing->birth_date_unknown !== $newData['birth_date_unknown']
-                || $existing->age_months !== $newData['age_months']
-                || $existing->income !== $newData['income']
-                || $existing->education_other !== $newData['education_other']
-                || $existing->no_congenital_disease !== $newData['no_congenital_disease']
-                || $existing->congenital_disease_other !== $newData['congenital_disease_other']
-                || json_encode($existing->birth_date) !== json_encode($newData['birth_date'])
-                || json_encode($existing->survey_data) !== json_encode($newData['survey_data']);
-
-            if ($changed) {
-                $existing->fill($newData)->save();
-                $this->updatedCount++;
-            } else {
-                $this->skippedCount++;
+        $existingIds = [];
+        foreach ($batch as $rowData) {
+            $id = $this->knownRowIds[SodiumSurveyDuplicateKey::fromRow($rowData)] ?? null;
+            if ($id !== null) {
+                $existingIds[$id] = true;
             }
+        }
+        $existingModels = $existingIds === []
+            ? collect()
+            : SodiumSurvey::whereIn('id', array_keys($existingIds))->get()->keyBy('id');
+
+        $toInsert = [];
+        $queuedIndex = []; // คีย์ => ตำแหน่งใน $toInsert (แถวที่ยังไม่ได้ลงฐานข้อมูลแต่ซ้ำกับแถวถัดไปในไฟล์)
+        foreach ($batch as $rowData) {
+            $key = SodiumSurveyDuplicateKey::fromRow($rowData);
+
+            if (isset($queuedIndex[$key])) {
+                $i = $queuedIndex[$key];
+                if ($this->differs($toInsert[$i], $rowData)) {
+                    $toInsert[$i] = $rowData;
+                    $this->updatedCount++;
+                } else {
+                    $this->skippedCount++;
+                }
+                continue;
+            }
+
+            $existing = isset($this->knownRowIds[$key]) ? $existingModels->get($this->knownRowIds[$key]) : null;
+            if ($existing) {
+                // 'skip' mode: แตะแถวเดิมเฉพาะเมื่อมีอะไรเปลี่ยนจริง การอัปโหลดไฟล์เดิมซ้ำจึงไม่มีผลใด ๆ
+                if ($this->differs($existing->only(self::COMPARED_FIELDS), $rowData)) {
+                    $existing->fill($rowData)->save();
+                    $this->updatedCount++;
+                } else {
+                    $this->skippedCount++;
+                }
+                continue;
+            }
+
+            $queuedIndex[$key] = count($toInsert);
+            $toInsert[] = $rowData;
+            $this->importedCount++;
+        }
+
+        $this->insertRows($toInsert);
+        $this->rememberRowsInsertedSince();
+    }
+
+    // ฟิลด์ที่ใช้ตัดสินว่า "แถวซ้ำนี้มีข้อมูลเปลี่ยนไหม"
+    const COMPARED_FIELDS = [
+        'hospital_name', 'province_name', 'district_name', 'sub_district', 'congenital_disease',
+        'birth_date_unknown', 'age_months', 'income', 'education_other', 'no_congenital_disease',
+        'congenital_disease_other', 'birth_date', 'survey_data',
+    ];
+
+    /** @param array|\ArrayAccess $existing ข้อมูลเดิม (จากฐานข้อมูลหรือแถวที่รอบันทึก) */
+    protected function differs($existing, array $new): bool
+    {
+        $existing = $existing instanceof SodiumSurvey ? $existing->only(self::COMPARED_FIELDS) : $existing;
+
+        foreach (self::COMPARED_FIELDS as $field) {
+            if (in_array($field, ['birth_date', 'survey_data'], true)) {
+                if (json_encode($existing[$field] ?? null) !== json_encode($new[$field] ?? null)) {
+                    return true;
+                }
+            } elseif (($existing[$field] ?? null) !== ($new[$field] ?? null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** INSERT หลายแถวใน 1 คำสั่ง (ไม่ผ่านโมเดล Eloquent) - ค่าที่เก็บเหมือนที่โมเดลเคยเก็บ */
+    protected function insertRows(array $rows): void
+    {
+        if ($rows === []) {
             return;
         }
 
-        SodiumSurvey::create(array_merge(['fiscal_year' => $this->fiscal_year], $newData));
-        $this->importedCount++;
+        $now = now()->toDateTimeString();
+        $today = now()->toDateString();
+        $formatDate = fn ($d) => $d === null ? null : Carbon::instance($d)->format('Y-m-d H:i:s');
+
+        $records = array_map(fn (array $row) => array_merge($row, [
+            'fiscal_year' => $this->fiscal_year,
+            'survey_date' => $formatDate($row['survey_date']),
+            'birth_date' => $formatDate($row['birth_date'] ?? null),
+            'survey_data' => json_encode($row['survey_data'], JSON_THROW_ON_ERROR),
+            'update_date' => $today,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ]), $rows);
+
+        DB::table((new SodiumSurvey)->getTable())->insert($records);
+    }
+
+    /** โหลดคีย์ของแถวที่มีอยู่แล้วในปีงบนี้ (เฉพาะคอลัมน์ที่ใช้เทียบ) - ทำครั้งเดียวต่อการนำเข้า */
+    protected function loadKnownRows(): void
+    {
+        if ($this->knownRowsLoaded) {
+            return;
+        }
+        $this->knownRowsLoaded = true;
+
+        $table = (new SodiumSurvey)->getTable();
+        $this->lastSeenId = (int) DB::table($table)->max('id');
+
+        $this->rememberKeysOf(DB::table($table)->where('fiscal_year', $this->fiscal_year));
+    }
+
+    /** เพิ่มคีย์ของแถวที่เพิ่งถูกบันทึก (id มากกว่าที่เคยเห็น) เพื่อให้ชุดถัดไปตรวจซ้ำกับแถวเหล่านี้ได้ */
+    protected function rememberRowsInsertedSince(): void
+    {
+        $table = (new SodiumSurvey)->getTable();
+        $maxId = (int) DB::table($table)->max('id');
+        if ($maxId <= $this->lastSeenId) {
+            return;
+        }
+
+        $this->rememberKeysOf(
+            DB::table($table)->where('fiscal_year', $this->fiscal_year)->where('id', '>', $this->lastSeenId)
+        );
+        $this->lastSeenId = $maxId;
+    }
+
+    protected function rememberKeysOf($query): void
+    {
+        foreach ($query->orderBy('id')->select(['id', 'hcode', 'survey_date', 'gender', 'age_range', 'education'])->cursor() as $row) {
+            $key = SodiumSurveyDuplicateKey::make($row->hcode, $row->survey_date, $row->gender, $row->age_range, $row->education);
+            // แถวแรกสุดของคีย์ชนะ - เหมือนที่ ->first() เคยให้
+            $this->knownRowIds[$key] ??= (int) $row->id;
+        }
     }
 
     /**

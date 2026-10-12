@@ -37,6 +37,15 @@
         $phoneForPrint = strlen($phoneDigits) === 10
             ? substr($phoneDigits, 0, 3) . '-' . substr($phoneDigits, 3)
             : ($reporterPhoneRaw ?? '-');
+
+        // Stamped at export time (not stored on the record), once at
+        // the end of the document (see .export-date-stamp below). The
+        // app's own clock (config('app.timezone')) runs on UTC, so this
+        // is converted to Thailand's local time explicitly rather than
+        // showing the raw UTC hour.
+        $thaiMonthNames = ['', 'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
+        $exportedAt = now('Asia/Bangkok');
+        $exportedAtThai = $exportedAt->day . ' ' . $thaiMonthNames[$exportedAt->month] . ' ' . ($exportedAt->year + 543) . ' เวลา ' . $exportedAt->format('H:i') . ' น.';
     @endphp
     <title>แบบรายงาน SDA๐๙๐๒ - {{ $unit_name }}</title>
     <link
@@ -152,6 +161,13 @@
                 page-break-inside: auto;
             }
 
+            table.note-table td,
+            table.note-table td:first-child {
+                border: 0.1px solid #000 !important;
+                box-decoration-break: clone;
+                -webkit-box-decoration-break: clone;
+            }
+
             .content-cell {
                 line-height: 1.30 !important;
                 text-align: left !important;
@@ -228,11 +244,16 @@
 
         .official-tag {
             float: right;
-            border: 1px solid #000;
-            padding: 4px 12px;
-            font-size: 16pt;
+            display: inline-block;
+            border: 1px solid #334155;
+            background: #eef1fb;
+            color: #1e293b;
+            border-radius: 3px;
+            padding: 6px 14px;
+            font-size: 14pt;
             font-weight: 600;
             margin-bottom: 15px;
+            letter-spacing: 0.2px;
         }
 
         .header-section {
@@ -285,9 +306,18 @@
         }
 
         .divider {
-            border-top: 1px solid #000;
-            margin: 15px 0;
-            text-align: center;
+            width: 100%;
+            max-width: 480px;
+            margin: 14px auto 0;
+            border-top: 1.5px solid #1e293b;
+        }
+
+        .divider::after {
+            content: '';
+            display: block;
+            height: 0;
+            border-top: 0.75px solid #94a3b8;
+            margin-top: 3px;
         }
 
         .info-section {
@@ -323,9 +353,6 @@
             font-weight: 700;
             font-size: 16pt;
             margin: 20px 0 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
         }
 
         table {
@@ -379,21 +406,31 @@
             margin-top: 18px;
         }
 
+        /* กล่อง ปัญหา/อุปสรรค และ ข้อเสนอแนะ: ตารางช่องเดียว (ไม่ใช้ div ที่มีขอบ) เพื่อให้ตกหน้าใหม่แล้วกรอบ
+           ปิดครบทุกด้านในแต่ละหน้า ไม่ขาดและไม่ไม่สมดุล - ใช้กลไกเดียวกับตารางหลัก */
+        table.note-table {
+            width: 100%;
+            margin-top: 18px;
+            margin-bottom: 0;
+            border-collapse: separate;
+            border-spacing: 0;
+            table-layout: fixed;
+        }
+
+        table.note-table td {
+            padding: 12px 16px;
+            border: 0.1px solid #000;
+            vertical-align: top;
+        }
+
         .note-title {
             font-weight: 700;
-            text-decoration: underline;
             margin-bottom: 6px;
             font-size: 16pt;
             page-break-after: avoid;
         }
 
         .section-header {
-            font-weight: 700;
-            font-size: 16pt;
-            margin: 16px 0 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
             page-break-after: avoid;
         }
 
@@ -403,6 +440,25 @@
             font-style: italic;
             color: #4b5563;
             page-break-before: avoid;
+        }
+
+        .export-date-stamp {
+            /* In normal document flow (not position: fixed) on
+               purpose - this makes it render once, wherever the end
+               of the content naturally falls, i.e. only on the last
+               printed page, rather than repeating on every page. */
+            text-align: right;
+            margin-top: 24px;
+            font-size: 10pt;
+            font-weight: 400;
+            color: #64748b;
+        }
+
+        @media print {
+            .export-date-stamp {
+                color: #475569;
+                page-break-before: avoid;
+            }
         }
     </style>
 </head>
@@ -481,9 +537,7 @@
             </div>
         </div>
 
-        <div class="section-header">
-            <i></i> ความก้าวหน้าของการดำเนินงาน
-        </div>
+        <div class="section-header">ความก้าวหน้าของการดำเนินงาน</div>
 
         {{-- Single unified table for all steps --}}
         <table>
@@ -552,20 +606,34 @@
             </tbody>
         </table>
 
-        <div class="note-box">
-            <div class="note-title">ปัญหา/อุปสรรค</div>
-            <div class="content-cell">{{ trim($assessment->problems ?? '-') }}</div>
-        </div>
+        <table class="note-table">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="note-title">ปัญหา/อุปสรรค</div>
+                        <div class="content-cell">{{ trim($assessment->problems ?? '-') }}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-        <div class="note-box" style="margin-top: 12px;">
-            <div class="note-title">ข้อเสนอแนะ/โอกาสพัฒนา</div>
-            <div class="content-cell">{{ trim($assessment->suggestions ?? '-') }}</div>
-        </div>
+        <table class="note-table" style="margin-top: 12px;">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="note-title">ข้อเสนอแนะ/โอกาสพัฒนา</div>
+                        <div class="content-cell">{{ trim($assessment->suggestions ?? '-') }}</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
         <div class="footer-note">
             <b>หมายเหตุ :</b> กรุณาส่งแบบรายงานผลการดำเนินงานฯ ให้กรมควบคุมโรค หรือหน่วยงานที่รับผิดชอบ
             ตามกำหนดเวลาที่ระบุไว้
         </div>
+
+        <div class="export-date-stamp">ออกรายงานเมื่อ {{ $exportedAtThai }}</div>
     </div>
 
 </body>

@@ -17,5 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/_to_delete
+/Claude outputs
 
 nul

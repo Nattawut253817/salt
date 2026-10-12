@@ -484,7 +484,7 @@
                             </div>
                             <div class="pw-strength-label" id="pw-strength-label">ความปลอดภัยของรหัสผ่าน</div>
                             <ul class="pw-rules">
-                                <li id="pw-rule-length"><i class="fas fa-check-circle"></i> อย่างน้อย 10 ตัวอักษร</li>
+                                <li id="pw-rule-length"><i class="fas fa-check-circle"></i> อย่างน้อย 8 ตัวอักษร</li>
                                 <li id="pw-rule-upper"><i class="fas fa-check-circle"></i> ตัวพิมพ์ใหญ่ (A-Z)</li>
                                 <li id="pw-rule-lower"><i class="fas fa-check-circle"></i> ตัวพิมพ์เล็ก (a-z)</li>
                                 <li id="pw-rule-number"><i class="fas fa-check-circle"></i> ตัวเลข (0-9)</li>
@@ -532,7 +532,7 @@
         function evaluatePasswordRules(pw, email) {
             const emailLocal = (email || '').split('@')[0].toLowerCase();
             return {
-                length: pw.length >= 10,
+                length: pw.length >= 8,
                 upper: /[A-Z]/.test(pw),
                 lower: /[a-z]/.test(pw),
                 number: /[0-9]/.test(pw),

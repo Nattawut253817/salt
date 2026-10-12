@@ -242,6 +242,7 @@
             min-width: 0;
         }
 
+        .awr-kpi-unit { font-size: .52em; font-weight: 700; color: #64748b; margin-left: 4px; white-space: nowrap; letter-spacing: 0; }
         .awr-kpi-value {
             font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
             font-size: 1.45rem;
@@ -286,6 +287,106 @@
             }
         }
 
+
+        /* ===== การ์ดเปรียบเทียบโซเดียมรายจังหวัด + ระดับการประเมิน (ใต้กราฟ 3 ใบ) ===== */
+        .hm-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            border-radius: 9px; padding: 3px 9px; font-size: .72rem; font-weight: 800;
+        }
+        .hm-chip.ok { background: #dcf5e7; color: #15803d; }
+        .hm-chip.warn { background: #fff1d6; color: #b45309; }
+        .hm-chip.none { background: #e8edf4; color: #475569; }
+        .hm-chip.bad { background: #fde8e8; color: #b91c1c; }
+        .hm-fly-legend { display: flex; gap: 16px; font-size: .74rem; color: #475569; font-weight: 700; margin: 0 0 6px; }
+        .hm-fly-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-right: 6px; vertical-align: -1px; }
+        .hm-fly { display: grid; gap: 0; }
+        .hm-fly-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 60px minmax(0, 1fr) 70px; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+        .hm-fly-row:last-child { border-bottom: none; }
+        .hm-fly-prov { font-size: .84rem; font-weight: 700; color: #1e293b; white-space: nowrap; }
+        .hm-fly-side { display: flex; align-items: center; gap: 8px; min-width: 0; height: 22px; }
+        .hm-fly-left { justify-content: flex-end; }
+        .hm-fly-val { font-size: .8rem; font-weight: 800; color: #1e293b; font-variant-numeric: tabular-nums; }
+        .hm-fly-bar { display: block; height: 14px; position: relative; }
+        .hm-fly-before {
+            border-radius: 12px 4px 4px 12px;
+            background: linear-gradient(180deg, #fda4b4 0%, #fb526b 45%, #e11d48 100%);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .55) inset, 0 8px 12px -6px rgba(225, 29, 72, .55);
+        }
+        .hm-fly-after {
+            border-radius: 4px 12px 12px 4px;
+            background: linear-gradient(180deg, #86efac 0%, #22c55e 45%, #15803d 100%);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .55) inset, 0 8px 12px -6px rgba(21, 128, 61, .55);
+        }
+        .hm-fly-bar::after { content: ""; position: absolute; left: 6px; right: 6px; top: 2px; height: 4px; border-radius: 99px; background: rgba(255, 255, 255, .38); }
+        .hm-fly-core {
+            width: 40px; height: 40px; margin: 0 auto; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 32% 25%, #3b5ba9 0%, #1e3a8a 58%, #172554 100%);
+            color: #fff; line-height: 1.05;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .25) inset, 0 6px 10px -6px rgba(23, 37, 84, .75), 0 0 0 2px #fff, 0 0 0 3px #dbe4f5;
+        }
+        .hm-fly-core b { font-size: .86rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .hm-fly-core span { font-size: .5rem; font-weight: 700; opacity: .8; }
+        .hm-fly-core.is-empty { background: radial-gradient(circle at 32% 25%, #e2e8f0, #cbd5e1); color: #64748b; box-shadow: 0 0 0 3px #fff, 0 0 0 4px #e2e8f0; }
+        .hm-fly-none { font-size: .76rem; }
+        /* ลดความสูงการ์ดรายจังหวัด: ระยะบน-ล่างและหัวการ์ดกระชับขึ้น */
+        .mnu-ins-row .chart-card { padding: 16px 18px 14px; }
+        .mnu-ins-row .chart-card-head { margin-bottom: 12px; padding-bottom: 12px; }
+        .hm-fly-total { margin-top: 8px; padding: 12px 0 2px; border-top: 2px solid #0f766e; border-bottom: none; }
+        .hm-fly-total .hm-fly-prov { color: #0f766e; font-weight: 800; }
+        .hm-fly-total .hm-fly-val { font-size: .86rem; }
+        .hm-fly-pct { text-align: right; }
+        @media (max-width: 760px) {
+            .hm-fly-row { grid-template-columns: 1fr 64px 1fr; row-gap: 4px; }
+            .hm-fly-prov { grid-column: 1 / -1; }
+            .hm-fly-pct { grid-column: 1 / -1; text-align: left; }
+            .hm-fly-core { grid-column: 2; grid-row: 2; }
+            .hm-fly-left { grid-column: 1; grid-row: 2; }
+            .hm-fly-right { grid-column: 3; grid-row: 2; }
+        }
+
+        .hm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .hm-muted { color: #94a3b8; }
+        .chart-card.accent-teal { --chart-accent: #0d9488; background: #f8fdfc; }
+        .chart-card.accent-green { --chart-accent: #16a34a; background: #f8fdf9; }
+        .mnu-ins-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin-bottom: 25px; align-items: stretch; }
+        .mnu-ins-row .hm-cap { font-size: .8rem; color: #64748b; margin-bottom: 10px; }
+
+        /* แถวบน: แผนที่ + ร้อยละตามสถานที่จำหน่าย ความสูงเท่ากัน ตามด้วยตารางเปรียบเทียบและรายการเมนูเต็มความกว้าง */
+        .mnu-layout { margin-bottom: 25px; }
+        /* แถวบน: แผนที่ | ร้อยละตามสถานที่จำหน่าย | เปรียบเทียบโซเดียมรายจังหวัด อยู่แถวเดียวกัน ความสูงเท่ากัน */
+        .mnu-side { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.05fr) minmax(0, 1.6fr); gap: 18px; align-items: stretch; margin-bottom: 22px; }
+        .mnu-side .chart-card { margin: 0; padding: 14px; }
+        .mnu-side .chart-card-head { margin-bottom: 10px; padding-bottom: 10px; gap: 10px; }
+        .mnu-side .chart-card-title { font-size: .88rem; }
+        .mnu-side .chart-card-subtitle { font-size: .72rem; }
+        .mnu-main { min-width: 0; }
+        /* ลดระยะบน-ล่างของการ์ดร้อยละ + การ์ดเปรียบเทียบ */
+        .mnu-side .tp-card, .mnu-side .mnu-cmp-card { padding: 8px 14px 8px; }
+        .mnu-side .tp-card .chart-card-head, .mnu-side .mnu-cmp-card .chart-card-head { margin-bottom: 6px; padding-bottom: 8px; }
+        .mnu-cmp-card .hm-fly-legend { margin: 0 0 2px; }
+        .mnu-cmp-card { display: flex; flex-direction: column; min-width: 0; }
+        .mnu-cmp-card .hm-fly { flex: 1; grid-auto-rows: minmax(0, 1fr); }
+        .mnu-cmp-card .hm-fly-row { grid-template-columns: 92px minmax(0, 1fr) 42px minmax(0, 1fr) 62px; gap: 6px; padding: 2px 0; }
+        .mnu-cmp-card .hm-fly-prov { font-size: .78rem; }
+        .mnu-cmp-card .hm-fly-core { width: 36px; height: 36px; }
+        .mnu-cmp-card .hm-fly-core b { font-size: .76rem; }
+        .mnu-cmp-card .hm-fly-val { font-size: .72rem; }
+        .mnu-cmp-card .hm-fly-side { gap: 5px; }
+        .mnu-cmp-card .hm-fly-total { margin-top: 2px; padding-top: 6px; }
+        .mnu-cmp-card .hm-chip { padding: 2px 7px; font-size: .68rem; }
+        @media (max-width: 1240px) {
+            .mnu-side { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .mnu-cmp-card { grid-column: 1 / -1; }
+            .mnu-cmp-card .hm-fly-row { grid-template-columns: 112px minmax(0, 1fr) 60px minmax(0, 1fr) 70px; gap: 8px; }
+            .mnu-cmp-card .hm-fly-prov { font-size: .84rem; }
+        }
+        @media (max-width: 900px) {
+            .mnu-side { grid-template-columns: minmax(0, 1fr); }
+        }
+        @media (max-width: 760px) {
+            .mnu-cmp-card .hm-fly-row { grid-template-columns: 1fr 64px 1fr; gap: 4px 8px; }
+        }
+
         /* Chart row */
         .chart-row {
             display: grid;
@@ -313,6 +414,18 @@
             transform: translateY(-3px);
             box-shadow: 0 16px 34px -8px rgba(15, 23, 42, 0.14);
         }
+
+        /* การ์ดแยกตามสถานที่จำหน่าย: โดนัท + รายการสัดส่วนข้างกราฟ */
+        .tp-chip { align-self: flex-start; flex: 0 0 auto; padding: 4px 12px; border-radius: 999px; background: #eef1f6; color: #334155; font-size: .8rem; font-weight: 800; white-space: nowrap; }
+        .tp-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0; }
+        .tp-list { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+        .tp-item { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-radius: 12px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 13%, #fff) var(--tp-w, 0%), #f8fafc var(--tp-w, 0%)); border: 1px solid #eef1f6; cursor: default; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+        .tp-item:hover, .tp-item.is-hover { background: #ffffff; border-color: var(--tp-c); box-shadow: 0 6px 16px -8px var(--tp-c); }
+        .tp-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--tp-c); flex: 0 0 auto; }
+        .tp-name { flex: 1; min-width: 0; font-size: .86rem; font-weight: 700; color: #1e293b; line-height: 1.25; }
+        .tp-val { display: block; text-align: right; line-height: 1.2; white-space: nowrap; }
+        .tp-pct { display: block; font-size: 1rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .tp-cnt { display: block; margin-top: 1px; font-size: .72rem; font-weight: 600; color: #94a3b8; }
 
         /* Card header, matching the dashboard's design language:
            icon badge + title + subtitle, separated with a divider. */
@@ -352,6 +465,16 @@
             margin-top: 2px;
         }
 
+        /* การ์ด "จำนวนเมนูลดโซเดียม แยกตามจังหวัด": ตัวเลขเมนูเป็นพระเอก (ใหญ่/หนา) */
+        .chart-card-subtitle.mnu-sub { font-size: 0.9rem; color: #475569; font-weight: 600; margin-top: 3px; }
+        .chart-card-subtitle.mnu-sub b { color: #be185d; font-weight: 800; font-size: 1.05rem; }
+        .mnu-map-label { text-align: center; line-height: 1.05; white-space: nowrap; pointer-events: none; font-family: inherit; }
+        .mnu-map-label .n { display: block; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+        .mnu-map-label .t { display: block; font-size: 9.5px; font-weight: 700; margin-top: 1px; }
+        .mnu-map-label.on-light { color: #831843; text-shadow: 0 0 3px #fff, 0 0 6px #fff, 0 0 8px #fff; }
+        .mnu-map-label.on-dark { color: #fff; text-shadow: 0 1px 3px rgba(80, 7, 36, .65), 0 0 6px rgba(80, 7, 36, .45); }
+
+
         .chart-card.accent-pink   { --chart-accent: #ec4899; background: #fffafc; }
         .chart-card.accent-purple { --chart-accent: #8b5cf6; background: #fbfaff; }
         .chart-card.accent-amber  { --chart-accent: #f59e0b; background: #fffdf7; }
@@ -363,6 +486,15 @@
         }
 
         /* Table styles */
+        /* หัวข้อรายการเหนือตาราง: ไอคอนสีเดียวกับหัวการ์ดกราฟ + ชื่อรายการ + จำนวนเมนูที่แสดง */
+        .menu-list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 2px 12px; }
+        .menu-list-head .mlh-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .menu-list-head .mlh-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 12px; background: #6366f1; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; box-shadow: 0 8px 16px -6px rgba(99, 102, 241, .6); }
+        .menu-list-head .mlh-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; line-height: 1.25; }
+        .menu-list-head .mlh-sub { margin-top: 1px; font-size: .84rem; font-weight: 600; color: #64748b; }
+        .menu-list-head .mlh-count { display: inline-flex; align-items: baseline; gap: 5px; padding: 5px 14px; border-radius: 999px; background: #eef2ff; color: #4338ca; font-size: .84rem; font-weight: 700; white-space: nowrap; }
+        .menu-list-head .mlh-count b { font-size: 1.05rem; font-weight: 800; }
+
         .menu-table-container {
             border-radius: 15px;
             overflow-x: auto;
@@ -419,6 +551,39 @@
 
         .menu-table tr:hover {
             background-color: #f7fafc;
+        }
+
+        /* Desktop: ตารางพอดีกรอบ ไม่มีแถบเลื่อนแนวนอน - fixed layout + ลดขนาดเซลล์/ฟอนต์/ป้ายให้กระชับ
+           (จอเล็กกว่า 1025px ยังใช้ min-width + เลื่อนได้เหมือนเดิม) */
+        @media (min-width: 1025px) {
+            .menu-table-container { overflow-x: hidden; }
+            .menu-table { table-layout: fixed; }
+            .menu-table th:nth-child(1) { width: 8%; }
+            .menu-table th:nth-child(2) { width: 17%; }
+            .menu-table th:nth-child(3) { width: 11%; }
+            .menu-table th:nth-child(4) { width: 10%; }
+            .menu-table th:nth-child(5) { width: 10%; }
+            .menu-table th:nth-child(6) { width: 12%; }
+            .menu-table th:nth-child(7) { width: 14%; }
+            .menu-table th:nth-child(8) { width: 12%; }
+            .menu-table th:nth-child(9) { width: 6%; }
+            .menu-table th { padding: 12px 6px; font-size: 0.82rem; white-space: normal; line-height: 1.3; }
+            .menu-table th .sort-link { padding: 4px 2px; gap: 5px; }
+            .menu-table th .sort-link span { white-space: normal; }
+            .menu-table td { padding: 10px 8px; font-size: 0.88rem; overflow-wrap: anywhere; }
+            .menu-table .food-img { width: 76px; height: 56px; border-width: 1px; border-radius: 8px; }
+            .menu-table .menu-name-cell { font-size: 0.96rem; line-height: 1.35; }
+            .menu-table .kitchen-type-tag { padding: 4px 10px; font-size: 0.8rem; border-radius: 6px; overflow-wrap: normal; }
+            .menu-table .sodium-pill { padding: 4px 11px; gap: 6px; font-size: 0.86rem; }
+            .menu-table .reduced-badge { padding: 4px 10px; gap: 7px; border-radius: 11px; }
+            .menu-table .reduced-badge-value { font-size: 0.85rem; }
+            .menu-table .reduced-badge-percent { font-size: 0.72rem; }
+            .menu-table .agency-tag { padding: 5px 10px; gap: 7px; border-radius: 12px; font-size: 0.8rem; }
+            .menu-table .agency-tag-icon { font-size: 0.78rem; }
+            .menu-table .agency-tag-province { font-size: 0.7rem; }
+            .menu-table .eval-badge { padding: 4px 11px; gap: 6px; font-size: 0.8rem; }
+            .menu-table .eval-info-btn { margin-left: 2px; }
+            .menu-table .meal-calc-add-btn { width: 32px; height: 32px; border-radius: 10px; font-size: 0.9rem; margin: 0 auto; }
         }
 
         .food-img {
@@ -1062,6 +1227,8 @@
         }
 
 
+        /* ปุ่มเรียงลำดับหัวตาราง: ชี้ = ยกชิป, กด = ยุบนุ่ม + วงโหลดหมุนจนหน้าใหม่มา,
+           คอลัมน์ที่เรียงอยู่ = แคปซูลขาว + ชิปไล่สีเดียว โชว์ลูกศรทิศเดียวกลางชิป */
         .sort-link {
             text-decoration: none !important;
             color: #1a202c !important;
@@ -1069,41 +1236,48 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            /* Balanced gap between text and icon */
             width: 100%;
             height: 100%;
             padding: 8px 12px;
-            border-radius: 8px;
-            transition: all 0.15s ease-in-out;
+            border-radius: 12px;
             font-weight: 700;
             border: 1px solid transparent;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease,
+                        color 0.18s ease, transform 0.22s cubic-bezier(.34, 1.56, .64, 1);
         }
 
         .sort-link:hover {
-            background-color: rgba(79, 70, 229, 0.06);
-            /* Very light indigo */
-            border-color: rgba(79, 70, 229, 0.12);
+            background-color: rgba(79, 70, 229, 0.07);
+            border-color: rgba(79, 70, 229, 0.18);
             text-decoration: none !important;
         }
 
         .sort-link:active {
-            transform: scale(0.96);
-            /* Pressed effect */
-            background-color: rgba(79, 70, 229, 0.12);
+            transform: scale(0.95);
+            background-color: rgba(79, 70, 229, 0.14);
+            transition-duration: 0.08s;
+        }
+
+        .sort-link:focus { outline: none; }
+        .sort-link:focus-visible {
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.4);
+            border-color: rgba(79, 70, 229, 0.45);
         }
 
         .sort-icon-container {
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            /* Clean circular chip */
             background-color: #f1f5f9;
             color: #94a3b8;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease,
+                        transform 0.25s cubic-bezier(.34, 1.56, .64, 1);
             position: relative;
             overflow: hidden;
         }
@@ -1114,52 +1288,92 @@
             transform: translateY(-2px);
         }
 
+        .sort-link:active .sort-icon-container { transform: scale(0.9); }
+
         .sort-icon-arrow {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             position: absolute;
-            transition: all 0.3s ease;
+            transition: transform 0.3s cubic-bezier(.34, 1.56, .64, 1), opacity 0.2s ease;
         }
 
-        .sort-icon-arrow.fa-arrow-down {
-            transform: translateX(5px);
-            /* Move to the right side */
+        .sort-icon-arrow.fa-arrow-down { transform: translateX(5px); }
+        .sort-icon-arrow.fa-arrow-up { transform: translateX(-5px); }
+        .sort-icon-arrow:not(.active) { opacity: 0.5; }
+
+        /* คอลัมน์ที่กำลังเรียง */
+        .sort-active-col {
+            background: linear-gradient(135deg, #eef2ff, #e0e7ff) !important;
+            border-bottom: 3px solid #4f46e5 !important;
         }
 
-        .sort-icon-arrow.fa-arrow-up {
-            transform: translateX(-5px);
-            /* Move to the left side */
+        .sort-active-col .sort-link {
+            color: #3730a3 !important;
+            background-color: rgba(255, 255, 255, 0.78);
+            border-color: rgba(79, 70, 229, 0.24);
+            box-shadow: 0 3px 10px -4px rgba(79, 70, 229, 0.4);
+        }
+
+        .sort-active-col .sort-link:hover {
+            background-color: #fff;
+            border-color: rgba(79, 70, 229, 0.4);
         }
 
         .sort-active-col .sort-icon-container {
             background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
-            color: white;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.38);
         }
 
-        .sort-icon-arrow.active {
+        .sort-active-col .sort-link:hover .sort-icon-container {
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            color: #fff;
+        }
+
+        /* ลูกศรที่ไม่ได้ใช้หายไป เหลือลูกศรทิศเดียวอยู่กลางชิป */
+        .sort-active-col .sort-icon-arrow:not(.active) {
+            opacity: 0;
+            transform: scale(0.3);
+        }
+
+        .sort-active-col .sort-icon-arrow.active {
             opacity: 1;
+            color: #fff;
             transform: translateX(0) scale(1.1);
-            color: white;
-            position: relative;
-            /* Reset positioning when active if needed, or keep it side-by-side */
+            animation: sortArrowIn 0.42s cubic-bezier(.34, 1.56, .64, 1);
         }
 
-        /* Adjustment for side-by-side active/inactive look */
-        .sort-active-col .fa-arrow-up.active {
-            transform: translateX(-5px) scale(1.1);
+        @keyframes sortArrowIn {
+            from { opacity: 0; transform: translateY(9px) scale(0.5); }
+            to { opacity: 1; transform: translateX(0) scale(1.1); }
         }
 
-        .sort-active-col .fa-arrow-down.active {
-            transform: translateX(5px) scale(1.1);
+        /* ตอนกดแล้วรอหน้าใหม่: ชิปเป็นสีเต็ม มีวงหมุน */
+        .sort-link.is-sorting { pointer-events: none; }
+
+        .sort-link.is-sorting .sort-icon-container {
+            background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.38);
+            transform: none;
         }
 
-        .sort-icon-arrow:not(.active) {
-            opacity: 0.5;
+        .sort-link.is-sorting .sort-icon-arrow { opacity: 0 !important; }
+
+        .sort-link.is-sorting .sort-icon-container::after {
+            content: '';
+            position: absolute;
+            inset: 6px;
+            border-radius: 50%;
+            border: 2.5px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            animation: sortSpin 0.7s linear infinite;
         }
 
-        .sort-active-col {
-            background: linear-gradient(135deg, #eef2ff, #e0e7ff) !important;
-            border-bottom: 3px solid #4f46e5 !important;
+        @keyframes sortSpin { to { transform: rotate(360deg); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .sort-link, .sort-icon-container, .sort-icon-arrow { transition: none; }
+            .sort-link:active, .sort-link:hover .sort-icon-container { transform: none; }
+            .sort-active-col .sort-icon-arrow.active { animation: none; }
         }
 
         .eval-badge {
@@ -2083,6 +2297,7 @@
                     title="{{ $sodiumEvalSummary['best_count'] }} จาก {{ $sodiumEvalSummary['evaluated_count'] }} เมนู ที่มีผลตรวจแล้ว">
                     <div class="awr-kpi-value">
                         {{ $sodiumEvalSummary['evaluated_count'] > 0 ? number_format($sodiumEvalSummary['best_percent'], 1) . '%' : '-' }}
+                        @if ($sodiumEvalSummary['evaluated_count'] > 0)<span class="awr-kpi-unit">({{ number_format($sodiumEvalSummary['best_count']) }} เมนู)</span>@endif
                     </div>
                     <div class="awr-kpi-label">ผ่านเกณฑ์ที่ดีมาก</div>
                 </div>
@@ -2092,55 +2307,143 @@
                 </div>
                 <div class="awr-kpi-text"
                     title="{{ $sodiumEvalSummary['high_risk_count'] > 0 ? 'ต้องปรับปรุงสูตรเร่งด่วน' : 'ไม่มีเมนูความเสี่ยงสูงในผลตรวจล่าสุด' }}">
-                    <div class="awr-kpi-value">{{ $sodiumEvalSummary['high_risk_count'] }}</div>
+                    <div class="awr-kpi-value">{{ number_format($sodiumEvalSummary['high_risk_count']) }} <span class="awr-kpi-unit">เมนู</span></div>
                     <div class="awr-kpi-label">เมนูความเสี่ยงสูง (&gt;1,000mg)</div>
                 </div>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="chart-row">
+        @php
+            $mi = $sodiumInsight;
+            $miProvColor = ['อุบลราชธานี' => '#2563eb', 'ศรีสะเกษ' => '#d97706', 'ยโสธร' => '#7c3aed', 'อำนาจเจริญ' => '#16a34a', 'มุกดาหาร' => '#db2777'];
+            $flyRows = collect($mi['provinces']);
+            $flyMax = max(1, (float) $flyRows->max(fn($r) => max($r['avg_before'] ?? 0, $r['avg_after'] ?? 0)), (float) ($mi['avg_before'] ?? 0), (float) ($mi['avg_after'] ?? 0));
+            $flyAllHas = ($mi['measured'] ?? 0) > 0;
+        @endphp
+
+        <!-- Layout 2 คอลัมน์: ซ้าย = แผนที่/สัดส่วน/ระดับประเมิน (การ์ดเรียงต่อกัน)  ขวา = เปรียบเทียบรายจังหวัด + รายการเมนู -->
+        <div class="mnu-layout">
+        <div class="mnu-side">
             <!-- Map -->
             <div class="chart-card accent-pink">
                 <div class="chart-card-head">
                     <div class="chart-card-icon"><i class="fas fa-map-location-dot"></i></div>
                     <div>
                         <div class="chart-card-title">จำนวนเมนูลดโซเดียม แยกตามจังหวัด</div>
-                        <div class="chart-card-subtitle">ปี
-                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}</div>
+                        <div class="chart-card-subtitle mnu-sub">ปี
+                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}
+                            · รวมทั้งเขต <b>{{ number_format(collect($mapData)->sum()) }}</b> เมนู</div>
                     </div>
                 </div>
                 <div id="map-container" style="height: 340px;"></div>
             </div>
 
             <!-- Pie Chart -->
-            <div class="chart-card accent-purple">
+            <div class="chart-card accent-purple tp-card">
                 <div class="chart-card-head">
                     <div class="chart-card-icon"><i class="fas fa-chart-pie"></i></div>
-                    <div>
+                    <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ร้อยละเมนูอาหารที่ปรับสูตรลดโซเดียม</div>
-                        <div class="chart-card-subtitle">แยกตามสถานที่จำหน่าย</div>
+                        <div class="chart-card-subtitle">แยกตามสถานที่จำหน่าย · นำเมาส์ชี้บนกราฟเพื่อดูสัดส่วนและจำนวนเมนู</div>
                     </div>
+                    <span class="tp-chip">{{ number_format(collect($pieChartData)->sum()) }} เมนู</span>
                 </div>
-                <div id="sourcePieChart" style="height: 320px; width: 100%;"></div>
+                <div class="tp-body">
+                    <div id="sourcePieList" class="tp-list"></div>
+                </div>
             </div>
 
-            <!-- Bar Chart -->
-            <div class="chart-card accent-amber">
+
+            <!-- เปรียบเทียบโซเดียมก่อน-หลังรายจังหวัด (แถวเดียวกับแผนที่และกราฟ) -->
+            <div class="chart-card accent-teal mnu-cmp-card">
                 <div class="chart-card-head">
-                    <div class="chart-card-icon"><i class="fas fa-chart-column"></i></div>
+                    <div class="chart-card-icon"><i class="fas fa-scale-balanced"></i></div>
                     <div>
-                        <div class="chart-card-title">ภาพรวมค่าเฉลี่ยโซเดียม ก่อน - หลัง ปรับสูตร</div>
-                        <div class="chart-card-subtitle">เปรียบเทียบค่าเฉลี่ยจากทุกเมนู (มก./100 มล.)</div>
+                        <div class="chart-card-title">ค่าเฉลี่ยโซเดียมก่อน-หลังปรับสูตร รายจังหวัด</div>
+                        <div class="chart-card-subtitle">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมดของจังหวัด</div>
                     </div>
                 </div>
-                <div id="sodiumBarChart" style="height: 320px; width: 100%;"></div>
+                <div class="hm-fly-legend">
+                    <span><i style="background: linear-gradient(180deg, #fc8296, #e11d48);"></i>ก่อนปรับสูตร</span>
+                    <span><i style="background: linear-gradient(180deg, #6ee7ac, #15803d);"></i>หลังปรับสูตร</span>
+                </div>
+                <div class="hm-fly">
+                    @foreach ($flyRows as $row)
+                        @php $has = $row['avg_before'] !== null; @endphp
+                        <div class="hm-fly-row">
+                            <div class="hm-fly-prov"><i class="hm-dot" style="background: {{ $miProvColor[$row['province']] ?? '#64748b' }};"></i>{{ $row['province'] }}</div>
+                            <div class="hm-fly-side hm-fly-left" @if ($has) title="ก่อนปรับสูตร เฉลี่ย {{ number_format($row['avg_before'], 1) }} มก." @endif>
+                                @if ($has)
+                                    <span class="hm-fly-val">{{ number_format($row['avg_before']) }}</span>
+                                    <span class="hm-fly-bar hm-fly-before" style="width: {{ max(4, round($row['avg_before'] / $flyMax * 100, 1)) }}%;"></span>
+                                @endif
+                            </div>
+                            <div class="hm-fly-core {{ $row['total'] > 0 ? '' : 'is-empty' }}" title="เมนูทั้งหมด {{ number_format($row['total']) }} เมนู (วัดผลแล้ว {{ number_format($row['measured']) }})">
+                                <b>{{ number_format($row['total']) }}</b><span>เมนู</span>
+                            </div>
+                            <div class="hm-fly-side hm-fly-right" @if ($has) title="หลังปรับสูตร เฉลี่ย {{ number_format($row['avg_after'], 1) }} มก." @endif>
+                                @if ($has)
+                                    <span class="hm-fly-bar hm-fly-after" style="width: {{ max(4, round($row['avg_after'] / $flyMax * 100, 1)) }}%;"></span>
+                                    <span class="hm-fly-val">{{ number_format($row['avg_after']) }}</span>
+                                @else
+                                    <span class="hm-muted hm-fly-none">{{ $row['total'] > 0 ? 'ยังไม่มีเมนูที่วัดครบก่อน-หลัง' : 'ยังไม่รายงาน' }}</span>
+                                @endif
+                            </div>
+                            <div class="hm-fly-pct">
+                                @if ($row['reduction_percent'] !== null)
+                                    <span class="hm-chip {{ $row['reduction_percent'] > 0 ? 'ok' : 'warn' }}">{{ $row['reduction_percent'] > 0 ? '▼' : '▲' }} {{ abs($row['reduction_percent']) }}%</span>
+                                @else
+                                    <span class="hm-muted">—</span>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+
+                    <div class="hm-fly-row hm-fly-total">
+                        <div class="hm-fly-prov"><i class="hm-dot" style="background: #0f766e;"></i>ภาพรวมทั้งเขต</div>
+                        <div class="hm-fly-side hm-fly-left" @if ($flyAllHas) title="ก่อนปรับสูตร เฉลี่ยทั้งเขต {{ number_format($mi['avg_before'], 1) }} มก." @endif>
+                            @if ($flyAllHas)
+                                <span class="hm-fly-val">{{ number_format($mi['avg_before']) }}</span>
+                                <span class="hm-fly-bar hm-fly-before" style="width: {{ max(4, round($mi['avg_before'] / $flyMax * 100, 1)) }}%;"></span>
+                            @endif
+                        </div>
+                        <div class="hm-fly-core {{ $mi['total'] > 0 ? '' : 'is-empty' }}" title="เมนูทั้งหมดในเขต {{ number_format($mi['total']) }} เมนู (วัดผลแล้ว {{ number_format($mi['measured']) }})">
+                            <b>{{ number_format($mi['total']) }}</b><span>เมนู</span>
+                        </div>
+                        <div class="hm-fly-side hm-fly-right" @if ($flyAllHas) title="หลังปรับสูตร เฉลี่ยทั้งเขต {{ number_format($mi['avg_after'], 1) }} มก." @endif>
+                            @if ($flyAllHas)
+                                <span class="hm-fly-bar hm-fly-after" style="width: {{ max(4, round($mi['avg_after'] / $flyMax * 100, 1)) }}%;"></span>
+                                <span class="hm-fly-val">{{ number_format($mi['avg_after']) }}</span>
+                            @else
+                                <span class="hm-muted hm-fly-none">{{ $mi['total'] > 0 ? 'ยังไม่มีเมนูที่วัดครบก่อน-หลัง' : 'ยังไม่รายงาน' }}</span>
+                            @endif
+                        </div>
+                        <div class="hm-fly-pct">
+                            @if ($flyAllHas && $mi['reduction_percent'] !== null)
+                                <span class="hm-chip {{ $mi['reduction_percent'] > 0 ? 'ok' : 'warn' }}">{{ $mi['reduction_percent'] > 0 ? '▼' : '▲' }} {{ abs($mi['reduction_percent']) }}%</span>
+                            @else
+                                <span class="hm-muted">—</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
             </div>
-
-
         </div>
 
+        <div class="mnu-main">
         <!-- Table Section -->
+        <div class="menu-list-head">
+            <div class="mlh-main">
+                <div class="mlh-icon"><i class="fas fa-utensils"></i></div>
+                <div>
+                    <div class="mlh-title">รายการเมนูลดโซเดียม</div>
+                    <div class="mlh-sub">เปรียบเทียบโซเดียมก่อน-หลังปรับสูตรรายเมนู · คลิกที่แถวเพื่อดูรายละเอียด</div>
+                </div>
+            </div>
+            @if ($menus->total() > 0)
+                <span class="mlh-count">แสดง <b>{{ number_format($menus->firstItem()) }}–{{ number_format($menus->lastItem()) }}</b> จากทั้งหมด <b>{{ number_format($menus->total()) }}</b> เมนู</span>
+            @endif
+        </div>
         <div class="menu-table-container">
             <table class="menu-table">
                 <thead>
@@ -2398,6 +2701,8 @@
                 {{ $menus->links('pagination::bootstrap-4') }}
             </div>
         @endif
+        </div><!-- /.mnu-main -->
+        </div><!-- /.mnu-layout -->
     </div>
 
     <!-- Menu Detail Modal -->
@@ -2584,6 +2889,16 @@
 @endsection
 
 @section('extra_js')
+    <script>
+        // ปุ่มเรียงหัวตาราง: กดแล้วให้ชิปหมุนระหว่างรอโหลดหน้าใหม่ (กลับมาจาก bfcache ก็เคลียร์ให้)
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest ? e.target.closest('a.sort-link') : null;
+            if (a && !e.defaultPrevented && !e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) { a.classList.add('is-sorting'); }
+        });
+        window.addEventListener('pageshow', function () {
+            document.querySelectorAll('a.sort-link.is-sorting').forEach(function (a) { a.classList.remove('is-sorting'); });
+        });
+    </script>
     <script src="{{ asset('vendor/highcharts/highmaps.js') }}"></script>
     <script src="{{ asset('vendor/highcharts/th-all.js') }}"></script>
 
@@ -2624,11 +2939,18 @@
             };
 
             const mapDataRaw = @json($mapData);
+            // ขยับป้ายของจังหวัดที่พื้นที่แคบ/ติดกัน ไม่ให้ทับกัน (พิกเซลจากจุดกึ่งกลางพื้นที่)
+            const mnuLabelOffsets = {
+                'ยโสธร': { x: -22, y: -4 }, 'อำนาจเจริญ': { x: 14, y: 8 },
+                'อุบลราชธานี': { x: 16, y: 14 }, 'ศรีสะเกษ': { x: -4, y: 8 }
+            };
             const mapSeriesData = Object.keys(hcMapKeys).map(name => ({
                 'hc-key': hcMapKeys[name],
                 'value': mapDataRaw[name] || 0,
-                'name': name
+                'name': name,
+                'dataLabels': mnuLabelOffsets[name] || {}
             }));
+
 
             if (!Highcharts.maps || !Highcharts.maps['countries/th/th-all']) {
                 console.warn('Highcharts Thailand map data not loaded');
@@ -2670,13 +2992,19 @@
                             states: { hover: { color: '#fb7185' } },
                             dataLabels: {
                                 enabled: true,
-                                format: '{point.name}<br>{point.value} เมนู',
-                                style: {
-                                    fontSize: '11px',
-                                    fontWeight: '700',
-                                    textOutline: 'none',
-                                    color: '#1e293b'
-                                }
+                                useHTML: true,
+                                allowOverlap: true,
+                                crop: false,
+                                overflow: 'allow',
+                                formatter: function () {
+                                    // พื้นสีชมพูเข้ม (ค่าสูง) -> ตัวหนังสือขาว, พื้นอ่อน -> ตัวหนังสือแดงเข้ม
+                                    const mx = Math.max(1, ...Object.values(mapDataRaw).map(Number));
+                                    const dark = (this.point.value || 0) / mx > 0.62;
+                                    return '<div class="mnu-map-label ' + (dark ? 'on-dark' : 'on-light') + '">'
+                                        + '<span class="n">' + Highcharts.numberFormat(this.point.value || 0, 0) + '</span>'
+                                        + '<span class="t">' + this.point.name + '</span></div>';
+                                },
+                                style: { textOutline: 'none', pointerEvents: 'none' }
                             }
                         }
                     },
@@ -2689,114 +3017,28 @@
                 });
             }
 
-            // --- 2. Bar Chart Logic (Global Before vs After) ---
-            const barData = @json($barChartData);
-
-            Highcharts.chart('sodiumBarChart', {
-                chart: {
-                    type: 'column',
-                    backgroundColor: 'transparent',
-                    height: 380,
-                    spacingBottom: 30
-                },
-                title: { text: '' },
-                xAxis: {
-                    categories: ['ปริมาณโซเดียม'],
-                    labels: { enabled: false },
-                    lineColor: '#e2e8f0'
-                },
-                yAxis: {
-                    title: { text: 'ปริมาณโซเดียม (มก.)', style: { fontWeight: '600', color: '#64748b' } },
-                    gridLineDashStyle: 'Dash',
-                    gridLineColor: '#f1f5f9',
-                    labels: { style: { color: '#94a3b8' } }
-                },
-                tooltip: {
-                    headerFormat: '<span style="font-size: 13px; font-weight: bold;">{point.key}</span><br/>',
-                    pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>{point.y:.1f} มก.</b><br/>',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    borderRadius: 12,
-                    borderWidth: 1,
-                    borderColor: '#e2e8f0',
-                    shadow: true
-                },
-                plotOptions: {
-                    column: {
-                        borderRadius: 15,
-                        shadow: barShadow,
-                        dataLabels: {
-                            enabled: true,
-                            format: '{point.y:,.1f} มก.',
-                            style: { fontWeight: '800', fontSize: '14px', textOutline: 'none' },
-                            y: -5
-                        },
-                        groupPadding: 0.1,
-                        pointPadding: 0.1,
-                        maxPointWidth: 120
-                    }
-                },
-                legend: {
-                    align: 'center',
-                    verticalAlign: 'bottom',
-                    itemStyle: { fontSize: '13px', fontWeight: '700', color: '#475569' },
-                    symbolRadius: 6
-                },
-                series: [{
-                    name: 'ก่อนปรับสูตร',
-                    data: [barData.before],
-                    color: {
-                        linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
-                        stops: [[0, '#fb7185'], [1, '#e11d48']]
-                    }
-                }, {
-                    name: 'หลังปรับสูตร',
-                    data: [barData.after],
-                    color: {
-                        linearGradient: { x1: 0, x2: 0, y1: 0, y2: 1 },
-                        stops: [[0, '#4ade80'], [1, '#16a34a']]
-                    }
-                }],
-                credits: { enabled: false }
-            });
-
-            // --- 3. Pie Chart Logic ---
+            // --- 3. รายการ: สถานที่จำหน่าย (โดนัท + รายการสัดส่วนข้างกราฟ ชี้แล้วตัวเลขกลางวงเปลี่ยนตามชิ้นที่ชี้) ---
             const pieDataRaw = @json($pieChartData);
-            const pieData = Object.keys(pieDataRaw).map(key => ({
-                name: key || 'ไม่ระบุข้อมูล',
-                y: pieDataRaw[key]
-            }));
-
-            Highcharts.chart('sourcePieChart', {
-                chart: { type: 'pie', backgroundColor: 'transparent' },
-                title: { text: '' },
-                tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b> ({point.y} เมนู)'
-                },
-                plotOptions: {
-                    pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        shadow: barShadow,
-                        dataLabels: {
-                            enabled: true,
-                            format: '<b>{point.name}</b><br>{point.percentage:.1f} %',
-                            style: { fontSize: '11px', fontWeight: '600', textOutline: 'none' },
-                            distance: 15
-                        },
-                        showInLegend: true
-                    }
-                },
-                legend: {
-                    itemStyle: { fontSize: '11px', fontWeight: '500' }
-                },
-                colors: ['#22d3ee', '#c084fc', '#fb923c', '#4ade80', '#f472b6'].map(toGradient),
-                series: [{
-                    name: 'สัดส่วน',
-                    colorByPoint: true,
-                    data: pieData
-                }],
-                credits: { enabled: false }
-            });
+            const pieColors = ['#1e3fae', '#06b6d4', '#059669', '#f59e0b', '#8b5cf6', '#ec4899', '#14b8a6', '#ef4444'];
+            const pieData = Object.keys(pieDataRaw)
+                .map(key => ({ name: key || 'ไม่ระบุข้อมูล', y: Number(pieDataRaw[key]) || 0 }))
+                .sort((a, b) => b.y - a.y)
+                .map((d, i) => ({ ...d, color: pieColors[i % pieColors.length] }));
+            const pieTotal = pieData.reduce((sum, d) => sum + d.y, 0);
+            const escPie = str => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            // รายการสัดส่วนตามสถานที่จำหน่าย (ไม่มีวงกลม) - พื้นแถวไล่สีตามสัดส่วนจริง
+            const pieListEl = document.getElementById('sourcePieList');
+            if (pieListEl) {
+                pieListEl.innerHTML = pieData.map(d => {
+                    const pct = pieTotal > 0 ? d.y / pieTotal * 100 : 0;
+                    return '<div class="tp-item" style="--tp-c:' + d.color + '; --tp-w:' + pct.toFixed(1) + '%;">'
+                        + '<span class="tp-dot"></span>'
+                        + '<span class="tp-name">' + escPie(d.name) + '</span>'
+                        + '<span class="tp-val"><span class="tp-pct">' + Highcharts.numberFormat(pct, 1) + '%</span>'
+                        + '<span class="tp-cnt">' + Highcharts.numberFormat(d.y, 0) + ' เมนู</span></span>'
+                        + '</div>';
+                }).join('');
+            }
         });
     </script>
 
@@ -2808,7 +3050,7 @@
             // Charts sitting behind the modal (map + graphs) can show through the
             // blurred overlay on some screens/data. Hide them while the modal is
             // open so nothing ever bleeds through, then restore on close.
-            const bgChartIds = ['map-container', 'sourcePieChart', 'sodiumBarChart'];
+            const bgChartIds = ['map-container', 'sourcePieList'];
             function setBgChartsVisible(visible) {
                 bgChartIds.forEach(function (id) {
                     const el = document.getElementById(id);

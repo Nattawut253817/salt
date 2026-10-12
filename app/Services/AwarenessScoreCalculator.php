@@ -147,6 +147,19 @@ class AwarenessScoreCalculator
     protected $mappings;
 
     /**
+     * ค่ากำหนดของแต่ละ role แบบ array ธรรมดา (question_key + คะแนนต่อคำตอบ) ที่ถอดจาก JSON ไว้ "ครั้งเดียว" ตอนสร้างอ็อบเจกต์
+     * เดิม rawScoreForRole() อ่าน $mapping->answer_scores (JSON cast) ใหม่ทุก role ทุกแถว = json_decode หลายแสนครั้งต่อปีงบ
+     *
+     * 'overrides' / 'rawScale' ใช้หา "คะแนนเต็ม" (รหัสดิบก่อนแปลง) ตอน Export - ถอดและเตรียมไว้ครั้งเดียวเช่นกัน
+     *
+     * @var array<string, array{key: string, scores: array, knowledge: bool, overrides: array, rawScale: ?array}>
+     */
+    protected $roleConfig = [];
+
+    /** @var array<string, string> คำตอบดิบ => คำตอบที่ล้างช่องว่างซ้ำแล้ว (คำตอบหนึ่งซ้ำกันเป็นพันแถว จึงไม่ต้อง preg_replace ซ้ำ) */
+    protected $normalizedAnswers = [];
+
+    /**
      * Which role keys belong to each GROUPS entry, precomputed once here
      * instead of inside compute(). ROLES/GROUPS are fixed class constants,
      * so this mapping is identical on every call - compute() previously
@@ -168,6 +181,21 @@ class AwarenessScoreCalculator
     {
         $this->fiscalYear = $fiscalYear;
         $this->mappings = SurveyYearMapping::scoreRoleMappingsFor($fiscalYear);
+
+        foreach (self::ROLES as $roleKey => $meta) {
+            $mapping = $this->mappings[$roleKey] ?? null;
+            if (!$mapping) {
+                continue;
+            }
+            $scores = (array) $mapping->answer_scores;
+            $this->roleConfig[$roleKey] = [
+                'key' => $mapping->question_key,
+                'scores' => $scores,
+                'knowledge' => ($meta['ui_type'] ?? null) === 'knowledge',
+                'overrides' => (array) ($scores[SurveyQuestionSettingsController::RAW_SCORE_STORE_KEY] ?? []),
+                'rawScale' => SurveyQuestionSettingsController::ROLE_ANSWER_RAW_SCORES[$roleKey] ?? null,
+            ];
+        }
     }
 
     protected static function groupMembers(): array
@@ -211,11 +239,18 @@ class AwarenessScoreCalculator
      */
     public function compute(SodiumSurvey $survey, bool $withRawCodes = false): ?array
     {
+        return $this->computeFromData($survey->survey_data ?? [], $withRawCodes);
+    }
+
+    /**
+     * เหมือน compute() แต่รับคำตอบ (survey_data ที่ถอด JSON แล้ว) ตรง ๆ - ใช้กับงานที่ไล่ทั้งปีงบ
+     * เพื่อไม่ต้องสร้างโมเดล Eloquent ต่อแถว (hydrate + cast) หลายหมื่นครั้ง
+     */
+    public function computeFromData(array $data, bool $withRawCodes = false): ?array
+    {
         if (empty($this->mappings)) {
             return null;
         }
-
-        $data = $survey->survey_data ?? [];
 
         // Every leaf role's own score (before any group averaging/maxing) -
         // and, only when a caller actually asked for it ($withRawCodes),
@@ -298,22 +333,21 @@ class AwarenessScoreCalculator
      */
     protected function rawScoreForRole(string $roleKey, array $data): float
     {
-        $mapping = $this->mappings[$roleKey] ?? null;
-        if (!$mapping) {
+        $cfg = $this->roleConfig[$roleKey] ?? null;
+        if ($cfg === null) {
             return 0.0;
         }
 
-        $answer = $data[$mapping->question_key] ?? null;
+        $answer = $data[$cfg['key']] ?? null;
         if ($answer === null || $answer === '') {
             return 0.0;
         }
 
-        if ((self::ROLES[$roleKey]['ui_type'] ?? null) === 'knowledge') {
-            return $this->scoreKnowledgeAnswer($mapping->answer_scores, (string) $answer);
+        if ($cfg['knowledge']) {
+            return $this->scoreKnowledgeAnswer($cfg['scores'], (string) $answer);
         }
 
-        $scores = (array) $mapping->answer_scores;
-        return isset($scores[$answer]) ? (float) $scores[$answer] : 0.0;
+        return isset($cfg['scores'][$answer]) ? (float) $cfg['scores'][$answer] : 0.0;
     }
 
     /**
@@ -335,28 +369,28 @@ class AwarenessScoreCalculator
      */
     protected function preConversionCodeForRole(string $roleKey, array $data): ?float
     {
-        $mapping = $this->mappings[$roleKey] ?? null;
-        if (!$mapping) {
+        $cfg = $this->roleConfig[$roleKey] ?? null;
+        if ($cfg === null) {
             return null;
         }
 
-        $answer = $data[$mapping->question_key] ?? null;
+        $answer = $data[$cfg['key']] ?? null;
         if ($answer === null || $answer === '') {
             return null;
         }
         $answer = (string) $answer;
 
-        $overrides = (array) ($mapping->answer_scores[SurveyQuestionSettingsController::RAW_SCORE_STORE_KEY] ?? []);
-        if (array_key_exists($answer, $overrides)) {
-            return (float) $overrides[$answer];
+        if (array_key_exists($answer, $cfg['overrides'])) {
+            return (float) $cfg['overrides'][$answer];
         }
 
-        $scale = SurveyQuestionSettingsController::ROLE_ANSWER_RAW_SCORES[$roleKey] ?? null;
-        if (!$scale) {
+        if (!$cfg['rawScale']) {
             return null;
         }
-        $normalized = trim(preg_replace('/\s+/u', ' ', $answer));
-        return array_key_exists($normalized, $scale) ? (float) $scale[$normalized] : null;
+        $normalized = $this->normalizedAnswers[$answer]
+            ??= trim(preg_replace('/\s+/u', ' ', $answer));
+
+        return array_key_exists($normalized, $cfg['rawScale']) ? (float) $cfg['rawScale'][$normalized] : null;
     }
 
 

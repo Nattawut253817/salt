@@ -308,6 +308,13 @@
             transition: transform 0.25s ease, box-shadow 0.25s ease;
         }
 
+        /* แถว "รายอำเภอ": การ์ดซ้าย (กราฟแท่ง) ยืดสูงเท่าการ์ดขวา (แผนที่ + คำอธิบายเกณฑ์สี)
+           แล้วให้กราฟขยายเต็มพื้นที่ที่เหลือ ไม่เหลือช่องว่างด้านล่าง */
+        .charts-row-district > .chart-col { display: flex; }
+        .charts-row-district > .chart-col > .chart-card { flex: 1; min-width: 0; display: flex; flex-direction: column; height: auto; }
+        .charts-row-district .chart-card-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .charts-row-district #districtChart { flex: 1; width: 100%; }
+
         .chart-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 10px 28px rgba(0, 0, 0, 0.09);
@@ -374,6 +381,10 @@
         }
 
         /* Province legend chips */
+        /* การ์ดเปรียบเทียบรายจังหวัด: ให้กราฟยืดเต็มความสูงการ์ด (เท่ากับการ์ดข้าง ๆ) ไม่เหลือที่ว่างด้านล่าง */
+        .prov-rate-card { display: flex; flex-direction: column; }
+        .prov-rate-card .chart-card-body { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+        .prov-rate-chart { flex: 1 1 auto; min-height: 420px; width: 100%; }
         .province-legend {
             display: flex;
             flex-wrap: wrap;
@@ -603,6 +614,19 @@
             color: #94a3b8;
         }
 
+        /* "สรุปอัตราป่วยต่อแสนประชากร (รายจังหวัด)": the card sits beside the
+           taller province chart - stretch it to the same height and let the
+           table rows share the spare space, so there is no empty band under
+           the totals row. */
+        .prov-sum-col { display: flex; }
+        .prov-sum-col > .chart-card { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .prov-sum-col .chart-card-body { flex: 1; display: flex; flex-direction: column; }
+        .prov-sum-col .data-table-wrap { flex: 1; display: flex; flex-direction: column; }
+        .prov-sum-col .data-table { flex: 1; height: 100%; }
+        .prov-sum-col .data-table tbody td { padding-top: 12px; padding-bottom: 12px; }
+        .prov-sum-col .data-table tbody tr { height: 16%; }
+        .prov-sum-col .data-table .highlight-tag { margin-top: 2px; }
+
         .data-table tfoot td {
             padding: 16px 16px;
             font-size: 1rem;
@@ -733,6 +757,23 @@
             display: block;
         }
 
+        /* การ์ดแนวโน้มรายเดือน: ปุ่มสลับ รายเดือน/ยอดสะสม + แผงวิเคราะห์ข้างกราฟ
+           (ใช้สไตล์ .hm-tr-seg / .hm-tr-ins / .hm-tr-in ร่วมกับ popup สถานการณ์แนวโน้ม) */
+        .mt-card .chart-card-header { flex-wrap: wrap; }
+        .mt-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 20px; align-items: stretch; }
+        .mt-main { display: flex; flex-direction: column; min-width: 0; }
+        .mt-main #trendChart { flex: 1 1 420px; min-height: 0; width: 100%; }
+        .mt-card .hm-tr-in[hidden] { display: none; }
+        .mt-card[data-mode="m"] .col-c, .mt-card[data-mode="c"] .col-m { display: none; }
+        .mt-card[data-mode="c"] .data-table tbody tr.row-max, .mt-card[data-mode="c"] .data-table tbody tr.row-min { background: transparent; }
+        .data-table.mt-table th:nth-child(n) { width: auto; }
+        .data-table.mt-table th:first-child { width: 15%; }
+        @media (max-width: 960px) {
+            .mt-grid { grid-template-columns: 1fr; }
+            .mt-main #trendChart { flex: none; height: 380px; }
+            .mt-card .hm-tr-in { flex: none; }
+        }
+
         /* Small phones (~375-430px): 12 months of column + cumulative-line
            data labels packed into one narrow chart collide and become
            unreadable. Hide only the cumulative-line's on-point labels — the
@@ -753,6 +794,100 @@
                 min-height: 44px;
             }
         }
+
+        /* คำอธิบายเกณฑ์สีของแผนที่อัตราป่วยรายอำเภอ (ค่าเฉลี่ย ± SD) */
+        .prov-map-grid .rate-legend { position: relative; }
+        .prov-map-info {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            border-radius: 14px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
+            font-family: 'Sarabun', sans-serif;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity .15s ease, visibility .15s ease;
+        }
+        .prov-map-info.show { opacity: 1; visibility: visible; }
+        @media (prefers-reduced-motion: reduce) { .prov-map-info { transition: none; } }
+        .prov-map-info { flex-direction: column; justify-content: center; align-items: stretch; gap: 9px; padding: 12px 18px; }
+        .prov-map-info .pmi-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .prov-map-info .pmi-name { font-weight: 800; color: #0f172a; font-size: 1.08rem; line-height: 1.2; }
+        .prov-map-info .pmi-band {
+            display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+            padding: 3px 10px 3px 8px; border-radius: 999px; border: 1px solid;
+            font-size: 0.76rem; font-weight: 700; line-height: 1.4;
+        }
+        .prov-map-info .pmi-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: 0 0 auto; }
+        .prov-map-info .pmi-main { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+        .prov-map-info .pmi-rate { font-weight: 800; font-size: 2rem; line-height: 1.05; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+        .prov-map-info .pmi-unit { font-size: 0.8rem; font-weight: 600; color: #64748b; }
+        .prov-map-info .pmi-diff { margin-left: auto; font-size: 0.76rem; font-weight: 700; color: #475569; background: #f1f5f9; border-radius: 8px; padding: 2px 8px; white-space: nowrap; }
+        .prov-map-info .pmi-stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid #e2e8f0; padding-top: 8px; }
+        .prov-map-info .pmi-stat + .pmi-stat { border-left: 1px solid #e2e8f0; padding-left: 14px; }
+        .prov-map-info .pmi-stat-label { font-size: 0.72rem; color: #64748b; line-height: 1.3; }
+        .prov-map-info .pmi-stat-value { font-size: 0.98rem; font-weight: 800; color: #1e293b; font-variant-numeric: tabular-nums; line-height: 1.35; }
+        .prov-map-info .pmi-stat-value small { font-size: 0.74rem; font-weight: 600; color: #64748b; margin-left: 3px; }
+        .rate-legend { margin-top: 14px; padding: 14px 16px; border: 1px solid #e8edf3; border-radius: 14px; background: #fafbfd; }
+        .rate-legend-title { font-weight: 800; font-size: 0.85rem; color: #1e293b; margin-bottom: 10px; }
+        .rate-legend-title i { color: #64748b; margin-right: 6px; }
+        .rate-legend-rows { display: flex; flex-direction: column; gap: 8px; }
+        .rate-legend-row { display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: #334155; }
+        .rate-sw { flex: 0 0 22px; height: 14px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.12); }
+        .rate-legend-txt { flex: 1; line-height: 1.4; }
+        .rate-legend-txt em { font-style: normal; color: #94a3b8; font-size: 0.76rem; }
+        .rate-legend-cnt { flex: 0 0 auto; min-width: 54px; text-align: center; padding: 2px 10px; border-radius: 999px; background: #eef2f7; font-weight: 800; font-size: 0.78rem; color: #334155; }
+        .prov-map-grid { display: flex; flex-direction: column; gap: 12px; }
+        /* 3 การ์ดในแถวเดียว: แผนที่ | กราฟแท่ง | ตารางสรุป - ลดเหลือ 2/1 คอลัมน์อัตโนมัติเมื่อจอแคบ */
+        .charts-row.charts-row-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(390px, 1fr)); gap: 20px; align-items: stretch; }
+        .charts-row-3 > .chart-col { min-width: 0; margin-bottom: 20px; display: flex; flex-basis: auto; }
+        .charts-row-3 > .chart-col > .chart-card { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        .charts-row-3 .chart-card-body { flex: 1; min-width: 0; }
+        .charts-row-3 .data-table th, .charts-row-3 .data-table td { padding-left: 6px; padding-right: 6px; font-size: 0.78rem; }
+        .charts-row-3 .data-table th { white-space: normal; line-height: 1.25; }
+        .charts-row-3 .data-table .highlight-tag { display: inline-block; margin-top: 3px; }
+        .charts-row-3 .data-table-wrap { overflow-x: auto; }
+        .charts-row-3 .data-table th:nth-child(1) { width: 11%; }
+        .charts-row-3 .data-table th:nth-child(2) { width: 27%; }
+        .charts-row-3 .data-table th:nth-child(3) { width: 18%; }
+        .charts-row-3 .data-table th:nth-child(4) { width: 22%; }
+        .charts-row-3 .data-table th:nth-child(5) { width: 22%; }
+        .charts-row-3 .data-table .bar-track { display: none; }
+        .charts-row-3 .data-table .bar-cell { justify-content: flex-end; }
+        .charts-row-3 .rate-legend { padding: 12px 14px; }
+        .charts-row-3 .rate-legend-txt { font-size: 0.78rem; }
+        /* การ์ดแผนที่รายจังหวัด: ข้อความเด่นชัด อ่านง่ายขึ้น */
+        .chart-subtitle.prov-map-sub { font-size: 0.86rem; font-weight: 600; color: #475569; line-height: 1.45; margin-top: 3px; }
+        .prov-map-grid .rate-legend { padding: 14px 16px; background: #f8fafc; }
+        .prov-map-grid .rate-legend-title { font-size: 0.95rem; }
+        .prov-map-grid .rate-legend-row { font-size: 0.9rem; gap: 12px; }
+        .charts-row-3 .prov-map-grid .rate-legend-txt { font-size: 0.88rem; line-height: 1.45; color: #1e293b; }
+        .prov-map-grid .rate-legend-txt b { color: #0f172a; }
+        .prov-map-grid .rate-legend-txt em { color: #64748b; font-size: 0.8rem; }
+        .prov-map-grid .rate-sw { flex-basis: 8px; height: 30px; border-radius: 99px; }
+        .prov-map-grid .rate-legend-cnt { font-size: 0.84rem; padding: 3px 11px; background: #e8eef5; color: #1e293b; }
+        .rate-legend-note { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #dfe6ee; font-size: 0.76rem; line-height: 1.55; color: #64748b; }
+
+        /* แถว 3 การ์ด (แผนที่ | กราฟแท่ง | ตารางสรุป): ลดความสูงให้กระชับ */
+        .charts-row-3 .chart-card-header { padding: 12px 18px; gap: 10px; }
+        .charts-row-3 .chart-icon-badge { width: 34px; height: 34px; border-radius: 10px; font-size: .95rem; }
+        .charts-row-3 .chart-card-body { padding: 12px 16px 14px; }
+        .charts-row-3 #provinceMapContainer { height: 270px !important; }
+        .charts-row-3 .prov-map-grid { gap: 8px; }
+        .charts-row-3 .prov-map-grid .rate-legend { padding: 9px 12px; }
+        .charts-row-3 .prov-map-grid .rate-legend-title { font-size: .86rem; margin-bottom: 6px; }
+        .charts-row-3 .prov-map-grid .rate-legend-rows { gap: 5px; }
+        .charts-row-3 .prov-map-grid .rate-legend-row { font-size: .84rem; gap: 10px; }
+        .charts-row-3 .prov-map-grid .rate-legend-txt { font-size: .82rem; line-height: 1.35; }
+        .charts-row-3 .prov-map-grid .rate-sw { height: 24px; }
+        .charts-row-3 .prov-rate-chart { min-height: 330px; }
+        .charts-row-3 .prov-sum-col .data-table tbody td { padding-top: 7px; padding-bottom: 7px; }
+        .charts-row-3 .prov-sum-col .data-table tfoot td { padding: 10px 12px; font-size: .92rem; }
     </style>
 @endsection
 
@@ -783,7 +918,12 @@
         // --- Summary stats ---
         $totalCasesSum = $provinceTotals->sum('total_a');
         $totalTargetSum = $provinceTotals->sum('target_b');
-        $overallRate = $totalTargetSum > 0 ? ($totalCasesSum / $totalTargetSum) * 100000 : 0;
+        // อัตราป่วยภาพรวม = ผู้ป่วยรวม ÷ ประชากรเป้าหมายรวม x 100,000 (คิดแบบ pooled ไม่ใช่ค่าเฉลี่ยของอัตรารายจังหวัด)
+        // นับเฉพาะจังหวัดที่มีเป้าหมายประชากร เพื่อไม่ให้ผู้ป่วยของจังหวัดที่ไม่มีตัวหารไปทำให้อัตราสูงเกินจริง
+        $rateBase = $provinceTotals->filter(fn($p) => ($p['target_b'] ?? 0) > 0);
+        $overallRateCases = (float) $rateBase->sum('total_a');
+        $overallRateTarget = (float) $rateBase->sum('target_b');
+        $overallRate = $overallRateTarget > 0 ? ($overallRateCases / $overallRateTarget) * 100000 : 0;
         $topProvince = $provinceTotals->sortByDesc('rate')->first();
         $topProvinceColor = $topProvince ? ($colors[$topProvince['name']]['prov'] ?? $defaultColors['prov']) : $defaultColors['prov'];
 
@@ -796,6 +936,16 @@
 
     @endphp
 
+    {{-- ข้อมูลของป้าย "ข้อมูลอัปเดตล่าสุด" + ปุ่ม "สถานการณ์แนวโน้ม" ที่อยู่ท้ายแถวตัวกรอง (popup ใช้ร่วมกับหน้าแรก) --}}
+    @php
+        $htUpdText = null;
+        if (!empty($htUpdatedAt ?? null)) {
+            $htUpd = \Carbon\Carbon::parse($htUpdatedAt)->timezone('Asia/Bangkok');
+            $thMon = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+            $htUpdText = $htUpd->day . ' ' . $thMon[$htUpd->month - 1] . ' ' . ($htUpd->year + 543) . ' เวลา ' . $htUpd->format('H:i') . ' น.';
+        }
+        $htTrendData = $htTrendPop ?? null;
+    @endphp
     <!-- Filter Section -->
     <form action="{{ route('new-ht-cases') }}" method="GET" class="awr-filter-bar">
         @if($hideLayout ?? false)
@@ -818,19 +968,6 @@
                 @foreach($years as $year)
                     <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
                         {{ $year }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="awr-filter-item">
-            <i class="fas fa-calendar-week awr-filter-icon"></i>
-            <span class="awr-filter-field-label">ไตรมาส</span>
-            <select name="quarter" class="awr-filter-select" onchange="this.form.submit()">
-                <option value="ทั้งหมด" {{ ($selectedQuarter ?? 'ทั้งหมด') == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งปี</option>
-                @foreach($quarterOptions as $key => $label)
-                    <option value="{{ $key }}" {{ ($selectedQuarter ?? 'ทั้งหมด') == $key ? 'selected' : '' }}>
-                        {{ $label }}
                     </option>
                 @endforeach
             </select>
@@ -870,13 +1007,27 @@
             <i class="fas fa-sync-alt"></i>
             <span>ล้างตัวกรอง</span>
         </a>
+
+        @if ($htUpdText)
+            <div class="awr-filter-actions">
+                @if ($htUpdText)
+                    <span class="ht-upd-chip" title="วันที่อัปโหลด/แก้ไขไฟล์ข้อมูล HT ล่าสุด">
+                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
+                        <span class="l">ข้อมูลอัปเดตล่าสุด</span>
+                        <b>{{ $htUpdText }}</b>
+                    </span>
+                @endif
+            </div>
+        @endif
     </form>
 
-    @if(($selectedQuarter ?? 'ทั้งหมด') !== 'ทั้งหมด')
-        <div class="month-filter-banner">
-            <i class="fas fa-circle-info"></i>
-            <span>กำลังแสดงข้อมูลเฉพาะ <strong>{{ $quarterOptions[$selectedQuarter] ?? $selectedQuarter }}</strong> เท่านั้น — การ์ดสรุป, กราฟ/ตารางเปรียบเทียบรายจังหวัด-อำเภอ และแผนที่ด้านล่างจะแสดงยอดของไตรมาสนี้ ส่วนกราฟแนวโน้มรายเดือนยังคงแสดงข้อมูลทั้งปีไว้เพื่อเทียบเคียง</span>
-        </div>
+    @if ($htTrendData)
+        @include('pages.partials.ht-trend-popup', [
+            'htTrend' => $htTrendData,
+            'htTrendColors' => array_map(fn($c) => $c['prov'], $colors),
+            'htTrendScope' => $isAllProv ? 'เขต 10 (5 จังหวัด)' : $selectedProv,
+            'htTrendProvince' => $isAllProv ? 'all' : $selectedProv,
+        ])
     @endif
 
     <!-- Summary Stats -->
@@ -928,10 +1079,85 @@
 
     <!-- Charts Section -->
     @if ($isAllProv)
-        <div class="charts-row">
+        {{-- แผนที่อัตราป่วยรายจังหวัด: แบ่งสีด้วยค่าเฉลี่ย ± SD ของ 5 จังหวัดในเขต 10 (วิธีเดียวกับแผนที่รายอำเภอ) --}}
+        @php
+            $prs = $provinceRateStats ?? null;
+            $provHcKeys = ['อุบลราชธานี' => 'th-ur', 'ศรีสะเกษ' => 'th-si', 'ยโสธร' => 'th-ys', 'อำนาจเจริญ' => 'th-ac', 'มุกดาหาร' => 'th-md'];
+            $provBandOf = function ($row) use ($prs) {
+                if (!($row['target_b'] > 0)) return 'none';
+                $r = round($row['rate'], 2);
+                if ($r >= $prs['high']) return 'red';
+                if ($r <= $prs['low']) return 'green';
+                return 'yellow';
+            };
+            $provBandLabel = ['red' => 'อัตราสูง', 'yellow' => 'อัตราปานกลาง', 'green' => 'อัตราต่ำ', 'none' => 'ไม่มีข้อมูลเป้าหมาย'];
+            $provBandColor = ['red' => '#d6303a', 'yellow' => '#f2c230', 'green' => '#2f9e5b', 'none' => '#cbd5e1'];
+            $provMapRows = collect();
+            if ($prs && $prs['count'] > 1 && $prs['high'] !== null) {
+                $provMapRows = $mapProvinceTotals->sortByDesc('rate')->values()->map(function ($row) use ($provBandOf, $provHcKeys) {
+                    $row['band'] = $provBandOf($row);
+                    $row['hc_key'] = $provHcKeys[$row['name']] ?? null;
+                    return $row;
+                });
+            }
+            $provBandCount = fn($b) => $provMapRows->where('band', $b)->count();
+        @endphp
+        {{-- 3 การ์ดอยู่แถวเดียวกัน: แผนที่ | กราฟแท่ง | ตารางสรุป (ถ้าไม่มีแผนที่จะกลับเป็น 2 การ์ดเหมือนเดิม) --}}
+        <div class="charts-row {{ $provMapRows->isNotEmpty() ? 'charts-row-3' : '' }}">
+        @if ($provMapRows->isNotEmpty())
+            <div class="chart-col third">
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <div class="chart-icon-badge" style="background: {{ $provColor }};">
+                            <i class="fas fa-map-location-dot"></i>
+                        </div>
+                        <div class="chart-title-group">
+                            <p class="chart-title">แผนที่อัตราป่วยต่อแสนประชากร (รายจังหวัด)</p>
+                            <div class="chart-subtitle prov-map-sub">เขตสุขภาพที่ 10 · แบ่งสีจากค่าเฉลี่ย ± SD ของอัตราป่วยทั้ง {{ $prs['count'] }} จังหวัด@if($provBandCount('none') > 0) (ไม่นับ {{ $provMapRows->where('band', 'none')->pluck('name')->implode(', ') }} เพราะยังไม่มีเป้าหมายประชากรปีนี้)@endif</div>
+                        </div>
+                    </div>
+                    <div class="chart-card-body">
+                        <div class="prov-map-grid">
+                            <div id="provinceMapContainer" style="height: 350px;"></div>
+                            <div class="rate-legend" style="margin-top:0;">
+                                <div class="rate-legend-title"><i class="fas fa-circle-info"></i> วิธีแบ่งสี : ค่าเฉลี่ย ± ส่วนเบี่ยงเบนมาตรฐาน (SD)</div>
+                                <div class="rate-legend-rows">
+                                    <div class="rate-legend-row" data-band="red">
+                                        <span class="rate-sw" style="background:#d6303a;"></span>
+                                        <span class="rate-legend-txt"><b>สีแดง</b> อัตราสูง · มากกว่าหรือเท่ากับ <b>{{ number_format($prs['high'], 2) }}</b> <em>(ค่าเฉลี่ย + SD)</em></span>
+                                        <span class="rate-legend-cnt">{{ $provBandCount('red') }} จังหวัด</span>
+                                    </div>
+                                    <div class="rate-legend-row" data-band="yellow">
+                                        <span class="rate-sw" style="background:#f2c230;"></span>
+                                        <span class="rate-legend-txt"><b>สีเหลือง</b> อัตราปานกลาง · <b>{{ number_format($prs['low'] + 0.01, 2) }} – {{ number_format($prs['high'] - 0.01, 2) }}</b></span>
+                                        <span class="rate-legend-cnt">{{ $provBandCount('yellow') }} จังหวัด</span>
+                                    </div>
+                                    <div class="rate-legend-row" data-band="green">
+                                        <span class="rate-sw" style="background:#2f9e5b;"></span>
+                                        <span class="rate-legend-txt"><b>สีเขียว</b> อัตราต่ำ · น้อยกว่าหรือเท่ากับ <b>{{ number_format($prs['low'], 2) }}</b> <em>(ค่าเฉลี่ย − SD)</em></span>
+                                        <span class="rate-legend-cnt">{{ $provBandCount('green') }} จังหวัด</span>
+                                    </div>
+                                    @if($provBandCount('none') > 0)
+                                    <div class="rate-legend-row" data-band="none">
+                                        <span class="rate-sw" style="background:#cbd5e1;"></span>
+                                        <span class="rate-legend-txt"><b>สีเทา</b> ไม่มีข้อมูลเป้าหมายประชากร · ไม่นำมาคิดเกณฑ์</span>
+                                        <span class="rate-legend-cnt">{{ $provBandCount('none') }} จังหวัด</span>
+                                    </div>
+                                    @endif
+                                </div>
+                                {{-- ชี้/แตะจังหวัด -> รายละเอียดแสดงทับช่องคำอธิบายนี้ (แทน tooltip ลอยที่บังแผนที่) พอไม่ชี้ก็กลับเป็นคำอธิบายสี --}}
+                                <div class="prov-map-info" id="provMapInfo" aria-live="polite"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+
             <!-- Provincial Rates Chart (left) -->
             <div class="chart-col half">
-                <div class="chart-card">
+                <div class="chart-card prov-rate-card">
                     <div class="chart-card-header">
                         <div class="chart-icon-badge" style="background: {{ $provColor }};">
                             <i class="fas fa-city"></i>
@@ -944,12 +1170,12 @@
                     <div class="chart-card-body">
                         @if($provinceTotals->isNotEmpty())
                             <div class="province-legend">
-                                @foreach($colors as $name => $c)
-                                    <span class="legend-chip"><span class="legend-dot"
-                                            style="background: {{ $c['prov'] }};"></span>{{ $name }}</span>
-                                @endforeach
+                                <span class="legend-chip"><span class="legend-dot"
+                                        style="background: {{ $provColor }};"></span>อัตราป่วยรายจังหวัด</span>
+                                <span class="legend-chip"><span class="legend-dot"
+                                        style="background: #334155;"></span>ภาพรวม = อัตราป่วยรวมทั้งเขต (ต่อแสนประชากร)</span>
                             </div>
-                            <div id="provinceChart" style="height: 420px;"></div>
+                            <div id="provinceChart" class="prov-rate-chart"></div>
                         @else
                             <div class="empty-chart-state">
                                 <i class="fas fa-chart-bar"></i>
@@ -967,7 +1193,7 @@
                  filter. Replaces the earlier region overview map with a
                  table so the ranking and the highest/lowest province are
                  immediately readable rather than requiring a map legend. -->
-            <div class="chart-col half">
+            <div class="chart-col half prov-sum-col">
                 <div class="chart-card">
                     <div class="chart-card-header">
                         <div class="chart-icon-badge" style="background: {{ $provColor }};">
@@ -1015,7 +1241,7 @@
                                             <tr class="{{ $row['name'] === $mapHighName ? 'row-max' : ($row['name'] === $mapLowName ? 'row-min' : '') }}">
                                                 <td><span class="rank-pill {{ $i === 0 ? 'rank-1' : '' }}">{{ $i + 1 }}</span></td>
                                                 <td class="label-cell">
-                                                    <span class="legend-dot" style="display:inline-block;background: {{ $colors[$row['name']]['prov'] ?? $defaultColors['prov'] }};"></span>
+                                                    <span class="legend-dot" style="display:inline-block;background: {{ $provColor }};"></span>
                                                     {{ $row['name'] }}
                                                     @if($row['name'] === $mapHighName)
                                                         <span class="highlight-tag tag-high"><i class="fas fa-triangle-exclamation"></i> สูงสุด</span>
@@ -1029,7 +1255,7 @@
                                                     @if($row['target_b'] > 0)
                                                         <div class="bar-cell">
                                                             <div class="bar-track">
-                                                                <div class="bar-fill" style="width: {{ $mapMaxRate > 0 ? min(100, ($row['rate'] / $mapMaxRate) * 100) : 0 }}%; background: {{ $colors[$row['name']]['prov'] ?? $defaultColors['prov'] }};"></div>
+                                                                <div class="bar-fill" style="width: {{ $mapMaxRate > 0 ? min(100, ($row['rate'] / $mapMaxRate) * 100) : 0 }}%; background: {{ $provColor }};"></div>
                                                             </div>
                                                             <span class="bar-figure">{{ number_format($row['rate'], 2) }}</span>
                                                         </div>
@@ -1061,7 +1287,7 @@
             </div>
         </div>
     @else
-        <div class="charts-row">
+        <div class="charts-row charts-row-district">
             <!-- District Rates Chart (left) -->
             <div class="chart-col half">
                 <div class="chart-card">
@@ -1076,7 +1302,7 @@
                     </div>
                     <div class="chart-card-body">
                         @if($districtTotals->isNotEmpty())
-                            <div id="districtChart" style="height: 570px;"></div>
+                            <div id="districtChart" style="min-height: 570px;"></div>
                         @else
                             <div class="empty-chart-state">
                                 <i class="fas fa-chart-bar"></i>
@@ -1104,6 +1330,35 @@
                     </div>
                     <div class="chart-card-body">
                         <div id="districtMapContainer" style="height: 570px;"></div>
+                        @php $drs = $districtRateStats ?? null; @endphp
+                        @if ($drs && $drs['count'] > 1 && $drs['high'] !== null)
+                            <div class="rate-legend" id="districtRateLegend">
+                                <div class="rate-legend-title"><i class="fas fa-circle-info"></i> วิธีแบ่งสี : ค่าเฉลี่ย ± ส่วนเบี่ยงเบนมาตรฐาน (SD)</div>
+                                <div class="rate-legend-rows">
+                                    <div class="rate-legend-row">
+                                        <span class="rate-sw" style="background:#d6303a;"></span>
+                                        <span class="rate-legend-txt"><b>สีแดง</b> อัตราสูง · มากกว่าหรือเท่ากับ <b>{{ number_format($drs['high'], 2) }}</b> <em>(ค่าเฉลี่ย + SD)</em></span>
+                                        <span class="rate-legend-cnt" data-rate-count="red">–</span>
+                                    </div>
+                                    <div class="rate-legend-row">
+                                        <span class="rate-sw" style="background:#f2c230;"></span>
+                                        <span class="rate-legend-txt"><b>สีเหลือง</b> อัตราปานกลาง · <b>{{ number_format($drs['low'] + 0.01, 2) }} – {{ number_format($drs['high'] - 0.01, 2) }}</b></span>
+                                        <span class="rate-legend-cnt" data-rate-count="yellow">–</span>
+                                    </div>
+                                    <div class="rate-legend-row">
+                                        <span class="rate-sw" style="background:#2f9e5b;"></span>
+                                        <span class="rate-legend-txt"><b>สีเขียว</b> อัตราต่ำ · น้อยกว่าหรือเท่ากับ <b>{{ number_format($drs['low'], 2) }}</b> <em>(ค่าเฉลี่ย − SD)</em></span>
+                                        <span class="rate-legend-cnt" data-rate-count="green">–</span>
+                                    </div>
+                                </div>
+                                <div class="rate-legend-note">
+                                    ค่าเฉลี่ย <b>{{ number_format($drs['mean'], 2) }}</b> · SD <b>{{ number_format($drs['sd'], 2) }}</b> ต่อแสนประชากร
+                                    (เกณฑ์คำนวณอัตโนมัติจากอัตราป่วยของ {{ $drs['count'] }} อำเภอใน{{ $selectedProv }} ตามปีงบประมาณที่เลือก จึงเปลี่ยนไปตามข้อมูลของแต่ละจังหวัด ·
+                                    ค่าเฉลี่ยเป็นค่าเฉลี่ยธรรมดาของอัตรารายอำเภอ (ไม่ถ่วงน้ำหนักประชากร) และ SD เป็นแบบกลุ่มตัวอย่าง (n−1) ·
+                                    ตัวเลขด้านขวาคือจำนวนอำเภอในแต่ละระดับ · อำเภอที่ไม่มีข้อมูลประชากรเป้าหมายแสดงสีเทา)
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1111,72 +1366,115 @@
     @endif
 
     <!-- Trend Chart -->
+    @php
+        $mc = $monthlyCompare ?? ['year' => null, 'last_idx' => null, 'series' => [], 'insights' => []];
+        $mcPrev = count($mc['series']) ? end($mc['series']) : null;
+        $trendLabelsList = array_keys($monthlyTrend);
+        $trendValsList = array_values($monthlyTrend);
+        $cumValsList = array_values($cumulativeTrend);
+        $trendMaxVal = count($trendValsList) ? max($trendValsList) : 0;
+        $trendMinVal = count($trendValsList) ? min($trendValsList) : 0;
+        $trendMaxIdx = array_search($trendMaxVal, $trendValsList);
+        $trendMinIdx = array_search($trendMinVal, $trendValsList);
+        $trendHasVariation = $trendMaxVal > 0 && $trendMaxIdx !== $trendMinIdx;
+        $fmtDiff = function ($d, $base) {
+            if ($d === null) { return '<span style="color:#94a3b8;">&mdash;</span>'; }
+            $pct = $base ? ($d / $base) * 100 : null;
+            return '<span style="color:' . ($d > 0 ? '#e74c3c' : ($d < 0 ? '#27ae60' : '#94a3b8')) . ';font-weight:700;">'
+                . ($d > 0 ? '&#9650;' : ($d < 0 ? '&#9660;' : '&minus;')) . ' ' . number_format(abs($d))
+                . ($pct !== null ? ' (' . ($pct > 0 ? '+' : '') . number_format(abs($pct), 1) . '%)' : '') . '</span>';
+        };
+        // เน้นตัวเลข/ปี/เดือน/ร้อยละในข้อความวิเคราะห์ (ชุดเดียวกับแผงใน popup)
+        $hmEm = function ($raw) {
+            $t = e((string) $raw);
+            $re = '/(ปี(?:งบ)?\s\d{4}|(?<=→)\d{4})|(\(?[+\-]\d[\d,]*(?:\.\d+)?%\)?)|(เพิ่มขึ้น|ลดลง|ใกล้เคียงเดิม)|(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+\.\d+|\d+(?=\s?(?:คน|ต่อแสน|จังหวัด)))|((?<=เดือน)(?:ม\.ค\.|ก\.พ\.|มี\.ค\.|เม\.ย\.|พ\.ค\.|มิ\.ย\.|ก\.ค\.|ส\.ค\.|ก\.ย\.|ต\.ค\.|พ\.ย\.|ธ\.ค\.))/u';
+            return preg_replace_callback($re, function ($m) {
+                if (($m[1] ?? '') !== '') { return '<span class="yr">' . $m[1] . '</span>'; }
+                if (($m[2] ?? '') !== '') { $g = trim($m[2], '()'); $v = (float) str_replace(',', '', $g); return '<span class="pc ' . (abs($v) < 2 ? 'flat' : ($v > 0 ? 'up' : 'down')) . '">' . ltrim($g, '-') . '</span>'; }
+                if (($m[3] ?? '') !== '') { return '<span class="vb ' . ($m[3] === 'เพิ่มขึ้น' ? 'up' : ($m[3] === 'ลดลง' ? 'down' : 'flat')) . '">' . $m[3] . '</span>'; }
+                return '<strong>' . $m[0] . '</strong>';
+            }, $t);
+        };
+    @endphp
     <div class="chart-col full">
-        <div class="chart-card">
+        <div class="chart-card mt-card" id="mtCard" data-mode="m">
             <div class="chart-card-header">
                 <div class="chart-icon-badge" style="background: {{ $provColor }};">
                     <i class="fas fa-heart-pulse"></i>
                 </div>
                 <div class="chart-title-group">
                     <p class="chart-title">แนวโน้มจำนวนผู้ป่วยรายใหม่ รายเดือน</p>
-                    <div class="chart-subtitle">ตามปีงบประมาณที่เลือก แสดงจำนวนรายเดือนและยอดสะสม</div>
+                    <div class="chart-subtitle" id="mtSub">ตามปีงบประมาณที่เลือก แสดงจำนวนรายเดือน{{ $mcPrev ? ' เทียบปีก่อน' : '' }}</div>
+                </div>
+                <div class="hm-tr-seg" id="mtSeg" role="group" aria-label="เลือกมุมมองกราฟและตาราง">
+                    <button type="button" data-mode="m" aria-pressed="true">รายเดือน</button>
+                    <button type="button" data-mode="c" aria-pressed="false">ยอดสะสม</button>
                 </div>
             </div>
             <div class="chart-card-body">
-                <div id="trendChart" style="height: 420px; width: 100%;"></div>
-                <div id="trendDetailPanel" class="trend-detail-panel" style="--tdp-color: {{ $provColor }};">
-                    <div class="tdp-placeholder">
-                        <i class="fas fa-hand-pointer"></i>
-                        <span>คลิกที่แท่งกราฟเดือนใดก็ได้ เพื่อดูรายละเอียดของเดือนนั้น</span>
-                    </div>
-                    <div class="tdp-content">
-                        <div class="tdp-header" id="tdpHeader"></div>
-                        <div class="tdp-stats">
-                            <div class="tdp-stat">
-                                <div class="tdp-stat-label"><span class="tdp-dot" style="background: #3498db;"></span>ผู้ป่วยรายใหม่เดือนนี้</div>
-                                <div class="tdp-stat-value" id="tdpValue"></div>
+                <div class="mt-grid">
+                    <div class="mt-main">
+                        <div id="trendChart"></div>
+                        <div id="trendDetailPanel" class="trend-detail-panel" style="--tdp-color: {{ $provColor }};">
+                            <div class="tdp-placeholder">
+                                <i class="fas fa-hand-pointer"></i>
+                                <span>คลิกที่แท่งกราฟเดือนใดก็ได้ เพื่อดูรายละเอียดของเดือนนั้น</span>
                             </div>
-                            <div class="tdp-stat">
-                                <div class="tdp-stat-label">เปลี่ยนแปลงจากเดือนก่อน</div>
-                                <div class="tdp-stat-value" id="tdpDiff"></div>
-                            </div>
-                            <div class="tdp-stat">
-                                <div class="tdp-stat-label"><span class="tdp-dot" style="background: {{ $provColor }};"></span>ยอดสะสมถึงเดือนนี้</div>
-                                <div class="tdp-stat-value" id="tdpCumulative"></div>
+                            <div class="tdp-content">
+                                <div class="tdp-header" id="tdpHeader"></div>
+                                <div class="tdp-stats">
+                                    <div class="tdp-stat">
+                                        <div class="tdp-stat-label"><span class="tdp-dot" style="background: #3498db;"></span>ผู้ป่วยรายใหม่เดือนนี้</div>
+                                        <div class="tdp-stat-value" id="tdpValue"></div>
+                                    </div>
+                                    <div class="tdp-stat">
+                                        <div class="tdp-stat-label">เปลี่ยนแปลงจากเดือนก่อน</div>
+                                        <div class="tdp-stat-value" id="tdpDiff"></div>
+                                    </div>
+                                    <div class="tdp-stat">
+                                        <div class="tdp-stat-label"><span class="tdp-dot" style="background: {{ $provColor }};"></span>ยอดสะสมถึงเดือนนี้</div>
+                                        <div class="tdp-stat-value" id="tdpCumulative"></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <aside class="hm-tr-ins mt-ins" aria-label="การวิเคราะห์">
+                        <h5>การวิเคราะห์จากข้อมูลจริง</h5>
+                        <ul class="hm-tr-list" id="mtInsList" aria-live="polite">
+                            @foreach ($mc['insights'] as $in)
+                                <li class="hm-tr-in {{ $in['tone'] }}" data-mode="{{ $in['mode'] }}"{{ $in['mode'] === 'c' ? ' hidden' : '' }}>
+                                    <span class="hm-tr-ic" aria-hidden="true">{{ ['up' => '▲', 'down' => '▼', 'flat' => '●', 'info' => 'i'][$in['tone']] }}</span>
+                                    <div><span class="hm-tr-ti">{{ $in['title'] }}</span><span class="hm-tr-tx">{!! $hmEm($in['text']) !!}</span></div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </aside>
                 </div>
 
-                {{-- Full 12-month table - hidden until a bar is clicked
-                     (see .trend-monthly-table / #trendMonthlyTable and the
-                     showMonthDetail() JS below), then shows "ทุกเดือน" at a
-                     glance, reusing the same .data-table / row-max / row-min
-                     / highlight-tag styling as the province table above it
-                     so it reads as the same kind of thing, not a new
-                     pattern. --}}
+                {{-- ตารางรายเดือนทั้งหมด - ซ่อนไว้จนกว่าจะคลิกแท่ง/จุดบนกราฟ (ดู showMonthDetail() ด้านล่าง)
+                     คอลัมน์สลับตามปุ่ม รายเดือน/ยอดสะสม ผ่าน .col-m / .col-c และมีคอลัมน์เทียบปีก่อนเมื่อมีข้อมูลปีก่อน --}}
                 <div class="trend-monthly-table" id="trendMonthlyTable">
-                @php
-                    $trendLabelsList = array_keys($monthlyTrend);
-                    $trendValsList = array_values($monthlyTrend);
-                    $cumValsList = array_values($cumulativeTrend);
-                    $trendMaxVal = count($trendValsList) ? max($trendValsList) : 0;
-                    $trendMinVal = count($trendValsList) ? min($trendValsList) : 0;
-                    $trendMaxIdx = array_search($trendMaxVal, $trendValsList);
-                    $trendMinIdx = array_search($trendMinVal, $trendValsList);
-                    $trendHasVariation = $trendMaxVal > 0 && $trendMaxIdx !== $trendMinIdx;
-                @endphp
                 <div style="margin-top: 20px; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700; color: #64748b;">
                     <i class="fas fa-table-list" style="margin-right: 6px;"></i>ตารางข้อมูลรายเดือนทั้งหมด
                 </div>
                 <div class="data-table-wrap">
-                    <table class="data-table">
+                    <table class="data-table mt-table">
                         <thead>
                             <tr>
                                 <th>เดือน</th>
-                                <th class="num">ผู้ป่วยรายใหม่ (คน)</th>
-                                <th class="num">เปลี่ยนแปลงจากเดือนก่อน</th>
-                                <th class="num">ยอดสะสม (คน)</th>
+                                <th class="num col-m">ผู้ป่วยรายใหม่ (คน)</th>
+                                <th class="num col-m">เปลี่ยนแปลงจากเดือนก่อน</th>
+                                @if($mcPrev)
+                                    <th class="num col-m">ปี {{ $mcPrev['year'] }} (คน)</th>
+                                    <th class="num col-m">เทียบปี {{ $mcPrev['year'] }}</th>
+                                @endif
+                                <th class="num col-c">ยอดสะสม (คน)</th>
+                                <th class="num col-c">เพิ่มในเดือนนี้ (คน)</th>
+                                @if($mcPrev)
+                                    <th class="num col-c">ยอดสะสมปี {{ $mcPrev['year'] }}</th>
+                                    <th class="num col-c">เทียบปี {{ $mcPrev['year'] }}</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -1187,18 +1485,21 @@
                                     $diff = $prevVal !== null ? $val - $prevVal : null;
                                     $pct = ($diff !== null && $prevVal) ? ($diff / $prevVal) * 100 : null;
                                     $rowClass = $trendHasVariation && $i === $trendMaxIdx ? 'row-max' : ($trendHasVariation && $i === $trendMinIdx ? 'row-min' : '');
+                                    $reportedI = $mc['last_idx'] !== null && $i <= $mc['last_idx'];
+                                    $pyVal = $mcPrev ? ($mcPrev['values'][$i] ?? null) : null;
+                                    $pyCum = $mcPrev ? ($mcPrev['cum'][$i] ?? null) : null;
                                 @endphp
                                 <tr class="{{ $rowClass }}">
                                     <td class="label-cell">
                                         {{ $label }}
                                         @if($trendHasVariation && $i === $trendMaxIdx)
-                                            <span class="highlight-tag tag-high"><i class="fas fa-triangle-exclamation"></i> สูงสุด</span>
+                                            <span class="highlight-tag tag-high col-m"><i class="fas fa-triangle-exclamation"></i> สูงสุด</span>
                                         @elseif($trendHasVariation && $i === $trendMinIdx)
-                                            <span class="highlight-tag tag-low"><i class="fas fa-check"></i> ต่ำสุด</span>
+                                            <span class="highlight-tag tag-low col-m"><i class="fas fa-check"></i> ต่ำสุด</span>
                                         @endif
                                     </td>
-                                    <td class="num">{{ number_format($val) }}</td>
-                                    <td class="num">
+                                    <td class="num col-m">{{ number_format($val) }}</td>
+                                    <td class="num col-m">
                                         @if($diff === null)
                                             <span style="color:#94a3b8;">ไม่มีข้อมูลเดือนก่อนหน้า</span>
                                         @else
@@ -1211,7 +1512,16 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="num">{{ number_format($cumValsList[$i]) }}</td>
+                                    @if($mcPrev)
+                                        <td class="num col-m">{{ $pyVal === null ? '—' : number_format($pyVal) }}</td>
+                                        <td class="num col-m">{!! ($pyVal !== null && $reportedI) ? $fmtDiff($val - $pyVal, $pyVal) : '<span style="color:#94a3b8;">&mdash;</span>' !!}</td>
+                                    @endif
+                                    <td class="num col-c">{{ number_format($cumValsList[$i]) }}</td>
+                                    <td class="num col-c">{{ number_format($val) }}</td>
+                                    @if($mcPrev)
+                                        <td class="num col-c">{{ $pyCum === null ? '—' : number_format($pyCum) }}</td>
+                                        <td class="num col-c">{!! ($pyCum !== null && $reportedI) ? $fmtDiff($cumValsList[$i] - $pyCum, $pyCum) : '<span style="color:#94a3b8;">&mdash;</span>' !!}</td>
+                                    @endif
                                 </tr>
                             @endforeach
                         </tbody>
@@ -1430,12 +1740,40 @@
                     );
                     const filteredDistrictMapData = { ...fullDistrictMapData, features: provinceDistrictFeatures };
 
-                    const districtMapSeriesData = districtTotals.map(d => ({
-                        'hc-key': districtNameToGeoKey[d.name] || d.name,
-                        'name': d.name,
-                        'value': d.rate,
-                        'color': districtMapColor
-                    }));
+                    // สีตามเกณฑ์ ค่าเฉลี่ย ± SD ของอัตราป่วยรายอำเภอ "ในจังหวัดที่เลือก" (คำนวณฝั่งเซิร์ฟเวอร์ -> $districtRateStats)
+                    //   แดง >= เฉลี่ย+SD · เหลือง ระหว่างกลาง · เขียว <= เฉลี่ย-SD · เทา = ไม่มีประชากรเป้าหมาย
+                    const rateStats = @json($districtRateStats ?? null);
+                    const RATE_BANDS = {
+                        red:    { color: '#d6303a', label: 'สีแดง (อัตราสูง)',        text: '#ffffff' },
+                        yellow: { color: '#f2c230', label: 'สีเหลือง (อัตราปานกลาง)', text: '#1f2937' },
+                        green:  { color: '#2f9e5b', label: 'สีเขียว (อัตราต่ำ)',      text: '#ffffff' },
+                        none:   { color: '#cbd5e1', label: 'ไม่มีข้อมูลประชากรเป้าหมาย', text: '#475569' }
+                    };
+                    const bandOf = d => {
+                        if (!(d.target_b > 0)) return 'none';
+                        if (!rateStats || rateStats.high === null) return 'yellow';
+                        const r = Math.round(d.rate * 100) / 100; // เทียบด้วยตัวเลข 2 ตำแหน่งเดียวกับที่แสดงบนจอ
+                        if (r >= rateStats.high) return 'red';
+                        if (r <= rateStats.low) return 'green';
+                        return 'yellow';
+                    };
+                    const bandCounts = { red: 0, yellow: 0, green: 0 };
+                    const districtMapSeriesData = districtTotals.map(d => {
+                        const band = bandOf(d);
+                        if (bandCounts[band] !== undefined) bandCounts[band]++;
+                        return {
+                            'hc-key': districtNameToGeoKey[d.name] || d.name,
+                            'name': d.name,
+                            'value': d.rate,
+                            'band': band,
+                            'color': band === 'none' ? RATE_BANDS.none.color : toGradient(RATE_BANDS[band].color),
+                            'dataLabels': { style: { color: RATE_BANDS[band].text, fontSize: '10px', fontWeight: '700', textOutline: 'none' } }
+                        };
+                    });
+                    Object.keys(bandCounts).forEach(k => {
+                        const el = document.querySelector('[data-rate-count="' + k + '"]');
+                        if (el) el.textContent = bandCounts[k] + ' อำเภอ';
+                    });
 
                     Highcharts.mapChart('districtMapContainer', {
                         chart: {
@@ -1461,7 +1799,17 @@
                                 }
                             }
                         },
-                        tooltip: { pointFormat: '{point.name}: <b>{point.value:,.2f}</b> ต่อแสนประชากร' },
+                        tooltip: {
+                            useHTML: true,
+                            formatter: function () {
+                                const b = RATE_BANDS[this.point.band] || RATE_BANDS.none;
+                                return '<div style="font-family:Sarabun,sans-serif;min-width:170px;">'
+                                    + '<div style="font-weight:700;margin-bottom:3px;">' + this.point.name + '</div>'
+                                    + '<div><b>' + Highcharts.numberFormat(this.point.value, 2) + '</b> ต่อแสนประชากร</div>'
+                                    + '<div style="margin-top:4px;font-size:12px;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + b.color + ';margin-right:6px;"></span>' + b.label + '</div>'
+                                    + '</div>';
+                            }
+                        },
                         series: [{
                             name: 'อัตราป่วยต่อแสนประชากร',
                             data: districtMapSeriesData,
@@ -1472,109 +1820,505 @@
                 }
             }
 
-            // --- 1. Combination Trend Chart (Column + Spline) ---
-            if (document.getElementById('trendChart')) {
-                Highcharts.chart('trendChart', {
-                    chart: { backgroundColor: 'transparent', style: { fontFamily: 'Sarabun' } },
+            // --- 1. กราฟแนวโน้มรายเดือน: ปุ่มสลับ "รายเดือน" (แท่ง) / "ยอดสะสม" (พื้นที่) + เส้นเทียบปีก่อน ---
+            const mtPrev = @json($monthlyCompare['series'] ?? []);
+            const mtYear = @json($monthlyCompare['year'] ?? null);
+            const mtLast = @json($monthlyCompare['last_idx'] ?? null);
+            const MT_ACCENT = '{{ $provColor }}';
+            // ปีก่อนที่ใกล้ที่สุดเป็นม่วง ปีที่เก่ากว่าเป็นส้ม
+            const mtColors = mtPrev.map((p, k) => (mtPrev.length - 1 - k === 0) ? '#6366f1' : '#f59e0b');
+            let mtMode = 'm';
+            let trendChartObj = null;
+            const mtNum = v => Highcharts.numberFormat(v, 0, '.', ',');
+
+            function mtBadge(text, tone) {
+                const c = tone === 'up' ? ['#b91c1c', '#fee2e2'] : (tone === 'down' ? ['#15803d', '#dcfce7'] : ['#475569', '#eef2f6']);
+                return '<span style="display:inline-block;font-size:11.5px;font-weight:800;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;color:' + c[0] + ';background:' + c[1] + ';">' + text + '</span>';
+            }
+            function mtDelta(d, base) {
+                if (d === null || d === undefined) return '';
+                const pc = base > 0 ? d / base * 100 : null;
+                if (d === 0) return mtBadge('● เท่ากัน', 'flat');
+                return mtBadge((d > 0 ? '▲ ' : '▼ ') + mtNum(Math.abs(d)) + (pc !== null ? ' (' + (d > 0 ? '+' : '') + Highcharts.numberFormat(Math.abs(pc), 1) + '%)' : ''), d > 0 ? 'up' : 'down');
+            }
+            function mtRow(color, name, val, delta, strong) {
+                return '<div style="display:flex;align-items:center;gap:9px;padding:5px 7px;margin:1px -7px;border-radius:9px;font-size:13px;color:#475569;' + (strong ? 'background:#f0fdfa;' : '') + '">'
+                    + '<span style="width:11px;height:11px;border-radius:3px;background:' + color + ';flex:none;"></span>'
+                    + '<span style="flex:1;font-weight:' + (strong ? '800' : '500') + ';color:' + (strong ? '#0f172a' : '#475569') + ';">' + name + '</span>'
+                    + '<b style="font-size:15.5px;color:#0f172a;font-variant-numeric:tabular-nums;text-align:right;">' + val + '</b><small style="color:#94a3b8;font-size:11px;">คน</small>'
+                    + '<span style="min-width:104px;text-align:right;">' + delta + '</span></div>';
+            }
+            function mtShell(head, rows, extra) {
+                return '<div style="font-family:Sarabun,sans-serif;min-width:300px;border-radius:14px;overflow:hidden;background:#fff;">'
+                    + '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:linear-gradient(180deg,#ecfdf9,#f7fffd);border-bottom:1px solid #dcefea;font-weight:800;font-size:14.5px;color:#0f172a;">' + head + '</div>'
+                    + '<div style="padding:7px 14px 6px;">' + rows + '</div>'
+                    + (extra ? '<div style="padding:9px 14px 10px;border-top:1px solid #eef2f6;background:#f8fafc;font-size:12.5px;color:#475569;">' + extra + '</div>' : '')
+                    + '</div>';
+            }
+
+
+            // ================= ข้อความวิเคราะห์ที่ปรับตามปีที่เลือกแสดงในกราฟ (คลิกคำอธิบายกราฟเพื่อซ่อน/แสดงปี) =================
+            const mtHidden = {};   // ชื่อซีรีส์ที่ถูกซ่อน -> true
+            let mtBuilding = false;
+            const MT_ICON = { up: '▲', down: '▼', flat: '●', info: 'i' };
+            const MT_MONTH_RE = ['ม\\.ค\\.', 'ก\\.พ\\.', 'มี\\.ค\\.', 'เม\\.ย\\.', 'พ\\.ค\\.', 'มิ\\.ย\\.', 'ก\\.ค\\.', 'ส\\.ค\\.', 'ก\\.ย\\.', 'ต\\.ค\\.', 'พ\\.ย\\.', 'ธ\\.ค\\.'].join('|');
+            const MT_EM_RE = new RegExp('(ปี(?:งบ)?\\s\\d{4})|(\\(?[+\\-]\\d[\\d,]*(?:\\.\\d+)?%\\)?)|(เพิ่มขึ้น|ลดลง|ใกล้เคียงเดิม)|(\\d{1,3}(?:,\\d{3})+(?:\\.\\d+)?|\\d+\\.\\d+|\\d+(?=\\s?(?:คน|ต่อแสน|จังหวัด)))|(เดือน)(' + MT_MONTH_RE + ')', 'g');
+            const mtEsc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            function mtEmph(raw) {
+                return mtEsc(raw).replace(MT_EM_RE, function (m, yr, pc, vb, num, mo, mname) {
+                    if (yr) { return '<span class="yr">' + yr + '</span>'; }
+                    if (pc) { const g = pc.replace(/[()]/g, ''); const v = parseFloat(g.replace(/,/g, '')); return '<span class="pc ' + (Math.abs(v) < 2 ? 'flat' : (v > 0 ? 'up' : 'down')) + '">' + g.replace(/^-/, '') + '</span>'; }
+                    if (vb) { return '<span class="vb ' + (vb === 'เพิ่มขึ้น' ? 'up' : (vb === 'ลดลง' ? 'down' : 'flat')) + '">' + vb + '</span>'; }
+                    if (num) { return '<strong>' + num + '</strong>'; }
+                    return mo + '<strong>' + mname + '</strong>';
+                });
+            }
+            const mtSgn = (p) => (p > 0 ? '+' : '') + Highcharts.numberFormat(p, 1) + '%';
+            const mtPct = (n, o) => (o > 0 ? (n - o) / o * 100 : null);
+            const mtTone = (p) => (p === null ? 'info' : (Math.abs(p) < 2 ? 'flat' : (p > 0 ? 'up' : 'down')));
+            const mtVerb = (p) => (Math.abs(p) < 2 ? 'ใกล้เคียงเดิม' : (p > 0 ? 'เพิ่มขึ้น' : 'ลดลง'));
+            const mtSum = (vals, k) => vals.slice(0, k).reduce(function (a, v) { return a + (v || 0); }, 0);
+
+            // ชุดข้อมูลทุกปีที่มีในกราฟ (เก่า -> ใหม่) ในรูปแบบเดียวกัน
+            function mtAllSeries() {
+                const all = mtPrev.map(function (p) { return { name: 'ปี ' + p.year, year: p.year, values: p.values, last: p.last_idx, complete: p.complete, total: p.total }; });
+                if (mtYear && mtLast !== null) {
+                    all.push({ name: 'ปี ' + mtYear, year: mtYear, values: trendValues.map(function (v, i) { return i <= mtLast ? v : null; }), last: mtLast, complete: mtLast === 11, total: null });
+                }
+                return all;
+            }
+            function mtComputeInsights() {
+                const V = mtAllSeries().filter(function (o) { return !mtHidden[o.name]; });
+                if (!V.length) { return [{ tone: 'info', mode: 'both', title: 'ยังไม่ได้เลือกปี', text: 'คลิกชื่อปีใต้หัวกราฟเพื่อเปิดแสดงข้อมูล ข้อความวิเคราะห์จะคำนวณใหม่ตามปีที่เลือก' }]; }
+                const cur = V[V.length - 1], prev = V.length > 1 ? V[V.length - 2] : null;
+                const L = trendLabels, last = cur.last, k = last + 1, Y = 'ปีงบ ' + cur.year, out = [];
+                const ytd = mtSum(cur.values, k);
+                if (prev && prev.last >= last) {
+                    const ytdP = mtSum(prev.values, k), p = mtPct(ytd, ytdP);
+                    if (p !== null) {
+                        out.push({ tone: mtTone(p), mode: 'both', title: 'เทียบช่วงเดียวกัน',
+                            text: Y + ' ' + (last === 11 ? 'ตลอดปี' : 'สะสมถึงเดือน' + L[last]) + ' มีผู้ป่วยใหม่ ' + mtNum(ytd) + ' คน เทียบช่วงเดียวกันของปีงบ ' + prev.year + ' (' + mtNum(ytdP) + ' คน) ' + mtVerb(p) + ' (' + mtSgn(p) + ')' });
+                    }
+                }
+                if (prev && prev.complete && prev.total > 0) {
+                    out.push({ tone: 'info', mode: 'c', title: 'ยอดสะสมเทียบทั้งปีก่อน',
+                        text: Y + ' สะสมถึงเดือน' + L[last] + ' แล้ว ' + mtNum(ytd) + ' คน คิดเป็น ' + Highcharts.numberFormat(ytd / prev.total * 100, 1) + '% ของยอดรวมทั้งปีงบ ' + prev.year + ' (' + mtNum(prev.total) + ' คน)' });
+                } else if (!prev) {
+                    out.push({ tone: 'info', mode: 'c', title: 'ยอดสะสม', text: Y + ' สะสมถึงเดือน' + L[last] + ' แล้ว ' + mtNum(ytd) + ' คน (เฉลี่ย ' + mtNum(ytd / k) + ' คนต่อเดือน)' });
+                }
+                const rep = cur.values.slice(0, k);
+                if (rep.length >= 2 && Math.max.apply(null, rep) > 0) {
+                    const mx = Math.max.apply(null, rep);
+                    out.push({ tone: 'info', mode: 'm', title: 'เดือนที่พบมากสุด', text: Y + ' พบผู้ป่วยใหม่สูงสุดในเดือน' + L[rep.indexOf(mx)] + ' ' + mtNum(mx) + ' คน (เฉลี่ย ' + mtNum(rep.reduce(function (a, b) { return a + b; }, 0) / rep.length) + ' คนต่อเดือน)' });
+                }
+                if (rep.length >= 3) {
+                    let up = null, down = null;
+                    for (let i = 1; i < rep.length; i++) {
+                        const d = rep[i] - rep[i - 1];
+                        if (d > 0 && (up === null || d > up.d)) { up = { i: i, d: d }; }
+                        if (d < 0 && (down === null || d < down.d)) { down = { i: i, d: d }; }
+                    }
+                    [[up, 'up', 'เดือนที่เพิ่มขึ้นมากสุด', 'เพิ่มขึ้น'], [down, 'down', 'เดือนที่ลดลงมากสุด', 'ลดลง']].forEach(function (c) {
+                        if (!c[0]) { return; }
+                        const pp = mtPct(rep[c[0].i], rep[c[0].i - 1]);
+                        out.push({ tone: c[1], mode: 'm', title: c[2], text: Y + ' เดือน' + L[c[0].i] + ' ' + c[3] + ' ' + mtNum(Math.abs(c[0].d)) + ' คน เทียบกับก่อนหน้า' + (pp !== null ? ' (' + mtSgn(pp) + ')' : '') });
+                    });
+                }
+                if (last < 11) {
+                    out.push({ tone: 'info', mode: 'both', title: 'ข้อควรระวัง', text: Y + ' มีข้อมูลถึงเดือน' + L[last] + ' เท่านั้น ยอดสะสมจึงยังต่ำกว่าปีเต็ม ควรดูการเทียบช่วงเดียวกันกับปีก่อน' });
+                }
+                if (!prev) {
+                    out.push({ tone: 'info', mode: 'both', title: mtPrev.length ? 'แสดงปีเดียว' : 'ยังไม่มีปีก่อนให้เทียบ',
+                        text: mtPrev.length ? 'ตอนนี้แสดง ' + Y + ' ปีเดียว คลิกชื่อปีอื่นใต้หัวกราฟเพื่อเปิดแสดงและเทียบช่วงเดียวกัน' : 'ไม่พบข้อมูลรายเดือนของปีก่อนหน้า ตามตัวกรองที่เลือก จึงยังไม่แสดงเส้นเทียบ' });
+                }
+                return out;
+            }
+            function mtRenderInsights(list) {
+                const ul = document.getElementById('mtInsList');
+                if (!ul) { return; }
+                ul.innerHTML = list.map(function (x) {
+                    return '<li class="hm-tr-in ' + x.tone + '" data-mode="' + x.mode + '"' + ((x.mode === 'both' || x.mode === mtMode) ? '' : ' hidden') + '>'
+                        + '<span class="hm-tr-ic" aria-hidden="true">' + MT_ICON[x.tone] + '</span>'
+                        + '<div><span class="hm-tr-ti">' + mtEsc(x.title) + '</span><span class="hm-tr-tx">' + mtEmph(x.text) + '</span></div></li>';
+                }).join('');
+                ul.classList.remove('swap'); void ul.offsetWidth; ul.classList.add('swap');
+            }
+            function onMtLegend() {
+                if (mtBuilding || !mtYear) { return; }
+                setTimeout(function () {
+                    if (!trendChartObj) { return; }
+                    trendChartObj.series.forEach(function (sr) { mtHidden[sr.name] = !sr.visible; });
+                    if (mtLast === null) { return; }
+                    mtRenderInsights(mtComputeInsights());
+                }, 0);
+            }
+
+            // ================= ตรวจข้อมูลใหม่อัตโนมัติ: ข้อมูล HT ใน DB เปลี่ยน -> โหลดหน้าใหม่ (คงตัวกรองเดิม) =================
+            (function () {
+                const FEED = @json(route('api.ht-trend'));
+                let stamp = '', stale = false, lastAct = Date.now();
+                ['pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, function () { lastAct = Date.now(); }, { passive: true }); });
+                const bar = document.createElement('div');
+                bar.setAttribute('role', 'status');
+                bar.style.cssText = 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:9999;display:none;align-items:center;gap:12px;padding:9px 10px 9px 16px;border-radius:999px;background:#0f172a;color:#fff;font:600 .85rem Sarabun,sans-serif;box-shadow:0 10px 30px rgba(15,23,42,.3);';
+                bar.innerHTML = '<span>ข้อมูลมีการอัปเดตใหม่</span><button type="button" style="border:0;border-radius:999px;padding:5px 14px;background:#2dd4bf;color:#042f2e;font:700 .82rem Sarabun,sans-serif;cursor:pointer;">โหลดข้อมูลล่าสุด</button>';
+                bar.querySelector('button').addEventListener('click', function () { location.reload(); });
+                document.body.appendChild(bar);
+                function typing() { const t = document.activeElement && document.activeElement.tagName; return t === 'INPUT' || t === 'SELECT' || t === 'TEXTAREA'; }
+                function check() {
+                    if (document.hidden) { return; }
+                    fetch(FEED + '?only=1', { headers: { Accept: 'application/json' }, cache: 'no-store', credentials: 'same-origin' })
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (j) {
+                            if (!j || !j.stamp) { return; }
+                            if (stamp === '') { stamp = j.stamp; return; }
+                            if (j.stamp !== stamp) { stale = true; bar.style.display = 'flex'; }
+                        }).catch(function () {});
+                }
+                // ถ้ามีข้อมูลใหม่และผู้ใช้ไม่ได้ใช้งาน/พิมพ์อยู่ (นิ่งเกิน 20 วินาที) -> รีเฟรชให้เอง ไม่เช่นนั้นแสดงแถบให้กดเอง
+                setInterval(function () { if (stale && !document.hidden && !typing() && Date.now() - lastAct > 20000) { location.reload(); } }, 5000);
+                setTimeout(check, 1500);
+                setInterval(check, 60000);
+                document.addEventListener('visibilitychange', function () { if (!document.hidden) { check(); } });
+            })();
+
+            function buildTrend() {
+                if (!document.getElementById('trendChart')) return;
+                if (trendChartObj) { trendChartObj.destroy(); trendChartObj = null; }
+                const isM = mtMode === 'm';
+                const curName = mtYear ? 'ปี ' + mtYear : (isM ? 'ผู้ป่วยใหม่รายเดือน' : 'สะสมรวม');
+                const lastI = mtLast === null ? trendValues.length - 1 : mtLast;
+                const cumCur = cumulativeValues.map((v, i) => i <= lastI ? v : null);
+                const endLabel = (color, dy) => ({
+                    enabled: true, crop: false, overflow: 'allow', y: dy,
+                    backgroundColor: 'rgba(255,255,255,.92)', borderRadius: 8, padding: 3, borderWidth: 0, shadow: false,
+                    style: { color: color, fontSize: '12.5px', fontWeight: '800', textOutline: 'none' },
+                    formatter: function () { return mtNum(this.y); }
+                });
+                const series = [];
+                mtPrev.forEach(function (p, k) {
+                    const src = isM ? p.values : p.cum;
+                    series.push({
+                        type: 'spline', name: 'ปี ' + p.year, color: mtColors[k], lineWidth: 2.6, dashStyle: 'ShortDash', zIndex: 5,
+                        marker: { enabled: false, symbol: 'circle', radius: 4, states: { hover: { enabled: true } } },
+                        dataLabels: { enabled: false },
+                        data: src.map(function (v, i) { return (!isM && v !== null && i === p.last_idx) ? { y: v, dataLabels: endLabel(mtColors[k], 24) } : v; })
+                    });
+                });
+                if (isM) {
+                    series.push({
+                        type: 'column', name: curName, data: trendColumnData, zIndex: 2,
+                        point: { events: { click: function () { showMonthDetail(this.index); } } }
+                    });
+                } else {
+                    series.push({
+                        type: 'areaspline', name: curName, color: MT_ACCENT, lineWidth: 3.5, zIndex: 3, cursor: 'pointer',
+                        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, Highcharts.color(MT_ACCENT).setOpacity(0.32).get('rgba')], [1, Highcharts.color(MT_ACCENT).setOpacity(0.03).get('rgba')]] },
+                        marker: { enabled: false, symbol: 'circle', radius: 5, fillColor: '#fff', lineWidth: 3, lineColor: MT_ACCENT },
+                        dataLabels: { enabled: false },
+                        point: { events: { click: function () { showMonthDetail(this.index); } } },
+                        data: cumCur.map(function (v, i) { return (v !== null && i === lastI) ? { y: v, marker: { enabled: true, radius: 6.5 }, dataLabels: endLabel(MT_ACCENT, -10) } : v; })
+                    });
+                }
+                trendChartObj = Highcharts.chart('trendChart', {
+                    chart: { backgroundColor: 'transparent', style: { fontFamily: 'Sarabun' }, spacingTop: 8 },
                     title: { text: '' },
-                    xAxis: { categories: trendLabels },
-                    yAxis: [{ // Primary yAxis
-                        title: { text: 'จำนวนรายใหม่/เดือน (คน)', style: { color: '#3498db' } }
-                    }, { // Secondary yAxis
-                        title: { text: 'สะสมรวม (คน)', style: { color: '{{ $provColor }}' } },
-                        gridLineWidth: 0,
-                        opposite: true
-                    }],
+                    legend: { enabled: mtPrev.length > 0, align: 'left', verticalAlign: 'top', symbolRadius: 6, itemDistance: 16, itemStyle: { fontWeight: '600', color: '#334155', fontSize: '12.5px' } },
+                    xAxis: { categories: trendLabels, tickmarkPlacement: isM ? 'between' : 'on', crosshair: { color: 'rgba(100,116,139,.10)' } },
+                    yAxis: { min: 0, title: { text: isM ? 'จำนวนรายใหม่/เดือน (คน)' : 'ยอดสะสม (คน)', style: { color: isM ? '#3498db' : MT_ACCENT } } },
                     tooltip: {
-                        shared: true,
-                        useHTML: true,
+                        shared: true, useHTML: true, hideDelay: 120, backgroundColor: '#ffffff', borderWidth: 0, borderRadius: 14, padding: 0,
+                        shadow: { color: 'rgba(15, 23, 42, 0.22)', offsetX: 0, offsetY: 8, width: 18 },
+                        style: { fontFamily: 'Sarabun, sans-serif' },
                         formatter: function () {
                             const idx = this.points[0].point.index;
-                            const label = trendLabels[idx];
-                            const val = trendValues[idx];
-                            const cum = cumulativeValues[idx];
-                            const diffHtml = buildMonthDiffHtml(idx);
-                            const tag = buildMonthTagHtml(idx);
-
-                            return '<div style="font-family:Sarabun, sans-serif;min-width:190px;padding:2px;">'
-                                + '<div style="font-weight:700;margin-bottom:5px;">' + label + tag + '</div>'
-                                + '<div style="margin-bottom:2px;">ผู้ป่วยใหม่: <b>' + val.toLocaleString() + '</b> คน</div>'
-                                + '<div style="margin-bottom:2px;">เปลี่ยนแปลงจากเดือนก่อน: ' + diffHtml + '</div>'
-                                + '<div>ยอดสะสม: <b>' + cum.toLocaleString() + '</b> คน</div>'
-                                + '</div>';
+                            const vis = {};
+                            this.points[0].series.chart.series.forEach(function (sr) { vis[sr.name] = sr.visible; });
+                            // เก่า -> ใหม่ แล้วแสดงใหม่ -> เก่า โดยแต่ละแถวเทียบกับปีที่เก่ากว่าถัดไป
+                            const list = mtPrev.map(function (p, k) { return { name: 'ปี ' + p.year, v: (isM ? p.values : p.cum)[idx], color: mtColors[k] }; });
+                            list.push({ name: curName, v: isM ? trendValues[idx] : cumCur[idx], color: isM ? '#3498db' : MT_ACCENT, cur: true });
+                            const rows = list.map(function (r, j) {
+                                const older = j > 0 ? list[j - 1].v : null;
+                                const d = (r.v !== null && r.v !== undefined && older !== null && older !== undefined) ? r.v - older : null;
+                                const shown = vis[r.name] !== false;
+                                const html = mtRow(shown ? r.color : '#cbd5e1', r.name + (shown ? '' : ' <small style="font-size:10.5px;color:#94a3b8;">(ซ่อนในกราฟ)</small>'),
+                                    (r.v === null || r.v === undefined) ? '—' : mtNum(r.v), d === null ? '' : mtDelta(d, older), r.cur);
+                                return shown ? html : '<div style="opacity:.55;">' + html + '</div>';
+                            }).reverse().join('');
+                            let extra = '';
+                            if (isM) {
+                                extra = '<div style="display:flex;align-items:center;gap:8px;"><span style="flex:1;">เทียบเดือนก่อน</span>' + buildMonthDiffHtml(idx) + '</div>'
+                                    + '<div style="display:flex;align-items:center;gap:8px;margin-top:5px;"><span style="flex:1;">ยอดสะสมถึงเดือนนี้</span><b style="font-size:14px;color:#0f172a;">' + mtNum(cumulativeValues[idx]) + '</b><small style="color:#94a3b8;">คน</small></div>';
+                            } else {
+                                extra = '<div style="display:flex;align-items:center;gap:8px;"><span style="flex:1;">เพิ่มในเดือนนี้</span><b style="font-size:14px;color:#0f172a;">' + mtNum(trendValues[idx]) + '</b><small style="color:#94a3b8;">คน</small></div>';
+                            }
+                            return mtShell(trendLabels[idx] + (isM ? buildMonthTagHtml(idx) : ''), rows, extra);
                         }
                     },
                     plotOptions: {
+                        series: { animation: { duration: 600 }, events: { show: onMtLegend, hide: onMtLegend } },
                         column: {
                             borderRadius: 8,
                             borderWidth: 0,
                             color: toGradient('#3498db'),
                             shadow: barShadow,
                             cursor: 'pointer',
-                            point: {
-                                events: {
-                                    click: function () {
-                                        showMonthDetail(this.index);
-                                    }
-                                }
-                            },
                             dataLabels: { enabled: true, useHTML: true, format: '{point.y:,.0f}', style: { fontWeight: '600', textOutline: 'none', color: '#475569' } }
-                        },
-                        spline: {
-                            color: '{{ $provColor }}',
-                            lineWidth: 4,
-                            shadow: { color: '{{ $provColor }}', offsetX: 0, offsetY: 3, opacity: 0.25, width: 6 },
-                            marker: { radius: 5, fillByPoint: false, fillColor: '#fff', lineWidth: 3, lineColor: '{{ $provColor }}' },
-                            dataLabels: { enabled: true, format: '{point.y:,.0f}', style: { fontWeight: '800', fontSize: '12px', textOutline: '2px solid #ffffff', color: '#1e293b' } }
                         }
                     },
-                    series: [{
-                        name: 'ผู้ป่วยใหม่รายเดือน',
-                        type: 'column',
-                        data: trendColumnData,
-                        tooltip: { valueSuffix: ' คน' }
-                    }, {
-                        name: 'สะสมรวม',
-                        type: 'spline',
-                        yAxis: 1,
-                        data: cumulativeValues,
-                        tooltip: { valueSuffix: ' คน' }
-                    }],
+                    series: series,
                     credits: { enabled: false }
                 });
+                // คงสถานะ "ซ่อนปี" ที่ผู้ใช้เลือกไว้เมื่อสลับมุมมองรายเดือน/ยอดสะสม
+                mtBuilding = true;
+                trendChartObj.series.forEach(function (sr) { if (mtHidden[sr.name]) { sr.setVisible(false, false); } });
+                mtBuilding = false;
+                trendChartObj.redraw();
+            }
+
+            function setMtMode(m) {
+                mtMode = m;
+                const card = document.getElementById('mtCard');
+                if (card) {
+                    card.dataset.mode = m;
+                    card.querySelectorAll('#mtSeg button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'); });
+                    card.querySelectorAll('.hm-tr-in[data-mode]').forEach(function (li) { li.hidden = !(li.dataset.mode === 'both' || li.dataset.mode === m); });
+                }
+                const sub = document.getElementById('mtSub');
+                if (sub) {
+                    sub.textContent = 'ตามปีงบประมาณที่เลือก แสดง' + (m === 'm' ? 'จำนวนรายเดือน' : 'ยอดสะสม') + (mtPrev.length ? ' เทียบปีก่อน' : '');
+                }
+                buildTrend();
+            }
+            document.querySelectorAll('#mtSeg button').forEach(function (b) {
+                b.addEventListener('click', function () { if (b.dataset.mode !== mtMode) { setMtMode(b.dataset.mode); } });
+            });
+            buildTrend();
+
+            // --- 1b. Province rate map (mean ± SD bands across the 5 provinces) ---
+            if (document.getElementById('provinceMapContainer')) {
+                if (!Highcharts.maps || !Highcharts.maps['countries/th/th-all']) {
+                    console.warn('Highcharts province boundary data not loaded');
+                } else {
+                    const PROV_BANDS = {
+                        red:    { color: '#d6303a', label: 'สีแดง (อัตราสูง)',        text: '#ffffff', ink: '#b91c1c' },
+                        yellow: { color: '#f2c230', label: 'สีเหลือง (อัตราปานกลาง)', text: '#1f2937', ink: '#a16207' },
+                        green:  { color: '#2f9e5b', label: 'สีเขียว (อัตราต่ำ)',      text: '#ffffff', ink: '#047857' },
+                        none:   { color: '#cbd5e1', label: 'ไม่มีข้อมูลเป้าหมายประชากร', text: '#475569', ink: '#475569' }
+                    };
+                    const provMapRows = @json(isset($provMapRows) ? $provMapRows->values() : []);
+                    // ขยับป้ายจังหวัดที่พื้นที่แคบ/ติดกัน ไม่ให้ทับกัน (พิกเซลจากจุดกึ่งกลางพื้นที่)
+                    const PROV_LABEL_OFFSETS = {
+                        'th-ys': { x: -26, y: -4 }, 'th-ac': { x: 16, y: 10 },
+                        'th-ur': { x: 18, y: 16 }, 'th-si': { x: -6, y: 10 }
+                    };
+                    const provMapData = provMapRows.filter(r => r.hc_key).map(r => ({
+                        'hc-key': r.hc_key,
+                        'name': r.name,
+                        'value': r.rate,
+                        'cases': r.total_a,
+                        'target': r.target_b,
+                        'band': r.band,
+                        'color': r.band === 'none' ? PROV_BANDS.none.color : toGradient(PROV_BANDS[r.band].color),
+                        'dataLabels': PROV_LABEL_OFFSETS[r.hc_key] || {}
+                    }));
+                    const provKeys = provMapData.map(d => d['hc-key']);
+                    const fullThMap = Highcharts.maps['countries/th/th-all'];
+                    const regionMap = { ...fullThMap, features: fullThMap.features.filter(f => provKeys.includes(f.properties['hc-key'])) };
+
+                    const provInfoEl = document.getElementById('provMapInfo');
+                    // ค่าเฉลี่ยของอัตราป่วยทั้งเขต = กึ่งกลางระหว่างเกณฑ์ (ค่าเฉลี่ย − SD) และ (ค่าเฉลี่ย + SD)
+                    const provBandEdges = @json(isset($prs) ? ['high' => $prs['high'], 'low' => $prs['low']] : null);
+                    const provMeanRate = provBandEdges ? (provBandEdges.high + provBandEdges.low) / 2 : null;
+                    const PROV_BAND_TINT = {
+                        red:    { bg: '#fef2f2', border: '#fecaca' },
+                        yellow: { bg: '#fefce8', border: '#fde68a' },
+                        green:  { bg: '#f0fdf4', border: '#bbf7d0' },
+                        none:   { bg: '#f1f5f9', border: '#e2e8f0' }
+                    };
+                    function showProvInfo(p) {
+                        if (!provInfoEl) return;
+                        if (!p) { provInfoEl.classList.remove('show'); return; }
+                        const b = PROV_BANDS[p.band] || PROV_BANDS.none;
+                        const t = PROV_BAND_TINT[p.band] || PROV_BAND_TINT.none;
+                        let diffHtml = '';
+                        if (provMeanRate !== null && p.target > 0) {
+                            const d = p.value - provMeanRate;
+                            diffHtml = '<span class="pmi-diff" title="เทียบกับค่าเฉลี่ยของ 5 จังหวัด (' + Highcharts.numberFormat(provMeanRate, 2) + ')">'
+                                + (d >= 0 ? 'สูงกว่า' : 'ต่ำกว่า') + 'ค่าเฉลี่ย ' + Highcharts.numberFormat(Math.abs(d), 2) + '</span>';
+                        }
+                        provInfoEl.innerHTML =
+                            '<div class="pmi-head">'
+                            + '<div class="pmi-name">' + p.name + '</div>'
+                            + '<span class="pmi-band" style="background:' + t.bg + ';border-color:' + t.border + ';"><span class="pmi-dot" style="background:' + b.color + ';"></span>' + b.label + '</span>'
+                            + '</div>'
+                            + '<div class="pmi-main"><span class="pmi-rate" style="color:' + b.ink + ';">' + Highcharts.numberFormat(p.value, 2) + '</span>'
+                            + '<span class="pmi-unit">ต่อแสนประชากร</span>' + diffHtml + '</div>'
+                            + (p.target > 0
+                                ? '<div class="pmi-stats">'
+                                    + '<div class="pmi-stat"><div class="pmi-stat-label">ผู้ป่วยใหม่</div><div class="pmi-stat-value">' + Highcharts.numberFormat(p.cases, 0) + '<small>คน</small></div></div>'
+                                    + '<div class="pmi-stat"><div class="pmi-stat-label">ประชากรเป้าหมาย</div><div class="pmi-stat-value">' + Highcharts.numberFormat(p.target, 0) + '<small>คน</small></div></div>'
+                                  + '</div>'
+                                : '<div class="pmi-unit">ยังไม่มีเป้าหมายประชากร</div>');
+                        provInfoEl.classList.add('show');
+                    }
+
+                    Highcharts.mapChart('provinceMapContainer', {
+                        chart: { map: regionMap, backgroundColor: 'transparent', spacing: [4, 4, 4, 4], style: { fontFamily: 'Sarabun' } },
+                        title: { text: '' },
+                        legend: { enabled: false },
+                        credits: { enabled: false },
+                        mapNavigation: { enabled: false },
+                        // tooltip ลอยบังป้ายจังหวัดข้างเคียง -> ปิด แล้วแสดงรายละเอียดในแถบใต้แผนที่แทน
+                        tooltip: { enabled: false },
+                        plotOptions: {
+                            map: {
+                                allAreas: false,
+                                joinBy: ['hc-key', 'hc-key'],
+                                borderColor: '#ffffff',
+                                borderWidth: 2,
+                                states: { hover: { brightness: 0.06 } },
+                                point: {
+                                    events: {
+                                        mouseOver: function () { showProvInfo(this); },
+                                        click: function () { showProvInfo(this); },
+                                        mouseOut: function () { showProvInfo(null); }
+                                    }
+                                },
+                                dataLabels: {
+                                    enabled: true,
+                                    useHTML: true,
+                                    allowOverlap: true,
+                                    crop: false,
+                                    overflow: 'allow',
+                                    formatter: function () {
+                                        const p = this.point, b = PROV_BANDS[p.band] || PROV_BANDS.none;
+                                        return '<div style="text-align:center;line-height:1.15;font-family:Sarabun,sans-serif;pointer-events:none;white-space:nowrap;'
+                                            + 'background:rgba(255,255,255,0.94);border-radius:9px;padding:1px 7px 2px;box-shadow:0 1px 4px rgba(15,23,42,0.28);">'
+                                            + '<div style="font-weight:700;font-size:11.5px;color:#1e293b;">' + p.name + '</div>'
+                                            + '<div style="font-weight:800;font-size:15px;color:' + b.ink + ';">' + Highcharts.numberFormat(p.value, 2) + '</div></div>';
+                                    },
+                                    style: { textOutline: 'none', pointerEvents: 'none' }
+                                }
+                            }
+                        },
+                        series: [{ name: 'อัตราป่วยต่อแสนประชากร', data: provMapData }]
+                    });
+                }
             }
 
             // --- 2. Province Comparison Chart ---
             if (document.getElementById('provinceChart')) {
-                const provinceData = @json($provinceTotals->map(function ($p) use ($colors, $defaultColors) {
+                // ทุกจังหวัดใช้สีเดียวกัน (สี $provColor) เหลือเฉพาะแท่ง "ภาพรวม" ที่เป็นสีเทาเข้มแยกออกมา
+                const provinceData = @json($provinceTotals->map(function ($p) use ($provColor) {
                     return [
                         'y' => (float) $p['rate'],
-                        'color' => $colors[$p['name']]['prov'] ?? $defaultColors['prov']
+                        'color' => $provColor
                     ];
                 })->values()->toArray())
-                    .map(p => ({ ...p, color: toGradient(p.color) }));
+                    .map(p => ({ ...p, color: toGradient(p.color, true) }));
+
+                // Extra "ภาพรวม" bar: the pooled rate of every province in view
+                // (total new patients / total target population x 100,000), drawn on the
+                // SAME axis as the province rates so the bars are directly comparable.
+                const overallRate = @json(round($overallRate, 4));
+                const overallCases = @json($overallRateCases);
+                const overallTarget = @json($overallRateTarget);
+                const provinceCategories = [...provinceLabels, 'ภาพรวม'];
+                provinceData.forEach((d, i) => {
+                    const t = provinceTotals[i] || {};
+                    d.cases = Number(t.total_a) || 0;
+                    d.target = Number(t.target_b) || 0;
+                });
+                provinceData.push({
+                    y: overallRate, color: toGradient('#334155', true),
+                    cases: overallCases, target: overallTarget, overall: true
+                });
 
                 Highcharts.chart('provinceChart', {
-                    chart: { type: 'column', backgroundColor: 'transparent', style: { fontFamily: 'Sarabun' } },
+                    chart: { type: 'bar', backgroundColor: 'transparent', spacing: [4, 8, 4, 4], style: { fontFamily: 'Sarabun' } },
                     title: { text: '' },
-                    xAxis: { categories: provinceLabels },
-                    yAxis: { title: { text: 'อัตราต่อแสนประชากร' } },
-                    tooltip: { valueDecimals: 2, valueSuffix: ' ต่อแสน' },
+                    xAxis: {
+                        categories: provinceCategories,
+                        lineWidth: 0,
+                        tickLength: 0,
+                        labels: { style: { fontSize: '13px', fontWeight: '600', color: '#334155' } },
+                        plotBands: [{
+                            from: provinceCategories.length - 1.5,
+                            to: provinceCategories.length - 0.5,
+                            color: 'rgba(51, 65, 85, 0.06)'
+                        }]
+                    },
+                    yAxis: { title: { text: 'อัตราต่อแสนประชากร', style: { fontSize: '12px', color: '#64748b' } }, min: 0, maxPadding: 0.14, tickAmount: 5, gridLineColor: '#eef1f6', labels: { style: { fontSize: '11.5px', color: '#64748b' } } },
+                    // Tooltip การ์ดสีขาว: ชื่อจังหวัด (จุดสีเดียวกับแท่ง) · ตัวเลขอัตราป่วยตัวใหญ่ · เทียบกับภาพรวมทั้งเขต ·
+                    // ผู้ป่วยใหม่ / ประชากรเป้าหมาย แยกเป็น 2 ช่อง อ่านทีละค่าได้ทันที
+                    tooltip: {
+                        useHTML: true,
+                        backgroundColor: '#ffffff',
+                        borderWidth: 0,
+                        borderRadius: 14,
+                        padding: 0,
+                        shadow: { color: 'rgba(15, 23, 42, 0.22)', offsetX: 0, offsetY: 8, width: 18 },
+                        style: { fontFamily: 'Sarabun, sans-serif' },
+                        formatter: function () {
+                            const p = this.point;
+                            const rate = Highcharts.numberFormat(this.y, 2);
+                            const dot = p.overall ? '#334155' : @json($provColor);
+                            const fmt = n => Highcharts.numberFormat(n, 0);
+
+                            // เทียบกับอัตราภาพรวมทั้งเขต (ไม่แสดงในแท่ง "ภาพรวม" เอง)
+                            let diffChip = '';
+                            if (!p.overall && overallRate > 0 && p.target > 0) {
+                                const pct = (this.y - overallRate) / overallRate * 100;
+                                const up = pct >= 0;
+                                diffChip = '<span style="margin-left:auto;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;white-space:nowrap;'
+                                    + 'color:' + (up ? '#b91c1c' : '#15803d') + ';background:' + (up ? '#fee2e2' : '#dcfce7') + ';">'
+                                    + (up ? '▲ สูงกว่า' : '▼ ต่ำกว่า') + 'ภาพรวม ' + Math.abs(pct).toFixed(1) + '%</span>';
+                            }
+
+                            const stat = (label, value, unit) =>
+                                '<div style="flex:1;min-width:0;"><div style="font-size:11.5px;color:#64748b;line-height:1.3;">' + label + '</div>'
+                                + '<div style="font-size:15px;font-weight:800;color:#1e293b;font-variant-numeric:tabular-nums;line-height:1.4;">'
+                                + value + '<span style="font-size:11.5px;font-weight:600;color:#94a3b8;margin-left:3px;">' + unit + '</span></div></div>';
+
+                            return '<div style="min-width:250px;padding:14px 16px 12px;">'
+                                + '<div style="display:flex;align-items:center;gap:8px;">'
+                                +   '<span style="width:10px;height:10px;border-radius:50%;background:' + dot + ';flex:none;"></span>'
+                                +   '<span style="font-size:14px;font-weight:800;color:#0f172a;">' + this.x + '</span>'
+                                +   (p.overall ? '<span style="margin-left:auto;font-size:11.5px;font-weight:700;color:#475569;background:#f1f5f9;border-radius:999px;padding:2px 9px;white-space:nowrap;">รวมทั้งเขต</span>' : diffChip)
+                                + '</div>'
+                                + '<div style="margin:8px 0 10px;display:flex;align-items:baseline;gap:6px;">'
+                                +   '<span style="font-size:26px;font-weight:800;color:#0f172a;line-height:1.1;font-variant-numeric:tabular-nums;">' + rate + '</span>'
+                                +   '<span style="font-size:12px;font-weight:600;color:#64748b;">ต่อแสนประชากร</span>'
+                                + '</div>'
+                                + (p.target > 0
+                                    ? '<div style="display:flex;gap:14px;border-top:1px solid #e2e8f0;padding-top:9px;">'
+                                        + stat('ผู้ป่วยใหม่', fmt(p.cases), 'คน')
+                                        + '<div style="width:1px;background:#e2e8f0;"></div>'
+                                        + stat('ประชากรเป้าหมาย', fmt(p.target), 'คน')
+                                      + '</div>'
+                                    : '<div style="border-top:1px solid #e2e8f0;padding-top:9px;font-size:12px;color:#94a3b8;">ไม่มีเป้าหมายประชากร</div>')
+                                + '</div>';
+                        }
+                    },
                     plotOptions: {
-                        column: {
+                        bar: {
                             borderRadius: 8,
                             borderWidth: 0,
                             shadow: barShadow,
+                            pointPadding: 0.1,
+                            groupPadding: 0.06,
                             // Use individual point colors if "All" is selected, otherwise use provColor
                             colorByPoint: @json($isAllProv),
-                            color: toGradient('{{ $provColor }}'),
-                            dataLabels: { enabled: true, format: '{point.y:,.2f}', style: { fontWeight: '600', textOutline: 'none', color: '#475569' } }
+                            color: toGradient('{{ $provColor }}', true),
+                            dataLabels: { enabled: true, format: '{point.y:,.2f}', style: { fontSize: '13px', fontWeight: '700', textOutline: 'none', color: '#1e293b' } }
                         }
                     },
                     series: [{
                         name: 'อัตราป่วย',
                         data: provinceData
                     }],
+                    legend: { enabled: false },
                     credits: { enabled: false }
                 });
             }
@@ -1589,23 +2333,69 @@
                 })->values()->toArray())
                     .map(d => ({ ...d, color: toGradient(d.color, true) }));
 
+                // ตัวเลขท้ายแท่งของอำเภอสีแดง (อัตราสูง) และสีเขียว (อัตราต่ำ) ตามเกณฑ์เดียวกับแผนที่รายอำเภอ
+                // ใส่กรอบพื้นหลังสีนั้น ตัวอักษรขาว - ส่วนอำเภอสีเหลืองเป็นตัวเลขธรรมดา แต่ใช้ระยะขอบเท่ากัน
+                // เพื่อให้ตัวเลขทุกแท่งวางตำแหน่งเดียวกัน ไม่เหลื่อมกันเมื่อมีบางแท่งมีกรอบ
+                const chartRateStats = @json($districtRateStats ?? null);
+                districtData.forEach((point, i) => {
+                    const d = districtTotals[i];
+                    if (!d || !(d.target_b > 0) || !chartRateStats || chartRateStats.high === null) return;
+                    const r = Math.round(d.rate * 100) / 100; // เทียบด้วยตัวเลข 2 ตำแหน่งเดียวกับที่แสดง
+                    // แดง = อัตราสูง (>= เฉลี่ย+SD) · เขียว = อัตราต่ำ (<= เฉลี่ย-SD) - สีเดียวกับแผนที่รายอำเภอ
+                    // สีเหลือง (ปานกลาง) คงเป็นตัวเลขธรรมดา
+                    const bandBg = r >= chartRateStats.high ? '#d6303a' : (r <= chartRateStats.low ? '#2f9e5b' : null);
+                    if (bandBg) {
+                        point.dataLabels = {
+                            backgroundColor: bandBg,
+                            style: { color: '#ffffff', fontWeight: '700', textOutline: 'none' }
+                        };
+                    }
+                });
+
                 Highcharts.chart('districtChart', {
-                    chart: { type: 'bar', backgroundColor: 'transparent', style: { fontFamily: 'Sarabun' } },
+                    chart: {
+                        type: 'bar', backgroundColor: 'transparent', style: { fontFamily: 'Sarabun' },
+                        spacingTop: 8, spacingRight: 24, spacingBottom: 6, spacingLeft: 4
+                    },
                     title: { text: '' },
                     xAxis: {
                         categories: districtLabels,
-                        labels: { style: { fontSize: '11px' } }
+                        lineColor: '#e2e8f0',
+                        tickLength: 0,
+                        labels: { style: { fontSize: '12px', fontWeight: '600', color: '#334155' } }
                     },
-                    yAxis: { title: { text: 'อัตราต่อแสนประชากร' } },
+                    yAxis: {
+                        title: { text: 'อัตราต่อแสนประชากร', margin: 12, style: { fontSize: '11px', fontWeight: '600', color: '#94a3b8' } },
+                        gridLineColor: '#eef2f7',
+                        gridLineDashStyle: 'Dash',
+                        // เผื่อที่ว่างท้ายแท่งที่ยาวที่สุด (+28%) ให้ตัวเลข/กรอบแดงอยู่ในกราฟครบ ไม่ถูกตัดที่ขอบขวา
+                        // (maxPadding เฉย ๆ ไม่พอ: Highcharts ปัดแกนขึ้นเป็นขีดถัดไปแล้วแท่งยาวสุดแทบเต็มความกว้าง)
+                        min: 0,
+                        max: Math.max(...districtValues, 1) * 1.28,
+                        endOnTick: false,
+                        labels: { style: { fontSize: '11px', color: '#94a3b8' } }
+                    },
                     tooltip: { valueDecimals: 2, valueSuffix: ' ต่อแสน' },
                     plotOptions: {
                         bar: {
                             borderRadius: 8,
                             borderWidth: 0,
+                            groupPadding: 0.1,
+                            pointPadding: 0.06,
                             shadow: barShadow,
-                            dataLabels: { enabled: true, format: '{point.y:,.2f}', style: { fontWeight: '600', textOutline: 'none', color: '#475569' } }
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y:,.2f}',
+                                x: 6,
+                                padding: 4,
+                                borderRadius: 6,
+                                crop: false,
+                                overflow: 'allow',
+                                style: { fontSize: '12px', fontWeight: '600', textOutline: 'none', color: '#475569' }
+                            }
                         }
                     },
+                    legend: { enabled: false },
                     series: [{
                         name: 'อัตราป่วย',
                         data: districtData

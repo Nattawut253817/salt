@@ -31,7 +31,8 @@
             align-items: stretch;
             background: #ffffff;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1180px;
+            min-height: 660px;
             border-radius: 40px;
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
             border: none;
@@ -44,59 +45,136 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Left branding panel */
+        /* Left branding panel - dark wine base with flowing rose / pink
+           ribbons, a floating chart card, dot grids and a 3-line headline
+           (all art lives in .auth-side-art, behind the content). The big
+           bottom-right radius gives the white form side its sweeping edge.
+           Palette stays inside the site's rose/pink theme. */
         .auth-side-panel {
             position: relative;
-            flex: 0 0 340px;
-            padding: 56px 38px 40px;
+            flex: 0 0 54%;
+            padding: 48px 48px 40px;
             background:
-                radial-gradient(circle at 15% 8%, rgba(255, 255, 255, 0.35), transparent 45%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 32%),
-                var(--pink-gradient);
+                radial-gradient(90% 60% at 100% 100%, rgba(236, 72, 153, 0.45), transparent 65%),
+                radial-gradient(80% 50% at 0% 0%, rgba(190, 18, 60, 0.45), transparent 60%),
+                linear-gradient(160deg, #2a0314 0%, #4c0a28 50%, #6b0f33 100%);
             color: #fff;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             overflow: hidden;
+            isolation: isolate;
+            border-radius: 0 70px 220px 0 / 0 70px 180px 0;
         }
 
-        .auth-side-panel::before,
-        .auth-side-panel::after {
-            content: '';
+        .auth-side-art {
             position: absolute;
-            border-radius: 50%;
+            inset: 0;
+            z-index: 0;
             pointer-events: none;
         }
-        .auth-side-panel::before {
-            width: 260px;
-            height: 260px;
-            top: -100px;
-            right: -90px;
-            background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0) 70%);
+        .auth-side-art > svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
         }
-        .auth-side-panel::after {
-            width: 190px;
-            height: 190px;
-            bottom: -70px;
-            left: -60px;
-            background: radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 70%);
+        /* keeps the headline legible where the ribbons pass behind it */
+        .auth-side-art::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(42, 3, 20, 0.5) 0%, rgba(42, 3, 20, 0.12) 50%, transparent 72%);
         }
 
+        .art-dots {
+            position: absolute;
+            width: 110px;
+            height: 70px;
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.55) 1.6px, transparent 2px);
+            background-size: 22px 22px;
+            opacity: 0.8;
+            z-index: 1;
+        }
+        .art-dots-1 { top: 17%; left: 38%; }
+        .art-dots-2 { bottom: 12%; left: 46%; width: 132px; height: 66px; opacity: 0.55; }
+
+        /* Floating glass cards */
+        .art-chart,
+        .art-donut {
+            position: absolute;
+            z-index: 2;
+            border-radius: 18px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06));
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            box-shadow: 0 24px 50px -16px rgba(30, 0, 14, 0.7);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+        .art-chart {
+            top: 8%;
+            right: 9%;
+            width: 36%;
+            height: 25%;
+            padding: 16px 18px 14px;
+            display: flex;
+            align-items: flex-end;
+            gap: 7%;
+            transform: perspective(700px) rotateY(-14deg) rotateZ(-3deg);
+        }
+        .art-chart span {
+            flex: 1;
+            border-radius: 4px 4px 0 0;
+            background: linear-gradient(180deg, #fda4af, #f43f5e);
+        }
+        .art-chart span:nth-child(odd) { background: linear-gradient(180deg, #fbcfe8, #ec4899); }
+        .art-chart span:nth-child(1) { height: 28%; }
+        .art-chart span:nth-child(2) { height: 40%; }
+        .art-chart span:nth-child(3) { height: 52%; }
+        .art-chart span:nth-child(4) { height: 66%; }
+        .art-chart span:nth-child(5) { height: 80%; }
+        .art-chart span:nth-child(6) { height: 100%; }
+        .art-donut {
+            top: 36%;
+            right: 3%;
+            width: 31%;
+            height: 12%;
+            padding: 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            opacity: 0.9;
+            transform: perspective(700px) rotateY(-14deg);
+        }
+        .art-donut i {
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 5px solid rgba(255, 255, 255, 0.85);
+            border-right-color: rgba(255, 255, 255, 0.2);
+        }
+        .art-donut b {
+            flex: 1;
+            height: 5px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.55);
+            box-shadow: 0 11px 0 -1px rgba(255, 255, 255, 0.3);
+        }
+
+        .auth-side-logo,
+        .auth-side-hero,
+        .auth-side-features { position: relative; z-index: 3; }
+
         /* Logo sits on its own white card so it stays legible and balanced
-           regardless of the source image's own colors/whitespace, instead of
-           floating the raw photo directly on the pink panel. The source
+           regardless of the source image's own colors/whitespace. The source
            photo (logo-login.jpg) has a lot of built-in white margin around
            the actual "SSS" mark, so we display a pre-cropped version
            (logo-login-cropped.jpg, tight around the mark, ~2.5:1) and size
-           this box to match that ratio - otherwise object-fit:contain
-           leaves the mark looking small/off-balance inside the box. */
+           this box to match that ratio. */
         .auth-side-logo {
-            position: relative;
-            z-index: 1;
             width: 100%;
-            max-width: 280px;
+            max-width: 220px;
             aspect-ratio: 2.5;
-            margin-bottom: 28px;
             background: #fffafc;
             border-radius: 18px;
             padding: 4px;
@@ -104,15 +182,8 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.12);
         }
-
-        .auth-side-logo:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 38px rgba(0, 0, 0, 0.26), 0 4px 10px rgba(0, 0, 0, 0.13);
-        }
-
         .auth-side-logo img {
             width: 100%;
             height: 100%;
@@ -120,31 +191,88 @@
             border-radius: 14px;
         }
 
+        .auth-side-hero { margin-top: auto; }
+
         .auth-side-title {
-            position: relative;
-            z-index: 1;
-            font-size: 1.5rem;
+            font-size: 2.6rem;
             font-weight: 800;
-            line-height: 1.35;
-            margin-bottom: 14px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+            line-height: 1.12;
+            letter-spacing: -0.01em;
+            margin: 0 0 16px;
+            text-shadow: 0 2px 14px rgba(42, 3, 20, 0.45);
+        }
+        .auth-side-title span { display: block; }
+        .auth-side-title .accent {
+            background: linear-gradient(90deg, #fda4af, #f472b6 60%, #fbcfe8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #fda4af;
         }
 
         .auth-side-subtitle {
-            position: relative;
-            z-index: 1;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 500;
-            line-height: 1.7;
-            color: rgba(255, 255, 255, 0.92);
-            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.12);
+            line-height: 1.75;
+            color: rgba(255, 255, 255, 0.82);
+            max-width: 32ch;
+        }
+
+        /* Three highlights pinned to the bottom, separated by hairlines */
+        .auth-side-features {
+            margin-top: 40px;
+            display: flex;
+            align-items: flex-start;
+        }
+        .auth-side-feature {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 22px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.35;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .auth-side-feature:first-child { padding-left: 0; }
+        .auth-side-feature + .auth-side-feature { border-left: 1px solid rgba(255, 255, 255, 0.18); }
+        .auth-side-feature-icon {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 13px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fda4af;
+            font-size: 1.05rem;
         }
 
         /* Right form panel */
         .auth-main-panel {
             flex: 1;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
+
+        .auth-welcome { padding: 30px 40px 0; }
+        .auth-welcome-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.22em;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        .auth-welcome-title {
+            font-size: 1.7rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #1e1b2e;
+        }
+        .auth-welcome-title em { font-style: normal; color: var(--primary-color); }
 
         /* Section dividers inside the (long) registration form */
         .form-section-title {
@@ -496,6 +624,27 @@
             color: var(--primary-color);
         }
 
+        /* ตัวหมุนระหว่างตรวจสอบ: วงกลมจางๆ ที่มีส่วนโค้งทึบหมุนรอบ (ไม่ใช้ไอคอนลูกศรหมุน) */
+        .btn-auth #login-btn-arrow.is-spinner {
+            display: inline-block;
+            flex: 0 0 auto;
+            width: 1.15em;
+            height: 1.15em;
+            box-sizing: border-box;
+            border: 2.5px solid color-mix(in srgb, currentColor 22%, transparent);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: loginSpin 0.75s linear infinite;
+        }
+
+        @keyframes loginSpin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-auth #login-btn-arrow.is-spinner { animation-duration: 1.8s; }
+        }
+
         .form-footer {
             margin-top: 35px;
             text-align: center;
@@ -622,8 +771,117 @@
             box-shadow: 0 12px 28px rgba(15, 23, 42, 0.35);
         }
 
+        /* ===== Reference-style refresh (split card: curved art panel + clean form) =====
+           Rose/pink palette kept; shapes follow the reference: big curved bottom-right
+           edge, pale wave sweeping in from the top-right, light wave rising from the
+           bottom-left, tilted frosted "folder" cards and soft blurred shapes. */
+        .auth-container { background: #ffffff; align-items: center; padding: 28px 20px; }
+        .auth-card { border-radius: 36px; box-shadow: 0 24px 60px rgba(15, 23, 42, 0.1), 0 2px 10px rgba(15, 23, 42, 0.04); }
+
+        .auth-side-panel {
+            flex: 0 0 43%; /* แคบลง/ชิดซ้าย เพื่อให้ฝั่งฟอร์มกว้างพอสำหรับสมัครสมาชิก */
+            background:
+                radial-gradient(75% 55% at 82% 92%, rgba(244, 63, 94, 0.6), transparent 70%),
+                radial-gradient(70% 50% at 0% 0%, rgba(131, 24, 67, 0.55), transparent 62%),
+                linear-gradient(155deg, #2a0314 0%, #52092a 55%, #8a1244 100%);
+            border-radius: 0 0 150px 0 / 0 0 170px 0;
+        }
+        .auth-side-art::after { background: linear-gradient(90deg, rgba(42, 3, 20, 0.35) 0%, transparent 60%); }
+
+        .art-blob { position: absolute; z-index: 1; background: rgba(251, 113, 133, 0.28); }
+        .art-blob-1 { width: 130px; height: 130px; border-radius: 50%; left: 5%; top: 33%; filter: blur(26px); }
+        .art-blob-2 { width: 44px; height: 44px; border-radius: 12px; left: 30%; top: 30%; background: rgba(255, 255, 255, 0.2); filter: blur(5px); }
+        .art-blob-3 { width: 26px; height: 26px; border-radius: 8px; left: 20%; top: 40%; background: rgba(255, 255, 255, 0.16); filter: blur(4px); }
+
+        .art-card {
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            color: #fff;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.07));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 24px 50px -16px rgba(30, 0, 14, 0.7);
+            -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(8px);
+            font-weight: 700;
+            line-height: 1.25;
+        }
+        .art-card::before {
+            content: '';
+            position: absolute;
+            top: -9px;
+            left: 14px;
+            width: 36%;
+            height: 10px;
+            border-radius: 8px 8px 0 0;
+            background: rgba(255, 255, 255, 0.28);
+        }
+        .art-card i { color: #fecdd3; font-size: 1.15rem; }
+        .art-card b { font-size: 0.8rem; font-weight: 700; }
+        .art-card small { font-size: 0.64rem; font-weight: 500; opacity: 0.8; }
+        .art-card-1 { top: 26%; right: 7%; width: 40%; height: 21%;
+            transform: perspective(800px) rotateX(16deg) rotateY(-22deg) rotateZ(13deg); }
+        .art-card-2 { top: 52%; right: 1%; width: 36%; height: 15%; opacity: 0.8; filter: blur(0.6px);
+            transform: perspective(800px) rotateX(16deg) rotateY(-22deg) rotateZ(13deg); }
+        .art-card-3 { top: 70%; right: 11%; width: 31%; height: 13%; opacity: 0.55; filter: blur(1.4px);
+            transform: perspective(800px) rotateX(16deg) rotateY(-22deg) rotateZ(13deg); }
+
+        .auth-side-panel { padding: 44px 36px 38px; }
+        .auth-side-title { font-size: 2.3rem; }
+        .auth-side-features { margin-top: 32px; gap: 14px; }
+        .auth-side-feature { font-size: 0.74rem; gap: 8px; }
+        .auth-side-feature-icon { width: 38px; height: 38px; font-size: 0.95rem; }
+        .auth-side-feature { flex-direction: row; align-items: center; gap: 10px; padding: 0; }
+        .auth-side-feature + .auth-side-feature { border-left: 0; }
+        .auth-side-feature-icon { border-radius: 14px; background: rgba(255, 255, 255, 0.14); }
+
+        .auth-main-panel { position: relative; justify-content: center; }
+        .auth-byline { position: absolute; top: 26px; right: 36px; font-size: 0.8rem; font-weight: 600; color: #8a5a6e; }
+        .auth-welcome { padding: 44px 40px 0; }
+        .auth-welcome-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.01em; color: #1e1b2e; }
+        .auth-welcome-title:empty { display: none; }
+        .auth-welcome-sub { margin-top: 6px; font-size: 1.5rem; font-weight: 800; line-height: 1.3; letter-spacing: -0.01em; color: #1e1b2e; }
+        .auth-brand-name { display: block; white-space: nowrap; margin-top: 2px; font-size: 1.15rem; font-weight: 800; color: var(--primary-color); letter-spacing: 0; }
+
+        .auth-tabs-wrapper { justify-content: flex-start; padding: 18px 40px 0; }
+        .auth-tabs { background: #fdf2f6; }
+
+        .form-label { margin-left: 2px; margin-bottom: 6px; color: #1e1b2e; }
+        .form-group { margin-bottom: 14px; }
+        .form-control {
+            border-radius: 14px;
+            border: 1.5px solid #f0dde4;
+            background: #fff;
+            padding: 13px 16px 13px 48px;
+        }
+        .form-control:focus { border-color: rgba(225, 29, 72, 0.55); box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1); }
+        .input-wrapper > i { left: 18px; opacity: 0.6; }
+        .toggle-password { border: 0; background: transparent; padding: 5px 8px; right: 12px; }
+        .toggle-password:hover { background: transparent; color: #be123c; }
+        #reg_phone { padding-left: 92px; }
+        .input-wrapper .phone-country-code { left: 44px; }
+        .remember-row { margin-left: 0; margin-bottom: 4px; }
+
+        .btn-auth { margin-top: 18px; padding: 15px; border-radius: 14px; }
+        .btn-auth:hover { transform: translateY(-2px); }
+
+        .btn-sso {
+            background: #fff;
+            color: #1e1b2e;
+            border: 1.5px solid #f0dde4;
+            box-shadow: none;
+        }
+        .btn-sso i { color: var(--primary-color); }
+        .btn-sso:hover { background: #fff7fa; border-color: rgba(225, 29, 72, 0.45); box-shadow: 0 8px 20px rgba(225, 29, 72, 0.1); }
+        .form-footer { margin-top: 24px; }
+
+
         @media (max-width: 820px) {
-            .auth-card { flex-direction: column; max-width: 550px; }
+            .auth-card { flex-direction: column; max-width: 550px; min-height: 0; }
             .auth-side-panel {
                 flex: 0 0 auto;
                 flex-direction: row;
@@ -631,10 +889,20 @@
                 justify-content: center;
                 gap: 16px;
                 padding: 26px 30px;
+                border-radius: 0 0 40px 40px;
             }
-            .auth-side-logo { margin-bottom: 0; width: 130px; flex-shrink: 0; }
+            .auth-side-logo { width: 130px; flex-shrink: 0; }
+            .auth-side-hero { margin-top: 0; }
             .auth-side-title { font-size: 1.05rem; margin-bottom: 0; }
-            .auth-side-subtitle { display: none; }
+            .auth-side-title span { display: inline; }
+            .auth-side-subtitle,
+            .auth-side-features,
+            .art-chart, .art-donut, .art-dots, .art-card, .art-blob { display: none; }
+            .auth-byline { display: none; }
+            .auth-side-panel { border-radius: 0 0 40px 40px; }
+            .auth-tabs-wrapper { padding: 16px 20px 0; }
+            .auth-welcome { padding: 22px 20px 0; }
+            .auth-welcome-title { font-size: 1.55rem; }
         }
 
         @media (max-width: 600px) {
@@ -946,13 +1214,54 @@
     <div class="auth-container">
         <div class="auth-card">
             <div class="auth-side-panel">
+                <div class="auth-side-art" aria-hidden="true">
+                    <svg viewBox="0 0 600 800" preserveAspectRatio="none">
+                        <defs>
+                            <linearGradient id="waveTop" x1="0" y1="0" x2="1" y2="1">
+                                <stop offset="0" stop-color="#fda4af" stop-opacity="0.55"/>
+                                <stop offset="1" stop-color="#fecdd3" stop-opacity="0.95"/>
+                            </linearGradient>
+                            <linearGradient id="waveBottom" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0" stop-color="#fb7185" stop-opacity="0.95"/>
+                                <stop offset="1" stop-color="#f472b6" stop-opacity="0.55"/>
+                            </linearGradient>
+                            <linearGradient id="waveBottomDeep" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0" stop-color="#be123c" stop-opacity="0.9"/>
+                                <stop offset="1" stop-color="#9d174d" stop-opacity="0.2"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M300 0 C 335 95 430 150 530 172 C 565 180 588 195 600 212 L 600 0 Z" fill="url(#waveTop)"/>
+                        <path d="M385 0 C 410 62 490 112 600 132 L 600 0 Z" fill="#fff" fill-opacity="0.2"/>
+                        <path d="M0 662 C 110 622 235 662 305 735 C 330 762 350 785 366 800 L 0 800 Z" fill="url(#waveBottom)"/>
+                        <path d="M0 712 C 105 682 215 718 285 785 C 292 792 298 797 303 800 L 0 800 Z" fill="url(#waveBottomDeep)"/>
+                        <path d="M0 662 C 110 622 235 662 305 735" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="1.4"/>
+                    </svg>
+                    <div class="art-blob art-blob-1"></div>
+                    <div class="art-blob art-blob-2"></div>
+                    <div class="art-blob art-blob-3"></div>
+                    <div class="art-card art-card-1"><i class="fas fa-folder-open"></i><b>รายงานผลการดำเนินงาน</b><small>ข้อมูลลดเค็ม ลดโรค</small></div>
+                    <div class="art-card art-card-2"><i class="fas fa-folder"></i><b>เมนูลดโซเดียม</b></div>
+                    <div class="art-card art-card-3"><i class="fas fa-folder"></i><b>ผลิตภัณฑ์ลดโซเดียม</b></div>
+                </div>
                 <div class="auth-side-logo">
                     <img src="{{ asset('images/logo-login.jpg') }}" alt="Smart Salt & Sodium Monitor Logo">
                 </div>
-                <div class="auth-side-title">Smart Salt &amp; Sodium Monitor</div>
-                <div class="auth-side-subtitle">ระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10</div>
+                <div class="auth-side-hero">
+                    <div class="auth-side-title"><span>เฝ้าระวัง</span><span>ติดตามผล</span><span class="accent">ลดเค็ม ลดโรค</span></div>
+                    <div class="auth-side-subtitle">ระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10</div>
+                </div>
+                <div class="auth-side-features">
+                    <div class="auth-side-feature"><span class="auth-side-feature-icon"><i class="fas fa-clipboard-list"></i></span><span>บันทึก<br>ข้อมูล</span></div>
+                    <div class="auth-side-feature"><span class="auth-side-feature-icon"><i class="fas fa-chart-line"></i></span><span>ติดตาม<br>ผลงาน</span></div>
+                    <div class="auth-side-feature"><span class="auth-side-feature-icon"><i class="fas fa-users"></i></span><span>เฝ้าระวัง<br>ร่วมกัน</span></div>
+                </div>
             </div>
             <div class="auth-main-panel">
+            <div class="auth-byline">โดย สคร.10 อุบลราชธานี</div>
+            <div class="auth-welcome">
+                <div class="auth-welcome-title" id="auth-welcome-title">{{ $errors->any() ? 'สร้างบัญชีใหม่' : '' }}</div>
+                <div class="auth-welcome-sub" id="auth-welcome-sub">{!! $errors->any() ? 'กรอกข้อมูลเพื่อขอสิทธิ์เข้าใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' : 'เข้าสู่ระบบเพื่อใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' !!}</div>
+            </div>
             <div class="auth-tabs-wrapper">
                 <div class="auth-tabs">
                     <div class="auth-tab {{ session('success') || !$errors->any() ? 'active' : '' }}"
@@ -1003,7 +1312,7 @@
                         <button type="submit" class="btn-auth" id="login-btn">
                             <span class="btn-fill"></span>
                             <span id="login-btn-text">เข้าใช้งานระบบ</span>
-                            <i class="fas fa-right-to-bracket" id="login-btn-arrow"></i>
+                            <i class="fas fa-arrow-right" id="login-btn-arrow"></i>
                         </button>
                     </form>
 
@@ -1161,7 +1470,9 @@
                                         onchange="toggleRankFields()" required>
                                         <option value="" disabled {{ old('User_rank_id') ? '' : 'selected' }}>เลือกระดับ
                                         </option>
-                                        <option value="1" {{ old('User_rank_id') == '1' ? 'selected' : '' }}>สคร.</option>
+                                        @if (\App\Support\SystemSettings::get('register_rank1_enabled', true))
+                                            <option value="1" {{ old('User_rank_id') == '1' ? 'selected' : '' }}>สคร.</option>
+                                        @endif
                                         <option value="2" {{ old('User_rank_id') == '2' ? 'selected' : '' }}>สสจ.</option>
                                         <option value="3" {{ old('User_rank_id') == '3' ? 'selected' : '' }}>สสอ.</option>
                                         <option value="5" {{ old('User_rank_id') == '5' ? 'selected' : '' }}>รพ.</option>
@@ -1198,6 +1509,15 @@
                                     <select id="district_select" name="District_id" class="form-control" onchange="handleDistrictChange()">
                                         <option value="" disabled {{ old('District_id') ? '' : 'selected' }}>เลือกอำเภอ
                                         </option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" id="group_tambon" style="display: none;">
+                                <label class="form-label">ตำบล</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-map-pin"></i>
+                                    <select id="tambon_select" name="Tambon_id" class="form-control">
+                                        <option value="" disabled selected>เลือกตำบล</option>
                                     </select>
                                 </div>
                             </div>
@@ -1267,21 +1587,21 @@
 
                 <div class="pdpa-section">
                     <div class="pdpa-section-title"><i class="fas fa-bullseye"></i> 1. วัตถุประสงค์ของการเก็บรวบรวม ใช้ และเปิดเผยข้อมูลส่วนบุคคล</div>
-                    <p>1.1 <strong>เพื่อการยืนยันตัวตน:</strong> ใช้สำหรับตรวจสอบสิทธิ์และยืนยันตัวตนในการเข้าใช้งานระบบแบบประเมิน เพื่อความปลอดภัยของข้อมูล</p>
-                    <p>1.2 <strong>เพื่อการดำเนินงานตามภารกิจ:</strong> เพื่อใช้ในการติดตามและประเมินผลการขับเคลื่อนกลไกยุติปัญหาเอดส์ของสถานบริการสาธารณสุขในพื้นที่รับผิดชอบ</p>
+                    <p>1.1 <strong>เพื่อการยืนยันตัวตน:</strong> ใช้สำหรับตรวจสอบสิทธิ์และยืนยันตัวตนในการเข้าใช้งานระบบ เพื่อความปลอดภัยของข้อมูล</p>
+                    <p>1.2 <strong>เพื่อการดำเนินงานตามภารกิจ:</strong> เพื่อใช้ในการติดตามและประเมินผลการดำเนินงานลดการบริโภคเกลือและโซเดียม การขับเคลื่อน พชอ.ไต และการเฝ้าระวังโรคไม่ติดต่อเรื้อรังของหน่วยบริการสาธารณสุขในพื้นที่รับผิดชอบ</p>
                     <p>1.3 <strong>เพื่อพัฒนาการบริการภาครัฐ:</strong> เพื่อเก็บสถิติการใช้งาน นำไปวิเคราะห์และปรับปรุงประสิทธิภาพการทำงานของระบบให้ดียิ่งขึ้น</p>
                 </div>
 
                 <div class="pdpa-section">
                     <div class="pdpa-section-title"><i class="fas fa-database"></i> 2. ข้อมูลส่วนบุคคลที่เก็บรวบรวม</div>
                     <p>ระบบจะจัดเก็บข้อมูลเท่าที่จำเป็นจากการลงทะเบียนของท่าน ดังนี้</p>
-                    <p>2.1 <strong>ข้อมูลส่วนบุคคลและสังกัด:</strong> ชื่อ-นามสกุล (ภาษาไทย), อีเมล, ตำแหน่ง, หน่วยงานที่สังกัด, จังหวัดและอำเภอ</p>
+                    <p>2.1 <strong>ข้อมูลส่วนบุคคลและสังกัด:</strong> ชื่อ-นามสกุล (ภาษาไทย), อีเมล, เบอร์โทรศัพท์ (ถ้ามี), ตำแหน่ง, หน่วยงานที่สังกัด, จังหวัดและอำเภอ</p>
                     <p>2.2 <strong>ข้อมูลการใช้งาน:</strong> สิทธิ์การเข้าใช้งานระบบ วันเวลาที่เข้าถึง และประวัติการบันทึกข้อมูล</p>
                 </div>
 
                 <div class="pdpa-section">
                     <div class="pdpa-section-title"><i class="fas fa-clock"></i> 3. ระยะเวลาในการเก็บรักษาข้อมูล</div>
-                    <p><strong>กลุ่มโรคไม่ติดต่อ</strong> จะเก็บรักษาข้อมูลส่วนบุคคลของท่านไว้ตราบเท่าที่ท่านยังเป็นผู้ใช้งานระบบ หรือตามระยะเวลาที่จำเป็นในการดำเนินงานตามวัตถุประสงค์ของระบบประเมินฯ</p>
+                    <p><strong>กลุ่มโรคไม่ติดต่อ</strong> จะเก็บรักษาข้อมูลส่วนบุคคลของท่านไว้ตราบเท่าที่ท่านยังเป็นผู้ใช้งานระบบ หรือตามระยะเวลาที่จำเป็นในการดำเนินงานตามวัตถุประสงค์ของระบบ</p>
                     <p>หากท่านไม่ต้องการใช้งานระบบแล้ว หรือมีการเปลี่ยนแปลงเจ้าหน้าที่ผู้รับผิดชอบ สามารถติดต่อผู้ดูแลข้อมูลเพื่อทำการยกเลิกข้อมูลออกจากฐานข้อมูลได้</p>
                 </div>
 
@@ -1312,7 +1632,7 @@
             const arrowEl = document.getElementById('login-btn-arrow');
 
             // Swap the label to "กำลังตรวจสอบ..." and the arrow icon to a
-            // spinner while the white fill wipes in, so it reads as an
+            // circular spinner while the white fill wipes in, so it reads as an
             // active checking state rather than a static button that
             // merely changed color. No need to revert either on failure -
             // a failed login is a normal full-page reload (validation
@@ -1323,8 +1643,8 @@
                 textEl.textContent = 'กำลังตรวจสอบ...';
             }
             if (arrowEl) {
-                arrowEl.classList.remove('fa-right-to-bracket');
-                arrowEl.classList.add('fa-circle-notch', 'fa-spin');
+                // ไอคอนลูกศร -> วงกลมหมุน (CSS .is-spinner)
+                arrowEl.className = 'is-spinner';
             }
 
             // Submit on the very next frame so we hand off to the network
@@ -1390,6 +1710,18 @@
             const registerSection = document.getElementById('register-section');
             const tabs = document.querySelectorAll('.auth-tab');
 
+            const wTitle = document.getElementById('auth-welcome-title');
+            const wSub = document.getElementById('auth-welcome-sub');
+            if (wTitle && wSub) {
+                if (tab === 'login') {
+                    wTitle.textContent = '';
+                    wSub.innerHTML = 'เข้าสู่ระบบเพื่อใช้งาน <span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>';
+                } else {
+                    wTitle.textContent = 'สร้างบัญชีใหม่';
+                    wSub.innerHTML = 'กรอกข้อมูลเพื่อขอสิทธิ์เข้าใช้งาน <span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>';
+                }
+            }
+
             // Toggle sections
             if (tab === 'login') {
                 loginSection.classList.add('active');
@@ -1429,9 +1761,13 @@
                 const oldDistrict = "{{ old('District_id') }}";
                 if (oldDistrict) {
                     districtSelect.value = oldDistrict;
-                    if (document.getElementById('rank_select').value === '4') {
+                    const rank = document.getElementById('rank_select').value;
+                    if (['2', '3', '4', '5'].includes(rank)) {
+                        fetchTambons();
+                    }
+                    if (rank === '4') {
                         fetchSubdistrictHospitals();
-                    } else if (document.getElementById('rank_select').value === '5') {
+                    } else if (rank === '5') {
                         fetchHospitals();
                     }
                 }
@@ -1443,10 +1779,44 @@
 
         function handleDistrictChange() {
             const rank = document.getElementById('rank_select').value;
+            if (['2', '3', '4', '5'].includes(rank)) {
+                fetchTambons();
+            }
             if (rank === '4') {
                 fetchSubdistrictHospitals(); // Fetch all in district
             } else if (rank === '5') {
                 fetchHospitals();
+            }
+        }
+
+        async function fetchTambons() {
+            const provinceId = document.getElementById('province_select').value;
+            const districtId = document.getElementById('district_select').value;
+            const tambonSelect = document.getElementById('tambon_select');
+
+            if (!provinceId || !districtId) return;
+
+            tambonSelect.innerHTML = '<option value="" disabled selected>กำลังโหลด...</option>';
+
+            try {
+                const response = await fetch(`/get-subdistricts/${provinceId}/${districtId}`);
+                const tambons = await response.json();
+
+                tambonSelect.innerHTML = '<option value="" disabled selected>เลือกตำบล</option>';
+                tambons.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.tambon_id;
+                    option.textContent = t.tambon_name;
+                    tambonSelect.appendChild(option);
+                });
+
+                const oldTambon = "{{ old('Tambon_id') }}";
+                if (oldTambon) {
+                    tambonSelect.value = oldTambon;
+                }
+            } catch (error) {
+                console.error('Error fetching tambons:', error);
+                tambonSelect.innerHTML = '<option value="" disabled selected>เกิดข้อผิดพลาด</option>';
             }
         }
 
@@ -1488,15 +1858,16 @@
             const groupProvince = document.getElementById('group_province');
             const groupDistrict = document.getElementById('group_district');
             const groupHospital = document.getElementById('group_hospital');
+            const groupTambon = document.getElementById('group_tambon');
             const groupSubdistrictHospital = document.getElementById('group_subdistrict_hospital');
             const groupAffiliation = document.getElementById('group_affiliation');
             const provinceSelect = document.getElementById('province_select');
-            const districtSelect = document.getElementById('district_select');
 
             // Reset visibility
             groupProvince.style.display = 'block';
             groupDistrict.style.display = 'none';
             groupHospital.style.display = 'none';
+            groupTambon.style.display = 'none';
             groupSubdistrictHospital.style.display = 'none';
             groupAffiliation.style.display = 'none';
 
@@ -1510,15 +1881,19 @@
                 groupProvince.style.pointerEvents = 'none';
                 groupProvince.style.opacity = '0.7';
             } else if (rank === '2') { // สสจ.
-                // All provinces allowed, no district
+                groupDistrict.style.display = 'block';
+                groupTambon.style.display = 'block';
             } else if (rank === '3') { // สสอ.
                 groupDistrict.style.display = 'block';
+                groupTambon.style.display = 'block';
             } else if (rank === '4') { // รพ.สต
                 groupDistrict.style.display = 'block';
+                groupTambon.style.display = 'block';
                 groupSubdistrictHospital.style.display = 'block';
                 groupAffiliation.style.display = 'block';
             } else if (rank === '5') { // รพ.
                 groupDistrict.style.display = 'block';
+                groupTambon.style.display = 'block';
                 groupHospital.style.display = 'block';
             }
 
@@ -1761,14 +2136,9 @@
                 }, 5000);
             }
 
-            // A failed registration submit re-renders this page with the
-            // register tab already active (server-side, via $errors->any())
-            // instead of going through switchTab() - so the PDPA gate above
-            // would otherwise be skipped entirely on that round trip.
-            const registerSection = document.getElementById('register-section');
-            if (registerSection && registerSection.classList.contains('active')) {
-                showPdpaModal();
-            }
+            // หมายเหตุ: ถ้าสมัครไม่ผ่าน (เช่น อีเมลซ้ำ / ข้อมูลไม่ครบ) หน้าจะโหลดใหม่และเปิดแท็บ
+            // "สมัครสมาชิก" พร้อมข้อความผิดพลาดและข้อมูลเดิมที่กรอกไว้ - ไม่เปิดนโยบาย PDPA ซ้ำ
+            // เพราะผู้ใช้ยอมรับไปแล้วก่อนกดสมัคร (นโยบายจะเด้งเฉพาะตอนกดสลับมาแท็บสมัครสมาชิกเอง)
         });
     </script>
 @endsection

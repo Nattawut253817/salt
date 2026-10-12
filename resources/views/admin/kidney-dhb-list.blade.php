@@ -30,6 +30,11 @@
                     <i class="fas fa-file-word"></i> นำเข้าไฟล์ Word
                 </a>
                 @endif
+                @if(auth()->user()->isSuperAdmin())
+                <button type="button" id="btnDeleteFiltered" class="btn-pill btn-delete-filtered" title="ลบข้อมูลทั้งหมดที่ตรงกับตัวกรองปัจจุบัน (เฉพาะ SuperAdmin)">
+                    <i class="fas fa-trash-alt"></i> ลบข้อมูล
+                </button>
+                @endif
                 <button type="button" id="resetFilters" class="btn-pill btn-reset">
                     <i class="fas fa-sync-alt"></i> ล้างตัวกรอง
                 </button>
@@ -59,6 +64,25 @@
                                     @if($q == 1)(เดือน 3)@elseif($q == 2)(เดือน 6)@elseif($q == 3)(เดือน 9)@else(เดือน 12)@endif
                                 </option>
                             @endforeach
+                        </select>
+                    </div>
+                    @if(in_array((int) auth()->user()->User_rank_id, [1, 2], true))
+                    <div class="filter-field">
+                        <label>สถานะข้อมูล</label>
+                        <select class="filter-input" name="status" id="status">
+                            <option value="">ทั้งหมด</option>
+                            <option value="has" {{ request('status') === 'has' ? 'selected' : '' }}>มีข้อมูล (มีรายงาน)</option>
+                            <option value="selected" {{ request('status') === 'selected' ? 'selected' : '' }}>เลือกพื้นที่แล้ว · ยังไม่รายงาน</option>
+                            <option value="free" {{ request('status') === 'free' ? 'selected' : '' }}>ยังไม่มีผู้เลือก</option>
+                            <option value="display" {{ request('status') === 'display' ? 'selected' : '' }}>หมุดแสดงผล</option>
+                        </select>
+                    </div>
+                    @endif
+                    <div class="filter-field">
+                        <label>เรียงลำดับ</label>
+                        <select class="filter-input" name="sort" id="sort">
+                            <option value="" {{ request('sort') ? '' : 'selected' }}>ตามหน่วยงาน</option>
+                            <option value="updated" {{ request('sort') === 'updated' ? 'selected' : '' }}>อัปเดตล่าสุดก่อน</option>
                         </select>
                     </div>
                 </div>
@@ -119,18 +143,7 @@
 
     <div class="border-0 shadow-none bg-transparent">
         <div>
-            @if(session('success'))
-                <div class="alert-premium-list alert-success-list" id="listSuccessAlert">
-                    <div class="alert-icon-list"><i class="fas fa-check-circle"></i></div>
-                    <div class="alert-body-list">
-                        <div class="alert-title-list">บันทึกสำเร็จ!</div>
-                        <div class="alert-msg-list">{{ session('success') }}</div>
-                    </div>
-                    <button class="alert-close-list"
-                        onclick="this.closest('.alert-premium-list').style.display='none'">&times;</button>
-                    <div class="alert-bar-list"></div>
-                </div>
-            @endif
+            @include('partials.flash-alert')
 
             <div id="table-container">
                 @include('admin.kidney-dhb-table')
@@ -148,8 +161,8 @@
             border: 1px solid #eef1f6;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-            padding: 20px 22px;
-            margin-bottom: 20px;
+            padding: 12px 20px 14px;
+            margin-bottom: 14px;
         }
 
         .toolbar-head {
@@ -157,7 +170,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 12px;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
             flex-wrap: wrap;
         }
 
@@ -184,7 +197,7 @@
             gap: 8px;
             border: none;
             border-radius: 10px;
-            padding: 9px 16px;
+            padding: 6px 16px;
             font-family: 'Noto Serif Thai', sans-serif;
             font-size: 0.82rem;
             font-weight: 600;
@@ -206,6 +219,22 @@
             box-shadow: 0 6px 14px rgba(37,99,235,0.4);
         }
 
+        .btn-delete-filtered {
+            background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(220,38,38,0.3);
+        }
+
+        .btn-delete-filtered:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 14px rgba(220,38,38,0.4);
+        }
+
+        .btn-delete-filtered:disabled { opacity: .6; cursor: wait; transform: none; }
+
+        .btn-delete-filtered:focus-visible { outline: 2px solid #991b1b; outline-offset: 2px; }
+
         .btn-reset {
             background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
             color: #fff;
@@ -220,11 +249,12 @@
         .filter-groups {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 8px;
         }
 
         .filter-cluster {
             display: flex;
+            align-items: flex-end;
             gap: 14px;
             flex-wrap: wrap;
         }
@@ -238,19 +268,19 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            padding-top: 10px;
+            padding-bottom: 6px;
         }
 
         .filter-cluster-fields {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-            gap: 12px;
+            gap: 8px 12px;
             flex: 1;
         }
 
         .filter-field label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 2px;
             font-family: 'Noto Serif Thai', sans-serif;
             font-size: 0.76rem;
             font-weight: 600;
@@ -263,7 +293,7 @@
             border: 2px solid #e2e8f0;
             font-family: 'Noto Serif Thai', sans-serif;
             font-size: 0.8rem;
-            padding: 10px 14px;
+            padding: 5px 12px;
             background-color: #f8fafc;
             height: auto;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -286,104 +316,7 @@
 
         @media (max-width: 760px) {
             .filter-cluster { flex-direction: column; gap: 8px; }
-            .filter-cluster-label { padding-top: 0; }
-        }
-
-        .alert-premium-list {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 16px 20px;
-            border-radius: 14px;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07);
-            animation: listAlertIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transition: all 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        @keyframes listAlertIn {
-            from {
-                transform: translateY(-10px) scaleY(0.9);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateY(0) scaleY(1);
-                opacity: 1;
-            }
-        }
-
-        .alert-success-list {
-            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-            border: 1px solid #6ee7b7;
-            color: #065f46;
-        }
-
-        .alert-icon-list {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            background: #a7f3d0;
-            color: #059669;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            flex-shrink: 0;
-        }
-
-        .alert-body-list {
-            flex: 1;
-        }
-
-        .alert-title-list {
-            font-size: 0.95rem;
-            font-weight: 800;
-            margin-bottom: 1px;
-        }
-
-        .alert-msg-list {
-            font-size: 0.83rem;
-            opacity: 0.8;
-        }
-
-        .alert-close-list {
-            background: none;
-            border: none;
-            font-size: 1rem;
-            opacity: 0.35;
-            cursor: pointer;
-            padding: 2px;
-            align-self: flex-start;
-            transition: opacity 0.2s;
-        }
-
-        .alert-close-list:hover {
-            opacity: 0.8;
-        }
-
-        .alert-bar-list {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            border-radius: 0 0 14px 14px;
-            background: linear-gradient(90deg, #059669, #34d399);
-            animation: barDown 5s linear forwards;
-        }
-
-        @keyframes barDown {
-            from {
-                width: 100%;
-            }
-
-            to {
-                width: 0%;
-            }
+            .filter-cluster-label { padding-bottom: 0; }
         }
 
     </style>
@@ -391,6 +324,13 @@
 
 @section('extra_js')
     <script>
+        // Delete button's confirmation popup - wired from the form's own
+        // onsubmit="return confirmDelete(event)" in admin.kidney-dhb-table
+        // (route admin.kidney-dhb.destroy). Submitting is otherwise
+        // irreversible (hard delete, no undo), so this always asks first;
+        // returning false here stops the native, unconfirmed submit, and
+        // form.submit() inside the "confirmed" branch re-submits it for
+        // real once the person has explicitly agreed.
         function confirmDelete(e) {
             e.preventDefault();
             const form = e.currentTarget;
@@ -413,19 +353,33 @@
             return false;
         }
 
-        $(document).ready(function () {
-            // Auto-dismiss list success alert
-            const listAlert = document.getElementById('listSuccessAlert');
-            if (listAlert) {
-                setTimeout(() => {
-                    listAlert.style.opacity = '0';
-                    listAlert.style.transform = 'scaleY(0)';
-                    listAlert.style.marginBottom = '0';
-                    listAlert.style.padding = '0';
-                    setTimeout(() => listAlert.style.display = 'none', 500);
-                }, 5200);
-            }
+        // ปุ่ม ✕ ในแถว "เลือกไว้แล้ว · ยังไม่มีรายงานผล" - ถามยืนยันก่อนยกเลิกการเลือกพื้นที่
+        // (ตัวพื้นที่ที่ปักไว้ยังอยู่ แค่เอาออกจากรายการของหน่วยงาน)
+        function confirmUnpick(e) {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const area = form.getAttribute('data-area') || 'พื้นที่นี้';
 
+            Swal.fire({
+                title: 'ยกเลิกการเลือกพื้นที่?',
+                html: 'ต้องการยกเลิกการเลือกพื้นที่ <b></b> ของหน่วยงานใช่หรือไม่?<br><small style="color:#64748b">พื้นที่ที่ปักไว้ยังคงอยู่ และเลือกกลับมาได้ที่หน้า "เลือกพื้นที่ดำเนินงาน"</small>',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#64748b',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-xmark mr-2"></i> ใช่, ยกเลิกการเลือก',
+                cancelButtonText: 'ไม่ยกเลิก',
+                reverseButtons: true,
+                didOpen: (el) => { const b = el.querySelector('#swal2-html-container b'); if (b) b.textContent = area; }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        $(document).ready(function () {
             // Function to load table via AJAX
             function loadTable(url) {
                 $('#navLoadingOverlay').css('display', 'flex').animate({ opacity: 1 }, 200);
@@ -437,6 +391,8 @@
                 const province_id = $('#province_id').val();
                 const district_id = $('#district_id').val();
                 const operating_area = $('#operating_area').val();
+                const sort = $('#sort').val();
+                const status = $('#status').val() || '';
 
                 // Append filters to URL if not already present (for pagination links)
                 if (!url) {
@@ -452,7 +408,9 @@
                         quarter: quarter,
                         province_id: province_id,
                         district_id: district_id,
-                        operating_area: operating_area
+                        operating_area: operating_area,
+                        status: status,
+                        sort: sort
                     },
                     success: function (data) {
                         $('#table-container').html(data);
@@ -470,8 +428,81 @@
             }
 
             // Trigger AJAX on filter change
-            $('#fiscal_year, #org_type, #quarter, #province_id, #district_id, #operating_area').on('change', function () {
+            $('#fiscal_year, #org_type, #quarter, #province_id, #district_id, #operating_area, #status, #sort').on('change', function () {
                 loadTable();
+            });
+
+            // SuperAdmin: ลบข้อมูลทั้งหมดที่ตรงกับตัวกรองปัจจุบัน (ถามยืนยัน 2 ชั้น: เห็นจำนวนก่อน แล้วพิมพ์คำว่า ลบ)
+            $('#btnDeleteFiltered').on('click', function () {
+                const $btn = $(this);
+                const token = document.querySelector('meta[name="csrf-token"]').content;
+                const payload = function () {
+                    return {
+                        fiscal_year: $('#fiscal_year').val(),
+                        org_type: $('#org_type').val(),
+                        quarter: $('#quarter').val(),
+                        province_id: $('#province_id').val(),
+                        district_id: $('#district_id').val(),
+                        operating_area: $('#operating_area').val(),
+                        status: $('#status').val() || ''
+                    };
+                };
+                // สรุปตัวกรองที่ใช้อยู่ให้ผู้ใช้เห็นว่ากำลังจะลบอะไร
+                const parts = [];
+                [['fiscal_year','ปีงบประมาณ'], ['quarter','ไตรมาส'], ['status','สถานะข้อมูล'], ['org_type','ประเภทหน่วยงาน'], ['province_id','จังหวัด'], ['district_id','อำเภอ'], ['operating_area','พื้นที่']].forEach(function (f) {
+                    const $el = $('#' + f[0]);
+                    if ($el.length && $el.val()) parts.push(f[1] + ': ' + $.trim($el.find('option:selected').text()));
+                });
+                const scope = parts.length ? parts.join(' · ') : 'ไม่ได้กรอง (ข้อมูลทั้งหมดในระบบ)';
+
+                $btn.prop('disabled', true);
+                $.post("{{ route('admin.kidney-dhb.delete-filtered') }}", Object.assign(payload(), { _token: token, count_only: 1 }), null, 'json')
+                    .done(function (res) {
+                        $btn.prop('disabled', false);
+                        const total = Number(res.count || 0);
+                        if (total === 0) {
+                            Swal.fire({ icon: 'info', title: 'ไม่มีข้อมูลที่จะลบ', text: 'ไม่พบข้อมูลที่ตรงกับตัวกรองปัจจุบัน', confirmButtonColor: '#64748b', confirmButtonText: 'ตกลง' });
+                            return;
+                        }
+                        Swal.fire({
+                            title: 'ลบข้อมูลที่กรองได้?',
+                            icon: 'warning',
+                            html: '<div style="text-align:left;font-size:.92rem;line-height:1.6;">'
+                                + '<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:12px 14px;margin-bottom:10px;">'
+                                + '<div style="color:#991b1b;font-weight:700;">จะลบ <span style="font-size:1.35rem;">' + total.toLocaleString() + '</span> รายการ</div>'
+                                + '<div class="swal-scope" style="color:#7f1d1d;margin-top:4px;"></div></div>'
+                                + '<div style="color:#475569;">ลบทุกไตรมาสของรายการที่แสดงอยู่ (ถ้าเลือกไตรมาสไว้ ลบเฉพาะไตรมาสนั้น) <b style="color:#b91c1c;">กู้คืนไม่ได้</b></div>'
+                                + '<div style="margin-top:10px;color:#475569;">พิมพ์คำว่า <b>ลบ</b> เพื่อยืนยัน</div></div>',
+                            input: 'text',
+                            inputAttributes: { autocomplete: 'off', 'aria-label': 'พิมพ์คำว่า ลบ เพื่อยืนยัน' },
+                            inputValidator: function (v) { return $.trim(v) === 'ลบ' ? undefined : 'พิมพ์คำว่า ลบ ให้ตรงเพื่อยืนยัน'; },
+                            showCancelButton: true,
+                            confirmButtonColor: '#dc2626',
+                            cancelButtonColor: '#64748b',
+                            confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i> ลบข้อมูล',
+                            cancelButtonText: 'ยกเลิก',
+                            reverseButtons: true,
+                            focusCancel: true,
+                            didOpen: function (el) { const b = el.querySelector('.swal-scope'); if (b) b.textContent = 'ตัวกรอง: ' + scope; },
+                            showLoaderOnConfirm: true,
+                            allowOutsideClick: function () { return !Swal.isLoading(); },
+                            preConfirm: function () {
+                                return $.post("{{ route('admin.kidney-dhb.delete-filtered') }}", Object.assign(payload(), { _token: token, confirm: 1 }), null, 'json')
+                                    .then(function (r) { return r; }, function (xhr) {
+                                        Swal.showValidationMessage((xhr.responseJSON && xhr.responseJSON.message) || 'ลบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง');
+                                        return false;
+                                    });
+                            }
+                        }).then(function (result) {
+                            if (!result.isConfirmed || !result.value) return;
+                            Swal.fire({ icon: 'success', title: 'ลบแล้ว', text: result.value.message, confirmButtonColor: '#4f46e5', confirmButtonText: 'ตกลง' });
+                            loadTable();
+                        });
+                    })
+                    .fail(function (xhr) {
+                        $btn.prop('disabled', false);
+                        Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: (xhr.responseJSON && xhr.responseJSON.message) || 'ไม่สามารถตรวจสอบจำนวนข้อมูลได้ กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ef4444', confirmButtonText: 'ตกลง' });
+                    });
             });
 
             // Reset Button Logic
@@ -482,6 +513,8 @@
                 $('#province_id').val('');
                 $('#district_id').html('<option value="">ทั้งหมด</option>');
                 $('#operating_area').val('');
+                $('#status').val('');
+                $('#sort').val('');
                 loadTable();
             });
 

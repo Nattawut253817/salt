@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
     <style>
         /* Academic-style accent palette for this report page (teal +
            gold), layered on top of the site's existing component
@@ -184,13 +185,18 @@
             color: #fff;
         }
 
-        /* Chart row */
+        /* Chart row - asymmetric: the pins card (1st) gets ~2x the
+           width of the choropleth and stacked-bar cards next to it,
+           since individual pin locations need the room while the other
+           two (one shaded region / one bar per province) read fine
+           narrower. */
         .chart-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            /* third card is a bit wider than the map: it now carries a
+               3-column table (จังหวัด / พื้นที่ดำเนินงาน / ข้อมูลครบ) */
+            grid-template-columns: 2fr 1fr 1.35fr;
             gap: 20px;
             margin-bottom: 25px;
-            /* Reduced from 40px */
             align-items: stretch;
         }
 
@@ -268,6 +274,342 @@
             width: 100%;
         }
 
+        /* Province comparison card (third card in .chart-row) - a compact
+           2-column list: province name + one bar/percent. The panel is
+           exactly as tall as the maps/chart beside it (.chart-canvas =
+           400px) so the three cards line up, and the 5 rows share
+           whatever height the header row and footnote leave over. */
+        .po-panel {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .po-table {
+            width: 100%;
+            flex: 1 1 auto;
+            border-collapse: collapse;
+        }
+
+        .po-table thead th {
+            height: 1%;
+            padding: 0 6px 10px;
+            text-align: left;
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #1e3a5f;
+            white-space: nowrap;
+            border-bottom: 2px solid #e0f2f7;
+        }
+
+        .po-table tbody th,
+        .po-table tbody td {
+            padding: 0 6px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: middle;
+        }
+
+        .po-table tbody tr:last-child th,
+        .po-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .po-province {
+            text-align: left;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #1e3a5f;
+            white-space: nowrap;
+        }
+
+        .po-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 84px;
+        }
+
+        .po-bar-track {
+            flex: 1 1 auto;
+            height: 10px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .po-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3bb4cf, #1c8aa8);
+        }
+
+        .po-bar-value {
+            flex: none;
+            min-width: 38px;
+            text-align: right;
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: #1e3a5f;
+        }
+
+        .po-bar-empty {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .po-footnote {
+            padding-top: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            line-height: 1.5;
+            color: #94a3b8;
+        }
+
+        .po-th-status,
+        .po-status-cell {
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        .po-status-cell {
+            text-align: left;
+        }
+
+        /* ข้อมูลครบ pills - tinted fill, matching-colored icon + label:
+           green check = every pin complete, amber clock = some answered,
+           slate minus = nothing reported yet. */
+        .po-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 9px 4px 7px;
+            border-radius: 9px;
+            font-size: 0.74rem;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .po-status i {
+            font-size: 0.85rem;
+        }
+
+        .po-status-complete {
+            background: #dcf5e7;
+            color: #15803d;
+        }
+
+        .po-status-partial {
+            background: #fff1d6;
+            color: #b45309;
+        }
+
+        .po-status-none {
+            background: #e8edf4;
+            color: #475569;
+        }
+
+        @media (max-width: 1200px) {
+            .po-panel {
+                height: auto;
+            }
+
+            .po-table tbody th,
+            .po-table tbody td {
+                padding: 14px 6px;
+            }
+        }
+
+        /* Province-color legend under the new "หน่วยงานพื้นที่ดำเนินงาน" pin
+           map - same one-dot-per-province convention as
+           .oa-province-legend on admin/kidney-dhb (renderOaProvinceLegend()),
+           reused here under its own class name since this is a separate
+           Blade file. Only lists provinces actually present among the
+           plotted pins (built in this page's own script). Each name sits
+           in its own small pill, with a thin border and a faint fill
+           tinted from that SAME province's color (set inline per item in
+           the script below) - not a flat gray chip for every province -
+           so the legend itself carries a little of the same color
+           identity the dots already do. */
+        .oa-pins-legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px 16px;
+            margin-top: 14px;
+        }
+
+        .oa-pins-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 11px 4px 8px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #334155;
+            line-height: 1.3;
+        }
+
+        .oa-pins-legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            flex: none;
+        }
+
+        /* Pin popup (Leaflet, "หน่วยงานพื้นที่ดำเนินงาน" map) - carries more
+           than a bare breadcrumb + button now: the fiscal year this pin
+           was registered under and how many of the 8 milestone
+           categories have been reported against it specifically (both
+           computed server-side - see $operatingAreaPins in
+           MainController::kidneyDHBReport()). --pin-accent is set
+           inline per popup (the pin's own province color, same
+           oaProvinceColors used for the marker/legend) so the year
+           badge, progress bar and button all read as "this province",
+           not one fixed blue for every popup. */
+        .oa-pin-popup {
+            min-width: 196px;
+            font-size: 0.8rem;
+            color: #1e293b;
+        }
+
+        .oa-pin-popup-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        .oa-pin-popup-province {
+            font-size: 0.86rem;
+            font-weight: 800;
+            color: var(--pin-accent, #1e293b);
+        }
+
+        .oa-pin-popup-year {
+            flex: none;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .oa-pin-popup-breadcrumb {
+            margin-top: 3px;
+            font-size: 0.72rem;
+            color: #64748b;
+        }
+
+        .oa-pin-popup-label {
+            margin-top: 4px;
+            font-size: 0.74rem;
+            font-style: italic;
+            color: #64748b;
+        }
+
+        .oa-pin-popup-progress {
+            margin-top: 9px;
+        }
+
+        .oa-pin-popup-progress-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .oa-pin-popup-progress-row strong {
+            font-size: 0.78rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .oa-pin-popup-progress-track {
+            height: 6px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .oa-pin-popup-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--pin-accent, #0369a1);
+        }
+
+        /* "Filter the table below" button inside a pin's popup. */
+        .oa-pin-filter-btn {
+            margin-top: 10px;
+            width: 100%;
+            border: none;
+            background: var(--pin-accent, #0369a1);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .oa-pin-filter-btn:hover {
+            filter: brightness(0.9);
+        }
+
+        /* Choropleth map labels (ด้านบน): province name reads as the
+           primary line, the operating-area count as a smaller, slightly
+           dimmer line underneath - not two competing headlines. Text
+           color + textOutline (the halo behind it) live inline on the
+           Highcharts dataLabels style itself, since that's what keeps it
+           legible across every province's own fill color; only the
+           per-line size/weight hierarchy is split out here. */
+        /* ป้ายจังหวัดบนแผนที่: กล่องขาวทึบ - ชื่อจังหวัดเป็นบรรทัดหลัก, จำนวนพื้นที่เป็นตัวเลขใหญ่สีเดียวกับจังหวัด
+           (สีเข้มของจังหวัดนั้น จึงอ่านชัดบนทุกพื้นสี) */
+        #map-container .oa-map-label {
+            text-align: center;
+            line-height: 1.15;
+            white-space: nowrap;
+            pointer-events: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 9px;
+            padding: 2px 8px 3px;
+            box-shadow: 0 1px 5px rgba(15, 23, 42, 0.28);
+            font-family: inherit;
+        }
+
+        #map-container .oa-map-label-name {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        #map-container .oa-map-label-count {
+            display: block;
+            font-size: 16px;
+            font-weight: 800;
+        }
+
+        #map-container .oa-map-label-count small {
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 2px;
+            color: #475569;
+        }
+
+        /* ข้อความกำกับหัวการ์ด "คลิกจังหวัดเพื่อกรองตารางด้านล่าง" - ชัดขึ้นและแยกเป็นป้ายคำแนะนำ */
+        .chart-header-subtitle.kd-prov-sub { font-size: 0.86rem; color: #475569; font-weight: 600; line-height: 1.5; }
+        .kd-click-hint {
+            display: inline-flex; align-items: center; gap: 5px;
+            margin-left: 4px; padding: 1px 10px; border-radius: 999px;
+            background: #e0f2f1; color: #0f4c5c; font-size: 0.8rem; font-weight: 700; white-space: nowrap;
+        }
+
         /* "ข้อมูลพื้นที่ดำเนินงาน" popup - pops up on a map click (or the
            button below the map) instead of sitting as a permanent block
            on the page, per request ("โมเดลเด้งมาเพื่อความสวยงาม"). Content
@@ -328,27 +670,6 @@
         .area-table-modal-close:hover {
             background: #e2e8f0;
             color: #1e293b;
-        }
-
-        .btn-show-area-table {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 8px 16px;
-            border-radius: 10px;
-            border: 1.5px solid #e2e8f0;
-            background: #f8fafc;
-            color: #0f4c5c;
-            font-weight: 700;
-            font-size: 0.82rem;
-            cursor: pointer;
-            transition: background-color 0.15s, border-color 0.15s;
-        }
-
-        .btn-show-area-table:hover {
-            background: #eef6f7;
-            border-color: #0f4c5c;
         }
 
         @media (max-width: 480px) {
@@ -424,6 +745,17 @@
             /* Slightly narrower */
         }
 
+        /* หลายพื้นที่: แถวหัว (จำนวนพื้นที่) อยู่บรรทัดเดียวของมันเอง แล้วชื่อพื้นที่เริ่มบรรทัดใหม่
+           เป็นตารางช่องเท่ากัน - ชิปเรียงตรงแนวกัน ไม่เหลื่อมตามความยาวชื่อ */
+        .area-multi-badges .area-multi-head { margin-bottom: 6px; }
+        .area-multi-badges .area-multi-count { display: inline-flex; align-items: center; gap: 4px; padding: 0 9px; border-radius: 999px; background: #dbeafe; color: #1d4ed8; font-size: .68rem; font-weight: 700; line-height: 1.6; }
+        .area-multi-badges .area-multi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 5px 6px; align-items: start; }
+        .area-multi-badges .area-multi-item { min-width: 0; display: flex; flex-direction: column; align-items: stretch; }
+        .area-multi-badges .area-badge { margin-top: 0; padding: 2px 9px; font-size: .7rem; min-width: 0; }
+        .area-multi-badges .area-badge i { flex: 0 0 auto; }
+        .area-multi-badges .area-badge-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .area-multi-badges .area-issue-line { margin: 2px 0 0 4px; font-size: .68rem; }
+        .area-issue-line { margin-top: 3px; font-size: .72rem; font-weight: 600; color: #4338ca; line-height: 1.4; }
         /* พื้นที่การดำเนินงาน badge under the agency name - a small rotating
            color palette (not tied to any one area's name) so a district
            with several areas gets visually distinct, easy-to-scan pills
@@ -1087,6 +1419,202 @@
             text-overflow: ellipsis;
         }
 
+        .awr-kpi-coverage,
+        .awr-kpi-pinned {
+            flex: 0.8 1 0;
+            min-width: 190px;
+            gap: 11px;
+            padding: 14px 16px;
+        }
+
+        .awr-kpi-coverage .awr-kpi-value,
+        .awr-kpi-pinned .awr-kpi-value {
+            font-size: 1.2rem;
+        }
+
+        .awr-kpi-coverage .awr-kpi-icon,
+        .awr-kpi-pinned .awr-kpi-icon {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            font-size: .95rem;
+        }
+
+        /* การ์ดตัวชี้วัดมีรายการหลายบรรทัด จึงได้พื้นที่มากกว่า */
+        .awr-kpi-indicators {
+            flex: 1.9 1 0;
+        }
+
+        .awr-kpi-pending {
+            flex: 1.1 1 0;
+        }
+
+        .awr-kpi-indicators .awr-kpi-text,
+        .awr-kpi-pending .awr-kpi-text {
+            flex: 1;
+        }
+
+        .awr-kpi-indicators .awr-kpi-label,
+        .awr-kpi-pending .awr-kpi-label {
+            margin: 0 0 6px;
+            font-size: 0.8rem;
+            color: #475569;
+            font-weight: 700;
+        }
+
+        .awr-kpi-pending .awr-kpi-value {
+            white-space: normal;
+        }
+
+        .awr-kpi-value-sm {
+            font-size: 1.15rem;
+        }
+
+        .awr-kpi-sub-muted {
+            color: #64748b;
+        }
+
+        .awr-kpi-empty {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #94a3b8;
+            white-space: normal;
+        }
+
+        /* ตัวชี้วัดที่ดำเนินงานได้ดี: one row per item = number badge,
+           short name, mini bar (width = share of pins that did it), count. */
+        .awr-ind-row {
+            display: grid;
+            grid-template-columns: 22px minmax(0, 1fr) 56px auto;
+            align-items: center;
+            gap: 8px;
+            padding: 3px 0;
+        }
+
+        .awr-ind-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: #fff;
+            background: var(--kpi-accent, #2f855a);
+        }
+
+        .awr-ind-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .awr-ind-track {
+            height: 7px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .awr-ind-fill {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--kpi-accent, #2f855a);
+        }
+
+        .awr-ind-value {
+            min-width: 34px;
+            text-align: right;
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+
+        .awr-ind-value small {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        /* ตัวชี้วัดที่ต้องเร่งดำเนินการ: up to 3 name rows (same row
+           look as the "ได้ดี" card, no bar) + a "และอีก N ข้อ" tail */
+        .awr-pending-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .awr-pending-count {
+            flex: none;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #9a3412;
+            background: #ffedd5;
+            border: 1px solid #fed7aa;
+            border-radius: 999px;
+            padding: 1px 9px;
+            white-space: nowrap;
+        }
+
+        .awr-pending-row {
+            grid-template-columns: 22px minmax(0, 1fr);
+        }
+
+        .awr-pending-more {
+            margin-top: 2px;
+            padding-left: 30px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #94a3b8;
+        }
+
+        .awr-kpi-coverage .awr-kpi-text,
+        .awr-kpi-pinned .awr-kpi-text {
+            flex: 1;
+        }
+
+        .awr-kpi-pinned .awr-kpi-label,
+        .awr-kpi-coverage .awr-kpi-label {
+            margin: 0 0 2px;
+            font-size: 0.8rem;
+            color: #475569;
+            font-weight: 700;
+        }
+
+        .awr-kpi-unit {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #64748b;
+        }
+
+        .awr-kpi-sub {
+            margin-top: 2px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--kpi-accent, #0369a1);
+        }
+
+        .awr-kpi-bar {
+            margin-top: 8px;
+            height: 7px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .awr-kpi-bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--kpi-accent, #0369a1);
+        }
+
         @media (max-width: 1000px) {
             .awr-kpi-strip {
                 flex-wrap: wrap;
@@ -1210,7 +1738,7 @@
             </a>
         </form>
 
-        {{-- Headline KPI strip: region-wide "8 ด้าน" presentation summary,
+        {{-- Headline KPI strip: region-wide presentation summary,
              styled to match the same awr-kpi-strip component already used
              on reduced-sodium-menu.blade.php / awareness.blade.php.
              Reuses the controller's already-correctly-scoped/grouped
@@ -1218,101 +1746,164 @@
              $overviewFullyCompletedPercent/$overviewTopProvince) - the
              per-area (user_id|operating_area) unit, matching the map and
              stacked chart next to it. --}}
-        @php
-            $kpiMilestoneLabels = [
-                1 => $headers['1'],
-                2 => $headers['2'],
-                3 => $headers['3'],
-                4 => $headers['4'],
-                5 => $headers['5'],
-                6 => $headers['6'],
-                7 => $headers['7'],
-                '8' => 'ข้อ 8 ด้านโรคไต (คัดกรอง/ตระหนักรู้/นวัตกรรม)',
-            ];
-            $kpiBestKey = null;
-            $kpiWorstKey = null;
-            foreach ($kpiMilestoneLabels as $mKey => $mLabel) {
-                $mPct = $overviewMilestonePercents[$mKey] ?? 0;
-                if ($kpiBestKey === null || $mPct > ($overviewMilestonePercents[$kpiBestKey] ?? 0)) {
-                    $kpiBestKey = $mKey;
-                }
-                if ($kpiWorstKey === null || $mPct < ($overviewMilestonePercents[$kpiWorstKey] ?? 0)) {
-                    $kpiWorstKey = $mKey;
-                }
-            }
-        @endphp
-
         <div class="awr-kpi-strip">
-            <div class="awr-kpi-item" style="--kpi-accent:#2f855a;">
+            <div class="awr-kpi-item awr-kpi-coverage" style="--kpi-accent:#0369a1;">
+                <div class="awr-kpi-icon"><i class="fas fa-location-dot"></i></div>
+                <div class="awr-kpi-text">
+                    <div class="awr-kpi-label">ความครอบคลุมพื้นที่</div>
+                    <div class="awr-kpi-value">{{ number_format($coverageCoveredDistricts) }} / {{ number_format($coverageTotalDistricts) }} <span class="awr-kpi-unit">อำเภอ</span></div>
+                    <div class="awr-kpi-sub">ครอบคลุม {{ $coveragePercent }}%</div>
+                    <div class="awr-kpi-bar"><div class="awr-kpi-bar-fill" style="width:{{ $coveragePercent }}%;"></div></div>
+                </div>
+            </div>
+            {{-- พื้นที่ที่ปักหมุดทั้งหมด: every pin in the current filters, and how
+                 many of them already have a report. --}}
+            <div class="awr-kpi-item awr-kpi-pinned" style="--kpi-accent:#7c3aed;">
+                <div class="awr-kpi-icon"><i class="fas fa-map-pin"></i></div>
+                <div class="awr-kpi-text">
+                    <div class="awr-kpi-label">พื้นที่ที่ปักหมุดทั้งหมด</div>
+                    <div class="awr-kpi-value">{{ number_format($indicatorTotalPins) }} <span class="awr-kpi-unit">พื้นที่</span></div>
+                    <div class="awr-kpi-sub">มีรายงานแล้ว {{ number_format($pinnedAnsweredCount) }} พื้นที่</div>
+                    <div class="awr-kpi-bar"><div class="awr-kpi-bar-fill" style="width:{{ $pinnedAnsweredPercent }}%;"></div></div>
+                </div>
+            </div>
+            {{-- ตัวชี้วัดที่ดำเนินงานได้ดี: top 3 of the 8 items by how many
+                 pins (in the current filters) have done them. --}}
+            <div class="awr-kpi-item awr-kpi-indicators" style="--kpi-accent:#2f855a;">
                 <div class="awr-kpi-icon"><i class="fas fa-award"></i></div>
                 <div class="awr-kpi-text">
-                    <div class="awr-kpi-value">{{ $overviewFullyCompletedPercent }}%</div>
-                    <div class="awr-kpi-label">ดำเนินการครบทั้ง 8 ด้าน</div>
+                    <div class="awr-kpi-label">ตัวชี้วัดที่ดำเนินงานได้ดี</div>
+                    @forelse($indicatorTop as $ind)
+                        <div class="awr-ind-row" title="ข้อ {{ $ind['key'] }} {{ $ind['key'] === '8' ? 'ด้านโรคไต (8.1 / 8.2 / 8.3)' : $headers[$ind['key']] }} - {{ $ind['done'] }} จาก {{ $ind['total'] }} หน่วยงาน">
+                            <span class="awr-ind-badge">{{ $ind['key'] }}</span>
+                            <span class="awr-ind-name">{{ $ind['key'] === '8' ? 'ด้านโรคไต (8.1-8.3)' : $headers[$ind['key']] }}</span>
+                            <span class="awr-ind-track"><span class="awr-ind-fill" style="width: {{ max($ind['percent'], 4) }}%;"></span></span>
+                            <span class="awr-ind-value">{{ $ind['done'] }}<small>/{{ $ind['total'] }}</small></span>
+                        </div>
+                    @empty
+                        <div class="awr-kpi-empty">{{ $indicatorTotalPins === 0 ? 'ยังไม่มีหน่วยงานตามตัวกรองที่เลือก' : 'ยังไม่มีหน่วยงานที่ดำเนินงานข้อใดเลย' }}</div>
+                    @endforelse
                 </div>
             </div>
-            <div class="awr-kpi-item" style="--kpi-accent:#0f4c5c;">
-                <div class="awr-kpi-icon"><i class="fas fa-map-location-dot"></i></div>
+
+            {{-- ตัวชี้วัดที่ต้องเร่งดำเนินการ: items no pin has done yet, as name chips. --}}
+            <div class="awr-kpi-item awr-kpi-pending" style="--kpi-accent:#c2410c;">
+                <div class="awr-kpi-icon"><i class="fas fa-flag"></i></div>
                 <div class="awr-kpi-text">
-                    <div class="awr-kpi-value">{{ number_format($overviewTotalAreas) }}</div>
-                    <div class="awr-kpi-label">พื้นที่ดำเนินงานทั้งหมด (5 จังหวัด)</div>
+                    <div class="awr-pending-head">
+                        <div class="awr-kpi-label">ตัวชี้วัดที่ต้องเร่งดำเนินการ</div>
+                        @if($indicatorTotalPins > 0 && $indicatorPending->isNotEmpty())
+                            <span class="awr-pending-count">{{ $indicatorPending->count() }} / 8 ข้อ</span>
+                        @endif
+                    </div>
+                    @if($indicatorTotalPins === 0)
+                        <div class="awr-kpi-empty">ยังไม่มีหน่วยงานตามตัวกรองที่เลือก</div>
+                    @elseif($indicatorPending->isEmpty())
+                        <div class="awr-kpi-value awr-kpi-value-sm">ครบทุกข้อ</div>
+                        <div class="awr-kpi-sub awr-kpi-sub-muted">ทั้ง 8 ข้อมีหน่วยงานดำเนินงานแล้ว</div>
+                    @else
+                        @foreach($indicatorPending->take(3) as $ind)
+                            <div class="awr-ind-row awr-pending-row" title="ข้อ {{ $ind['key'] }} {{ $ind['key'] === '8' ? 'การประเมินผลลัพธ์การดำเนินงาน (8.1 / 8.2 / 8.3)' : $headers[$ind['key']] }}">
+                                <span class="awr-ind-badge">{{ $ind['key'] }}</span>
+                                <span class="awr-ind-name">{{ $ind['key'] === '8' ? 'การประเมินผลลัพธ์การดำเนินงาน' : $headers[$ind['key']] }}</span>
+                            </div>
+                        @endforeach
+                        @if($indicatorPending->count() > 3)
+                            <div class="awr-pending-more" title="{{ $indicatorPending->skip(3)->map(fn($i) => 'ข้อ ' . $i['key'] . ' ' . ($i['key'] === '8' ? 'การประเมินผลลัพธ์การดำเนินงาน (8.1 / 8.2 / 8.3)' : $headers[$i['key']]))->implode("\n") }}">และอีก {{ $indicatorPending->count() - 3 }} ข้อ</div>
+                        @endif
+                    @endif
                 </div>
             </div>
-            @if($overviewTopProvince)
-                <div class="awr-kpi-item" style="--kpi-accent:#a1671e;">
-                    <div class="awr-kpi-icon"><i class="fas fa-trophy"></i></div>
-                    <div class="awr-kpi-text" title="{{ $overviewTopProvince }}">
-                        <div class="awr-kpi-value">{{ $overviewTopProvincePercent }}%</div>
-                        <div class="awr-kpi-label">ก้าวหน้าที่สุด: {{ $overviewTopProvince }}</div>
-                    </div>
-                </div>
-            @endif
-            @if($kpiBestKey !== null)
-                <div class="awr-kpi-item" style="--kpi-accent:#6366f1;">
-                    <div class="awr-kpi-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="awr-kpi-text" title="{{ $kpiMilestoneLabels[$kpiBestKey] }}">
-                        <div class="awr-kpi-value">{{ $overviewMilestonePercents[$kpiBestKey] ?? 0 }}%</div>
-                        <div class="awr-kpi-label">ดำเนินการดี: ข้อ {{ $kpiBestKey }}</div>
-                    </div>
-                </div>
-            @endif
-            @if($kpiWorstKey !== null)
-                <div class="awr-kpi-item" style="--kpi-accent:#c53030;">
-                    <div class="awr-kpi-icon"><i class="fas fa-triangle-exclamation"></i></div>
-                    <div class="awr-kpi-text" title="{{ $kpiMilestoneLabels[$kpiWorstKey] }}">
-                        <div class="awr-kpi-value">{{ $overviewMilestonePercents[$kpiWorstKey] ?? 0 }}%</div>
-                        <div class="awr-kpi-label">ต้องเร่งพัฒนา: ข้อ {{ $kpiWorstKey }}</div>
-                    </div>
-                </div>
-            @endif
         </div>
 
         <!-- Charts Section -->
         <div class="chart-row">
-            <!-- Map -->
+            <!-- Pins: individual operating-area locations, colored per
+                 province - shown first, ahead of the choropleth, so the
+                 concrete "where exactly" view leads and the province-level
+                 rollup follows. -->
+            <div class="chart-card">
+                <div class="chart-header" style="--chart-accent:#0369a1;">
+                    <div class="chart-header-icon"><i class="fas fa-map-pin"></i></div>
+                    <div>
+                        <div class="chart-header-title">พื้นที่ดำเนินงาน พชอ.ไต</div>
+                        <div class="chart-header-subtitle">แยกสีตามจังหวัด <span style="opacity:.75;">(คลิกหน่วยงานเพื่อกรองตารางด้านล่าง)</span></div>
+                    </div>
+                </div>
+                <div id="oaPinsMap" class="chart-canvas"></div>
+                <div id="oaPinsLegend" class="oa-pins-legend"></div>
+            </div>
+
+            <!-- Map (choropleth) - the province-level rollup, now the
+                 middle card between the pins above and the stacked bar
+                 chart below. -->
             <div class="chart-card">
                 <div class="chart-header" style="--chart-accent:#0f4c5c;">
                     <div class="chart-header-icon"><i class="fas fa-map-location-dot"></i></div>
                     <div>
                         <div class="chart-header-title">จำนวนพื้นที่ดำเนินงาน พชอ.ไต</div>
-                        <div class="chart-header-subtitle">แยกรายจังหวัด <span style="opacity:.75;">(คลิกจังหวัดเพื่อกรองตารางด้านล่าง)</span></div>
+                        <div class="chart-header-subtitle kd-prov-sub">แยกรายจังหวัด</div>
                     </div>
                 </div>
                 <div id="map-container" class="chart-canvas"></div>
-                <button type="button" id="btnShowAreaTable" class="btn-show-area-table">
-                    <i class="fas fa-list-ul"></i> ดูข้อมูลพื้นที่ดำเนินงาน
-                </button>
             </div>
 
-            <!-- Chart 1: Stacked Bar (Completed vs Incomplete) -->
+            <!-- Province comparison: per province, % of pinned districts that
+                 have been answered - the same X / Y อำเภอ rule as the KPI card
+                 at the top, split by province. Replaces the old stacked
+                 bar chart. -->
             <div class="chart-card">
-                <div class="chart-header" style="--chart-accent:#a1671e;">
+                <div class="chart-header" style="--chart-accent:#0e7490;">
                     <div class="chart-header-icon"><i class="fas fa-chart-column"></i></div>
                     <div>
-                        <div class="chart-header-title">หน่วยงานที่ส่งข้อมูลครบ 4 ไตรมาส</div>
-                        <div class="chart-header-subtitle">แยกรายจังหวัด (ปี {{ $fiscalYear !== '' ? $fiscalYear : 'ทั้งหมด' }})</div>
+                        <div class="chart-header-title">เปรียบเทียบสถานการณ์และผลดำเนินงานรายจังหวัด</div>
+                        <div class="chart-header-subtitle">อำเภอที่มีการตอบ ÷ อำเภอที่ปักหน่วยงาน (ปี {{ $fiscalYear !== '' ? $fiscalYear : 'ทั้งหมด' }})</div>
                     </div>
                 </div>
-                <div id="stackedBarChart" class="chart-canvas"></div>
+                <div class="po-panel">
+                    <table class="po-table">
+                        <thead>
+                            <tr>
+                                <th class="po-th-province" scope="col">จังหวัด</th>
+                                <th scope="col">พื้นที่ดำเนินงาน</th>
+                                <th class="po-th-status" scope="col">ข้อมูลครบ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($provinceAreaProgress as $row)
+                                <tr>
+                                    <th class="po-province" scope="row">{{ $row['province'] }}</th>
+                                    <td>
+                                        @if($row['percent'] !== null)
+                                            <div class="po-bar-wrap" title="ตอบแล้ว {{ $row['answered'] }} จาก {{ $row['total'] }} อำเภอที่ปักหน่วยงาน">
+                                                <div class="po-bar-track"><div class="po-bar-fill" style="width: {{ $row['percent'] }}%;"></div></div>
+                                                <span class="po-bar-value">{{ $row['percent'] }}%</span>
+                                            </div>
+                                        @else
+                                            <div class="po-bar-wrap">
+                                                <div class="po-bar-track"></div>
+                                                <span class="po-bar-value po-bar-empty">&mdash;</span>
+                                            </div>
+                                        @endif
+                                    </td>
+                                    <td class="po-status-cell">
+                                        @if($row['data_status'] === 'complete')
+                                            <span class="po-status po-status-complete" title="ครบ 8 ด้านทุกหน่วยงาน ({{ $row['complete_pins'] }}/{{ $row['pin_count'] }} หน่วยงาน)"><i class="fas fa-circle-check"></i>ครบ</span>
+                                        @elseif($row['data_status'] === 'partial')
+                                            <span class="po-status po-status-partial" title="ครบ 8 ด้าน {{ $row['complete_pins'] }} จาก {{ $row['pin_count'] }} หน่วยงาน"><i class="far fa-clock"></i>บางส่วน</span>
+                                        @else
+                                            <span class="po-status po-status-none" title="ยังไม่มีหน่วยงานใดรายงาน"><i class="fas fa-circle-minus"></i>ยังไม่รายงาน</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <div class="po-footnote">
+                        &mdash; หมายถึงยังไม่มีข้อมูล<br>
+                        ข้อมูลครบ = ข้อ 1-7 ทำครบทุกข้อ และข้อ 8.1 / 8.2 / 8.3 ทำข้อใดข้อหนึ่ง (ครบทุกหน่วยงานในจังหวัด)
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1366,9 +1957,7 @@
                                 <td style="text-align: left; font-weight: 700;">{{ $data['agency'] }}</td>
                                 <td style="text-align: left;">
                                     @if(!empty($data['operating_area']))
-                                        <span class="area-badge area-badge-{{ $areaColorIdx }}">
-                                            <i class="fas fa-map-marker-alt"></i>{{ $data['operating_area'] }}
-                                        </span>
+                                        @include('pages.partials.kidney-area-badges', ['data' => $data, 'areaColorIdx' => $areaColorIdx])
                                     @else
                                         <span style="color: #94a3b8;">(ไม่ระบุพื้นที่ย่อย)</span>
                                     @endif
@@ -1486,9 +2075,7 @@
                                 @if(!empty($data['operating_area']))
                                     @php $areaColorIdx = ($data['operating_area_color'] ?? 0) % 5; @endphp
                                     <div>
-                                        <span class="area-badge area-badge-{{ $areaColorIdx }}">
-                                            <i class="fas fa-map-marker-alt"></i>{{ $data['operating_area'] }}
-                                        </span>
+                                        @include('pages.partials.kidney-area-badges', ['data' => $data, 'areaColorIdx' => $areaColorIdx])
                                     </div>
                                 @endif
                             </td>
@@ -1571,7 +2158,9 @@
 @section('extra_js')
     <script src="{{ asset('vendor/highcharts/highmaps.js') }}"></script>
     <script src="{{ asset('vendor/highcharts/th-all.js') }}"></script>
+    <script src="{{ asset('vendor/highcharts/th-districts-r10.js') }}"></script>
     <script src="{{ asset('vendor/highcharts/highcharts.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
         // 4. Pagination Icons Injection
@@ -1793,20 +2382,22 @@
             }
         });
 
-        // Soft top->bottom gradient fill and drop shadow, so bars read
-        // with a little depth instead of a flat solid fill.
-        function toGradient(hex) {
-            const light = Highcharts.color(hex).brighten(0.25).get('rgba');
-            return {
-                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                stops: [
-                    [0, light],
-                    [1, hex]
-                ]
-            };
-        }
-
-        const barShadow = { color: 'rgba(15, 23, 42, 0.18)', offsetX: 0, offsetY: 4, width: 6 };
+        // Shared per-province color identity - used by BOTH the
+        // choropleth map below (province fill) and the pins map (1b.,
+        // further down: marker + legend colors), so the same province
+        // always reads as the same color on either card. Defined once,
+        // here, instead of twice, specifically so the two can never
+        // drift out of sync again. Same palette already established on
+        // admin/operating-areas and the kidney-dhb operating-area
+        // picker (kidney-dhb-content.blade.php).
+        const oaProvinceColors = {
+            'อุบลราชธานี': { fill: '#2563eb', stroke: '#1e40af' },
+            'ศรีสะเกษ': { fill: '#d97706', stroke: '#92400e' },
+            'ยโสธร': { fill: '#7c3aed', stroke: '#5b21b6' },
+            'อำนาจเจริญ': { fill: '#16a34a', stroke: '#15803d' },
+            'มุกดาหาร': { fill: '#db2777', stroke: '#9d174d' },
+        };
+        const oaColorForProvinceDefault = { fill: '#6b7280', stroke: '#374151' };
 
         // 1. Map Logic (Health Region 10)
         const hcMapKeys = {
@@ -1818,10 +2409,29 @@
         };
 
         const mapDataRaw = @json($mapData);
+        // Lightened to a pastel tint of the same hue (not the full-
+        // strength fill used for pins/legend) - a calmer background for
+        // the data labels painted over it below.
+        // สีจังหวัด: ไล่เฉดแนวตั้งจากโทนอ่อนไปโทนกลาง (ผสมสีประจำจังหวัดกับขาว) ให้พื้นที่ดูมีมิติ แต่ยังนุ่มตา
+        function oaMapFillColor(name) {
+            const base = Highcharts.color((oaProvinceColors[name] || oaColorForProvinceDefault).fill);
+            const mix = amt => Highcharts.color('#ffffff').tweenTo(base, amt);
+            return {
+                linearGradient: { x1: 0, y1: 0, x2: 0.35, y2: 1 },
+                stops: [[0, mix(0.6)], [1, mix(0.9)]] /* เข้มกว่าเดิมแต่ไม่จัด: สีประจำจังหวัด ~60% ไล่ลงเป็น ~90% */
+            };
+        }
+        // ขยับป้ายของจังหวัดที่พื้นที่แคบ/ติดกัน ไม่ให้ทับกัน (พิกเซลจากจุดกึ่งกลางพื้นที่)
+        const oaLabelOffsets = {
+            'ยโสธร': { x: -26, y: -4 }, 'อำนาจเจริญ': { x: 16, y: 10 },
+            'อุบลราชธานี': { x: 18, y: 16 }, 'ศรีสะเกษ': { x: -6, y: 10 }
+        };
         const mapSeriesData = Object.keys(hcMapKeys).map(name => ({
             'hc-key': hcMapKeys[name],
             'value': mapDataRaw[name] || 0,
-            'name': name
+            'name': name,
+            'color': oaMapFillColor(name),
+            'dataLabels': oaLabelOffsets[name] || {}
         }));
 
         const fullMapData = Highcharts.maps['countries/th/th-all'];
@@ -1833,25 +2443,30 @@
             chart: { map: filteredMapData, backgroundColor: 'transparent' },
             title: { text: '' }, // shown in the .chart-header above instead
             mapNavigation: { enabled: false },
-            colorAxis: {
-                min: 0,
-                minColor: '#fffce8',
-                maxColor: '#f2b705',
-            },
             plotOptions: {
                 map: {
                     allAreas: false,
                     borderColor: '#FFFFFF',
-                    borderWidth: 2,
-                    shadow: { color: 'rgba(15, 23, 42, 0.15)', offsetX: 0, offsetY: 3, width: 5 },
+                    borderWidth: 2.5,
+                    shadow: { color: 'rgba(15, 76, 92, 0.32)', offsetX: 0, offsetY: 6, width: 9 },
                     cursor: 'pointer',
                     states: {
                         hover: { brightness: 0.15, borderColor: '#1e293b' }
                     },
                     dataLabels: {
                         enabled: true,
-                        format: '{point.name}<br>{point.value} พื้นที่',
-                        style: { fontSize: '10px', fontWeight: '700', textOutline: 'none', color: '#1e293b' }
+                        useHTML: true,
+                        allowOverlap: true,
+                        crop: false,
+                        overflow: 'allow',
+                        formatter: function () {
+                            const ink = (oaProvinceColors[this.point.name] || oaColorForProvinceDefault).stroke;
+                            return '<div class="oa-map-label">'
+                                + '<span class="oa-map-label-name">' + this.point.name + '</span>'
+                                + '<span class="oa-map-label-count" style="color:' + ink + ';">' + this.point.value + '<small>พื้นที่</small></span>'
+                                + '</div>';
+                        },
+                        style: { textOutline: 'none', pointerEvents: 'none' }
                     },
                     point: {
                         events: {
@@ -1862,11 +2477,16 @@
                             // ไตรมาส) as-is - exactly like picking that
                             // province from the จังหวัด dropdown would,
                             // which is what re-filters the progress table.
+                            // Deliberately does NOT set show_area_table=1
+                            // any more - a map click only filters now, it
+                            // no longer also pops the "ข้อมูลพื้นที่ดำเนินงาน"
+                            // modal open (that's still reachable on
+                            // demand via the "ดูข้อมูลพื้นที่ดำเนินงาน"
+                            // button under the map, untouched below).
                             click: function () {
                                 const params = new URLSearchParams(window.location.search);
                                 params.set('province', this.name);
                                 params.delete('district');
-                                params.set('show_area_table', '1');
                                 window.location.href = window.location.pathname + '?' + params.toString();
                             }
                         }
@@ -1880,51 +2500,203 @@
             credits: { enabled: false }
         });
 
-        // 2. Stacked Bar Chart (Yearly Completion - All 4 Quarters)
-        const stackedRaw = @json($stackedChartData);
-        const categories = Object.keys(stackedRaw);
-        const completedData = categories.map(c => stackedRaw[c].completed);
-        const incompleteData = categories.map(c => stackedRaw[c].incomplete);
+        // 1b. Operating-Area Pins Map (Leaflet) - individual pin
+        // locations, colored per province, shown on the card between the
+        // choropleth above and the stacked bar chart below. Uses the
+        // oaProvinceColors palette hoisted above section 1 (shared with
+        // the choropleth's own province fill colors, so both cards agree
+        // on what color each province is) plus the same
+        // teardrop-pin-icon convention already established on
+        // admin/operating-areas and the kidney-dhb operating-area picker
+        // (kidney-dhb-content.blade.php).
+        const oaPinIconCache = {};
 
-        Highcharts.chart('stackedBarChart', {
-            chart: { type: 'column' },
-            title: { text: '' }, // shown in the .chart-header above instead
-            xAxis: { categories: categories },
-            yAxis: { min: 0, title: { text: 'จำนวนหน่วยงาน' }, stackLabels: { enabled: true, format: '{total} หน่วยงาน' } },
-            legend: { align: 'center', verticalAlign: 'top', borderWidth: 0 },
-            tooltip: {
-                headerFormat: '<b>{point.x}</b><br/>',
-                pointFormat: '{series.name}: {point.y} หน่วยงาน<br/>ทั้งหมด: {point.stackTotal} หน่วยงาน'
-            },
-            plotOptions: {
-                column: {
-                    stacking: 'normal',
-                    borderRadius: 6,
-                    borderWidth: 0,
-                    shadow: barShadow,
-                    dataLabels: { enabled: true, format: '{y} ', style: { fontWeight: '600', textOutline: 'none' } }
-                }
-            },
-            series: [{
-                name: 'ครบ 4 ไตรมาส',
-                data: completedData,
-                color: toGradient('#10b981')
-            }, {
-                name: 'ไม่ครบ 4 ไตรมาส',
-                data: incompleteData,
-                color: toGradient('#f97316')
-            }],
-            credits: { enabled: false }
-        });
+        function oaPinIcon(fill, stroke) {
+            const svg = '<svg width="30" height="40" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">' +
+                '<ellipse cx="17" cy="41" rx="8" ry="2.6" fill="#1d4ed8" opacity="0.28"/>' +
+                '<path d="M17 2C9.8 2 4 7.8 4 15c0 10.2 13 27 13 27s13-16.8 13-27C30 7.8 24.2 2 17 2z" ' +
+                'fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+                '<circle cx="17" cy="15" r="5.5" fill="#fff"/>' +
+                '</svg>';
+            return L.divIcon({
+                html: svg,
+                className: 'oa-pin-icon',
+                iconSize: [30, 40],
+                iconAnchor: [15, 38],
+                popupAnchor: [0, -34]
+            });
+        }
 
+        function oaIconForProvince(provinceName) {
+            const key = provinceName || '__default';
+            if (!oaPinIconCache[key]) {
+                const c = oaProvinceColors[provinceName] || oaColorForProvinceDefault;
+                oaPinIconCache[key] = oaPinIcon(c.fill, c.stroke);
+            }
+            return oaPinIconCache[key];
+        }
 
-        // "ข้อมูลพื้นที่ดำเนินงาน" popup - opened by the button under the
-        // map, or automatically right after a map click reloads the page
-        // (see params.set('show_area_table', '1') above). The table inside
+        // Clicking a pin's popup button filters the table below by that
+        // pin's province - same ?province=...&show_area_table=1
+        // URL-param convention as the choropleth's own click handler
+        // above, so either map filters the table identically.
+        function filterByProvinceFromPin(provinceName) {
+            if (!provinceName) return;
+            const params = new URLSearchParams(window.location.search);
+            params.set('province', provinceName);
+            params.delete('district');
+            params.set('show_area_table', '1');
+            window.location.href = window.location.pathname + '?' + params.toString();
+        }
+
+        const oaPinsData = @json($operatingAreaPins);
+        const oaDisplayPinsData = @json($displayOnlyPins ?? []);
+        const oaPinsMapEl = document.getElementById('oaPinsMap');
+
+        if (oaPinsMapEl) {
+            const oaPinsMap = L.map('oaPinsMap', { scrollWheelZoom: true });
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(oaPinsMap);
+
+            // Province areas (district polygons of เขต 10, WGS84) tinted with
+            // each province's own pin color + a thin border; non-interactive
+            // so pin clicks and map dragging are unaffected.
+            const oaDistrictsGeo = window.Highcharts && Highcharts.maps && Highcharts.maps['countries/th/th-districts-r10'];
+            if (oaDistrictsGeo) {
+                L.geoJSON(oaDistrictsGeo, {
+                    interactive: false,
+                    style: function (f) {
+                        const c = oaProvinceColors[f.properties.province_name] || oaColorForProvinceDefault;
+                        return { color: c.fill, weight: 1, opacity: 0.55, fillColor: c.fill, fillOpacity: 0.12, lineJoin: 'round' };
+                    }
+                }).addTo(oaPinsMap);
+            }
+
+            const oaPinsBounds = [];
+            const oaPinsProvincesSeen = {};
+
+            oaPinsData.forEach(function (p) {
+                const lat = parseFloat(p.lat);
+                const lng = parseFloat(p.lng);
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const c = oaProvinceColors[p.province_name] || oaColorForProvinceDefault;
+                const marker = L.marker([lat, lng], { icon: oaIconForProvince(p.province_name) }).addTo(oaPinsMap);
+
+                // ความก้าวหน้า X/8 ข้อ - computed server-side per pin (see
+                // $operatingAreaPins in MainController::kidneyDHBReport()),
+                // same 8-milestone rule used everywhere else on this page.
+                const progress = Number(p.progress) || 0;
+                const progressTotal = Number(p.progress_total) || 8;
+                const progressPct = progressTotal > 0 ? Math.round((progress / progressTotal) * 100) : 0;
+                // Soft tint of this province's own color for the year
+                // badge's background - same technique as the legend chips
+                // above (full-strength fill reserved for the pin/progress
+                // bar, a faint tint for the badge it sits in).
+                const yearBg = Highcharts.color(c.fill).setOpacity(0.14).get('rgba');
+
+                const popupHtml =
+                    '<div class="oa-pin-popup" style="--pin-accent:' + c.fill + ';">' +
+                        '<div class="oa-pin-popup-head">' +
+                            '<span class="oa-pin-popup-province">' + escapeHtml(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
+                            (p.fiscal_year ? ('<span class="oa-pin-popup-year" style="background:' + yearBg + ';color:' + c.stroke + ';">ปีงบ ' + escapeHtml(String(p.fiscal_year)) + '</span>') : '') +
+                        '</div>' +
+                        (p.breadcrumb ? ('<div class="oa-pin-popup-breadcrumb">' + escapeHtml(p.breadcrumb) + '</div>') : '') +
+                        (p.label ? ('<div class="oa-pin-popup-label">' + escapeHtml(p.label) + '</div>') : '') +
+                        '<div class="oa-pin-popup-progress">' +
+                            '<div class="oa-pin-popup-progress-row"><span>ความก้าวหน้า</span><strong>' + progress + '/' + progressTotal + ' ข้อ</strong></div>' +
+                            '<div class="oa-pin-popup-progress-track"><div class="oa-pin-popup-progress-fill" style="width:' + progressPct + '%;"></div></div>' +
+                        '</div>' +
+                        '<button type="button" class="oa-pin-filter-btn"><i class="fas fa-filter"></i> กรองตารางด้านล่างเฉพาะจังหวัดนี้</button>' +
+                    '</div>';
+
+                marker.bindPopup(popupHtml);
+                marker.on('popupopen', function (e) {
+                    const btn = e.popup.getElement() && e.popup.getElement().querySelector('.oa-pin-filter-btn');
+                    if (btn) {
+                        btn.addEventListener('click', function () {
+                            filterByProvinceFromPin(p.province_name);
+                        });
+                    }
+                });
+
+                oaPinsBounds.push([lat, lng]);
+                oaPinsProvincesSeen[p.province_name || ''] = true;
+            });
+
+            // หมุดแสดงผล (SuperAdmin เพิ่มไว้): บอกว่าพื้นที่นี้ดำเนินงาน พชอ.ไต โดยหน่วยงานใด - ไม่มีความก้าวหน้า/ไม่นับในสรุป
+            oaDisplayPinsData.forEach(function (p) {
+                const lat = parseFloat(p.lat);
+                const lng = parseFloat(p.lng);
+                if (isNaN(lat) || isNaN(lng)) return;
+                const c = oaProvinceColors[p.province_name] || oaColorForProvinceDefault;
+                const marker = L.marker([lat, lng], { icon: oaIconForProvince(p.province_name) }).addTo(oaPinsMap);
+                const yearBg = Highcharts.color(c.fill).setOpacity(0.14).get('rgba');
+                marker.bindPopup(
+                    '<div class="oa-pin-popup" style="--pin-accent:' + c.fill + ';">' +
+                        '<div class="oa-pin-popup-head">' +
+                            '<span class="oa-pin-popup-province">' + escapeHtml(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
+                            (p.fiscal_year ? ('<span class="oa-pin-popup-year" style="background:' + yearBg + ';color:' + c.stroke + ';">ปีงบ ' + escapeHtml(String(p.fiscal_year)) + '</span>') : '') +
+                        '</div>' +
+                        (p.breadcrumb ? ('<div class="oa-pin-popup-breadcrumb">' + escapeHtml(p.breadcrumb) + '</div>') : '') +
+                        (p.label ? ('<div class="oa-pin-popup-label">' + escapeHtml(p.label) + '</div>') : '') +
+                        '<div class="oa-pin-popup-label" style="font-style:normal;"><strong>ดำเนินงาน พชอ.ไต</strong> โดย ' + escapeHtml(p.agency_label || '-') + '</div>' +
+                    '</div>'
+                );
+                oaPinsBounds.push([lat, lng]);
+                oaPinsProvincesSeen[p.province_name || ''] = true;
+            });
+
+            if (oaPinsBounds.length) {
+                oaPinsMap.fitBounds(oaPinsBounds, { padding: [30, 30], maxZoom: 10 });
+            } else {
+                // Fallback view centered on เขตสุขภาพที่ 10 if no pins exist yet.
+                oaPinsMap.setView([15.2, 104.5], 7);
+            }
+
+            // Legend - only provinces actually present among the plotted
+            // pins, in oaProvinceColors' own order first, then any extra
+            // name outside that list (shouldn't normally happen).
+            const oaPinsLegendEl = document.getElementById('oaPinsLegend');
+            if (oaPinsLegendEl) {
+                const namesSeen = Object.keys(oaPinsProvincesSeen).filter(Boolean);
+                const known = Object.keys(oaProvinceColors).filter(n => oaPinsProvincesSeen[n]);
+                const extra = namesSeen.filter(n => !oaProvinceColors[n]).sort();
+                const ordered = known.concat(extra);
+                oaPinsLegendEl.innerHTML = ordered.map(function (name) {
+                    const c = oaProvinceColors[name] || oaColorForProvinceDefault;
+                    // Border = that province's own darker "stroke" tone at
+                    // low opacity; background = its "fill" tone at even
+                    // lower opacity - a soft, color-keyed chip rather than
+                    // one flat gray outline reused for every province.
+                    const borderColor = Highcharts.color(c.stroke).setOpacity(0.35).get('rgba');
+                    const bgColor = Highcharts.color(c.fill).setOpacity(0.1).get('rgba');
+                    return '<span class="oa-pins-legend-item" style="border-color:' + borderColor + ';background:' + bgColor + ';">' +
+                        '<span class="oa-pins-legend-dot" style="background:' + c.fill + '"></span>' +
+                        escapeHtml(name) +
+                        '</span>';
+                }).join('');
+            }
+
+            // The choropleth/stacked-bar cards above/below redraw fine on
+            // load since Highcharts measures visible containers; Leaflet
+            // instead needs an explicit nudge once its own container has
+            // its final layout size (e.g. after webfonts/icons finish
+            // adjusting card heights), or tiles can render into a
+            // too-small/blank canvas.
+            setTimeout(function () { oaPinsMap.invalidateSize(); }, 250);
+            window.addEventListener('resize', function () { oaPinsMap.invalidateSize(); });
+        }
+
+        // "ข้อมูลพื้นที่ดำเนินงาน" popup - the button under the choropleth
+        // map was removed; it now opens only automatically after a pin's
+        // "กรองตารางด้านล่าง" button reloads the page (see
+        // params.set('show_area_table', '1') in filterByProvinceFromPin). The table inside
         // is plain server-rendered HTML already filtered by every active
         // ตัวกรอง - this script only shows/hides it, no AJAX involved.
         const areaTableModalOverlay = document.getElementById('areaTableModalOverlay');
-        const btnShowAreaTable = document.getElementById('btnShowAreaTable');
         const areaTableModalCloseBtn = document.getElementById('areaTableModalCloseBtn');
 
         function openAreaTableModal() {
@@ -1935,9 +2707,6 @@
             if (areaTableModalOverlay) areaTableModalOverlay.classList.remove('is-open');
         }
 
-        if (btnShowAreaTable) {
-            btnShowAreaTable.addEventListener('click', openAreaTableModal);
-        }
         if (areaTableModalCloseBtn) {
             areaTableModalCloseBtn.addEventListener('click', closeAreaTableModal);
         }

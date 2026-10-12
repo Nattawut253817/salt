@@ -66,7 +66,10 @@
             </tr>
         </thead>
         <tbody>
-            @php $start = ($users->currentPage() - 1) * $users->perPage() + 1; @endphp
+            @php
+                $start = ($users->currentPage() - 1) * $users->perPage() + 1;
+                $viewerIsSuperAdmin = auth()->user()->isSuperAdmin();
+            @endphp
             @forelse($users as $index => $user)
                 <tr>
                     <td class="px-4 py-3 text-muted font-weight-500">{{ $start + $index }}</td>
@@ -78,13 +81,24 @@
                             <div>
                                 <div class="user-name">{{ $user->prefix }}{{ $user->User_firstname }}
                                     {{ $user->User_lastname }}
+                                    @if ($user->isSuperAdmin())
+                                        <span class="superadmin-tag" title="SuperAdmin"><i class="fas fa-crown"></i> SuperAdmin</span>
+                                    @endif
                                 </div>
                                 <div class="user-rank text-muted">{{ $user->User_position ?? '-' }}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-4 py-3 text-muted">
-                        {{ $user->email }}
+                        @php
+                            // บัญชี สคร. (ระดับ 1) แสดงอีเมลแบบปิดบังบางส่วน เช่น ta***@gmail.com
+                            $shownEmail = $user->email;
+                            if ((int) $user->User_rank_id === 1 && str_contains((string) $user->email, '@')) {
+                                [$mailLocal, $mailDomain] = explode('@', $user->email, 2);
+                                $shownEmail = mb_substr($mailLocal, 0, 2) . '***@' . $mailDomain;
+                            }
+                        @endphp
+                        {{ $shownEmail }}
                         @if ($user->phone)
                             <div class="user-rank text-muted"><i class="fas fa-phone fa-xs"></i> {{ $user->phone }}</div>
                         @endif
@@ -127,6 +141,18 @@
                     </td>
                     <td class="px-4 py-3 text-center">
                         <div class="d-flex justify-content-center action-buttons-group">
+                            @if ($viewerIsSuperAdmin && (int) $user->User_rank_id === 1 && $user->id !== auth()->id())
+                                @php $rowIsSuper = $user->isSuperAdmin(); @endphp
+                                <button type="button"
+                                    class="btn-action btn-super {{ $rowIsSuper ? 'is-super' : '' }} toggle-super-admin"
+                                    data-id="{{ $user->id }}"
+                                    data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
+                                    data-super="{{ $rowIsSuper ? 1 : 0 }}"
+                                    {{ $user->isRootSuperAdmin() ? 'disabled' : '' }}
+                                    title="{{ $user->isRootSuperAdmin() ? 'SuperAdmin หลัก (ถอนสิทธิ์ไม่ได้)' : ($rowIsSuper ? 'ถอนสิทธิ์ SuperAdmin' : 'ตั้งเป็น SuperAdmin') }}">
+                                    <i class="fas fa-crown"></i> {{ $rowIsSuper ? 'ถอน SuperAdmin' : 'ตั้งเป็น SuperAdmin' }}
+                                </button>
+                            @endif
                             <button type="button" class="btn-action btn-edit edit-user" data-id="{{ $user->id }}"
                                 data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
                                 title="แก้ไข">

@@ -524,17 +524,17 @@
                     {{ $bkkUpdateDate ? $bkkUpdateDate->format('d/m/') . ($bkkUpdateDate->format('Y') + 543) . $bkkUpdateDate->format(' H:i') : '-' }}
                 </td>
                 <td style="text-align: center;">
-                    <div style="display: flex; justify-content: center; gap: 8px;">
-                        <button class="btn-action btn-view" title="ดูรายละเอียด"
+                    <div class="row-actions">
+                        <button type="button" class="btn-action btn-view" title="ดูรายละเอียด"
                             onclick="openDetailModal({{ json_encode($product) }})">
                             <i class="fas fa-eye"></i> ดู
                         </button>
-                        <button class="btn-action btn-edit" title="แก้ไข"
+                        <button type="button" class="btn-action btn-edit" title="แก้ไข"
                             onclick="openEditModal({{ json_encode($product) }})">
                             <i class="fas fa-edit"></i> แก้ไข
                         </button>
                         <form action="{{ route('admin.sodium-products.destroy', $product->id) }}" method="POST"
-                            style="display: inline;" onsubmit="return confirmDelete(event)">
+                            onsubmit="return confirmDelete(event)">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-action btn-delete" title="ลบ">

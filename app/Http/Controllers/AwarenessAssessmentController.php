@@ -53,24 +53,19 @@ class AwarenessAssessmentController extends Controller
         // column on the table shows (see isAwarePass() below), which itself
         // depends on whichever method that row's own fiscal year has
         // chosen. There's no single SQL expression for that (the score
-        // method walks all 26 rubric roles in PHP), so filtering on it
-        // walks every row still matching the filters above once to collect
-        // the matching ids, then narrows the query to just those - the same
-        // "chunk through it" approach the /awareness report already uses
-        // for the score method. A row whose year hasn't decided pass/fail
-        // yet (the resolver returns null) never matches either choice.
+        // method walks all 26 rubric roles in PHP), so the pass/fail id sets
+        // are computed once per fiscal year and cached (see
+        // AwarenessPassResolver::passIdSets()) - the query is then narrowed
+        // to those ids, so every other filter above still applies. A row
+        // whose year hasn't decided pass/fail yet (the resolver returns
+        // null) never matches either choice.
         if ($request->filled('is_aware_pass')) {
-            $wantPass = $request->get('is_aware_pass') === 'pass';
+            $verdictKey = $request->get('is_aware_pass') === 'pass' ? 'pass' : 'fail';
             $matchingIds = [];
-            $mappingCache = [];
-            (clone $query)->select(['id', 'fiscal_year', 'survey_data'])
-                ->chunkById(500, function ($rows) use (&$matchingIds, &$mappingCache, $wantPass) {
-                    foreach ($rows as $row) {
-                        if (AwarenessPassResolver::isPass($row, $mappingCache) === $wantPass) {
-                            $matchingIds[] = $row->id;
-                        }
-                    }
-                });
+            foreach ((clone $query)->distinct()->pluck('fiscal_year') as $year) {
+                // ชุด id ของทั้งปี (แคชไว้) - ตัวกรองอื่นด้านบนยังจำกัดผลอยู่เพราะต่อด้วย AND
+                $matchingIds = array_merge($matchingIds, AwarenessPassResolver::passIdSets($year)[$verdictKey]);
+            }
             $query->whereIn('id', $matchingIds);
         }
 
@@ -319,12 +314,9 @@ class AwarenessAssessmentController extends Controller
             ? new AwarenessInterpretationExport($fiscalYear)
             : new AwarenessInterpretationQuestionsExport($fiscalYear);
 
-        // "Export แปลงผล"'s own JS fetch()es this route directly and hides
-        // its loading overlay once the response body finishes arriving, so
-        // no server-side "ready" signal (cookie, header, etc.) is needed
-        // here - the browser resolving the fetch promise is itself the
-        // signal.
-        return Excel::download($export, $fileName);
+        // ส่ง header ดาวน์โหลดให้เบราว์เซอร์ก่อนแล้วค่อยสร้างไฟล์ เพื่อให้ไอคอนดาวน์โหลด
+        // ของเบราว์เซอร์ (มุมบนขวา) ขึ้นสถานะ "กำลังดาวน์โหลด" ทันทีที่กดปุ่ม Export
+        return \App\Support\EarlyDownload::excel($fileName, fn () => $export);
     }
 
     /**
@@ -357,9 +349,9 @@ class AwarenessAssessmentController extends Controller
      * already covers this ground (its 26-role breakdown), so this stays
      * intentionally METHOD_QUESTIONS-only rather than shown for both.
      *
-     * Cached for a few minutes per fiscal year (same short-TTL-no-
-     * invalidation approach MainController::awareness() already uses for
-     * its own dashboard bundle): a METHOD_SCORE year still has to walk
+     * Cached for an hour per fiscal year, keyed by AwarenessPassResolver::
+     * dataStamp() so an import or a settings change starts a fresh entry on
+     * its own (a stale copy is simply never read again): a METHOD_SCORE year still has to walk
      * every respondent row through the 26-role scoring rubric in PHP (no
      * single SQL expression captures it), which is the genuinely slow part
      * of switching "ปีงบประมาณ" on this page - caching means every OTHER
@@ -369,7 +361,9 @@ class AwarenessAssessmentController extends Controller
      */
     private function interpretationStats($fiscalYear): array
     {
-        return Cache::remember('awareness_interpretation_stats:' . $fiscalYear, now()->addMinutes(5), function () use ($fiscalYear) {
+        $key = 'awareness_interpretation_stats_v2:' . AwarenessPassResolver::dataStamp($fiscalYear);
+
+        return Cache::remember($key, now()->addMinutes(60), function () use ($fiscalYear) {
             if (AwarenessPassSetting::methodFor($fiscalYear) === AwarenessPassSetting::METHOD_SCORE) {
                 return $this->interpretationStatsForScoreMethod($fiscalYear);
             }
@@ -416,11 +410,13 @@ class AwarenessAssessmentController extends Controller
         // client-side, without a second pass over every row.
         $categorySumsByProvince = [];
 
-        SodiumSurvey::where('fiscal_year', $fiscalYear)
+        // ไล่แถวดิบ (ไม่สร้างโมเดล Eloquent ต่อแถว) - json_decode 1 ครั้งต่อแถวแล้วคำนวณคะแนนจากอาร์เรย์ตรง ๆ
+        \Illuminate\Support\Facades\DB::table((new SodiumSurvey)->getTable())->where('fiscal_year', $fiscalYear)
             ->select(['id', 'province_name', 'district_name', 'survey_data'])
-            ->chunkById(500, function ($rows) use (&$total, &$pass, &$byProvince, &$byDistrict, &$byProvinceDistrict, &$categorySums, &$categorySumsByProvince, $calculator, $categoryKeys) {
+            ->chunkById(2000, function ($rows) use (&$total, &$pass, &$byProvince, &$byDistrict, &$byProvinceDistrict, &$categorySums, &$categorySumsByProvince, $calculator, $categoryKeys) {
                 foreach ($rows as $row) {
-                    $score = $calculator->compute($row);
+                    $answers = json_decode((string) $row->survey_data, true);
+                    $score = $calculator->computeFromData(is_array($answers) ? $answers : []);
                     if (!$score) {
                         continue;
                     }

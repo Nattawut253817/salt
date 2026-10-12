@@ -13,6 +13,11 @@ class UserManagementController extends Controller
     {
         $query = User::with(['province', 'district']);
 
+        // ผู้ที่ไม่ใช่ SuperAdmin จะไม่เห็นบัญชี SuperAdmin ในรายชื่อเลย
+        if (! $request->user()->isSuperAdmin()) {
+            $query->withoutSuperAdmins();
+        }
+
         // Filter by Province
         if ($request->filled('province_id')) {
             $query->where('Province_id', $request->province_id);
@@ -58,14 +63,25 @@ class UserManagementController extends Controller
         return view('admin.users.index', compact('users', 'provinces', 'stats'));
     }
 
+    /**
+     * ผู้ที่ไม่ใช่ SuperAdmin เข้าถึงบัญชี SuperAdmin ไม่ได้ (ตอบ 404 เหมือนไม่มีบัญชีนี้)
+     */
+    protected function hideSuperAdminFromNonSuper(User $target): void
+    {
+        abort_if($target->isSuperAdmin() && ! auth()->user()->isSuperAdmin(), 404);
+    }
+
     public function exportExcel(Request $request)
     {
-        return Excel::download(new UsersExport($request->all()), 'users_export.xlsx');
+        $filters = $request->all();
+        $filters['_exclude_super'] = ! $request->user()->isSuperAdmin();
+        return \App\Support\EarlyDownload::excel('users_export.xlsx', fn () => new UsersExport($filters));
     }
 
     public function toggleApproval(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $this->hideSuperAdminFromNonSuper($user);
         $user->is_approved = !$user->is_approved;
         $user->save();
 
@@ -82,9 +98,87 @@ class UserManagementController extends Controller
         return redirect()->back()->with('success', "{$status} สำหรับผู้ใช้งาน {$user->name}");
     }
 
+    /**
+     * รายชื่อผู้ใช้ สคร. ที่อนุมัติแล้วและยังไม่เป็น SuperAdmin - ใช้ใน dialog "เพิ่ม SuperAdmin"
+     */
+    public function superAdminCandidates(Request $request)
+    {
+        $candidates = User::where('User_rank_id', 1)
+            ->where('is_approved', 1)
+            ->where('id', '!=', $request->user()->id)
+            ->orderBy('User_firstname')
+            ->get()
+            ->reject(fn ($u) => $u->isSuperAdmin())
+            ->map(function ($u) {
+                $mail = (string) $u->email;
+                if (str_contains($mail, '@')) {
+                    [$local, $domain] = explode('@', $mail, 2);
+                    $mail = mb_substr($local, 0, 2) . '***@' . $domain;
+                }
+                return [
+                    'id' => $u->id,
+                    'label' => trim(($u->prefix ?? '') . ($u->User_firstname ?? '') . ' ' . ($u->User_lastname ?? '')) . ' (' . $mail . ')',
+                ];
+            })
+            ->values();
+
+        return response()->json($candidates);
+    }
+
+    /**
+     * มอบ/ถอนสิทธิ์ SuperAdmin ให้ผู้ใช้ระดับ สคร. (เรียกได้เฉพาะ SuperAdmin - ดู middleware super.admin)
+     */
+    public function toggleSuperAdmin(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $me = $request->user();
+
+        $fail = function (string $message, int $status = 422) use ($request) {
+            if ($request->ajax()) {
+                return response()->json(['success' => false, 'message' => $message], $status);
+            }
+            return redirect()->back()->with('error', $message);
+        };
+
+        if ((int) $user->User_rank_id !== 1) {
+            return $fail('มอบสิทธิ์ SuperAdmin ได้เฉพาะผู้ใช้ระดับ สคร. เท่านั้น');
+        }
+        if ($user->id === $me->id) {
+            return $fail('ไม่สามารถเปลี่ยนสิทธิ์ของตนเองได้');
+        }
+        if ($user->isRootSuperAdmin()) {
+            return $fail('SuperAdmin หลักไม่สามารถถอนสิทธิ์จากหน้านี้ได้');
+        }
+        if (! $user->is_approved) {
+            return $fail('ต้องอนุมัติผู้ใช้งานก่อนจึงจะมอบสิทธิ์ SuperAdmin ได้');
+        }
+
+        $email = strtolower(trim((string) $user->email));
+        $granted = array_values(array_filter(array_map('strtolower', (array) \App\Support\SystemSettings::get('super_admin_granted', []))));
+
+        if (in_array($email, $granted, true)) {
+            $granted = array_values(array_diff($granted, [$email]));
+            $isSuper = false;
+        } else {
+            $granted[] = $email;
+            $isSuper = true;
+        }
+        \App\Support\SystemSettings::set('super_admin_granted', array_values(array_unique($granted)));
+
+        $name = trim(($user->prefix ?? '') . ($user->User_firstname ?? '') . ' ' . ($user->User_lastname ?? ''));
+        $message = ($isSuper ? 'มอบสิทธิ์ SuperAdmin ให้ ' : 'ถอนสิทธิ์ SuperAdmin ของ ') . $name . ' เรียบร้อย';
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => $message, 'is_super_admin' => $isSuper]);
+        }
+
+        return redirect()->back()->with('success', $message);
+    }
+
     public function edit(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $this->hideSuperAdminFromNonSuper($user);
         $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
         // Hardcoded user ranks as seen in index.blade.php
         $userRanks = [
@@ -108,6 +202,7 @@ class UserManagementController extends Controller
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
+        $this->hideSuperAdminFromNonSuper($user);
 
         $request->validate([
             'User_firstname' => 'required|string|max:255',
@@ -143,6 +238,7 @@ class UserManagementController extends Controller
     public function destroy($id)
     {
         $user = User::findOrFail($id);
+        $this->hideSuperAdminFromNonSuper($user);
 
         // Prevent deleting self
         if ($user->id === auth()->id()) {

@@ -63,15 +63,16 @@ Route::get('/storage/{path}', function (string $path) {
     return response()->file($full);
 })->where('path', '.*')->name('storage.local-fallback');
 
-Route::get('/', [MainController::class, 'index'])->name('home');
-Route::get('/awareness', [MainController::class, 'awareness'])->name('awareness');
+Route::get('/', [MainController::class, 'index'])->middleware('page.view')->name('home');
+Route::get('/api/ht-trend', [MainController::class, 'htTrendFeed'])->middleware('throttle:60,1')->name('api.ht-trend');
+Route::get('/awareness', [MainController::class, 'awareness'])->middleware('page.view')->name('awareness');
 Route::get('/food-survey', [MainController::class, 'foodSurvey'])->name('food-survey');
-Route::get('/reduced-sodium-menu', [MainController::class, 'reducedSodiumMenu'])->name('reduced-sodium-menu');
-Route::get('/reduced-sodium-products', [MainController::class, 'reducedSodiumProducts'])->name('reduced-sodium-products');
+Route::get('/reduced-sodium-menu', [MainController::class, 'reducedSodiumMenu'])->middleware('page.view')->name('reduced-sodium-menu');
+Route::get('/reduced-sodium-products', [MainController::class, 'reducedSodiumProducts'])->middleware('page.view')->name('reduced-sodium-products');
 Route::get('/kidney-dhb', [MainController::class, 'kidneyDHB'])->name('kidney-dhb');
-Route::get('/kidney-dhb-report', [MainController::class, 'kidneyDHBReport'])->name('kidney-dhb-report');
-Route::get('/new-ht-cases', [MainController::class, 'newHTCases'])->name('new-ht-cases');
-Route::get('/consumption-report', [MainController::class, 'consumptionReport'])->name('consumption-report');
+Route::get('/kidney-dhb-report', [MainController::class, 'kidneyDHBReport'])->middleware('page.view')->name('kidney-dhb-report');
+Route::get('/new-ht-cases', [MainController::class, 'newHTCases'])->middleware('page.view')->name('new-ht-cases');
+Route::get('/consumption-report', [MainController::class, 'consumptionReport'])->middleware('page.view')->name('consumption-report');
 Route::get('/staff', [MainController::class, 'staff'])->name('staff');
 Route::get('/login', [MainController::class, 'staff'])->name('login');
 
@@ -99,7 +100,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::get('/report-progress', [MainController::class, 'reportProgress'])->name('report-progress');
 
 // Admin Routes
-Route::prefix('admin')->middleware('auth')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::get('/', function () {
         $user = auth()->user();
         if ($user->User_rank_id == 5) {
@@ -117,6 +118,7 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/salt-assessment/{id}/export-pdf', [AdminController::class, 'exportSaltAssessmentPdf'])->name('admin.salt-assessment.export-pdf');
     Route::get('/salt-assessment/{id}/export-word', [AdminController::class, 'exportSaltAssessmentWord'])->name('admin.salt-assessment.export-word');
     Route::delete('/salt-assessment/{id}', [AdminController::class, 'destroySaltAssessment'])->name('admin.salt-assessment.destroy');
+    Route::post('/salt-assessment-list/delete-filtered', [AdminController::class, 'deleteFilteredSaltAssessment'])->middleware('super.admin')->name('admin.salt-assessment.delete-filtered');
     Route::post('/report-progress', [AdminController::class, 'storeReportProgress'])->name('admin.report-progress.store');
     Route::get('/get-assessment-data', [AdminController::class, 'getAssessmentData'])->name('admin.get-assessment-data');
     Route::post('/report-progress/remove-file', [AdminController::class, 'removeReportFile'])->name('admin.report-progress.remove-file');
@@ -125,16 +127,36 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     // Kidney DHB (พชอ.ไต)
     Route::get('/kidney-dhb-list', [AdminController::class, 'kidneyDHBList'])->name('admin.kidney-dhb-list');
     Route::get('/kidney-dhb-export', [AdminController::class, 'exportKidneyDHBExcel'])->name('admin.kidney-dhb.export-excel');
+    // เลือกพื้นที่ดำเนินงาน (ปักหมุดพื้นที่ล่วงหน้า) - ทุกระดับบันทึกได้ ก่อนไปทำแบบประเมิน
+    Route::get('/kidney-dhb-areas', [AdminController::class, 'kidneyDhbAreas'])->name('admin.kidney-dhb.areas');
+    Route::post('/kidney-dhb-areas', [AdminController::class, 'storeKidneyDhbArea'])->name('admin.kidney-dhb.areas.store');
+    Route::post('/kidney-dhb-areas/select-many', [AdminController::class, 'selectManyKidneyDhbAreas'])->name('admin.kidney-dhb.areas.select-many');
+    Route::post('/kidney-dhb-areas/{id}/select', [AdminController::class, 'selectKidneyDhbArea'])->name('admin.kidney-dhb.areas.select');
+    Route::post('/kidney-dhb-areas/{id}/deselect', [AdminController::class, 'deselectKidneyDhbArea'])->name('admin.kidney-dhb.areas.deselect');
     Route::get('/kidney-dhb/resolve-target-agency', [AdminController::class, 'resolveKidneyDhbTargetAgency'])->name('admin.kidney-dhb.resolve-target-agency');
+    Route::get('/kidney-dhb/operating-area-context', [AdminController::class, 'getKidneyDhbOperatingAreaContext'])->name('admin.kidney-dhb.operating-area-context');
     Route::get('/kidney-dhb/{id}', [AdminController::class, 'showKidneyDHB'])->name('admin.kidney-dhb.show');
+    Route::put('/kidney-dhb/{id}', [AdminController::class, 'updateKidneyDHB'])->name('admin.kidney-dhb.update');
     Route::post('/kidney-dhb/{id}/confirm', [AdminController::class, 'confirmKidneyDHB'])->name('admin.kidney-dhb.confirm');
     Route::get('/admin/kidney-dhb/{id}/export-pdf', [AdminController::class, 'exportKidneyDHBPdf'])->name('admin.kidney-dhb.export-pdf');
     Route::get('/admin/kidney-dhb/{id}/export-word', [AdminController::class, 'exportKidneyDHBWord'])->name('admin.kidney-dhb.export-word');
     Route::delete('/kidney-dhb/{id}', [AdminController::class, 'destroyKidneyDHB'])->name('admin.kidney-dhb.destroy');
+    Route::post('/kidney-dhb-list/delete-filtered', [AdminController::class, 'deleteFilteredKidneyDHB'])->middleware('super.admin')->name('admin.kidney-dhb.delete-filtered');
     Route::get('/kidney-dhb', [AdminController::class, 'kidneyDHB'])->name('admin.kidney-dhb');
     Route::post('/kidney-dhb', [AdminController::class, 'storeKidneyDHB'])->name('admin.kidney-dhb.store');
     Route::get('/get-kidney-dhb-data', [AdminController::class, 'getKidneyDHBData'])->name('admin.get-kidney-dhb-data');
     Route::post('/kidney-dhb/parse-word', [AdminController::class, 'parseKidneyDhbWord'])->name('admin.kidney-dhb.parse-word');
+
+    // Operating Area (จัดการพื้นที่ดำเนินงาน) - level 1 only, under แบบประเมินพชอ.ไต
+    Route::get('/operating-areas', [AdminController::class, 'operatingAreasIndex'])->name('admin.operating-areas.index');
+    Route::get('/operating-areas/get-districts/{province_id}', [AdminController::class, 'getDistrictsForOperatingArea'])->name('admin.operating-areas.get-districts');
+    Route::get('/operating-areas/get-tambons/{province_id}/{district_id}', [AdminController::class, 'getTambonsForOperatingArea'])->name('admin.operating-areas.get-tambons');
+    Route::get('/operating-areas/get-villages/{province_id}/{district_id}/{tambon_id}', [AdminController::class, 'getVillages'])->name('admin.operating-areas.get-villages');
+    Route::post('/operating-areas', [AdminController::class, 'storeOperatingAreaPin'])->name('admin.operating-areas.store');
+    Route::delete('/operating-areas/{id}', [AdminController::class, 'destroyOperatingAreaPin'])->name('admin.operating-areas.destroy');
+    Route::post('/operating-areas-delete-filtered', [AdminController::class, 'deleteFilteredOperatingAreaPins'])->middleware('super.admin')->name('admin.operating-areas.delete-filtered');
+    Route::put('/operating-areas/{id}', [AdminController::class, 'updateOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.update');
+    Route::post('/operating-areas/{id}/release', [AdminController::class, 'releaseOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.release');
 
     // Reduced Sodium Products (ผลิตภัณฑ์ลดโซเดียม)
     Route::get('/sodium-products', [AdminController::class, 'sodiumProducts'])->name('admin.sodium-products');
@@ -191,6 +213,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/users', [\App\Http\Controllers\UserManagementController::class, 'index'])->name('admin.users.index');
     Route::get('/users/export-excel', [\App\Http\Controllers\UserManagementController::class, 'exportExcel'])->name('admin.users.export-excel');
     Route::post('/users/{id}/toggle-approval', [\App\Http\Controllers\UserManagementController::class, 'toggleApproval'])->name('admin.users.toggle-approval');
+    Route::get('/users/super-admin-candidates', [\App\Http\Controllers\UserManagementController::class, 'superAdminCandidates'])->middleware('super.admin')->name('admin.users.super-admin-candidates');
+    Route::post('/users/{id}/toggle-super-admin', [\App\Http\Controllers\UserManagementController::class, 'toggleSuperAdmin'])->middleware('super.admin')->name('admin.users.toggle-super-admin');
     Route::get('/users/{id}/edit', [\App\Http\Controllers\UserManagementController::class, 'edit'])->name('admin.users.edit');
     Route::put('/users/{id}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('admin.users.update');
     Route::post('/users/{id}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
@@ -202,4 +226,13 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Excel Template Management
     Route::get('/excel-templates', [\App\Http\Controllers\ExcelTemplateController::class, 'index'])->name('admin.excel-templates.index');
+
+    // System Management (เฉพาะ SuperAdmin)
+    Route::middleware('super.admin')->group(function () {
+        Route::get('/system-management', [\App\Http\Controllers\SystemManagementController::class, 'index'])->name('admin.system-management.index');
+        Route::post('/system-management/toggle-otp', [\App\Http\Controllers\SystemManagementController::class, 'toggleOtp'])->name('admin.system-management.toggle-otp');
+        Route::post('/system-management/toggle-rank1-register', [\App\Http\Controllers\SystemManagementController::class, 'toggleRank1Register'])->name('admin.system-management.toggle-rank1-register');
+        Route::post('/system-management/reset-page-views', [\App\Http\Controllers\SystemManagementController::class, 'resetPageViews'])->name('admin.system-management.reset-page-views');
+        Route::get('/system-management/activity-logs', [\App\Http\Controllers\SystemManagementController::class, 'activityLogs'])->name('admin.system-management.activity-logs');
+    });
 });

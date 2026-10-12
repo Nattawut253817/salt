@@ -352,26 +352,66 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 300px;
+            gap: 14px;
+            height: 252px;
             width: 100%;
-            padding: 12px 0;
+            padding: 4px 0 2px;
         }
 
         .awr-donut-chart {
             position: relative;
-            width: 55%;
+            flex: 0 0 46%;
+            width: 46%;
             height: 100%;
         }
 
         .awr-donut-legend {
-            width: 45%;
-            padding-left: 15px;
-            padding-right: 15px;
+            flex: 1 1 0;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 12px;
+            gap: 6px;
         }
+
+        /* แถวจังหวัดในคำอธิบาย: จุดสี + ชื่อ + แถบสัดส่วน | ร้อยละ + จำนวนคน */
+        .awr-leg-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 6px 10px;
+            border-radius: 11px;
+            background: #f8fafc;
+            border: 1px solid #eef1f6;
+            transition: background .15s ease, border-color .15s ease, box-shadow .15s ease;
+        }
+        .awr-leg-item:hover { background: #fff; border-color: var(--leg-c); box-shadow: 0 6px 14px -8px var(--leg-c); }
+        .awr-leg-dot { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 50%; background: var(--leg-c); }
+        .awr-leg-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .awr-leg-name { font-size: 12.5px; font-weight: 700; color: #1e293b; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .awr-leg-bar { display: block; height: 4px; border-radius: 99px; background: #e8edf3; overflow: hidden; }
+        .awr-leg-bar > span { display: block; width: var(--leg-w); height: 100%; border-radius: 99px; background: var(--leg-c); }
+        .awr-leg-nums { flex: 0 0 auto; text-align: right; line-height: 1.15; white-space: nowrap; }
+        .awr-leg-nums b { display: block; font-size: 13.5px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .awr-leg-nums small { display: block; margin-top: 1px; font-size: 10.5px; font-weight: 600; color: #94a3b8; }
+        /* การ์ดสัดส่วนผู้ตอบแยกตามเพศ */
+        .gr-tiles { display: flex; gap: 12px; }
+        .gr-tile { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 20px 8px 18px; border-radius: 18px;
+            background: linear-gradient(165deg, color-mix(in srgb, var(--gr-c) 16%, #fff), color-mix(in srgb, var(--gr-c) 5%, #fff));
+            border: 1px solid color-mix(in srgb, var(--gr-c) 28%, #fff); }
+        .gr-icon { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;
+            background: linear-gradient(145deg, color-mix(in srgb, var(--gr-c) 80%, #fff), var(--gr-c)); box-shadow: 0 8px 16px -6px var(--gr-c); }
+        .gr-name { margin-top: 10px; font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; }
+        .gr-pct { margin-top: 2px; font-size: clamp(1.9rem, 2.8vw, 2.4rem); font-weight: 800; line-height: 1.1; color: var(--gr-ink); font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+        .gr-pct em { font-style: normal; font-size: .5em; font-weight: 800; margin-left: 2px; letter-spacing: 0; }
+        .gr-count { margin-top: 4px; font-size: 13.5px; font-weight: 700; color: #475569; font-variant-numeric: tabular-nums; }
+        .gr-bar { display: flex; height: 34px; border-radius: 17px; overflow: hidden; background: #eef2f7; box-shadow: 0 4px 10px rgba(15, 23, 42, .10); }
+        .gr-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12.5px; font-weight: 800; white-space: nowrap; text-shadow: 0 1px 2px rgba(15, 23, 42, .25); }
+        .gr-ratio-badge { margin-left: auto; flex: 0 0 auto; align-self: center; display: flex; flex-direction: column; align-items: center; padding: 5px 14px 6px; border-radius: 14px; background: #f5f3ff; border: 1px solid #ddd6fe; line-height: 1.15; }
+        .gr-ratio-badge small { font-size: 11.5px; font-weight: 700; color: #6d28d9; }
+        .gr-ratio-badge b { font-size: 1.2rem; font-weight: 800; color: #4c1d95; font-variant-numeric: tabular-nums; letter-spacing: -.2px; white-space: nowrap; }
+        .awr-pf-pills { display: flex; align-items: stretch; gap: 8px; margin-bottom: 8px; }
+        .awr-pf-pills > span { flex: 1 1 0; justify-content: center; }
 
         @media (max-width: 768px) {
             .awr-donut-row {
@@ -382,11 +422,13 @@
             }
 
             .awr-donut-chart {
+                flex: none;
                 width: 100%;
                 height: 220px;
             }
 
             .awr-donut-legend {
+                flex: none;
                 width: 100%;
                 padding-left: 4px;
                 padding-right: 4px;
@@ -502,6 +544,39 @@
             line-height: 1.5;
         }
 
+        /* คำอธิบายสีใต้กราฟ: ชิปสีตามความหมายแทนข้อความยาว */
+        .scale-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 6px 14px;
+            margin: 0 0 8px;
+            color: #64748b;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .scale-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .scale-legend-swatch {
+            display: inline-block;
+            width: 26px;
+            height: 10px;
+            border-radius: 3px;
+        }
+
+        .scale-legend-note {
+            flex: 1 1 100%;
+            color: #94a3b8;
+            font-size: 0.76rem;
+        }
+
         .chart-table-toggle {
             cursor: pointer;
             list-style: none;
@@ -540,6 +615,149 @@
         details[open] > .chart-table-toggle {
             color: #334155;
             background: #eef2f7;
+        }
+
+        /* สถานะความตระหนักรู้ รายจังหวัด: แท่งแนวตั้ง 100% ต่อจังหวัด เรียงตามร้อยละตระหนักรู้ */
+        .pf-rows {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 0 2px;
+        }
+
+        .pf-top {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px 12px;
+            font-size: .8rem;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .pf-top .pf-sum b {
+            color: #047857;
+        }
+
+        .pf-legend {
+            display: flex;
+            gap: 14px;
+        }
+
+        .pf-legend i {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            margin-right: 5px;
+            vertical-align: -1px;
+        }
+
+        .pf-cols {
+            flex: 1 1 auto;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: repeat(var(--pf-n, 5), minmax(0, 1fr));
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .pf-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+            text-align: center;
+        }
+
+        .pf-badge {
+            width: 100%;
+            max-width: 84px;
+            margin-bottom: 9px;
+            padding: 6px 4px 5px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ecfdf5, #d1fae5);
+            border: 1px solid #a7f3d0;
+            box-shadow: 0 3px 8px rgba(5, 150, 105, .16);
+        }
+
+        .pf-pct {
+            font-weight: 800;
+            font-size: 1.15rem;
+            line-height: 1.1;
+            color: #047857;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .pf-pct-cap {
+            font-size: .68rem;
+            font-weight: 600;
+            color: #065f46;
+            line-height: 1.3;
+        }
+
+        .pf-tube {
+            flex: 1 1 auto;
+            min-height: 120px;
+            width: 100%;
+            max-width: 62px;
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #fecaca, #fee2e2);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, .10), inset 0 0 0 1px rgba(15, 23, 42, .04);
+        }
+
+        .pf-tube-fail {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 7px;
+            font-size: .68rem;
+            font-weight: 700;
+            color: #c2494a;
+        }
+
+        .pf-tube-pass {
+            flex: 0 0 auto;
+            min-height: 8px;
+            background: linear-gradient(180deg, #34d399, #059669);
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 -2px 0 #fff;
+        }
+
+        .pf-name {
+            margin-top: 8px;
+            font-weight: 600;
+            font-size: .8rem;
+            color: #475569;
+            line-height: 1.2;
+        }
+
+        .pf-n {
+            font-size: .7rem;
+            font-weight: 500;
+            color: #64748b;
+            line-height: 1.3;
+        }
+
+        .pf-n b {
+            color: #1e293b;
+            font-weight: 700;
+        }
+
+        @media (max-width: 420px) {
+            .pf-cols {
+                gap: 6px;
+            }
+
+            .pf-name {
+                font-size: .76rem;
+            }
         }
 
         .figure-table-wrap {
@@ -630,58 +848,130 @@
         }
 
         /* One full-width diverging bar per question - see
-           createDivergingBars() in extra_js below. */
-        .divrow {
-            margin-bottom: 18px;
+           createDivergingBars() in extra_js below. สีแดง-ส้ม = คำตอบที่ควรปรับ,
+           เทา = กลาง, ฟ้าอมเขียว = คำตอบที่ดี (แดง/ฟ้าแยกกันได้แม้ตาบอดสีแดง-เขียว) */
+        .divsum {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin: 0 0 18px;
+            padding: 11px 14px;
+            background: #fbf1ef;
+            border-radius: 12px;
+            color: #7a2e29;
+            font-size: 0.86rem;
+            line-height: 1.5;
         }
 
-        .divrow:last-child {
-            margin-bottom: 0;
+        .divsum i { color: #b9534d; flex: 0 0 auto; }
+        .divsum b { font-weight: 800; }
+
+        .divrow {
+            padding: 14px 0 16px;
+            border-top: 1px solid #eef1f5;
+        }
+
+        .divrow:first-child,
+        .divsum + .divrow {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .divrow-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 9px;
         }
 
         .divrow-label {
-            font-weight: 800;
+            font-weight: 700;
             font-size: 0.9rem;
             color: #1e293b;
-            margin-bottom: 8px;
-            line-height: 1.4;
+            line-height: 1.45;
+            min-width: 0;
+        }
+
+        .divrow-risk {
+            flex: 0 0 auto;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: #fbeeec;
+            color: #a6443e;
+            font-size: 0.78rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .divrow-risk.is-low {
+            background: #eef2f6;
+            color: #64748b;
         }
 
         .divrow-bar {
             display: flex;
+            gap: 2px;
             width: 100%;
-            height: 34px;
-            border-radius: 6px;
+            height: 40px;
+            border-radius: 10px;
             overflow: hidden;
-            background: #f1f5f9;
         }
 
         .divrow-seg {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            min-width: 0;
             overflow: hidden;
-            box-sizing: border-box;
-            border-right: 2px solid #fff;
+            line-height: 1.15;
+            text-align: center;
         }
 
-        .divrow-seg:last-child {
-            border-right: none;
+        .divrow-seg b {
+            font-size: 12.5px;
+            font-weight: 800;
         }
 
-        .divrow-seg span {
-            display: inline-block;
-            max-width: calc(100% - 8px);
+        .divrow-seg small {
+            max-width: 100%;
+            padding: 0 4px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: #fff;
-            font-size: 11.5px;
-            font-weight: 800;
-            padding: 2px 6px;
-            background: rgba(15, 23, 42, 0.22);
-            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            opacity: 0.92;
         }
+
+        @media (max-width: 575.98px) {
+            .divrow-seg small { display: none; }
+        }
+
+        .divrow-foot {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 7px;
+            color: #94a3b8;
+            font-size: 11.5px;
+            font-weight: 600;
+        }
+
+        .divrow-empty {
+            padding: 18px 14px;
+            border: 1.5px dashed #dbe3ec;
+            border-radius: 12px;
+            color: #94a3b8;
+            font-size: 0.86rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .divrow-others { display: flex; flex-wrap: wrap; gap: 3px 14px; min-width: 0; }
+        .divrow-n { flex: 0 0 auto; white-space: nowrap; }
 
         .chart-legend {
             display: flex;
@@ -723,33 +1013,18 @@
             flex-shrink: 0;
         }
 
-        /* Per-question mini legend under each diverging bar - a colored
-           dot + the real answer wording(s) grouped into that segment, so
-           it's clear exactly which recorded answers count as "red" vs
-           "green" for THIS question (they differ question to question). */
-        .divrow-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px 16px;
-            margin-top: 6px;
-        }
-
         .divrow-legend-item {
             display: inline-flex;
-            align-items: flex-start;
-            gap: 6px;
-            font-size: 11.5px;
-            font-weight: 600;
+            align-items: center;
+            gap: 5px;
             color: #64748b;
-            max-width: 100%;
         }
 
         .divrow-legend-dot {
-            width: 9px;
-            height: 9px;
-            min-width: 9px;
+            width: 8px;
+            height: 8px;
+            min-width: 8px;
             border-radius: 50%;
-            margin-top: 3px;
             flex-shrink: 0;
         }
     </style>
@@ -891,7 +1166,7 @@
                      the "สถานะความตระหนักรู้ รายจังหวัด" card below, which
                      shares this same $kpiPassTotal/$kpiFailTotal source
                      (computed once, near the top of this view). --}}
-                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px;">
+                <div class="awr-pf-pills">
                     <span
                         style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; color: #059669; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 999px; padding: 4px 12px;">
                         <i class="fas fa-check" style="font-size: 10px;"></i>
@@ -926,6 +1201,7 @@
                         <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
                         <div class="chart-header-subtitle">แยกตามเพศ</div>
                     </div>
+                    <div id="genderRatioBadge" class="gr-ratio-badge" style="display: none;"></div>
                 </div>
                 <div id="genderChart" style="height: 320px; width: 100%;"></div>
             </div>
@@ -991,7 +1267,7 @@
                             </div>
                         </div>
                     @endif
-                    <canvas id="passFailChart"></canvas>
+                    <div id="passFailRows" class="pf-rows" role="list" aria-label="สถานะความตระหนักรู้รายจังหวัด"></div>
                 </div>
                 <div class="chart-figure-footer">
                     <details>
@@ -1038,8 +1314,12 @@
                     </div>
                     <div id="riskChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
-                        <p class="chart-caption">แถบด้านซ้ายคือคำตอบเชิงเสี่ยง แถบด้านขวาคือคำตอบเชิงบวก
-                            ความยาวของแถบแสดงสัดส่วนผู้ตอบแบบประเมิน</p>
+                        <div class="scale-legend" aria-label="คำอธิบายสี">
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                        </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
                             <div class="figure-table-wrap">
@@ -1063,8 +1343,12 @@
                     </div>
                     <div id="seasoningChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
-                        <p class="chart-caption">แถบด้านซ้ายคือคำตอบเชิงเสี่ยง แถบด้านขวาคือคำตอบเชิงบวก
-                            ความยาวของแถบแสดงสัดส่วนผู้ตอบแบบประเมิน</p>
+                        <div class="scale-legend" aria-label="คำอธิบายสี">
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                        </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
                             <div class="figure-table-wrap">
@@ -1088,8 +1372,12 @@
                     </div>
                     <div id="healthyHabitChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
-                        <p class="chart-caption">แถบด้านซ้ายคือคำตอบเชิงเสี่ยง แถบด้านขวาคือคำตอบเชิงบวก
-                            ความยาวของแถบแสดงสัดส่วนผู้ตอบแบบประเมิน</p>
+                        <div class="scale-legend" aria-label="คำอธิบายสี">
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                        </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
                             <div class="figure-table-wrap">
@@ -1113,8 +1401,12 @@
                     </div>
                     <div id="mindsetChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
-                        <p class="chart-caption">แถบด้านซ้ายคือคำตอบเชิงเสี่ยง แถบด้านขวาคือคำตอบเชิงบวก
-                            ความยาวของแถบแสดงสัดส่วนผู้ตอบแบบประเมิน</p>
+                        <div class="scale-legend" aria-label="คำอธิบายสี">
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                        </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
                             <div class="figure-table-wrap">
@@ -1297,13 +1589,13 @@
             // reviewing upstream) - both get their own step here so neither
             // silently falls back to gray.
             const educationColorMap = {
-                'ไม่เคยศึกษา/ไม่ได้เรียนหนังสือ': '#5cc6b3',
-                'ประถมศึกษา': '#38ad98',
-                'มัธยมศึกษา': '#1f9680',
-                'ปวช./ปวส./อนุปริญญา': '#167c69',
-                'ปริญญาตรี': '#106453',
-                'ปริญญาโท/สูงกว่า': '#0a4c3f',
-                'สูงกว่าปริญญาโท': '#06342b'
+                'ไม่เคยศึกษา/ไม่ได้เรียนหนังสือ': '#64748b', // slate
+                'ประถมศึกษา': '#f5a524', // amber
+                'มัธยมศึกษา': '#12a594', // teal
+                'ปวช./ปวส./อนุปริญญา': '#2f6fdd', // blue
+                'ปริญญาตรี': '#8e5cf0', // violet
+                'ปริญญาโท/สูงกว่า': '#d6409f', // magenta
+                'สูงกว่าปริญญาโท': '#ee5a3c' // coral
             };
 
             // Natural attainment order (low -> high), same idea as ageOrder
@@ -1347,109 +1639,62 @@
                 if (!container) return;
                 const entries = Object.entries(data);
                 const total = entries.reduce((sum, [, v]) => sum + v, 0);
+                const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+                const iconFor = (label) => label === 'ชาย' ? 'fa-mars' : (label === 'หญิง' ? 'fa-venus' : 'fa-genderless');
 
-                container.innerHTML = '';
+                container.style.height = 'auto';
+                container.style.minHeight = '320px';
                 container.style.display = 'flex';
                 container.style.flexDirection = 'column';
                 container.style.justifyContent = 'center';
-                container.style.height = '100%';
-                container.style.gap = '18px';
-                container.style.padding = '4px 6px';
+                container.style.gap = '16px';
+                container.style.padding = '4px 2px';
 
-                const iconFor = (label) => label === 'ชาย' ? 'fa-mars' : (label === 'หญิง' ?
-                    'fa-venus' : 'fa-genderless');
+                if (total <= 0) {
+                    container.innerHTML = '<div class="text-center text-muted">ยังไม่มีข้อมูล</div>';
+                    return;
+                }
 
-                // Segmented ratio bar - one glance at the split.
-                const barTrack = document.createElement('div');
-                barTrack.style.display = 'flex';
-                barTrack.style.width = '100%';
-                barTrack.style.height = '22px';
-                barTrack.style.borderRadius = '11px';
-                barTrack.style.overflow = 'hidden';
-                barTrack.style.background = '#eef2f7';
-                barTrack.style.boxShadow = '0 4px 10px rgba(15, 23, 42, 0.10)';
-
-                entries.forEach(([label, value], i) => {
-                    const pct = total > 0 ? (value / total) * 100 : 0;
-                    const base = colorMap[label] || fallback;
-                    const seg = document.createElement('div');
-                    seg.style.width = pct + '%';
-                    seg.style.background = 'linear-gradient(180deg, ' + shadeHexColor(base,
-                        18) + ', ' + shadeHexColor(base, -10) + ')';
-                    seg.title = label + ': ' + pct.toFixed(1) + '%';
-                    if (i > 0) seg.style.borderLeft = '2px solid #fff';
-                    barTrack.appendChild(seg);
-                });
-                container.appendChild(barTrack);
-
-                // One stat row per category - icon, label, count, and the
-                // percentage as the headline figure.
-                const rows = document.createElement('div');
-                rows.style.display = 'flex';
-                rows.style.flexDirection = 'column';
-                rows.style.gap = '10px';
-
+                // การ์ดต่อเพศ: ไอคอน + ชื่อ + ร้อยละตัวใหญ่ + จำนวนคน (ข้อความใช้สีเข้มของเพศนั้นเพื่อให้อ่านชัด)
+                let tiles = '';
                 entries.forEach(([label, value]) => {
-                    const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0';
+                    const pct = (value / total) * 100;
                     const base = colorMap[label] || fallback;
-
-                    const row = document.createElement('div');
-                    row.style.display = 'flex';
-                    row.style.alignItems = 'center';
-                    row.style.justifyContent = 'space-between';
-                    row.style.padding = '10px 14px';
-                    row.style.borderRadius = '12px';
-                    row.style.background = 'linear-gradient(135deg, ' + base +
-                        '18, ' + base + '08)';
-                    row.style.border = '1px solid ' + base + '2a';
-
-                    const left = document.createElement('div');
-                    left.style.display = 'flex';
-                    left.style.alignItems = 'center';
-                    left.style.gap = '10px';
-
-                    const iconChip = document.createElement('div');
-                    iconChip.style.width = '32px';
-                    iconChip.style.height = '32px';
-                    iconChip.style.borderRadius = '50%';
-                    iconChip.style.display = 'flex';
-                    iconChip.style.alignItems = 'center';
-                    iconChip.style.justifyContent = 'center';
-                    iconChip.style.background = 'linear-gradient(135deg, ' + base +
-                        '2e, ' + base + '14)';
-                    iconChip.style.color = base;
-                    iconChip.innerHTML = '<i class="fas ' + iconFor(label) + '"></i>';
-
-                    const textWrap = document.createElement('div');
-                    const nameEl = document.createElement('div');
-                    nameEl.textContent = label;
-                    nameEl.style.fontWeight = '700';
-                    nameEl.style.fontSize = '13px';
-                    nameEl.style.color = '#334155';
-                    const countEl = document.createElement('div');
-                    countEl.textContent = value.toLocaleString() + ' คน';
-                    countEl.style.fontSize = '13px';
-                    countEl.style.fontWeight = '700';
-                    countEl.style.color = '#1e293b';
-                    countEl.style.marginTop = '2px';
-                    textWrap.appendChild(nameEl);
-                    textWrap.appendChild(countEl);
-
-                    left.appendChild(iconChip);
-                    left.appendChild(textWrap);
-
-                    const pctEl = document.createElement('div');
-                    pctEl.textContent = pct + '%';
-                    pctEl.style.fontWeight = '800';
-                    pctEl.style.fontSize = '19px';
-                    pctEl.style.color = base;
-
-                    row.appendChild(left);
-                    row.appendChild(pctEl);
-                    rows.appendChild(row);
+                    const ink = shadeHexColor(base, -30);
+                    tiles += '<div class="gr-tile" style="--gr-c:' + base + '; --gr-ink:' + ink + ';">' +
+                        '<span class="gr-icon"><i class="fas ' + iconFor(label) + '"></i></span>' +
+                        '<span class="gr-name">' + esc(label) + '</span>' +
+                        '<span class="gr-pct">' + pct.toFixed(1) + '<em>%</em></span>' +
+                        '<span class="gr-count">' + value.toLocaleString() + ' คน</span></div>';
                 });
 
-                container.appendChild(rows);
+                // แถบแบ่งสัดส่วน: ใส่ชื่อ + ร้อยละในแต่ละช่วงเมื่อกว้างพอ
+                let segs = '';
+                entries.forEach(([label, value], i) => {
+                    const pct = (value / total) * 100;
+                    const base = colorMap[label] || fallback;
+                    const txt = pct >= 20 ? esc(label) + ' ' + pct.toFixed(1) + '%' : (pct >= 9 ? pct.toFixed(1) + '%' : '');
+                    segs += '<div class="gr-seg" title="' + esc(label) + ': ' + pct.toFixed(1) + '% (' + value.toLocaleString() + ' คน)" style="width:' + pct + '%; ' +
+                        'background:linear-gradient(180deg,' + shadeHexColor(base, 16) + ',' + shadeHexColor(base, -14) + ');' + (i > 0 ? ' border-left:3px solid #fff;' : '') + '">' + txt + '</div>';
+                });
+
+                // อัตราส่วนชาย : หญิง ไปอยู่มุมขวาบนของการ์ด (หัวการ์ด)
+                const male = Number(data['ชาย']) || 0;
+                const female = Number(data['หญิง']) || 0;
+                const badge = document.getElementById('genderRatioBadge');
+                if (badge) {
+                    if (male > 0 && female > 0) {
+                        const r = female / male;
+                        badge.innerHTML = '<small>ชาย : หญิง</small><b>1 : ' + (r >= 10 ? r.toFixed(1) : r.toFixed(2)) + '</b>';
+                        badge.style.display = '';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                container.innerHTML =
+                    '<div class="gr-tiles">' + tiles + '</div>' +
+                    '<div class="gr-bar">' + segs + '</div>';
             };
 
             // --- Ordinal pie chart (age bands) - back to a pie per the
@@ -1525,11 +1770,21 @@
                                 enabled: true,
                                 useHTML: true,
                                 distance: 16,
-                                format: '<div style="text-align:center; line-height:1.25;">' +
-                                    '<span style="display:inline-block; background:{point.color}; color:#fff; font-weight:700; font-size:12px; padding:2px 7px; border-radius:5px; white-space:nowrap; text-shadow:0 1px 2px rgba(15,23,42,0.35);">{point.percentage:.0f}%</span>' +
-                                    '<br/><span style="color:#475569; font-weight:600; font-size:11px; white-space:nowrap;">{point.name}</span>' +
-                                    '<br/><span style="color:#334155; font-weight:800; font-size:11px; white-space:nowrap;">{point.y:,.0f} คน</span>' +
-                                    '</div>',
+                                // ป้ายร้อยละเป็นแคปซูลสีของส่วนนั้น (ตัวหนังสือขาว/เข้มเลือกตามความสว่างของสี)
+                                // ตามด้วยชื่อกลุ่มอายุตัวหนาเข้ม และจำนวนคนตัวรอง
+                                formatter: function () {
+                                    const hex = String(this.point.color || '#64748b').replace('#', '');
+                                    const full = hex.length === 3 ? hex.split('').map(ch => ch + ch).join('') : hex;
+                                    const r = parseInt(full.substr(0, 2), 16), g = parseInt(full.substr(2, 2), 16), bl = parseInt(full.substr(4, 2), 16);
+                                    const light = (0.299 * r + 0.587 * g + 0.114 * bl) > 150;
+                                    const ink = light ? '#422006' : '#ffffff';
+                                    const glow = light ? 'none' : '0 1px 2px rgba(15,23,42,0.35)';
+                                    return '<div style="text-align:center; line-height:1.3;">' +
+                                        '<span style="display:inline-block; background:' + this.point.color + '; color:' + ink + '; font-weight:800; font-size:14.5px; letter-spacing:-.2px; padding:2px 11px 3px; border-radius:999px; white-space:nowrap; text-shadow:' + glow + '; box-shadow:0 4px 10px -4px ' + this.point.color + ';">' + Highcharts.numberFormat(this.percentage, 1) + '%</span>' +
+                                        '<br/><span style="display:inline-block; margin-top:3px; color:#1e293b; font-weight:700; font-size:12.5px; white-space:nowrap;">' + this.point.name + '</span>' +
+                                        '<br/><span style="color:#64748b; font-weight:700; font-size:11.5px; white-space:nowrap;">' + Highcharts.numberFormat(this.y, 0) + ' คน</span>' +
+                                        '</div>';
+                                },
                                 connectorColor: '#cbd5e1',
                                 style: {
                                     textOutline: 'none'
@@ -1549,146 +1804,122 @@
             };
 
             // --- Bar Chart Helper for Education (Horizontal) ---
+            // One distinct hue per education level (educationColorMap), pill
+            // bars on a pale track so every bar reads against the same full
+            // length, a colour dot beside each level name, and a badge at the
+            // right edge with the count and its share. Sorted by count
+            // (largest at the top).
             const createEducationBarChart = (containerId, data, colorMap, fallback, order) => {
-                // Sorted purely by COUNT now (largest first), not by the
-                // natural attainment order - Highcharts' horizontal 'bar'
-                // type renders array index 0 at the TOP and the last index
-                // at the BOTTOM, so "largest value first" here is what
-                // makes the chart read smallest-at-bottom ->
-                // largest-at-top going up, as requested.
                 const sortedData = Object.entries(data).sort(([, valA], [, valB]) => valB - valA);
-
                 const labels = sortedData.map(([label]) => label);
                 const values = sortedData.map(([, value]) => value);
                 const total = values.reduce((a, b) => a + b, 0);
-
-                // Per the reference layout: rounded "pill" bars with the
-                // count shown in a floating white badge at the bar's tip,
-                // and - per explicit request - color intensity that follows
-                // the NUMBER itself (lightest for the smallest group,
-                // deepest for the largest), not the attainment order. Same
-                // teal family already used for this chart (light/dark
-                // endpoints taken from educationColorMap's own low/high
-                // steps), just re-purposed as a magnitude ramp instead of
-                // an ordinal one.
                 const maxVal = Math.max(...values, 0);
-                const minVal = Math.min(...values, 0);
-                const range = maxVal - minVal;
-                // Deep-navy ramp (per explicit request, replacing the
-                // earlier mint/teal family): a clear, saturated light blue
-                // at the low end through to a rich dark navy at the high
-                // end - stopping well short of near-black, which is what
-                // read as "harsh"/not smooth on the biggest bars before. A
-                // gentle sqrt easing on t also keeps large-but-different
-                // values (e.g. 4,915 vs 4,655) visibly distinct instead of
-                // both clipping to the same near-max shade. Each bar's own
-                // sheen is still a soft 3-stop light -> base -> light-dark
-                // blend (smaller deltas than before) for a smoother satin
-                // look instead of one hard light/dark split. The gradient
-                // still follows the NUMBER itself (lightest for the
-                // smallest group, deepest for the largest), exactly as
-                // before - only the hue family changed.
-                const rampLight = '#93c5fd';
-                const rampDark = '#1e3a8a';
-                const colorPalette = values.map(v => {
-                    const tLinear = range > 0 ? (v - minVal) / range : 1;
-                    const t = Math.sqrt(tLinear);
-                    const base = interpolateHexColor(rampLight, rampDark, t);
+                const trackMax = maxVal > 0 ? maxVal * 1.38 : 1;
+                const colorOf = (label) => colorMap[label] || fallback;
+
+                const barColors = labels.map(label => {
+                    const base = colorOf(label);
                     return {
-                        linearGradient: {
-                            x1: 0,
-                            y1: 0,
-                            x2: 1,
-                            y2: 0
-                        },
+                        linearGradient: { x1: 0, y1: 0, x2: 1, y2: 0 },
                         stops: [
-                            [0, shadeHexColor(base, 10)],
-                            [0.55, base],
-                            [1, shadeHexColor(base, -8)]
+                            [0, shadeHexColor(base, 14)],
+                            [1, base]
                         ]
                     };
                 });
+                const trackData = values.map((v, i) => ({
+                    y: trackMax,
+                    custom: {
+                        value: v,
+                        pct: total > 0 ? (v / total) * 100 : 0,
+                        color: colorOf(labels[i])
+                    }
+                }));
 
                 Highcharts.chart(containerId, {
                     chart: {
                         type: 'bar',
                         backgroundColor: 'transparent',
-                        style: {
-                            fontFamily: 'Sarabun'
-                        }
+                        spacingTop: 8,
+                        spacingRight: 8,
+                        style: { fontFamily: 'Sarabun' }
                     },
-                    title: {
-                        text: ''
-                    },
+                    title: { text: '' },
                     xAxis: {
                         categories: labels,
+                        lineWidth: 0,
+                        tickLength: 0,
                         labels: {
-                            style: {
-                                fontSize: '12px',
-                                fontWeight: 'bold',
-                                color: '#333'
+                            useHTML: true,
+                            style: { width: '150px', textOverflow: 'none' },
+                            formatter: function() {
+                                const c = colorOf(this.value);
+                                return '<span style="display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:#1e293b; width:150px; white-space:normal; line-height:1.25;">' +
+                                    '<i style="flex:0 0 10px; width:10px; height:10px; border-radius:50%; background:' + c + '; box-shadow:0 0 0 3px ' + c + '26;"></i>' +
+                                    '<span>' + this.value + '</span></span>';
                             }
-                        },
-                        lineColor: '#ccd6eb',
-                        lineWidth: 1
+                        }
                     },
                     yAxis: {
-                        title: {
-                            text: ''
-                        },
-                        gridLineColor: '#f3f3f3',
-                        labels: {
-                            enabled: false
-                        }, // Hide Y axis labels like in ref image
-                        // A little headroom past the tallest bar so its
-                        // floating label badge never gets clipped against
-                        // the plot edge.
-                        max: maxVal > 0 ? maxVal * 1.18 : null
+                        title: { text: '' },
+                        gridLineWidth: 0,
+                        labels: { enabled: false },
+                        min: 0,
+                        max: trackMax
                     },
-                    legend: {
-                        enabled: false
-                    },
+                    legend: { enabled: false },
                     tooltip: {
+                        useHTML: true,
+                        borderRadius: 10,
+                        borderWidth: 0,
+                        shadow: true,
                         formatter: function() {
-                            const pct = total > 0 ? ((this.y / total) * 100).toFixed(1) : 0;
-                            return '<b>' + this.x + '</b><br/>จำนวน: <b>' + Highcharts
-                                .numberFormat(this.y, 0) + ' คน</b> (' + pct + '%)';
+                            const v = this.series.name === 'track' ? this.point.custom.value : this.y;
+                            const pct = total > 0 ? ((v / total) * 100).toFixed(1) : 0;
+                            return '<b>' + this.x + '</b><br/>จำนวน: <b>' + Highcharts.numberFormat(v, 0) + ' คน</b> (' + pct + '%)';
                         }
                     },
                     plotOptions: {
                         bar: {
-                            borderRadius: 14,
+                            grouping: false,
+                            borderWidth: 0,
+                            borderRadius: 13,
                             pointWidth: 26,
-                            colorByPoint: true,
-                            colors: colorPalette,
-                            dataLabels: {
-                                // Floats just past the tip of the bar
-                                // (never inside it) so a short bar's badge
-                                // can't collide with the category label on
-                                // the left - the same size and offset for
-                                // every bar regardless of its length, which
-                                // is what actually reads as "balanced"
-                                // rather than a badge that's forced to
-                                // overlap a tiny bar.
-                                enabled: true,
-                                useHTML: true,
-                                align: 'left',
-                                inside: false,
-                                x: 8,
-                                crop: false,
-                                overflow: 'allow',
-                                format: '<span style="display:inline-block; background:#fff; color:#0f172a; font-weight:700; font-size:12px; padding:3px 9px; border-radius:8px; box-shadow:0 2px 6px rgba(15,23,42,0.16); white-space:nowrap;">{point.y:,.0f}</span>'
-                            },
-                            borderWidth: 0
+                            states: { hover: { brightness: 0.06 }, inactive: { opacity: 1 } }
                         }
                     },
                     series: [{
+                        name: 'track',
+                        data: trackData,
+                        color: '#eef2f7',
+                        enableMouseTracking: true,
+                        states: { hover: { enabled: false } },
+                        dataLabels: {
+                            enabled: true,
+                            useHTML: true,
+                            inside: true,
+                            align: 'right',
+                            x: -4,
+                            crop: false,
+                            overflow: 'allow',
+                            zIndex: 5,
+                            formatter: function() {
+                                const c = this.point.custom;
+                                return '<span style="display:inline-flex; align-items:baseline; gap:6px; background:#fff; padding:3px 10px; border-radius:999px; box-shadow:0 1px 4px rgba(15,23,42,0.14); white-space:nowrap;">' +
+                                    '<b style="color:' + c.color + '; font-size:13px;">' + Highcharts.numberFormat(c.value, 0) + '</b>' +
+                                    '<span style="color:#64748b; font-size:11px; font-weight:600;">' + c.pct.toFixed(1) + '%</span></span>';
+                            }
+                        }
+                    }, {
                         name: 'จำนวน',
-                        data: values
+                        colorByPoint: true,
+                        colors: barColors,
+                        data: values,
+                        dataLabels: { enabled: false },
+                        zIndex: 2
                     }],
-                    credits: {
-                        enabled: false
-                    }
+                    credits: { enabled: false }
                 });
             };
 
@@ -1762,7 +1993,8 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '75%', // Increased cutout for cleaner look
+                    cutout: '72%',
+                    layout: { padding: 8 },
                     plugins: {
                         legend: {
                             display: false
@@ -1823,76 +2055,42 @@
                         const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
 
                         items.forEach(item => {
-                            const li = document.createElement('div');
-                            li.style.display = 'flex';
-                            li.style.alignItems = 'center';
-                            li.style.justifyContent = 'space-between';
-                            li.style.width = '100%';
-                            li.style.padding = '6px 0';
-                            li.style.borderBottom = '1px dashed #f1f5f9';
-                            li.style.flexWrap = 'nowrap';
-                            li.style.overflow = 'hidden';
+                            const val = chart.data.datasets[0].data[item.index] || 0;
+                            const pct = total > 0 ? (val / total) * 100 : 0;
 
-                            const leftWrapper = document.createElement('div');
-                            leftWrapper.style.display = 'flex';
-                            leftWrapper.style.alignItems = 'center';
-                            leftWrapper.style.minWidth = '0';
-                            leftWrapper.style.flex = '1';
-                            leftWrapper.style.marginRight = '6px';
+                            const row = document.createElement('div');
+                            row.className = 'awr-leg-item';
+                            row.style.setProperty('--leg-c', item.fillStyle && typeof item.fillStyle === 'string' ? item.fillStyle : (provinceColorMap[item.text] || NEUTRAL_FALLBACK));
+                            row.style.setProperty('--leg-w', Math.max(pct, 2).toFixed(1) + '%');
+                            row.title = item.text + ' ' + val.toLocaleString() + ' คน (' + pct.toFixed(1) + '%)';
 
-                            const boxSpan = document.createElement('span');
-                            boxSpan.style.background = item.fillStyle;
-                            boxSpan.style.display = 'inline-block';
-                            boxSpan.style.height = '10px';
-                            boxSpan.style.width = '10px';
-                            boxSpan.style.borderRadius = '50%';
-                            boxSpan.style.marginRight = '5px';
-                            boxSpan.style.flexShrink = '0';
+                            const dot = document.createElement('span');
+                            dot.className = 'awr-leg-dot';
 
-                            const textContainer = document.createElement('span');
-                            textContainer.style.color = '#475569';
-                            textContainer.style.fontSize = '11px';
-                            textContainer.style.fontWeight = '600';
-                            textContainer.innerText = item.text;
-                            textContainer.style.whiteSpace = 'nowrap';
-                            textContainer.style.overflow = 'hidden';
-                            textContainer.style.textOverflow = 'ellipsis';
-                            textContainer.style.minWidth = '0';
+                            const main = document.createElement('span');
+                            main.className = 'awr-leg-main';
+                            const name = document.createElement('span');
+                            name.className = 'awr-leg-name';
+                            name.textContent = item.text;
+                            const bar = document.createElement('span');
+                            bar.className = 'awr-leg-bar';
+                            bar.appendChild(document.createElement('span'));
+                            main.appendChild(name);
+                            main.appendChild(bar);
 
-                            leftWrapper.appendChild(boxSpan);
-                            leftWrapper.appendChild(textContainer);
+                            const nums = document.createElement('span');
+                            nums.className = 'awr-leg-nums';
+                            const p = document.createElement('b');
+                            p.textContent = pct.toFixed(1) + '%';
+                            const c = document.createElement('small');
+                            c.textContent = val.toLocaleString() + ' คน';
+                            nums.appendChild(p);
+                            nums.appendChild(c);
 
-                            const rightWrapper = document.createElement('div');
-                            rightWrapper.style.display = 'flex';
-                            rightWrapper.style.alignItems = 'center';
-                            rightWrapper.style.gap = '4px';
-                            rightWrapper.style.flexShrink = '0';
-                            rightWrapper.style.whiteSpace = 'nowrap';
-
-                            const countSpan = document.createElement('span');
-                            countSpan.style.color = '#64748b';
-                            countSpan.style.fontSize = '11px';
-                            countSpan.style.fontWeight = '500';
-                            countSpan.style.whiteSpace = 'nowrap';
-                            const val = chart.data.datasets[0].data[item.index];
-                            countSpan.innerText = val.toLocaleString();
-
-                            const percSpan = document.createElement('span');
-                            percSpan.style.color = '#1e293b';
-                            percSpan.style.fontWeight = '800';
-                            percSpan.style.fontSize = '12px';
-                            percSpan.style.minWidth = '28px';
-                            percSpan.style.textAlign = 'right';
-
-                            const perc = total > 0 ? ((val / total) * 100).toFixed(0) : 0;
-                            percSpan.innerText = perc + '%';
-
-                            rightWrapper.appendChild(countSpan);
-                            rightWrapper.appendChild(percSpan);
-
-                            li.appendChild(leftWrapper);
-                            li.appendChild(rightWrapper);
-                            dl.appendChild(li);
+                            row.appendChild(dot);
+                            row.appendChild(main);
+                            row.appendChild(nums);
+                            dl.appendChild(row);
                         });
                     }
                 }, donutRingShadow]
@@ -1916,175 +2114,48 @@
                     };
                 })
                 .sort((a, b) => b.rate - a.rate);
-            const pfLabels = pfEntries.map(e => e.name);
-            const passData = pfEntries.map(e => e.pass);
-            const failData = pfEntries.map(e => e.fail);
-
-            // makeVerticalGradient is defined once, near the top of this
-            // script, and reused here (green/red family also matches the
-            // success/error alert cards elsewhere in the app).
-
-            // Casts a soft shadow under the whole stacked column (drawn
-            // once, keyed off the bottom-most dataset) so each bar lifts
-            // slightly off the page instead of sitting flush with it.
-            const passFailBarShadow = {
-                id: 'passFailBarShadow',
-                beforeDatasetDraw(chart, args) {
-                    if (args.index !== 0) return;
-                    chart.ctx.save();
-                    chart.ctx.shadowColor = 'rgba(15, 23, 42, 0.18)';
-                    chart.ctx.shadowBlur = 10;
-                    chart.ctx.shadowOffsetY = 4;
-                },
-                afterDatasetDraw(chart, args) {
-                    if (args.index !== 0) return;
-                    chart.ctx.restore();
+            // Rendered as HTML vertical columns (not a stacked count chart):
+            // every province is a 100% column - green at the bottom is the
+            // share who are aware, so provinces with very different
+            // respondent counts compare by share, and the exact counts sit
+            // under each name.
+            (function renderPassFailColumns() {
+                const host = document.getElementById('passFailRows');
+                if (!host) return;
+                if (pfEntries.length === 0) {
+                    host.innerHTML = '<div class="text-center text-muted">ยังไม่มีข้อมูล</div>';
+                    return;
                 }
-            };
-
-            new Chart(document.getElementById('passFailChart'), {
-                type: 'bar',
-                data: {
-                    labels: pfLabels,
-                    datasets: [{
-                            label: 'ตระหนักรู้',
-                            data: passData,
-                            backgroundColor: (context) => makeVerticalGradient(context.chart.ctx, context.chart.chartArea, '#6ee7b7', '#059669'),
-                            hoverBackgroundColor: (context) => makeVerticalGradient(context.chart.ctx, context.chart.chartArea, '#86f0c4', '#047857'),
-                            borderColor: '#fff',
-                            borderWidth: { top: 3, left: 0, right: 0, bottom: 0 },
-                            borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 10, bottomRight: 10 },
-                            borderSkipped: false,
-                            stack: 'Stack 0',
-                            maxBarThickness: 54,
-                            // Value badge sits centered INSIDE its own
-                            // green segment - a dark, near-black-green pill
-                            // (not the segment's own lighter green) for
-                            // readability. This used to float just above
-                            // the green/red boundary instead, but that put
-                            // it on a collision course with the red
-                            // label's own floating position whenever the
-                            // red segment was thin (they'd land at nearly
-                            // the same height). Centering inside the green
-                            // segment makes this label's position depend
-                            // only on the green value, never on red's, so
-                            // the two can no longer chase each other.
-                            // clamp keeps it from spilling below the
-                            // x-axis on the rare row where the green
-                            // segment itself is almost zero height.
-                            datalabels: {
-                                backgroundColor: '#064e3b',
-                                borderRadius: 6,
-                                color: '#fff',
-                                font: { weight: '800', size: 12 },
-                                padding: { top: 4, bottom: 4, left: 8, right: 8 },
-                                anchor: 'center',
-                                align: 'center',
-                                clamp: true
-                            }
-                        },
-                        {
-                            label: 'ไม่ตระหนัก',
-                            data: failData,
-                            backgroundColor: (context) => makeVerticalGradient(context.chart.ctx, context.chart.chartArea, '#fca5a5', '#dc2626'),
-                            hoverBackgroundColor: (context) => makeVerticalGradient(context.chart.ctx, context.chart.chartArea, '#fdb8b8', '#c81e1e'),
-                            borderRadius: { topLeft: 10, topRight: 10, bottomLeft: 0, bottomRight: 0 },
-                            borderSkipped: false,
-                            stack: 'Stack 0',
-                            maxBarThickness: 54,
-                            // Value badge floats just above the (usually
-                            // much shorter) red segment instead of trying
-                            // to fit inside it, in a solid red pill that
-                            // matches this series' own color family.
-                            datalabels: {
-                                backgroundColor: '#dc2626',
-                                borderRadius: 6,
-                                color: '#fff',
-                                font: { weight: '800', size: 12 },
-                                padding: { top: 4, bottom: 4, left: 8, right: 8 },
-                                anchor: 'end',
-                                align: 'end',
-                                offset: 6
-                            }
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    categoryPercentage: 0.58,
-                    barPercentage: 0.9,
-                    scales: {
-                        x: {
-                            stacked: true,
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                font: {
-                                    weight: '600'
-                                }
-                            }
-                        },
-                        y: {
-                            stacked: true,
-                            beginAtZero: true,
-                            grid: {
-                                color: '#eef1f6',
-                                drawTicks: false
-                            },
-                            ticks: {
-                                padding: 8
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                pointStyle: 'circle',
-                                boxWidth: 8,
-                                boxHeight: 8,
-                                padding: 16,
-                                font: {
-                                    weight: '600'
-                                }
-                            }
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                            padding: 12,
-                            cornerRadius: 10,
-                            titleFont: {
-                                weight: '700'
-                            },
-                            bodyFont: {
-                                weight: '500'
-                            },
-                            boxPadding: 4,
-                            callbacks: {
-                                afterBody: function(items) {
-                                    const idx = items[0].dataIndex;
-                                    const total = passData[idx] + failData[idx];
-                                    if (total <= 0) return [];
-                                    const pct = ((passData[idx] / total) * 100).toFixed(1);
-                                    return [`รวม ${total.toLocaleString()} คน - ตระหนักรู้ ${pct}%`];
-                                }
-                            }
-                        },
-                        datalabels: {
-                            display: function(context) {
-                                return context.dataset.data[context.dataIndex] > 0;
-                            }
-                        }
-                    },
-                    layout: {
-                        padding: { top: 26 }
-                    }
-                },
-                plugins: [...chartsPlugins, passFailBarShadow]
-            });
+                const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+                const fmt = (n) => Number(n || 0).toLocaleString();
+                const first = pfEntries[0];
+                const last = pfEntries[pfEntries.length - 1];
+                let html = '<div class="pf-top">';
+                if (pfEntries.length > 1) {
+                    html += '<span class="pf-sum">สูงสุด <b>' + esc(first.name) + ' ' + (first.rate * 100).toFixed(1) +
+                        '%</b> และต่ำสุด <b style="color:#b42323">' + esc(last.name) + ' ' + (last.rate * 100).toFixed(1) + '%</b></span>';
+                } else {
+                    html += '<span class="pf-sum"><b>' + esc(first.name) + ' ' + (first.rate * 100).toFixed(1) + '%</b> ตระหนักรู้</span>';
+                }
+                html += '<span class="pf-legend"><span><i style="background:#10b981"></i>ตระหนักรู้</span>' +
+                    '<span><i style="background:#f87171"></i>ยังไม่ตระหนัก</span></span></div>';
+                html += '<div class="pf-cols" style="--pf-n:' + pfEntries.length + '">';
+                pfEntries.forEach((e) => {
+                    const total = (e.pass || 0) + (e.fail || 0);
+                    const pPct = total > 0 ? (e.pass / total) * 100 : 0;
+                    const fPct = total > 0 ? 100 - pPct : 0;
+                    html += '<div class="pf-col" role="listitem" title="' + esc(e.name) + ': ตระหนักรู้ ' + fmt(e.pass) + ' จาก ' + fmt(total) + ' คน (' + pPct.toFixed(1) + '%)">' +
+                        '<div class="pf-badge"><div class="pf-pct">' + pPct.toFixed(1) + '%</div>' +
+                        '<div class="pf-pct-cap">ตระหนักรู้</div></div>' +
+                        '<div class="pf-tube">' +
+                        '<div class="pf-tube-fail">' + fPct.toFixed(0) + '%</div>' +
+                        '<div class="pf-tube-pass" style="height:' + pPct.toFixed(2) + '%"></div></div>' +
+                        '<div class="pf-name">' + esc(e.name) + '</div>' +
+                        '<div class="pf-n"><b>' + fmt(e.pass) + '</b> จาก ' + fmt(total) + ' คน</div></div>';
+                });
+                html += '</div>';
+                host.innerHTML = html;
+            })();
 
 
             // --- 5. Behavioral Charts (full-width diverging bar rows, one
@@ -2095,7 +2166,8 @@
                 const container = document.getElementById(containerId);
                 if (!container) return;
                 if (categories.length === 0) {
-                    container.innerHTML = '';
+                    container.innerHTML = '<div class="divrow-empty"><i class="fas fa-circle-info"></i> ยังไม่ได้กำหนดคำถามสำหรับการ์ดนี้ในปีงบประมาณที่เลือก ' +
+                        '(ตั้งค่าได้ที่ ตั้งค่าแดชบอร์ด)</div>';
                     return;
                 }
 
@@ -2105,16 +2177,33 @@
                 // Traffic-light ramp: red (risky) -> orange -> yellow
                 // (neutral) -> light green -> dark green (healthy), matching
                 // the reference palette requested for the dashboard.
-                const rankColors = ['#e04b3f', '#f2994a', '#f2c94c', '#8bc78f', '#2f8f46'];
+                // (สีตามความหมาย: แดงดินเผา = ควรปรับมาก, ส้มอ่อน = ควรปรับ, เทา = กลาง,
+                // ฟ้าอมเขียว = ดี, น้ำเงินเขียวเข้ม = ดีมาก - เปลี่ยนทั้งสีและความเข้ม
+                // จึงอ่านออกแม้ตาบอดสีแดง-เขียว)
+                const rankColors = ['#b9534d', '#eeb48a', '#e6eaee', '#8fc9c4', '#2f808a'];
+                const rankTextColors = ['#ffffff', '#4a2a0a', '#334155', '#0f3b3a', '#ffffff'];
 
                 // Semantic Keyword Mapping (Map ANY label to 0-4 scale: High Freq -> Low Freq)
+                // ระดับคำตอบมาตรฐาน (มาก -> น้อย) ที่พบจริงในแบบสอบถาม: ใช้ตรงตัวก่อน
+                // เพื่อให้ทั้ง 5 ระดับเรียงต่อเนื่องและไม่ปนกัน (เดิม "บ่อยครั้ง" ถูกนับเป็นกลาง,
+                // "ไม่ทานเลย" ไม่ถูกจัดเป็นปลายดี, และ "ไม่เห็นด้วย" ทั้งสองระดับถูกรวมเป็นระดับเดียว)
+                const ORDINAL_RANK = {
+                    'ทุกวัน': 0, 'บ่อยครั้ง': 1, 'บ่อย': 1, 'บ่อยๆ': 1, 'บางครั้ง': 2, 'นานๆครั้ง': 3,
+                    'ไม่ทานเลย': 4, 'ไม่ทาน': 4, 'ไม่เคย': 4,
+                    'เห็นด้วยอย่างยิ่ง': 0, 'เห็นด้วย': 1, 'เฉยๆ': 2, 'ไม่แน่ใจ': 2,
+                    'ไม่เห็นด้วย': 3, 'ไม่เห็นด้วยอย่างยิ่ง': 4
+                };
+
                 const getSemanticRank = (label) => {
                     label = label.toString().trim().replace(/\s/g, '');
+                    if (Object.prototype.hasOwnProperty.call(ORDINAL_RANK, label)) return ORDINAL_RANK[label];
                     // Lowest Frequency / Best for Negative Polarity (Or Highest Score for +)
                     if (/^([9]|10)$|ไม่เคย|ไม่เลย|ไม่ใช่|ไม่สุ่มเสี่ยง|0%|ไม่เห็นด้วย/i.test(label))
                         return 4;
                     // Infrequent
                     if (/^([7-8])$|นานๆครั้ง|1-2ครั้ง|น้อยกว่า50%/i.test(label)) return 3;
+                    // "บ่อย" (ตรงตัว) = ความถี่สูงรองจากทุกวัน -> ฝั่งควรปรับ, ไม่ใช่กลาง
+                    if (/^บ่อย(ๆ)?$/.test(label)) return 1;
                     // Neutral / Moderate
                     if (/^([5-6])$|พอดี|บ่อย|ปานกลาง|บางครั้ง|50-100%|สำคัญพอควร|ทราบเป็นบางรายการ|ไม่แน่ใจ/i
                         .test(label)) return 2;
@@ -2158,9 +2247,21 @@
                     }
                 });
 
+                // คำถามที่คำตอบทุกตัวอยู่ในมาตรามาตรฐาน (ความถี่ / ระดับความเห็นด้วย) มีลำดับในตัวอยู่แล้ว -
+                // ใช้ลำดับนั้นเลย และให้ "ทิศทาง" (chart_polarity) เป็นตัวกำหนดว่าปลายไหนดี/เสี่ยง.
+                // ไม่ใช้รายการ "ความถี่สูงสุด" ที่เลือกไว้มาบังคับ เพราะถ้าเผลอติ๊กปลายผิดด้าน
+                // (เช่น ติ๊ก "ไม่เห็นด้วย" ในข้อที่เห็นด้วย = ดี) กราฟจะกลับด้านจากความจริง
+                const ordinalScaleCategories = new Set();
+                categories.forEach(c => {
+                    const answers = Object.keys(statsData[c] || {});
+                    if (answers.length > 0 && answers.every(a => Object.prototype.hasOwnProperty.call(ORDINAL_RANK, a.toString().trim().replace(/\s/g, '')))) {
+                        ordinalScaleCategories.add(c);
+                    }
+                });
+
                 const getRank = (category, label) => {
                     const overrides = extremeValuesOverrides[category];
-                    if (overrides && !degenerateOverrideCategories.has(category) && overrides.indexOf(label) !== -1) return 0;
+                    if (overrides && !degenerateOverrideCategories.has(category) && !ordinalScaleCategories.has(category) && overrides.indexOf(label) !== -1) return 0;
                     return getSemanticRank(label);
                 };
 
@@ -2274,7 +2375,7 @@
                 // and the healthiest always lands green regardless of which
                 // side of the picker the admin ticked it on.
                 const renderBars = () => {
-                    let rowsHtml = '';
+                    const rows = [];
                     categories.forEach(c => {
                         const answersForCat = statsData[c] || {};
                         const pol = polarityFor(c);
@@ -2288,46 +2389,53 @@
                                 if (pct <= 0) return null;
                                 const rawRank = getRank(c, ans);
                                 const finalRank = pol === 'negative' ? rawRank : (4 - rawRank);
-                                return {
-                                    pct: pct,
-                                    rank: finalRank,
-                                    color: rankColors[finalRank],
-                                    title: ans
-                                };
+                                return { pct: pct, count: count, rank: finalRank, title: ans };
                             })
                             .filter(s => s !== null)
                             .sort((a, b) => a.rank - b.rank);
 
                         if (segments.length === 0) return;
 
-                        const segHtml = segments.map(s => {
-                            // The bar itself shows only the % once a segment
-                            // is wide enough to hold it - hover (native
-                            // title tooltip) always shows the real answer
-                            // wording, which is also spelled out below as a
-                            // colored-dot legend, and again in the data
-                            // table above ("ดูข้อมูลตัวเลข").
-                            const label = s.pct >= 9 ? Math.round(s.pct) + '%' : '';
-                            return '<div class="divrow-seg" style="flex:0 0 ' + s.pct + '%;background:' +
-                                s.color + '" title="' + escapeHtml(s.title) + ': ' + s.pct.toFixed(1) +
-                                '%">' + (label ? '<span>' + label + '</span>' : '') + '</div>';
-                        }).join('');
-
-                        // Colored dot + the real answer wording behind each
-                        // segment - which literal answer counts as "red" vs
-                        // "green" differs per question, so this is per-row
-                        // rather than one shared legend.
-                        const legendHtml = '<div class="divrow-legend">' + segments.map(s =>
-                            '<span class="divrow-legend-item"><span class="divrow-legend-dot" style="background:' +
-                            s.color + '"></span>' + escapeHtml(s.title) + ' (' + s.pct.toFixed(1) +
-                            '%)</span>'
-                        ).join('') + '</div>';
-
-                        rowsHtml += '<div class="divrow"><div class="divrow-label">' + escapeHtml(c) +
-                            '</div><div class="divrow-bar">' + segHtml + '</div>' + legendHtml + '</div>';
+                        // สัดส่วน "ควรปรับ" = ผู้ตอบที่อยู่ปลายส้มสองระดับ (rank 0-1)
+                        const risk = segments.filter(s => s.rank <= 1).reduce((a, s) => a + s.pct, 0);
+                        rows.push({ c: c, segments: segments, risk: risk, total: total });
                     });
 
-                    container.innerHTML = rowsHtml;
+                    // เรียงจากข้อที่ควรปรับมากที่สุด -> อ่านเป็นลำดับความสำคัญได้ทันที
+                    rows.sort((a, b) => b.risk - a.risk);
+
+                    let html = '';
+                    if (rows.length > 1 && rows[0].risk > 0) {
+                        html += '<div class="divsum"><i class="fas fa-lightbulb"></i><span>ควรปรับมากที่สุด: <b>' +
+                            escapeHtml(rows[0].c) + '</b> (' + Math.round(rows[0].risk) + '%)</span></div>';
+                    }
+
+                    rows.forEach(r => {
+                        const segHtml = r.segments.map(s => {
+                            // ชื่อคำตอบแสดงในแถบเมื่อกว้างพอ, ตัวเลข % เมื่อกว้างพอ, ที่เหลืออยู่ใน tooltip และบรรทัด "อื่น ๆ"
+                            const showName = s.pct >= 15;
+                            const showPct = s.pct >= 7;
+                            return '<div class="divrow-seg" style="flex:' + s.pct.toFixed(3) + ' 1 0%;background:' +
+                                rankColors[s.rank] + ';color:' + rankTextColors[s.rank] + '" title="' +
+                                escapeHtml(s.title) + ': ' + s.pct.toFixed(1) + '% (' + s.count.toLocaleString() + ' คน)">' +
+                                (showPct ? '<b>' + Math.round(s.pct) + '%</b>' : '') +
+                                (showName ? '<small>' + escapeHtml(s.title) + '</small>' : '') + '</div>';
+                        }).join('');
+
+                        const hidden = r.segments.filter(s => s.pct < 15);
+                        const othersHtml = hidden.length ? '<div class="divrow-others">' + hidden.map(s =>
+                            '<span class="divrow-legend-item"><span class="divrow-legend-dot" style="background:' +
+                            rankColors[s.rank] + '"></span>' + escapeHtml(s.title) + ' ' + s.pct.toFixed(1) + '%</span>'
+                        ).join('') + '</div>' : '<div></div>';
+
+                        html += '<div class="divrow"><div class="divrow-head"><div class="divrow-label">' + escapeHtml(r.c) +
+                            '</div><span class="divrow-risk' + (r.risk < 10 ? ' is-low' : '') + '" title="ผู้ตอบที่อยู่ในกลุ่มคำตอบที่ควรปรับ">ควรปรับ ' +
+                            Math.round(r.risk) + '%</span></div>' +
+                            '<div class="divrow-bar">' + segHtml + '</div>' +
+                            (hidden.length ? '<div class="divrow-foot">' + othersHtml + '</div>' : '') + '</div>';
+                    });
+
+                    container.innerHTML = html;
                 };
 
                 renderBars();

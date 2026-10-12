@@ -217,64 +217,59 @@
         outline: none;
     }
 
+    /* ปุ่มจัดการต่อแถว: แคปซูลเดียว แบ่งช่องด้วยเส้นบาง — ดู / แก้ไข / ลบ */
+    .row-actions {
+        display: inline-flex;
+        align-items: stretch;
+        background: #fff;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .row-actions form { display: flex; margin: 0; border-left: 1.5px solid #e2e8f0; }
+    .row-actions > .btn-action + .btn-action { border-left: 1.5px solid #e2e8f0; }
+
     .btn-action {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        height: auto;
-        padding: 7px 16px;
-        border-radius: 999px;
-        border: 1.5px solid transparent;
+        justify-content: center;
+        gap: 7px;
+        height: 36px;
+        min-width: 64px;
+        padding: 0 15px;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
         cursor: pointer;
-        transition: all 0.2s ease;
+        font-family: inherit;
         font-size: 0.8rem;
         font-weight: 700;
+        line-height: 1;
         white-space: nowrap;
-        line-height: 1.2;
+        text-decoration: none;
+        transition: background-color 0.15s ease, color 0.15s ease;
     }
 
-    .btn-action:hover {
-        transform: translateY(-2px);
-    }
+    .btn-action i { font-size: 0.82rem; transition: transform 0.15s ease; }
+    .btn-action:hover i { transform: scale(1.18); }
+    .btn-action:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
-    .btn-edit {
-        background: #eef2ff;
-        color: #4f46e5;
-        border-color: #c7d2fe;
-    }
+    .btn-view { color: #2563eb; }
+    .btn-view:hover, .btn-view:focus-visible { background: #dbeafe; color: #1d4ed8; }
+    .btn-view:active { background: #bfdbfe; }
 
-    .btn-edit:hover {
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: #ffffff;
-        border-color: transparent;
-        box-shadow: 0 3px 8px rgba(29, 78, 216, 0.35);
-    }
+    .btn-edit { color: #4f46e5; }
+    .btn-edit:hover, .btn-edit:focus-visible { background: #e0e7ff; color: #4338ca; }
+    .btn-edit:active { background: #c7d2fe; }
 
-    .btn-delete {
-        background: #fef1f2;
-        color: #e11d48;
-        border-color: #fecdd3;
-    }
+    .btn-delete { color: #e11d48; }
+    .btn-delete:hover, .btn-delete:focus-visible { background: #ffe4e6; color: #be123c; }
+    .btn-delete:active { background: #fecdd3; }
 
-    .btn-delete:hover {
-        background: #e11d48;
-        color: #ffffff;
-        border-color: #e11d48;
-        box-shadow: 0 3px 8px rgba(225, 29, 72, 0.35);
-    }
-
-    /* Detail Modal Styles */
-    .btn-view {
-        background: #eff6ff;
-        color: #2563eb;
-        border-color: #bfdbfe;
-    }
-
-    .btn-view:hover {
-        background: #2563eb;
-        color: #ffffff;
-        border-color: #2563eb;
-        box-shadow: 0 3px 8px rgba(37, 99, 235, 0.35);
+    @media (max-width: 575.98px) {
+        .btn-action { min-width: 0; padding: 0 11px; }
     }
 
     .detail-modal-overlay {

@@ -386,6 +386,188 @@
         box-shadow: 0 0 0 4px rgba(28, 61, 90, 0.16);
     }
 
+    /* ช่องปีงบประมาณที่ล็อกไว้ (เปิดจากปุ่มในตารางรายการ): ดูเป็น disabled ชัดเจน กดเปลี่ยนไม่ได้
+       แต่ยังเป็น select ปกติ (ไม่ใช้ attribute disabled) เพื่อให้ค่ายังถูกส่งตอนบันทึก */
+    .form-group select.is-locked {
+        background-color: #f1f3f6;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='11' width='16' height='10' rx='2'/%3E%3Cpath d='M8 11V7a4 4 0 0 1 8 0v4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        -webkit-appearance: none;
+        appearance: none;
+        padding-right: 40px;
+        color: #64748b;
+        border-color: #e2e8f0;
+        cursor: not-allowed;
+        pointer-events: none;
+        box-shadow: none;
+    }
+
+    /* -----------------------------------------------------------------
+       ยืนยันข้อมูลรายไตรมาส (หลักเดียวกับหน้า admin/kidney-dhb/{id}):
+       ปุ่ม ยืนยัน/ยกเลิกการยืนยัน อยู่ท้ายแถวปีงบประมาณ-ไตรมาส (เฉพาะ level 1)
+       และแถวป้ายสถานะของไตรมาสที่เลือกอยู่ใต้แถวนั้น
+       ----------------------------------------------------------------- */
+    .year-quarter-section.has-reset {
+        grid-template-columns: minmax(150px, 0.7fr) minmax(300px, 1.9fr) auto;
+        align-items: end;
+    }
+
+    /* ตัวเลือกไตรมาสแบบกล่องเรียงกัน (select เดิมยังอยู่แบบซ่อน เพื่อให้โค้ดโหลด/บันทึก/นำเข้าทำงานเหมือนเดิม)
+       ทุกช่องในแถวสูง 50px เท่ากันเพื่อให้ขอบบน-ล่างตรงกัน */
+    .year-quarter-section.has-reset .form-group select { height: 50px; }
+    .year-quarter-section .period-actions-row > * { height: 50px; min-width: 156px; }
+    .quarter-group { position: relative; min-width: 0; }
+    .qpick-native { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; overflow: hidden; clip: rect(0 0 0 0); }
+    .qpick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .qpick-item {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        height: 50px;
+        padding: 0 6px;
+        border: 2px solid #dbe4ee;
+        border-radius: 12px;
+        background: #fff;
+        color: #1c3d5a;
+        font-family: inherit;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease,
+                    box-shadow 0.18s ease, transform 0.2s cubic-bezier(.34, 1.56, .64, 1);
+    }
+    .qpick-name { font-weight: 800; font-size: 0.88rem; white-space: nowrap; letter-spacing: 0.1px; }
+    .qpick-sub {
+        font-size: 0.64rem;
+        font-weight: 600;
+        line-height: 1.45;
+        padding: 0 9px;
+        border-radius: 999px;
+        background: #eef3f8;
+        color: #64748b;
+        white-space: nowrap;
+        transition: background-color 0.18s ease, color 0.18s ease;
+    }
+    .qpick-item:hover { border-color: #7dd3fc; background: #f0f9ff; transform: translateY(-1px); }
+    .qpick-item:hover .qpick-sub { background: #e0f2fe; color: #0369a1; }
+    .qpick-item:active { transform: scale(0.97); }
+    .qpick-item:focus { outline: none; }
+    .qpick-item:focus-visible { box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35); border-color: #38bdf8; }
+    .qpick-item.is-on {
+        background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+        border-color: #2563eb;
+        color: #fff;
+        box-shadow: 0 8px 16px -8px rgba(37, 99, 235, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+        transform: none;
+    }
+    .qpick-item.is-on .qpick-sub { background: rgba(255, 255, 255, 0.24); color: #fff; }
+    @media (prefers-reduced-motion: reduce) {
+        .qpick-item { transition: none; }
+        .qpick-item:hover, .qpick-item:active { transform: none; }
+    }
+    @media (max-width: 420px) {
+        .qpick { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* กลุ่มปุ่มท้ายแถว: Export PDF / ยืนยันข้อมูล เรียงชิดกัน ความสูงและความกว้างขั้นต่ำเท่ากัน */
+    .period-actions-row { display: flex; align-items: center; gap: 10px; }
+    .period-export {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+        color: #fff !important;
+        font-family: inherit;
+        font-size: 0.92rem;
+        font-weight: 700;
+        white-space: nowrap;
+        text-decoration: none !important;
+        cursor: pointer;
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .period-export:hover:not(.is-disabled) { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(239, 68, 68, 0.4); }
+    .period-export:active:not(.is-disabled) { transform: translateY(0); filter: brightness(0.96); }
+    .period-export:focus-visible { outline: 3px solid rgba(239, 68, 68, 0.35); outline-offset: 2px; }
+    .period-export.is-disabled { background: #e2e8f0; color: #94a3b8 !important; box-shadow: none; cursor: not-allowed; pointer-events: none; }
+
+    .qc-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 48px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 12px;
+        font-family: inherit;
+        font-size: 0.92rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        cursor: pointer;
+        background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+        box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+    }
+    .qc-action:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(16, 185, 129, 0.4); }
+    .qc-action:active:not(:disabled) { transform: translateY(0); filter: brightness(0.96); }
+    .qc-action:focus-visible { outline: 3px solid rgba(16, 185, 129, 0.35); outline-offset: 2px; }
+    .qc-action.is-undo { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); box-shadow: 0 4px 10px rgba(100, 116, 139, 0.3); }
+    .qc-action.is-undo:hover:not(:disabled) { box-shadow: 0 6px 14px rgba(100, 116, 139, 0.4); }
+    .qc-action:disabled { background: #e2e8f0; color: #94a3b8; box-shadow: none; cursor: not-allowed; }
+    .qc-action.is-busy { pointer-events: none; opacity: 0.75; }
+
+    .qs-row {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: -12px 0 26px;
+    }
+    .qs-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        border: 1px solid;
+        font-size: 0.78rem;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+    .qs-ok    { background: #ecfdf5; color: #047857; border-color: #6ee7b7; }
+    .qs-wait  { background: #fff7ed; color: #c2410c; border-color: #fdba74; }
+    .qs-new   { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .qs-lock  { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+
+    @media (max-width: 820px) {
+        .year-quarter-section.has-reset { grid-template-columns: 1fr; }
+        .period-actions-row { flex-wrap: wrap; }
+        .period-actions-row > * { flex: 1 1 140px; }
+        .qc-action { width: 100%; }
+        .qs-row { justify-content: flex-start; margin-top: -8px; }
+    }
+
+    #assessmentForm.is-locked .report-textarea { background: #f6f4ee; color: #5f6368; cursor: not-allowed; }
+    #assessmentForm.is-locked .btn-upload,
+    #assessmentForm.is-locked .btn-remove-file { pointer-events: none; opacity: 0.4; }
+    #assessmentForm.is-locked .btn-submit { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
+
+    .confirm-modal-card.tone-success .confirm-modal-icon { background: linear-gradient(135deg, #e6f6ec 0%, #c9ecd6 100%); color: #1f7a45; }
+    .confirm-modal-card.tone-success .confirm-modal-btn-confirm { background: linear-gradient(135deg, #34a96c 0%, #1f7a45 100%); box-shadow: 0 10px 22px rgba(31, 122, 69, 0.32); }
+    .confirm-modal-card.tone-neutral .confirm-modal-icon { background: linear-gradient(135deg, #eef2f6 0%, #dbe3ea 100%); color: #475569; }
+    .confirm-modal-card.tone-neutral .confirm-modal-btn-confirm { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); box-shadow: 0 10px 22px rgba(100, 116, 139, 0.3); }
+
     /* ============================================================
        Status / flash alerts - shared "pro-alert" look.
        .alert-success / .alert-danger are server-rendered from a Blade
@@ -1568,14 +1750,22 @@
         <button type="button" class="btn-import-word" id="btnOpenWordImport">
             <i class="fas fa-file-word"></i> นำเข้าจากไฟล์ Word
         </button>
-        <div class="import-active-banner" id="importActiveBanner" style="display:none;">
+        <div class="import-active-banner" id="importActiveBanner" style="display:{{ !empty($presetTargetId) ? 'flex' : 'none' }};">
             <i class="fas fa-random"></i>
             <div style="flex:1; min-width:0;">
-                <div>กำลังนำเข้าข้อมูลแทนหน่วยงาน: <strong id="importActiveAgencyName"></strong></div>
+                <div>กำลังทำรายการแทนหน่วยงาน: <strong id="importActiveAgencyName">{{ $presetTargetLabel ?? '' }}</strong></div>
             </div>
             <button type="button" id="btnClearImportTarget" title="เลิกนำเข้าแทนหน่วยงานนี้"><i class="fas fa-times"></i></button>
         </div>
     </div>
+    @endif
+
+    @if(!empty($doneYears))
+        <div class="new-year-note" role="status" style="display:flex;align-items:flex-start;gap:10px;margin:0 0 14px;padding:11px 16px;border-radius:12px;background:#fffbeb;border:1px solid #fde68a;color:#92400e;font-size:.88rem;line-height:1.55;">
+            <i class="fas fa-circle-info" style="margin-top:3px;"></i>
+            <div>ปีงบประมาณ <strong>{{ implode(', ', $doneYears) }}</strong> หน่วยงานของคุณทำแบบประเมินไปแล้ว จึงไม่แสดงให้เลือกซ้ำ
+                หากต้องการแก้ไข ให้กลับไปกดปุ่ม "ทำแบบประเมิน" ในรายการที่บันทึกแล้ว</div>
+        </div>
     @endif
 
     <!-- Progress Stepper -->
@@ -1746,7 +1936,7 @@
         <form action="{{ route('admin.report-progress.store') }}" method="POST" enctype="multipart/form-data"
             id="assessmentForm">
             @csrf
-            <input type="hidden" name="target_user_id" id="target_user_id" value="">
+            <input type="hidden" name="target_user_id" id="target_user_id" value="{{ $presetTargetId ?? '' }}">
             {{-- Word-import reporter attribution: filled in from the
                  parsed document (name/position/phone/email of whoever the
                  PAPER report names as its reporter), never from the
@@ -1758,33 +1948,74 @@
             <input type="hidden" name="import_reporter_phone" id="import_reporter_phone" value="">
             <input type="hidden" name="import_reporter_email" id="import_reporter_email" value="">
 
-            <div class="year-quarter-section">
+            <div class="year-quarter-section has-reset{{ auth()->user()->User_rank_id == 1 ? ' has-confirm' : '' }}">
                 <div class="form-group">
                     <label for="fiscal_year"><i class="fas fa-calendar-alt"></i> ปีงบประมาณ</label>
-                    <select name="fiscal_year" id="fiscal_year" required>
+                    <select name="fiscal_year" id="fiscal_year" required
+                        @if(!empty($onlySelected) && !empty($fiscal_year)) class="is-locked" tabindex="-1" aria-disabled="true" title="ล็อกตามปีงบประมาณของรายการที่เลือก" @endif>
                         @php
                             $currentYear = (int) date('Y') + 543;
                             $minYear = 2568;
                             if ($minYear > $currentYear)
                                 $minYear = $currentYear;
-                            $selectedYear = old('fiscal_year', $fiscal_year ?? $currentYear);
+                            // ปีที่เลือกได้ (ส่งมาจาก AdminController::saltAssessmentYears() = ปีที่ผู้ดูแลเปิด + ปีที่มีข้อมูล + ปีงบประมาณปัจจุบัน)
+                            $yearChoices = !empty($formYears) ? $formYears : range($currentYear, $minYear);
+                            if (!empty($fiscal_year) && !in_array((int) $fiscal_year, $yearChoices)) {
+                                $yearChoices[] = (int) $fiscal_year;
+                                rsort($yearChoices);
+                            }
+                            // เปิดจากปุ่มเริ่มทำแบบประเมินใหม่ (new=1): เลือกได้เฉพาะปีที่ยังไม่เคยทำ
+                            if (!empty($availableYears)) {
+                                $yearChoices = $availableYears;
+                            }
+                            // เปิดจากปุ่มในตารางรายการ (only=1): แสดงเฉพาะปีงบประมาณที่เลือกเท่านั้น
+                            if (!empty($onlySelected) && !empty($fiscal_year)) {
+                                $yearChoices = [(int) $fiscal_year];
+                            }
+                            $selectedYear = old('fiscal_year', $fiscal_year ?? ($yearChoices[0] ?? $currentYear));
                         @endphp
-                        @for($year = $currentYear; $year >= $minYear; $year--)
+                        @foreach($yearChoices as $year)
                             <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
-                        @endfor
+                        @endforeach
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="quarter"><i class="fas fa-clock"></i> ไตรมาส</label>
-                    <select name="quarter" id="quarter" required>
-                        @php $selectedQuarter = old('quarter', $quarter ?? 1); @endphp
+                <div class="form-group quarter-group">
+                    <label id="quarterLabel"><i class="fas fa-clock"></i> ไตรมาส</label>
+                    @php $selectedQuarter = old('quarter', $quarter ?? 1); @endphp
+                    <select name="quarter" id="quarter" class="qpick-native" tabindex="-1" aria-hidden="true" required>
                         <option value="1" {{ $selectedQuarter == 1 ? 'selected' : '' }}>ไตรมาส 1 (เดือน 3)</option>
                         <option value="2" {{ $selectedQuarter == 2 ? 'selected' : '' }}>ไตรมาส 2 (เดือน 6)</option>
                         <option value="3" {{ $selectedQuarter == 3 ? 'selected' : '' }}>ไตรมาส 3 (เดือน 9)</option>
                         <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>ไตรมาส 4 (เดือน 12)</option>
                     </select>
+                    <div class="qpick" id="quarterPicker" role="radiogroup" aria-labelledby="quarterLabel">
+                        @foreach ([1 => 3, 2 => 6, 3 => 9, 4 => 12] as $qNo => $qMonth)
+                            <button type="button" class="qpick-item{{ $selectedQuarter == $qNo ? ' is-on' : '' }}" role="radio"
+                                aria-checked="{{ $selectedQuarter == $qNo ? 'true' : 'false' }}" data-q="{{ $qNo }}">
+                                <span class="qpick-name">ไตรมาส {{ $qNo }}</span>
+                                <span class="qpick-sub">เดือน {{ $qMonth }}</span>
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="form-group period-actions">
+                    <label style="visibility: hidden;" aria-hidden="true">การดำเนินการ</label>
+                    <div class="period-actions-row">
+                        <a href="#" class="period-export is-disabled" id="periodExportBtn" target="_blank" rel="noopener"
+                            aria-disabled="true" tabindex="-1" title="ยังไม่มีข้อมูลที่บันทึกของไตรมาสนี้">
+                            <i class="fas fa-file-pdf"></i><span>Export PDF</span>
+                        </a>
+                        @if (auth()->user()->User_rank_id == 1)
+                            <button type="button" class="qc-action" id="qcActionBtn" disabled>
+                                <i class="fas fa-check-circle"></i><span>ยืนยันข้อมูล</span>
+                            </button>
+                        @endif
+                    </div>
                 </div>
             </div>
+
+            {{-- ป้ายสถานะการยืนยันของไตรมาสที่เลือก (เติมด้วย JS ตามไตรมาสที่เลือก) --}}
+            <div class="qs-row" id="qcStatusRow" role="status" aria-live="polite"></div>
 
             <!-- Categories 1-4 -->
             @php
@@ -2018,10 +2249,10 @@
             <div class="import-field-group">
                 <label for="import_fiscal_year"><i class="fas fa-calendar-alt"></i> ปีงบประมาณของรายงานนี้</label>
                 <select id="import_fiscal_year">
-                    @php $importMaxYear = (int) date('Y') + 543; $importMinYear = 2568; @endphp
-                    @for($impYear = $importMaxYear; $impYear >= $importMinYear; $impYear--)
+                    @php $importYears = !empty($formYears) ? $formYears : range((int) date('Y') + 543, 2568); @endphp
+                    @foreach($importYears as $impYear)
                         <option value="{{ $impYear }}">{{ $impYear }}</option>
-                    @endfor
+                    @endforeach
                 </select>
             </div>
 
@@ -2092,6 +2323,27 @@
     let currentMilestones = {};
     let statusTimeout;
 
+    // ปุ่ม Export PDF: เปิดใช้เมื่อไตรมาสที่เลือกมีรายการที่บันทึกไว้แล้ว (assessment_id จาก get-assessment-data)
+    @php $exportPdfUrlTpl = route('admin.salt-assessment.export-pdf', ['id' => '__ID__']); @endphp
+    const EXPORT_PDF_URL_TPL = @json($exportPdfUrlTpl);
+    function updatePeriodExport(id) {
+        const btn = document.getElementById('periodExportBtn');
+        if (!btn) return;
+        if (id) {
+            btn.href = EXPORT_PDF_URL_TPL.replace('__ID__', encodeURIComponent(id));
+            btn.classList.remove('is-disabled');
+            btn.removeAttribute('aria-disabled');
+            btn.removeAttribute('tabindex');
+            btn.title = 'ส่งออกแบบรายงานของไตรมาสนี้เป็น PDF';
+        } else {
+            btn.href = '#';
+            btn.classList.add('is-disabled');
+            btn.setAttribute('aria-disabled', 'true');
+            btn.setAttribute('tabindex', '-1');
+            btn.title = 'ยังไม่มีข้อมูลที่บันทึกของไตรมาสนี้';
+        }
+    }
+
     function loadExistingData(isInitial = false) {
         const fiscalYear = document.getElementById('fiscal_year').value;
         const quarter = document.getElementById('quarter').value;
@@ -2126,9 +2378,10 @@
         document.querySelectorAll('.reporter-badge').forEach(b => b.style.display = 'none');
 
         updateProgressStepper();
+        updatePeriodExport(null);
 
         const targetUserIdVal = document.getElementById('target_user_id') ? document.getElementById('target_user_id').value : '';
-        fetch(`{{ route('admin.get-assessment-data') }}?fiscal_year=${fiscalYear}&quarter=${quarter}&target_user_id=${encodeURIComponent(targetUserIdVal)}&t=${new Date().getTime()}`)
+        fetch(`{{ route('admin.get-assessment-data') }}?fiscal_year=${fiscalYear}&quarter=${quarter}&target_user_id=${encodeURIComponent(targetUserIdVal)}&only={{ !empty($onlySelected) ? 1 : 0 }}&t=${new Date().getTime()}`)
             .then(response => response.json())
             .then(result => {
                 formLoader.style.opacity = '0';
@@ -2184,6 +2437,8 @@
                     }
                 });
 
+                updatePeriodExport(result.assessment_id);
+
                 if (result.exists) {
                     status.className = 'data-status';
                     status.innerHTML = `
@@ -2222,6 +2477,11 @@
 
                 updateProgressStepper();
 
+                qcState = result.quarters || {};
+                qcLocked = !!result.locked;
+                renderQuarterConfirm();
+                applyQuarterLock();
+
                 statusTimeout = setTimeout(() => {
                     status.style.opacity = '0';
                     status.style.transform = 'scaleY(0)';
@@ -2237,6 +2497,46 @@
 
     document.getElementById('fiscal_year').addEventListener('change', () => loadExistingData(false));
     document.getElementById('quarter').addEventListener('change', () => loadExistingData(false));
+
+    // กล่องเลือกไตรมาส: ซิงก์สองทางกับ select ที่ซ่อนอยู่ (รวมถึงตอนโค้ดอื่นตั้งค่า .value เช่น หลังนำเข้าไฟล์ Word)
+    (function () {
+        const sel = document.getElementById('quarter');
+        const picker = document.getElementById('quarterPicker');
+        if (!sel || !picker) return;
+        const items = Array.prototype.slice.call(picker.querySelectorAll('.qpick-item'));
+        function sync() {
+            const v = String(sel.value);
+            items.forEach(function (b) {
+                const on = b.dataset.q === v;
+                b.classList.toggle('is-on', on);
+                b.setAttribute('aria-checked', on ? 'true' : 'false');
+                b.tabIndex = on ? 0 : -1;
+            });
+        }
+        const desc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+        Object.defineProperty(sel, 'value', {
+            configurable: true,
+            get: function () { return desc.get.call(this); },
+            set: function (v) { desc.set.call(this, v); sync(); }
+        });
+        function pick(b) {
+            if (!b || sel.value === b.dataset.q) return;
+            sel.value = b.dataset.q;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        items.forEach(function (b) { b.addEventListener('click', function () { pick(b); }); });
+        picker.addEventListener('keydown', function (e) {
+            const k = e.key;
+            if (['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp'].indexOf(k) === -1) return;
+            e.preventDefault();
+            const cur = items.findIndex(function (b) { return b.classList.contains('is-on'); });
+            const step = (k === 'ArrowRight' || k === 'ArrowDown') ? 1 : -1;
+            const nb = items[(cur + step + items.length) % items.length];
+            pick(nb);
+            nb.focus();
+        });
+        sync();
+    })();
     document.addEventListener('DOMContentLoaded', () => {
         loadExistingData(true);
         const successAlert = document.getElementById('successAlert');
@@ -2250,16 +2550,127 @@
         }
     });
 
+    // --- ยืนยันข้อมูลรายไตรมาส ---
+    let qcState = {};
+    let qcLocked = false;
+    const QC_CAN_CONFIRM = @json(auth()->user()->User_rank_id == 1);
+
+    // ไตรมาสที่ยืนยันข้อมูลแล้ว ทุกบทบาท (รวม สคร.) แก้ไขไม่ได้ — ล็อกฟอร์มให้ดูได้อย่างเดียว (สคร. กด "ยกเลิกการยืนยัน" เพื่อปลดล็อก)
+    function applyQuarterLock() {
+        const form = document.getElementById('assessmentForm');
+        form.classList.toggle('is-locked', qcLocked);
+        form.querySelectorAll('textarea.report-textarea').forEach(t => { t.readOnly = qcLocked; });
+        form.querySelectorAll('input[type="file"]').forEach(i => { i.disabled = qcLocked; });
+        const submit = form.querySelector('.btn-submit');
+        if (submit) submit.disabled = qcLocked;
+    }
+    const qcConfirmUrl = "{{ route('admin.salt-assessment.confirm', ['id' => ':id']) }}";
+
+    function renderQuarterConfirm() {
+        const row = document.getElementById('qcStatusRow');
+        if (!row) return;
+        const current = parseInt(document.getElementById('quarter').value, 10);
+        const st = qcState[current] || {};
+        const btn = document.getElementById('qcActionBtn');
+
+        if (btn) {
+            btn.classList.remove('is-busy');
+            btn.classList.toggle('is-undo', !!st.confirmed);
+            btn.disabled = !st.exists;
+            btn.title = st.exists ? '' : 'ยังไม่มีรายงานที่บันทึกไว้ในไตรมาสนี้ — กดบันทึกแบบรายงานก่อนจึงจะยืนยันได้';
+            btn.querySelector('i').className = 'fas ' + (st.confirmed ? 'fa-rotate-left' : 'fa-check-circle');
+            btn.querySelector('span').textContent = st.confirmed ? 'ยกเลิกการยืนยัน' : 'ยืนยันข้อมูล';
+        }
+
+        const pill = (cls, icon, text) => {
+            const el = document.createElement('span');
+            el.className = 'qs-pill ' + cls;
+            const i = document.createElement('i');
+            i.className = 'fas ' + icon;
+            el.append(i, ' ' + text);
+            return el;
+        };
+        row.replaceChildren();
+        if (!st.exists) {
+            row.append(pill('qs-new', 'fa-file-circle-plus', 'ยังไม่มีรายงานไตรมาส ' + current + ' - ยังไม่ได้บันทึก'));
+        } else if (st.confirmed) {
+            row.append(pill('qs-ok', 'fa-check-circle', 'ยืนยันข้อมูลแล้ว'
+                + (st.confirmed_by ? ' โดย ' + st.confirmed_by : '')
+                + (st.confirmed_at ? ' เมื่อ ' + st.confirmed_at + ' น.' : '')));
+            if (qcLocked) {
+                row.append(pill('qs-lock', 'fa-lock', QC_CAN_CONFIRM
+                    ? 'ปิดการแก้ไขไตรมาสนี้แล้ว · หากต้องแก้ไขให้กด "ยกเลิกการยืนยัน" ก่อน'
+                    : 'ปิดการแก้ไขไตรมาสนี้แล้ว · หากต้องแก้ไขให้ติดต่อ สคร. เพื่อยกเลิกการยืนยัน'));
+            }
+        } else {
+            row.append(pill('qs-wait', 'fa-hourglass-half', 'ยังไม่ได้ยืนยันข้อมูล'));
+        }
+    }
+
+    (function () {
+        const btn = document.getElementById('qcActionBtn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const q = parseInt(document.getElementById('quarter').value, 10);
+            const st = qcState[q];
+            if (!st || !st.id) return;
+            const undo = !!st.confirmed;
+
+            showConfirmModal({
+                title: undo ? 'ยกเลิกการยืนยันไตรมาส ' + q + '?' : 'ยืนยันข้อมูลไตรมาส ' + q + '?',
+                text: undo
+                    ? 'หน่วยงานจะกลับมาแก้ไขข้อมูลไตรมาสนี้ได้อีกครั้ง'
+                    : 'จะยืนยันข้อมูลที่บันทึกไว้แล้วของไตรมาสนี้ หากมีการแก้ไขที่ยังไม่ได้กด "บันทึกแบบรายงาน" กรุณาบันทึกก่อน',
+                confirmText: undo ? 'ยกเลิกการยืนยัน' : 'ยืนยันข้อมูล',
+                tone: undo ? 'neutral' : 'success',
+                icon: undo ? 'fa-rotate-left' : 'fa-check',
+                onConfirm: () => {
+                    btn.classList.add('is-busy');
+                    const token = document.querySelector('#assessmentForm input[name="_token"]').value;
+                    fetch(qcConfirmUrl.replace(':id', st.id), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': token,
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    })
+                        .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+                        .then(res => {
+                            qcState[res.quarter] = res.state;
+                            // ยืนยัน -> ปิดช่องทันที / ยกเลิกการยืนยัน -> เปิดให้แก้ไขได้อีกครั้ง (ทุกบทบาท รวม สคร.)
+                            if (parseInt(document.getElementById('quarter').value, 10) === parseInt(res.quarter, 10)) {
+                                qcLocked = !!(res.state && res.state.confirmed);
+                                applyQuarterLock();
+                            }
+                            renderQuarterConfirm();
+                            showMiniToast(res.message);
+                        })
+                        .catch(() => {
+                            renderQuarterConfirm();
+                            showMiniToast('ทำรายการไม่สำเร็จ กรุณาลองใหม่อีกครั้ง', true);
+                        });
+                },
+            });
+        });
+    })();
+
     // --- Lightweight, dependency-free confirm modal + toast ---
     // (Built in-page rather than via a CDN library, so it always renders
     // correctly even on networks that block third-party CDN requests.)
-    function showConfirmModal({ title, text, confirmText = 'ยืนยัน', cancelText = 'ยกเลิก', onConfirm }) {
+    function showConfirmModal({ title, text, confirmText = 'ยืนยัน', cancelText = 'ยกเลิก', tone = 'danger', icon = 'fa-trash-alt', onConfirm }) {
         const overlay = document.getElementById('confirmModalOverlay');
         const titleEl = document.getElementById('confirmModalTitle');
         const textEl = document.getElementById('confirmModalText');
         const confirmBtn = document.getElementById('confirmModalConfirm');
         const cancelBtn = document.getElementById('confirmModalCancel');
         if (!overlay) return;
+
+        const card = overlay.querySelector('.confirm-modal-card');
+        card.classList.remove('tone-success', 'tone-neutral');
+        if (tone !== 'danger') card.classList.add('tone-' + tone);
+        const iconEl = overlay.querySelector('.confirm-modal-icon i');
+        if (iconEl) iconEl.className = 'fas ' + icon;
 
         titleEl.textContent = title;
         textEl.textContent = text;
@@ -2304,6 +2715,7 @@
     }
 
     function removeExistingFile(fieldId) {
+        if (qcLocked) return;
         showConfirmModal({
             title: 'ลบไฟล์นี้ใช่หรือไม่?',
             text: 'ไฟล์จะถูกลบออกจากระบบทันที ไม่ต้องกดบันทึกแบบรายงานซ้ำอีก',

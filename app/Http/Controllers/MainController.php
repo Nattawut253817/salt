@@ -14,10 +14,12 @@ use App\Models\Hi;
 use App\Models\District;
 use App\Models\ReducedSodiumMenu;
 use App\Models\KidneyAssessment;
+use App\Models\OperatingAreaPin;
 use App\Models\FiscalYear;
 use App\Models\AwarenessPassSetting;
 use App\Services\AwarenessPassResolver;
 use App\Services\AwarenessScoreCalculator;
+use App\Services\AwarenessYearGrid;
 use App\Support\DbCompat;
 
 class MainController extends Controller
@@ -25,7 +27,94 @@ class MainController extends Controller
     /**
      * Display the Kidney DHB presentation/report page.
      */
+    /**
+     * แคชข้อมูลของหน้ารายงาน (ไม่ใช่ HTML) ตามตัวกรอง + "ตราประทับ" ของตารางที่เกี่ยวข้อง (จำนวนแถว + updated_at ล่าสุด)
+     * ข้อมูลเปลี่ยนเมื่อไร คีย์เปลี่ยนทันที ไม่ต้องรอ TTL; TTL 10 นาทีเป็นแค่ตาข่ายนิรภัย
+     * $perUser = true เมื่อผลขึ้นกับผู้ใช้ที่ล็อกอิน (โหมดฝังในหน้าแอดมิน org_lock=1)
+     */
+    private function cachedPageData(string $page, Request $request, array $models, \Closure $build, bool $perUser = false): array
+    {
+        $query = $request->query();
+        ksort($query);
+        $user = auth()->user();
+        $key = 'page_data_v10:' . $page . ':' . md5(json_encode([
+            $query,
+            ($perUser && $user) ? [$user->id, $user->User_rank_id] : null,
+            array_map(fn ($m) => $this->tableStamp($m), $models),
+        ]));
+
+        return Cache::remember($key, now()->addMinutes(10), $build);
+    }
+
+    /** "จำนวนแถว|updated_at ล่าสุด" ของตารางของโมเดล - ใช้เป็นเวอร์ชันของข้อมูล (หาไม่ได้ -> เปลี่ยนทุกนาที) */
+    private function tableStamp(string $modelClass): string
+    {
+        static $memo = [];
+        if (isset($memo[$modelClass])) {
+            return $memo[$modelClass];
+        }
+        try {
+            $row = DB::table((new $modelClass)->getTable())->selectRaw('COUNT(*) as c, MAX(updated_at) as u')->first();
+
+            return $memo[$modelClass] = ($row->c ?? 0) . '|' . ($row->u ?? '');
+        } catch (\Throwable $e) {
+            return $memo[$modelClass] = 'n' . floor(time() / 60);
+        }
+    }
+
     public function kidneyDHBReport(Request $request)
+    {
+        // ข้อมูลของหน้านี้เป็นฟังก์ชันของตัวกรอง (query string) + เนื้อหาตาราง - แคชไว้ตามนั้น
+        // คีย์ผูกกับจำนวนแถว/เวลาแก้ไขล่าสุดของตารางที่เกี่ยวข้อง จึงอัปเดตทันทีเมื่อข้อมูลเปลี่ยน
+        $data = $this->cachedPageData('kidney-dhb-report', $request, [KidneyAssessment::class, OperatingAreaPin::class, User::class, FiscalYear::class], fn () => $this->kidneyDHBReportData($request), false);
+
+        return view('pages.kidney-dhb-report', $data);
+    }
+
+    /**
+     * "หมุดแสดงผล" ที่ SuperAdmin เพิ่มไว้ (บอกว่าพื้นที่นี้ดำเนินงาน พชอ.ไต โดยหน่วยงานใด) - ใช้วาดบนแผนที่เท่านั้น
+     * ไม่นับรวมในตัวเลขสรุป/ความครอบคลุม/ตัวชี้วัด (ไม่มีรายงานให้นับความก้าวหน้า)
+     */
+    private function displayOnlyPinList(array $provinceNames, $fiscalYear = '', $province = null, $district = null): array
+    {
+        if (!OperatingAreaPin::hasDisplayColumns()) {
+            return [];
+        }
+
+        $query = OperatingAreaPin::with(['province', 'district', 'tambon', 'village'])
+            ->where('display_only', true)
+            ->whereHas('province', fn($q) => $q->whereIn('province_name', $provinceNames));
+        if ($fiscalYear !== '' && $fiscalYear !== null) {
+            $query->where('fiscal_year', $fiscalYear);
+        }
+        if ($province && !in_array($province, ['ทั้งหมด', 'all'], true)) {
+            $query->whereHas('province', fn($q) => $q->where('province_name', $province));
+        }
+        if ($district && $district !== 'ทั้งหมด') {
+            $query->whereHas('district', fn($q) => $q->where('district_name', $district));
+        }
+
+        return $query->get()->map(function ($pin) {
+            $crumbs = array_filter([
+                optional($pin->district)->district_name,
+                optional($pin->tambon)->tambon_name,
+                $pin->village_name_snapshot ?? optional($pin->village)->village_name,
+            ]);
+            return [
+                'id' => $pin->id,
+                'display_only' => true,
+                'agency_label' => $pin->agency_label,
+                'lat' => (float) $pin->latitude,
+                'lng' => (float) $pin->longitude,
+                'label' => $pin->label,
+                'province_name' => optional($pin->province)->province_name,
+                'breadcrumb' => implode(' › ', $crumbs),
+                'fiscal_year' => $pin->fiscal_year,
+            ];
+        })->values()->all();
+    }
+
+    private function kidneyDHBReportData(Request $request): array
     {
         $targetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
         $query = KidneyAssessment::with(['user.province', 'user.district']);
@@ -51,6 +140,238 @@ class MainController extends Controller
         $selectedRank = $request->get('rank', 'ทั้งหมด');
         // Free-text search box on the agency progress table (ใหม่).
         $searchQuery = trim((string) $request->get('search', ''));
+
+        // Individual registered "พื้นที่ดำเนินงาน" pins (บันทึกผ่าน
+        // admin/operating-areas), for the pin-map card. Unlike $mapData
+        // (aggregate per-province counts derived from KidneyAssessment's
+        // own free-text operating_area field), these are the actual
+        // lat/lng-pinned OperatingAreaPin records, shown individually and
+        // colored per province - see oaProvinceColors in this view's own
+        // script (reused from kidney-dhb-content.blade.php's established
+        // pin-color convention). This is a public, unauthenticated page,
+        // so there is no viewer-based scoping here (unlike
+        // AdminController::operatingAreaPinsForUser()) - but it DOES
+        // respect the same ตัวกรอง bar as the rest of the page now:
+        // ปีงบประมาณ/จังหวัด/อำเภอ narrow the pins directly (columns on the
+        // pin itself). ประเภทหน่วยงาน and ไตรมาส aren't columns on a pin
+        // (pins are registered by admins of any rank, so filtering by the
+        // creator's rank would just empty the map), so they don't hide any
+        // pin - they narrow which reports count as an "answer" instead: a
+        // pin's progress (and so the "ตอบแล้ว" counts built from it) only
+        // looks at reports filed by users of the selected agency type /
+        // for the selected quarter.
+        $operatingAreaPinsQuery = OperatingAreaPin::reportable()->with(['province', 'district', 'tambon', 'village', 'assessments.user'])
+            ->whereHas('province', function ($q) use ($targetProvinces) {
+                $q->whereIn('province_name', $targetProvinces);
+            });
+
+        if ($fiscalYear !== '') {
+            $operatingAreaPinsQuery->where('fiscal_year', $fiscalYear);
+        }
+        if ($selectedProvince && $selectedProvince !== 'ทั้งหมด') {
+            $operatingAreaPinsQuery->whereHas('province', function ($q) use ($selectedProvince) {
+                $q->where('province_name', $selectedProvince);
+            });
+        }
+        if ($selectedDistrict && $selectedDistrict !== 'ทั้งหมด') {
+            $operatingAreaPinsQuery->whereHas('district', function ($q) use ($selectedDistrict) {
+                $q->where('district_name', $selectedDistrict);
+            });
+        }
+
+        $pinQuarter = ($request->filled('quarter') && $request->quarter !== 'ทั้งหมด') ? (int) $request->quarter : null;
+
+        // รายงานที่ครอบคลุมหลายพื้นที่: พื้นที่อื่น (reporter_metadata['_extra_pin_ids']) ใช้ผลรายงานฉบับนั้นเป็นความก้าวหน้าของหมุดด้วย
+        $extraAssessmentsByPin = [];
+        foreach (KidneyAssessment::with('user')
+            ->where('reporter_metadata', 'like', '%"' . \App\Support\KidneyAreaList::META_KEY . '"%')
+            ->get() as $multiRep) {
+            foreach (\App\Support\KidneyAreaList::extraPinIds($multiRep) as $extraPid) {
+                $extraAssessmentsByPin[$extraPid][] = $multiRep;
+            }
+        }
+
+        $operatingAreaPins = $operatingAreaPinsQuery->get()
+            ->map(function ($pin) use ($pinQuarter, $selectedRank, $extraAssessmentsByPin) {
+                $breadcrumbParts = array_filter([
+                    optional($pin->district)->district_name,
+                    optional($pin->tambon)->tambon_name,
+                    $pin->village_name_snapshot ?? optional($pin->village)->village_name,
+                ]);
+
+                // "ความก้าวหน้า X/8 ข้อ" for this ONE registered pin - same
+                // 8-milestone rule used everywhere else on this page
+                // (category_1-7 each count as 1 if filled in ANY quarter
+                // filed so far; 8.1/8.2/8.3 together count as the 8th,
+                // satisfied by any single one of the three - see the
+                // identical logic building $overviewMilestoneCounts
+                // above), just scoped to the reports filed specifically
+                // against this pin (operating_area_pin_id) instead of an
+                // entire agency/province. Scoped to the pin's OWN
+                // fiscal_year (not every report ever filed against it),
+                // so a pin reused in a later year doesn't pull that
+                // year's progress into this one's badge.
+                $pinAssessments = $pin->assessments->where('fiscal_year', $pin->fiscal_year);
+                if (!empty($extraAssessmentsByPin[$pin->id])) {
+                    $pinAssessments = $pinAssessments->concat(
+                        collect($extraAssessmentsByPin[$pin->id])->where('fiscal_year', $pin->fiscal_year)
+                    )->unique('id');
+                }
+                if ($pinQuarter !== null) {
+                    $pinAssessments = $pinAssessments->where('quarter', $pinQuarter);
+                }
+                if ($selectedRank && $selectedRank !== 'ทั้งหมด') {
+                    $pinAssessments = $pinAssessments->filter(
+                        fn($a) => $a->user && (string) $a->user->User_rank_id === (string) $selectedRank
+                    );
+                }
+                // $doneItems = which of the 8 items this pin has done (1-7 by
+                // number, '8' once any of 8.1/8.2/8.3 is filled) - kept next
+                // to the count so the per-indicator KPI cards can tally the
+                // very same items the progress badge counts.
+                $doneItems = [];
+                for ($i = 1; $i <= 7; $i++) {
+                    $field = "category_$i";
+                    if ($pinAssessments->contains(fn($a) => !empty($a->$field))) {
+                        $doneItems[] = (string) $i;
+                    }
+                }
+                if (
+                    $pinAssessments->contains(fn($a) => !empty($a->category_8_1))
+                    || $pinAssessments->contains(fn($a) => !empty($a->category_8_2))
+                    || $pinAssessments->contains(fn($a) => !empty($a->category_8_3))
+                ) {
+                    $doneItems[] = '8';
+                }
+                $milestoneCount = count($doneItems);
+
+                return [
+                    'id' => $pin->id,
+                    'district_id' => $pin->district_id,
+                    'lat' => (float) $pin->latitude,
+                    'lng' => (float) $pin->longitude,
+                    'label' => $pin->label,
+                    'province_name' => optional($pin->province)->province_name,
+                    'breadcrumb' => implode(' › ', $breadcrumbParts),
+                    'fiscal_year' => $pin->fiscal_year,
+                    'progress' => $milestoneCount,
+                    'progress_total' => 8,
+                    'done_items' => $doneItems,
+                ];
+            })
+            ->values();
+
+        // Pins placed while FILING a report - "ปักหน่วยงานพื้นที่ใหม่" on
+        // admin/kidney-dhb, which includes every report brought in from a Word
+        // file - are not registered OperatingAreaPin rows: the location is
+        // stored on the KidneyAssessment itself (operating_area_latitude/
+        // longitude + province/district/tambon/village ids, operating_area_pin_id
+        // left NULL). The query above only reads registered pins, so those
+        // placed pins never reached this map (or the coverage/indicator counts
+        // built from the same collection). Fold them in here as one pin per
+        // distinct area + fiscal year, with the same filters, progress rule and
+        // shape as a registered pin.
+        $freeAreaPins = collect();
+        $targetProvinceMap = Province::whereIn('province_name', $targetProvinces)->pluck('province_name', 'province_id');
+        if ($targetProvinceMap->isNotEmpty()) {
+            $freeQuery = KidneyAssessment::with('user')
+                ->whereNull('operating_area_pin_id')
+                ->whereNotNull('operating_area_latitude')
+                ->whereNotNull('operating_area_longitude')
+                ->whereIn('operating_area_province_id', $targetProvinceMap->keys()->all());
+            if ($fiscalYear !== '') {
+                $freeQuery->where('fiscal_year', $fiscalYear);
+            }
+            if ($selectedProvince && $selectedProvince !== 'ทั้งหมด') {
+                $freeQuery->whereIn('operating_area_province_id', $targetProvinceMap->filter(fn($n) => $n === $selectedProvince)->keys()->all());
+            }
+            if ($selectedDistrict && $selectedDistrict !== 'ทั้งหมด') {
+                $freeQuery->whereIn('operating_area_district_id', District::where('district_name', $selectedDistrict)->pluck('district_id')->all());
+            }
+            $freeRows = $freeQuery->get()->filter(
+                fn($a) => (float) $a->operating_area_latitude != 0.0 && (float) $a->operating_area_longitude != 0.0
+            );
+
+            $freeDistrictNames = District::whereIn('district_id', $freeRows->pluck('operating_area_district_id')->filter()->unique()->all())
+                ->pluck('district_name', 'district_id');
+            $freeTambonNames = \App\Models\Tambon::whereIn('tambon_id', $freeRows->pluck('operating_area_tambon_id')->filter()->unique()->all())
+                ->pluck('tambon_name', 'tambon_id');
+
+            $freeAreaPins = $freeRows
+                ->groupBy(fn($a) => implode('|', [
+                    $a->fiscal_year,
+                    $a->operating_area_province_id,
+                    $a->operating_area_district_id,
+                    $a->operating_area_tambon_id,
+                    $a->operating_area_village_id,
+                    trim((string) $a->operating_area),
+                    round((float) $a->operating_area_latitude, 5),
+                    round((float) $a->operating_area_longitude, 5),
+                ]))
+                ->map(function ($group) use ($pinQuarter, $selectedRank, $targetProvinceMap, $freeDistrictNames, $freeTambonNames) {
+                    $first = $group->first();
+                    $assess = $group;
+                    if ($pinQuarter !== null) {
+                        $assess = $assess->where('quarter', $pinQuarter);
+                    }
+                    if ($selectedRank && $selectedRank !== 'ทั้งหมด') {
+                        $assess = $assess->filter(
+                            fn($a) => $a->user && (string) $a->user->User_rank_id === (string) $selectedRank
+                        );
+                    }
+                    $done = [];
+                    for ($i = 1; $i <= 7; $i++) {
+                        $field = "category_$i";
+                        if ($assess->contains(fn($a) => !empty($a->$field))) {
+                            $done[] = (string) $i;
+                        }
+                    }
+                    if ($assess->contains(fn($a) => !empty($a->category_8_1) || !empty($a->category_8_2) || !empty($a->category_8_3))) {
+                        $done[] = '8';
+                    }
+                    $crumbs = array_filter([
+                        $freeDistrictNames[$first->operating_area_district_id] ?? null,
+                        $freeTambonNames[$first->operating_area_tambon_id] ?? null,
+                        $first->operating_area_village_name_snapshot,
+                    ]);
+                    return [
+                        'id' => null,
+                        'district_id' => $first->operating_area_district_id,
+                        'lat' => (float) $first->operating_area_latitude,
+                        'lng' => (float) $first->operating_area_longitude,
+                        'label' => trim((string) $first->operating_area) ?: null,
+                        'province_name' => $targetProvinceMap[$first->operating_area_province_id] ?? null,
+                        'breadcrumb' => implode(' › ', $crumbs),
+                        'fiscal_year' => $first->fiscal_year,
+                        'progress' => count($done),
+                        'progress_total' => 8,
+                        'done_items' => $done,
+                    ];
+                })
+                ->values();
+        }
+        $operatingAreaPins = $operatingAreaPins->concat($freeAreaPins)->values();
+        // รายงานเก่าที่ยังไม่มีหมุด/พิกัด (เช่น ปีงบ 2568) - แสดงที่จุดกึ่งกลางอำเภอแบบประมาณ
+        $operatingAreaPins = $operatingAreaPins->concat(
+            $this->legacyUnpinnedAreaPins((string) $fiscalYear, $targetProvinceMap, $selectedProvince, $selectedDistrict, $pinQuarter, $selectedRank)
+        )->values();
+
+        // "พื้นที่ดำเนินงาน X / Y อำเภอ" KPI card, counted from the pins
+        // only (same ตัวกรอง as the pin map above):
+        //   Y = distinct districts that hold at least one registered pin
+        //       (ปักหน่วยงานแล้ว), not every district in the province;
+        //   X = of those, distinct districts where at least one pin has
+        //       been answered (progress > 0 = a KidneyAssessment filed
+        //       against the pin has at least one milestone filled in),
+        //       i.e. "ดำเนินงาน" means actually reported on, not just pinned.
+        $coverageTotalDistricts = $operatingAreaPins
+            ->pluck('district_id')->filter()->unique()->count();
+        $coverageCoveredDistricts = $operatingAreaPins
+            ->filter(fn($pin) => ($pin['progress'] ?? 0) > 0)
+            ->pluck('district_id')->filter()->unique()->count();
+        $coveragePercent = $coverageTotalDistricts > 0
+            ? min(100, (int) round(($coverageCoveredDistricts / $coverageTotalDistricts) * 100))
+            : 0;
 
         $districts = collect();
         if ($selectedProvince && $selectedProvince != 'ทั้งหมด') {
@@ -212,6 +533,72 @@ class MainController extends Controller
             $mapData[$provName] = $yearlyTotalAgencies;
 
         }
+
+        // Per-province rows for the "เปรียบเทียบสถานการณ์และผลดำเนินงานรายจังหวัด"
+        // card (replaces the old stacked bar chart). Same definition as the
+        // "พื้นที่ดำเนินงาน X / Y อำเภอ" KPI card, just split by province
+        // (so the 5 rows add up to that card's X and Y):
+        //   total    = distinct districts holding at least one registered pin;
+        //   answered = of those, districts where at least one pin has been
+        //              answered (progress > 0);
+        //   percent  = answered / total. null = no pin registered in this
+        //              province for the current filters ("—", ยังไม่มีข้อมูล),
+        //              which is different from a real 0%.
+        $provinceAreaProgress = collect($targetProvinces)->map(function ($provName) use ($operatingAreaPins) {
+            $provPins = $operatingAreaPins->where('province_name', $provName);
+            $total = $provPins->pluck('district_id')->filter()->unique()->count();
+            $answered = $provPins
+                ->filter(fn($pin) => ($pin['progress'] ?? 0) > 0)
+                ->pluck('district_id')->filter()->unique()->count();
+
+            // ข้อมูลครบ: a pin is "complete" at 8/8 (milestones 1-7 all filled,
+            // plus any one of 8.1/8.2/8.3 - the same rule behind each pin's
+            // 'progress'). Province-level: every pin complete -> 'complete';
+            // at least one pin answered but not all complete -> 'partial';
+            // nothing answered (or no pin at all) -> 'none' (ยังไม่รายงาน).
+            $pinCount = $provPins->count();
+            $answeredPinCount = $provPins->filter(fn($pin) => ($pin['progress'] ?? 0) > 0)->count();
+            $completePinCount = $provPins->filter(fn($pin) => ($pin['progress'] ?? 0) >= ($pin['progress_total'] ?? 8))->count();
+            $dataStatus = ($pinCount === 0 || $answeredPinCount === 0)
+                ? 'none'
+                : ($completePinCount === $pinCount ? 'complete' : 'partial');
+
+            return [
+                'province' => $provName,
+                'answered' => $answered,
+                'total' => $total,
+                'percent' => $total > 0 ? (int) round($answered / $total * 100) : null,
+                'data_status' => $dataStatus,
+                'pin_count' => $pinCount,
+                'complete_pins' => $completePinCount,
+            ];
+        })->values();
+
+        // Per-indicator tally for the two KPI cards "ตัวชี้วัดที่ดำเนินงานได้ดี"
+        // / "ยังไม่มีการดำเนินงาน": for each of the 8 items, how many of the
+        // pins in scope (same filtered set as the pin map) have that item
+        // done. percent = done pins / all pins in scope.
+        $indicatorTotalPins = $operatingAreaPins->count();
+        // KPI card "พื้นที่ที่ปักหมุดทั้งหมด": every pin in scope, and how many of
+        // them already carry a report (progress > 0).
+        $pinnedAnsweredCount = $operatingAreaPins->filter(fn($pin) => ($pin['progress'] ?? 0) > 0)->count();
+        $pinnedAnsweredPercent = $indicatorTotalPins > 0
+            ? min(100, (int) round($pinnedAnsweredCount / $indicatorTotalPins * 100))
+            : 0;
+        $indicatorStats = collect(['1', '2', '3', '4', '5', '6', '7', '8'])->map(function ($key) use ($operatingAreaPins, $indicatorTotalPins) {
+            $done = $operatingAreaPins->filter(fn($pin) => in_array($key, $pin['done_items'] ?? [], true))->count();
+            return [
+                'key' => $key,
+                'done' => $done,
+                'total' => $indicatorTotalPins,
+                'percent' => $indicatorTotalPins > 0 ? (int) round($done / $indicatorTotalPins * 100) : 0,
+            ];
+        })->values();
+        // Best first (ties keep item order), only items somebody has actually done.
+        $indicatorTop = $indicatorStats->filter(fn($s) => $s['done'] > 0)
+            ->sortBy([['done', 'desc'], ['key', 'asc']])->take(3)->values();
+        // Items no pin has done yet.
+        $indicatorPending = $indicatorStats->filter(fn($s) => $s['done'] === 0)->values();
 
         // Turn the raw tallies above into percentages for the overview
         // card, plus one headline "top province" pick reusing the
@@ -430,9 +817,18 @@ class MainController extends Controller
 
             $latest = $contextAssessments->sortByDesc('quarter')->first();
 
+            // พื้นที่ (ชื่อหมู่บ้าน/ตำบล/อำเภอ) + ประเด็น (หมายเหตุของหมุด) แยกกัน - รายงานที่ไม่ผูกหมุดแสดงชื่อเดิม
+            $areaList = \App\Support\KidneyAreaList::forUnit($allAssessments, $area);
+            $primaryRow = collect($areaList)->first(fn($r) => !empty($r['primary']));
+            $areaPlace = $primaryRow['place'] ?? $area;
+            $areaIssue = $primaryRow['issue'] ?? null;
+
             return [
                 'agency' => $row['display_name'],
                 'operating_area' => $area,
+                'area_place' => $areaPlace,
+                'area_issue' => $areaIssue,
+                'area_list' => $areaList,
                 'operating_area_color' => $row['operating_area_color'] ?? 0,
                 // A little extra identifying detail for the plain
                 // operating-area summary table (ตารางข้อมูลพื้นที่ดำเนินงาน
@@ -580,7 +976,17 @@ class MainController extends Controller
             $qStats[$q]['percent'] = ($totalAgenciesInRegion > 0) ? round(($count / $totalAgenciesInRegion) * 100) : 0;
         }
 
-        return view('pages.kidney-dhb-report', compact(
+        $displayOnlyPins = $this->displayOnlyPinList($targetProvinces, $fiscalYear, $selectedProvince, $selectedDistrict);
+
+        // การ์ด "จำนวนพื้นที่ดำเนินงาน พชอ.ไต แยกรายจังหวัด": นับจากหมุดทั้งหมดที่ปักบนแผนที่
+        // "พื้นที่ดำเนินงาน พชอ.ไต แยกสีตามจังหวัด" (หมุดที่ลงทะเบียน + หมุดที่ปักตอนรายงาน/นำเข้า Word
+        // + หมุดแสดงผลของ SuperAdmin) ตามตัวกรองเดียวกัน - 1 หมุด = 1 พื้นที่ ตัวเลขจึงตรงกับแผนที่เสมอ
+        $allMapPins = collect($operatingAreaPins)->concat($displayOnlyPins);
+        foreach ($targetProvinces as $provName) {
+            $mapData[$provName] = $allMapPins->where('province_name', $provName)->count();
+        }
+
+        return compact(
             'qStats',
             'milestonePercents',
             'overviewMilestonePercents',
@@ -594,32 +1000,69 @@ class MainController extends Controller
             'districts',
             'mapData',
             'stackedChartData',
+            'operatingAreaPins',
+            'displayOnlyPins',
+            'provinceAreaProgress',
+            'indicatorStats',
+            'indicatorTop',
+            'indicatorPending',
+            'indicatorTotalPins',
+            'pinnedAnsweredCount',
+            'pinnedAnsweredPercent',
+            'coverageTotalDistricts',
+            'coverageCoveredDistricts',
+            'coveragePercent',
             'fiscalYear',
             'selectedRank',
             'searchQuery'
-        ));
+        );
     }
     public function index(Request $request)
     {
         $targetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
 
-        // Every card this page's ปีงบประมาณ filter actually drives
-        // (awareness map, respondent count, behavior metrics, sodium
-        // before/after, product count) reads from SodiumSurvey - the
-        // "การประเมินความตระหนักรู้" module - never from salt_assessment
-        // (that's a separate module/table entirely, used by the
-        // consumption-report page's own, independent year filter). This
-        // dropdown previously merged in salt_assessment's own selectable
-        // years too, so a year enabled only for THAT module (e.g. 2570)
-        // could appear here and get selected by default even though
-        // "ความตระหนักรู้" has no criteria configured for it - "จัดการ
-        // ปีงบประมาณ" > ความตระหนักรู้ is the actual source of truth for
-        // which years belong on this filter. Computed up front (previously
-        // only built after the whole dashboard, purely for the dropdown)
-        // so its newest entry can also be used as this filter's default
-        // below.
-        $awarenessYears = SodiumSurvey::select('fiscal_year')->distinct()->pluck('fiscal_year');
-        $years = FiscalYear::selectableYearsFor('awareness', $awarenessYears)->values();
+        // Every card on this page reads from SodiumSurvey (the
+        // "การประเมินความตระหนักรู้" module) EXCEPT the Province Overview
+        // Table further down, which also pulls from KidneyAssessment
+        // (kidney), Hi (hi), and ReducedSodiumMenu (sodium_menus) - so a
+        // year configured only for one of those 3 (e.g. 2567, which only
+        // "เมนูลดโซเดียม" has data for) used to be impossible to select here
+        // at all, even though every one of those 3 source pages' own
+        // dropdown already offers it. This dropdown previously stayed
+        // narrowed to 'awareness' alone on purpose (see git history) to
+        // avoid a year with no awareness criteria configured becoming the
+        // silent default - that still can't happen here since "ทั้งหมด"
+        // sorts every module's years together and takes the single newest
+        // one as this filter's default below, same as before.
+        // 4 DISTINCT scans + 8 fiscal_years lookups used to run on EVERY
+        // request (even when the dashboard bundle below was cached). The
+        // list only changes when data for a brand-new year is imported or an
+        // admin edits "จัดการปีงบประมาณ", so it is cached for 10 minutes and
+        // keyed by that table's row count + latest update, which makes an
+        // admin's enable/hide show up immediately.
+        $fiscalYearStamp = FiscalYear::query()->selectRaw('COUNT(*) as c, MAX(updated_at) as u')->first();
+        $yearsBundle = Cache::remember(
+            'home_years_v1:' . md5(json_encode([$fiscalYearStamp->c ?? 0, (string) ($fiscalYearStamp->u ?? '')])),
+            now()->addMinutes(10),
+            function () {
+                $awarenessYears = SodiumSurvey::select('fiscal_year')->distinct()->pluck('fiscal_year');
+                $kidneyYearsForFilter = KidneyAssessment::distinct()->pluck('fiscal_year');
+                $hiYearsForFilter = Hi::whereNotNull('year')->distinct()->pluck('year');
+                $sodiumMenuYearsForFilter = ReducedSodiumMenu::whereNotNull('year')->where('year', '!=', '')->distinct()->pluck('year')->map(fn ($y) => trim($y));
+
+                $years = FiscalYear::selectableYearsFor('awareness', $awarenessYears)
+                    ->merge(FiscalYear::selectableYearsFor('kidney', $kidneyYearsForFilter))
+                    ->merge(FiscalYear::selectableYearsFor('hi', $hiYearsForFilter))
+                    ->merge(FiscalYear::selectableYearsFor('sodium_menus', $sodiumMenuYearsForFilter))
+                    ->unique()
+                    ->sortDesc()
+                    ->values();
+
+                return ['awarenessYears' => $awarenessYears, 'years' => $years];
+            }
+        );
+        $awarenessYears = $yearsBundle['awarenessYears'];
+        $years = $yearsBundle['years'];
 
         // Global Filters
         //
@@ -660,12 +1103,13 @@ class MainController extends Controller
         // amount of query tuning removes that, so a longer window before
         // it has to happen again matters more here than staying maximally
         // fresh on data that only changes a handful of times a day anyway.
-        // "v2" bumps past any 10-minute cache entry written by the previous
-        // version of this closure (before the awarenessOverall* KPI keys
-        // below existed) - without it, a still-warm cache entry would get
-        // extract()ed without those keys and the compact() further down
-        // would fail on an undefined variable.
-        $homeDashboardCacheKey = 'home_dashboard_v2:' . md5(json_encode([
+        // "v3" bumps past any 10-minute cache entry written by a previous
+        // version of this closure (v2: before the awarenessOverall* KPI
+        // keys existed; v3: before sodiumCompareData was replaced by
+        // provinceOverviewRows) - without bumping this, a still-warm cache
+        // entry would get extract()ed without the new key and the
+        // compact() further down would fail on an undefined variable.
+        $homeDashboardCacheKey = 'home_dashboard_v6:' . md5(json_encode([
             'fiscal_year' => $activeFiscalYear,
             'province' => $selectedProvince,
         ]));
@@ -709,7 +1153,26 @@ class MainController extends Controller
                 continue;
             }
             $awarenessConfiguredMethods->push(AwarenessPassResolver::methodFor($passYear));
-            foreach (AwarenessPassResolver::passFailCountsByColumn($passYear, $awarenessBaseQuery, 'province_name') as $province => $counts) {
+            if (AwarenessPassResolver::methodFor($passYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE) {
+                // Score method: fold the per-year cached [province][district]
+                // grid (shared with /awareness) instead of re-scoring every
+                // respondent row for each province filter - same totals, the
+                // province scope below mirrors $awarenessBaseQuery's own.
+                $yearCounts = [];
+                foreach (AwarenessPassResolver::scoreGrid($passYear) as $province => $districts) {
+                    $province = (string) $province;
+                    if ($selectedProvince !== 'all' ? $province !== $selectedProvince : !in_array($province, $targetProvinces, true)) {
+                        continue;
+                    }
+                    foreach ($districts as $cell) {
+                        $yearCounts[$province]['total'] = ($yearCounts[$province]['total'] ?? 0) + $cell['total'];
+                        $yearCounts[$province]['pass'] = ($yearCounts[$province]['pass'] ?? 0) + $cell['pass'];
+                    }
+                }
+            } else {
+                $yearCounts = AwarenessPassResolver::passFailCountsByColumn($passYear, $awarenessBaseQuery, 'province_name');
+            }
+            foreach ($yearCounts as $province => $counts) {
                 $awarenessCombinedCounts[$province]['total'] = ($awarenessCombinedCounts[$province]['total'] ?? 0) + $counts['total'];
                 $awarenessCombinedCounts[$province]['pass'] = ($awarenessCombinedCounts[$province]['pass'] ?? 0) + $counts['pass'];
             }
@@ -775,40 +1238,106 @@ class MainController extends Controller
             });
         }
 
-        // 3. Sodium Comparison Chart Data (Reduced Sodium Menus)
+        // 3. Province Overview Table Data ("เปรียบเทียบสถานการณ์และผลดำเนินงานรายจังหวัด")
         //
-        // Always scoped to the selected ปีงบประมาณ ($activeFiscalYear), same
-        // as every other card on this page - picking a specific province
-        // used to switch this chart to a hardcoded [2567, 2568, 2569] year
-        // trend instead, so changing the year filter had no visible effect
-        // here at all whenever a province was selected (and would have
-        // silently stopped including new years, e.g. 2570, without another
-        // code change). Grouping by province (narrowed to just the
-        // selected one, or every target province for the "ทุกจังหวัด"
-        // overview) instead keeps this chart's scope identical to
-        // awarenessData/awarenessMetrics above: one year, one or all 5
-        // provinces.
-        $sodiumCompareScopeProvinces = $selectedProvince !== 'all' ? [$selectedProvince] : $targetProvinces;
-        $sodiumCompareQuery = ReducedSodiumMenu::query()
-            ->whereIn('province', $sodiumCompareScopeProvinces);
-        if ($activeFiscalYear !== '') {
-            $sodiumCompareQuery->where('year', $activeFiscalYear);
-        }
-        $sodiumCompareDataRaw = $sodiumCompareQuery
-            ->select(
-                'province as label',
-                \DB::raw('AVG(sodium_before) as avg_before'),
-                \DB::raw('AVG(sodium_after) as avg_after')
-            )
-            ->groupBy('province')
-            ->get();
+        // Replaces the old ก่อน/หลัง-ปรับสูตร average-sodium bar chart with a
+        // single summary table. Each column is pulled from the exact same
+        // computation the dedicated page for that number already uses, so
+        // this table never invents a second definition of its own:
+        //   - HT / แสนคน: same Hi-table rate (case count / target * 100,000)
+        //     shown on the map on /new-ht-cases
+        //     (see MainController::newHTCases()'s $mapProvinceTotals).
+        //   - พื้นที่ดำเนินงาน / ข้อมูลครบ: same per-operating-area "all 8
+        //     milestones filled" completion used for the "หน่วยงานที่ส่ง
+        //     ข้อมูลครบ 4 ไตรมาส" stacked chart on /kidney-dhb-report (see
+        //     MainController::kidneyDHBReport()'s $stackedChartData) - every
+        //     area complete -> "ครบ", some but not all -> "บางส่วน", no
+        //     operating area reported at all -> "ยังไม่รายงาน".
+        //   - ก่อนปรับสูตร / จำนวนเมนูหลังปรับสูตร: same เมนู rows used by
+        //     /reduced-sodium-menu - "ก่อน" is every menu recorded for the
+        //     province, "หลัง" is the subset that's actually been
+        //     re-tested (sodium_before AND sodium_after both > 0 - the same
+        //     $measuredMenus condition reducedSodiumMenu() itself uses,
+        //     since an un-retested menu is stored as a literal 0, not
+        //     null).
+        // Scoped the same way as every other card on this page: one
+        // province when selected, all 5 target provinces for "ทุกจังหวัด".
+        $overviewScopeProvinces = $selectedProvince !== 'all' ? [$selectedProvince] : $targetProvinces;
 
-        $sodiumCompareData = collect($sodiumCompareScopeProvinces)->map(function ($province) use ($sodiumCompareDataRaw) {
-            $data = $sodiumCompareDataRaw->firstWhere('label', $province);
+        $overviewHtQuery = Hi::query();
+        if ($activeFiscalYear !== '') {
+            $overviewHtQuery->where('year', $activeFiscalYear);
+        }
+        $overviewHtByProvinceId = $overviewHtQuery->get()->groupBy('Province_id');
+        $overviewProvinceIds = Province::whereIn('province_name', $overviewScopeProvinces)->pluck('province_id', 'province_name');
+
+        $overviewKidneyQuery = KidneyAssessment::with('user.province');
+        if ($activeFiscalYear !== '') {
+            $overviewKidneyQuery->where('fiscal_year', $activeFiscalYear);
+        }
+        $overviewKidneyAssessments = $overviewKidneyQuery->get();
+
+        $overviewMenuQuery = ReducedSodiumMenu::query()->whereIn('province', $overviewScopeProvinces);
+        if ($activeFiscalYear !== '') {
+            $overviewMenuQuery->where('year', $activeFiscalYear);
+        }
+        $overviewMenusByProvince = $overviewMenuQuery->get()->groupBy('province');
+
+        $provinceOverviewRows = collect($overviewScopeProvinces)->map(function ($province) use (
+            $overviewHtByProvinceId,
+            $overviewProvinceIds,
+            $overviewKidneyAssessments,
+            $overviewMenusByProvince
+        ) {
+            // HT / แสนคน
+            $provinceId = $overviewProvinceIds->get($province);
+            $htItems = $provinceId ? ($overviewHtByProvinceId->get($provinceId) ?? collect()) : collect();
+            $htTarget = $htItems->sum('target_b');
+            $htRate = $htTarget > 0 ? round($htItems->sum('total_a') / $htTarget * 100000) : null;
+
+            // พื้นที่ดำเนินงาน % + ข้อมูลครบ - same (user_id|operating_area) unit
+            // and "all 8 milestones" completion rule as kidneyDHBReport().
+            $areaGroups = $overviewKidneyAssessments
+                ->filter(fn($a) => $a->user && $a->user->province && $a->user->province->province_name === $province)
+                ->groupBy(fn($a) => $a->user_id . '|' . (($a->operating_area !== null && $a->operating_area !== '') ? $a->operating_area : ''));
+
+            $totalAreas = $areaGroups->count();
+            $completedAreas = $areaGroups->filter(function ($userAssessments) {
+                $milestonesDone = 0;
+                for ($i = 1; $i <= 7; $i++) {
+                    $field = "category_$i";
+                    if ($userAssessments->contains(fn($a) => !empty($a->$field))) {
+                        $milestonesDone++;
+                    }
+                }
+                if (
+                    $userAssessments->contains(fn($a) => !empty($a->category_8_1))
+                    || $userAssessments->contains(fn($a) => !empty($a->category_8_2))
+                    || $userAssessments->contains(fn($a) => !empty($a->category_8_3))
+                ) {
+                    $milestonesDone++;
+                }
+                return $milestonesDone >= 8;
+            })->count();
+
+            $areaPercent = $totalAreas > 0 ? round($completedAreas / $totalAreas * 100) : null;
+            $dataStatus = $totalAreas === 0 ? 'none' : ($completedAreas >= $totalAreas ? 'complete' : 'partial');
+
+            // เมนูลดโซเดียม: ก่อน = ทุกเมนูที่บันทึกไว้, หลัง = เมนูที่วัดค่าแล้วจริง
+            // (sodium_before/after > 0 ทั้งคู่)
+            $menuItems = $overviewMenusByProvince->get($province) ?? collect();
+            $menuBefore = $menuItems->count();
+            $menuAfter = $menuItems->filter(fn($m) => $m->sodium_before > 0 && $m->sodium_after > 0)->count();
+            $menuPercentChange = $menuBefore > 0 ? round((($menuAfter - $menuBefore) / $menuBefore) * 100) : null;
+
             return [
                 'province' => $province,
-                'avg_before' => $data ? round($data->avg_before, 2) : 0,
-                'avg_after' => $data ? round($data->avg_after, 2) : 0,
+                'ht_rate' => $htRate,
+                'area_percent' => $areaPercent,
+                'data_status' => $dataStatus,
+                'menu_before' => $menuBefore,
+                'menu_after' => $menuAfter,
+                'menu_percent_change' => $menuPercentChange,
             ];
         });
 
@@ -889,6 +1418,26 @@ class MainController extends Controller
             $productCountQuery->whereRaw("$effectiveProductProvince IN ($placeholders)", $targetProvinces);
         }
 
+        // Headline stats for the home page's ผลิตภัณฑ์ลดโซเดียม KPI cards - same
+        // rows (same year/province scope) as the count chart, using the same
+        // definitions as the reduced-sodium-products page: certified = has a
+        // standard_certification value, top type = most frequent product_type.
+        $productRows = (clone $productCountQuery)->get([
+            'reduced_sodium_products.product_type',
+            'reduced_sodium_products.standard_certification',
+        ]);
+        $productTypeCounts = $productRows->groupBy(fn($r) => trim((string) $r->product_type) !== '' ? trim((string) $r->product_type) : 'ไม่ระบุ')
+            ->map->count()->sortDesc();
+        $productCertified = $productRows->filter(fn($r) => trim((string) $r->standard_certification) !== '')->count();
+        $productStats = [
+            'total' => $productRows->count(),
+            'certified' => $productCertified,
+            'certified_percent' => $productRows->count() > 0 ? round($productCertified / $productRows->count() * 100, 1) : null,
+            'top_type' => $productTypeCounts->keys()->first(),
+            'top_type_count' => (int) ($productTypeCounts->first() ?? 0),
+            'type_total' => $productTypeCounts->count(),
+        ];
+
         $productCountDataRaw = $productCountQuery->selectRaw("$effectiveProductProvince as province_name, count(*) as count")
             ->groupBy(\DB::raw($effectiveProductProvince))
             ->get()
@@ -952,6 +1501,26 @@ class MainController extends Controller
                     $q->whereRaw('1 = 0');
                 }
             });
+        };
+
+        // Same condition as $behaviorWhereFor above, but as a [sql, bindings]
+        // pair so several roles can share ONE grouped query (SUM(CASE ...)).
+        $behaviorCondFor = function ($fiscalYearForRole, string $role, array $default): array {
+            $mappings = SurveyYearMapping::behaviorMappingsFor($fiscalYearForRole, $role);
+            $parts = [];
+            $bindings = [];
+            foreach ($mappings as $m) {
+                $values = !empty($m->criteria_pass_values) ? $m->criteria_pass_values : $default;
+                if (empty($values)) {
+                    continue;
+                }
+                $placeholders = implode(',', array_fill(0, count($values), '?'));
+                $parts[] = "JSON_UNQUOTE(JSON_EXTRACT(`survey_data`, '$.{$m->question_key}')) in ({$placeholders})";
+                foreach ($values as $v) {
+                    $bindings[] = $v;
+                }
+            }
+            return $parts ? ['(' . implode(' OR ', $parts) . ')', $bindings] : ['1 = 0', []];
         };
 
         // Every card above (map, sodium chart, product count) supports
@@ -1019,25 +1588,25 @@ class MainController extends Controller
                 $metricsBaseYear->whereIn('province_name', $targetProvinces);
             }
 
-            $metricsTotalCount += (clone $metricsBaseYear)->count();
+            // ONE grouped scan per year (COUNT + the 4 role conditions as
+            // SUM(CASE ...) columns) instead of 5 separate JSON_EXTRACT
+            // scans of the same rows - identical numbers, 1/5 the reads.
+            $roleSpecs = $isFy69Year
+                ? ['no_seasoning' => ['add_seasoning_cook', $seasoningDefault], 'no_instant_food' => ['freq_instant_food', $instantDefault], 'no_pickled_food' => ['freq_processed_food', $processedDefault], 'reduction_effort' => ['behavioral_reduce_dipping', $dippingDefault]]
+                : ['no_seasoning' => ['add_seasoning_cook', $seasoningDefault], 'no_instant_food' => ['freq_instant_food', $instantDefault], 'no_pickled_food' => ['freq_pickled_food', $pickledDefault], 'reduction_effort' => ['importance_level', $importanceDefault]];
 
-            $qNoSeasoning = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'add_seasoning_cook', $seasoningDefault)
-                ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
-
-            $qNoInstant = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'freq_instant_food', $instantDefault)
-                ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
-
-            if ($isFy69Year) {
-                $qNoPickled = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'freq_processed_food', $processedDefault)
-                    ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
-                $qEffort = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'behavioral_reduce_dipping', $dippingDefault)
-                    ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
-            } else {
-                $qNoPickled = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'freq_pickled_food', $pickledDefault)
-                    ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
-                $qEffort = $behaviorWhereFor(clone $metricsBaseYear, $metricsYear, 'importance_level', $importanceDefault)
-                    ->select('province_name', \DB::raw('count(*) as count'))->groupBy('province_name')->pluck('count', 'province_name');
+            $metricsAgg = (clone $metricsBaseYear)->select('province_name')->selectRaw('COUNT(*) as total_count');
+            foreach ($roleSpecs as $alias => [$role, $default]) {
+                [$condSql, $condBindings] = $behaviorCondFor($metricsYear, $role, $default);
+                $metricsAgg->selectRaw("SUM(CASE WHEN {$condSql} THEN 1 ELSE 0 END) as c_{$alias}", $condBindings);
             }
+            $metricsRows = $metricsAgg->groupBy('province_name')->get()->keyBy('province_name');
+
+            $metricsTotalCount += (int) $metricsRows->sum('total_count');
+            $qNoSeasoning = $metricsRows->map(fn($r) => (int) $r->c_no_seasoning);
+            $qNoInstant = $metricsRows->map(fn($r) => (int) $r->c_no_instant_food);
+            $qNoPickled = $metricsRows->map(fn($r) => (int) $r->c_no_pickled_food);
+            $qEffort = $metricsRows->map(fn($r) => (int) $r->c_reduction_effort);
 
             foreach ($targetProvinces as $p) {
                 $metricsByProvince['no_seasoning'][$p] += $qNoSeasoning->get($p, 0);
@@ -1082,8 +1651,9 @@ class MainController extends Controller
         return compact(
             'awarenessCriteriaPending',
             'awarenessData',
-            'sodiumCompareData',
+            'provinceOverviewRows',
             'productCountData',
+            'productStats',
             'awarenessMetrics',
             'metricsByProvince',
             'awarenessOverallTotal',
@@ -1101,10 +1671,21 @@ class MainController extends Controller
         // collide with those anyway).
         extract($homeDashboardData, EXTR_SKIP);
 
+        // Summary blocks for the 3 non-awareness modules shown on the home
+        // page (พชอ.ไต / เมนูลดโซเดียม / HT) - cached separately from the
+        // awareness bundle above (different source tables, cheaper, and
+        // they should not be invalidated together).
+        $homeModules = Cache::remember(
+            'home_modules_v12:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
+            now()->addMinutes(10),
+            fn() => $this->buildHomeModuleSummaries($activeFiscalYear, $selectedProvince, $targetProvinces)
+        );
+
         return view('pages.home', compact(
             'awarenessData',
-            'sodiumCompareData',
+            'provinceOverviewRows',
             'productCountData',
+            'productStats',
             'awarenessMetrics',
             'metricsByProvince',
             'years',
@@ -1115,11 +1696,827 @@ class MainController extends Controller
             'awarenessOverallPass',
             'awarenessOverallFail',
             'awarenessOverallRate',
-            'awarenessMethod'
+            'awarenessMethod',
+            'homeModules'
         ));
     }
 
+    /**
+     * พื้นที่ดำเนินงานของรายงานเก่าที่ "ยังไม่มีหมุด/พิกัด" (เช่น ข้อมูลปีงบประมาณ 2568 ที่กรอกก่อนมีระบบปักหมุด):
+     * รายงานพวกนี้มีแค่ชื่อพื้นที่ (ข้อความ) กับหน่วยงานผู้รายงาน จึงไม่เคยโผล่บนแผนที่/การ์ดสรุป
+     * ที่นับจากหมุดเลย ทั้งที่มีข้อมูลครบ - ที่นี่รวมเป็น "พื้นที่" ละ 1 รายการ (ปีงบ + จังหวัด + อำเภอ +
+     * หน่วยงาน + ชื่อพื้นที่) แล้ววางที่จุดกึ่งกลางอำเภอ (เฉลี่ยพิกัดหมู่บ้านในอำเภอ; ไม่มีอำเภอใช้จุดกึ่งกลางจังหวัด)
+     * โดยกระจายหมุดที่ซ้อนกันออกเล็กน้อย และติดธง 'approx' => true เพื่อให้หน้าจอบอกว่าเป็นตำแหน่งโดยประมาณ
+     * รูปแบบ/กติกาความก้าวหน้า (8 ข้อ) เหมือนหมุดปกติ จึงรวมเข้า collection เดียวกันได้ทันที
+     * ไม่ใช่การปักหมุดจริง - พอมีการปักหมุดให้รายงานนั้น (มีพิกัด/pin id) รายการนี้จะหายไปเองโดยอัตโนมัติ
+     *
+     * @param \Illuminate\Support\Collection $provinceMap province_id => province_name (ขอบเขตที่แสดง)
+     */
+    private function legacyUnpinnedAreaPins(string $fiscalYear, $provinceMap, ?string $selectedProvince = null, ?string $selectedDistrict = null, ?int $quarter = null, ?string $rank = null)
+    {
+        if ($provinceMap->isEmpty()) {
+            return collect();
+        }
+
+        $rows = KidneyAssessment::with('user')
+            ->whereNull('operating_area_pin_id')
+            ->where(function ($q) {
+                $q->whereNull('operating_area_latitude')->orWhereNull('operating_area_longitude')
+                    ->orWhere('operating_area_latitude', 0)->orWhere('operating_area_longitude', 0);
+            })
+            ->when($fiscalYear !== '', fn($q) => $q->where('fiscal_year', $fiscalYear))
+            ->get()
+            ->map(function ($a) {
+                $a->legacy_province_id = $a->operating_area_province_id ?: optional($a->user)->Province_id;
+                $a->legacy_district_id = $a->operating_area_district_id ?: optional($a->user)->District_id;
+                return $a;
+            })
+            ->filter(fn($a) => $a->legacy_province_id && $provinceMap->has($a->legacy_province_id));
+
+        if ($selectedProvince && $selectedProvince !== 'ทั้งหมด') {
+            $keep = $provinceMap->filter(fn($n) => $n === $selectedProvince)->keys()->all();
+            $rows = $rows->filter(fn($a) => in_array($a->legacy_province_id, $keep));
+        }
+        if ($selectedDistrict && $selectedDistrict !== 'ทั้งหมด') {
+            $keepD = District::where('district_name', $selectedDistrict)->pluck('district_id')->all();
+            $rows = $rows->filter(fn($a) => in_array($a->legacy_district_id, $keepD));
+        }
+        if ($rows->isEmpty()) {
+            return collect();
+        }
+
+        $districtNames = District::whereIn('district_id', $rows->pluck('legacy_district_id')->filter()->unique()->all())->pluck('district_name', 'district_id');
+        $region = fn($q) => $q->whereBetween('latitude', [13.8, 17.5])->whereBetween('longitude', [103.5, 105.8]);
+        $districtCentroid = \App\Models\Village::query()->tap($region)
+            ->whereIn('district_id', $rows->pluck('legacy_district_id')->filter()->unique()->all())
+            ->selectRaw('district_id, AVG(latitude) as lat, AVG(longitude) as lng')->groupBy('district_id')->get()->keyBy('district_id');
+        $provinceCentroid = \App\Models\Village::query()->tap($region)
+            ->whereIn('province_id', $rows->pluck('legacy_province_id')->unique()->all())
+            ->selectRaw('province_id, AVG(latitude) as lat, AVG(longitude) as lng')->groupBy('province_id')->get()->keyBy('province_id');
+
+        $groups = $rows->groupBy(fn($a) => implode('|', [
+            $a->fiscal_year,
+            $a->legacy_province_id,
+            $a->legacy_district_id,
+            optional($a->user)->User_rank_id,
+            optional($a->user)->sh_id,
+            optional($a->user)->hos_id,
+            trim((string) $a->operating_area),
+        ]));
+
+        $slot = [];
+        return $groups->map(function ($group) use ($quarter, $rank, $provinceMap, $districtNames, $districtCentroid, $provinceCentroid, &$slot) {
+            $first = $group->first();
+            $assess = $group;
+            if ($quarter !== null) {
+                $assess = $assess->where('quarter', $quarter);
+            }
+            if ($rank && $rank !== 'ทั้งหมด') {
+                $assess = $assess->filter(fn($a) => $a->user && (string) $a->user->User_rank_id === (string) $rank);
+            }
+            $done = [];
+            for ($i = 1; $i <= 7; $i++) {
+                $field = "category_$i";
+                if ($assess->contains(fn($a) => !empty($a->$field))) {
+                    $done[] = (string) $i;
+                }
+            }
+            if ($assess->contains(fn($a) => !empty($a->category_8_1) || !empty($a->category_8_2) || !empty($a->category_8_3))) {
+                $done[] = '8';
+            }
+
+            $c = $first->legacy_district_id ? ($districtCentroid[$first->legacy_district_id] ?? null) : null;
+            $c = $c ?: ($provinceCentroid[$first->legacy_province_id] ?? null);
+            if (!$c || (float) $c->lat == 0.0) {
+                return null;
+            }
+            // หมุดที่อยู่อำเภอ/จังหวัดเดียวกันจะซ้อนกัน -> วางเรียงเป็นวงเล็กๆ รอบจุดกึ่งกลาง
+            $key = $first->legacy_district_id ?: ('p' . $first->legacy_province_id);
+            $n = $slot[$key] = ($slot[$key] ?? -1) + 1;
+            $angle = $n * 2.399963; // golden angle
+            $radius = $n === 0 ? 0 : 0.012 * sqrt($n);
+            $districtName = $first->legacy_district_id ? ($districtNames[$first->legacy_district_id] ?? null) : null;
+
+            return [
+                'id' => null,
+                'district_id' => $first->legacy_district_id,
+                'lat' => (float) $c->lat + $radius * sin($angle),
+                'lng' => (float) $c->lng + $radius * cos($angle),
+                'label' => trim((string) $first->operating_area) ?: optional($first->user)->User_firstname,
+                'province_name' => $provinceMap[$first->legacy_province_id] ?? null,
+                'breadcrumb' => $districtName ?: '',
+                'fiscal_year' => $first->fiscal_year,
+                'progress' => count($done),
+                'progress_total' => 8,
+                'done_items' => $done,
+                'approx' => true,
+            ];
+        })->filter()->values();
+    }
+
+    /**
+     * Summary figures for the home page's three module sections
+     * (พชอ.ไต / เมนูลดโซเดียม / HT). Every definition is copied from the
+     * dedicated page it summarises so the numbers always agree with it:
+     *   - kidney: pin-based, same as kidneyDHBReport() (distinct districts
+     *     pinned vs. answered, per-item done counts, 8-milestone rule);
+     *   - menu:   same $measuredMenus / tier rule as reducedSodiumMenu();
+     *   - ht:     same Hi columns and per-100,000 rate as newHTCases().
+     * $year '' = every year (kidney/menu); the HT block then falls back to the
+     * newest year with data, because summing a population denominator over
+     * several years would not be a rate.
+     */
+    private function buildHomeModuleSummaries(string $year, string $selectedProvince, array $targetProvinces): array
+    {
+        $scopeProvinces = $selectedProvince !== 'all' ? [$selectedProvince] : $targetProvinces;
+
+        // ---------------------------------------------------------------- kidney
+        $pinsQuery = OperatingAreaPin::reportable()->with(['province', 'district', 'tambon', 'village', 'assessments'])
+            ->whereHas('province', fn($q) => $q->whereIn('province_name', $scopeProvinces));
+        if ($year !== '') {
+            $pinsQuery->where('fiscal_year', $year);
+        }
+        $pins = $pinsQuery->get()->map(function ($pin) {
+            $assess = $pin->assessments->where('fiscal_year', $pin->fiscal_year);
+            $done = [];
+            for ($i = 1; $i <= 7; $i++) {
+                $f = "category_$i";
+                if ($assess->contains(fn($a) => !empty($a->$f))) {
+                    $done[] = (string) $i;
+                }
+            }
+            if ($assess->contains(fn($a) => !empty($a->category_8_1) || !empty($a->category_8_2) || !empty($a->category_8_3))) {
+                $done[] = '8';
+            }
+            $crumbs = array_filter([
+                optional($pin->district)->district_name,
+                optional($pin->tambon)->tambon_name,
+                $pin->village_name_snapshot ?? optional($pin->village)->village_name,
+            ]);
+            return [
+                'district_id' => $pin->district_id,
+                'province_name' => optional($pin->province)->province_name,
+                'progress' => count($done),
+                'progress_total' => 8,
+                'done_items' => $done,
+                'lat' => (float) $pin->latitude,
+                'lng' => (float) $pin->longitude,
+                'label' => $pin->label,
+                'breadcrumb' => implode(' › ', $crumbs),
+                'fiscal_year' => $pin->fiscal_year,
+            ];
+        })->values();
+
+        // Pins placed while filing a report (incl. Word imports) live on the
+        // KidneyAssessment itself, not as registered pins - fold them in the
+        // same way kidneyDHBReport() does so home and the report agree.
+        $homeProvMap = Province::whereIn('province_name', $scopeProvinces)->pluck('province_name', 'province_id');
+        if ($homeProvMap->isNotEmpty()) {
+            $freeRows = KidneyAssessment::query()
+                ->whereNull('operating_area_pin_id')
+                ->whereNotNull('operating_area_latitude')
+                ->whereNotNull('operating_area_longitude')
+                ->whereIn('operating_area_province_id', $homeProvMap->keys()->all())
+                ->when($year !== '', fn($q) => $q->where('fiscal_year', $year))
+                ->get()
+                ->filter(fn($a) => (float) $a->operating_area_latitude != 0.0 && (float) $a->operating_area_longitude != 0.0);
+            $freeDistNames = District::whereIn('district_id', $freeRows->pluck('operating_area_district_id')->filter()->unique()->all())->pluck('district_name', 'district_id');
+            $freeTamNames = \App\Models\Tambon::whereIn('tambon_id', $freeRows->pluck('operating_area_tambon_id')->filter()->unique()->all())->pluck('tambon_name', 'tambon_id');
+            $freePins = $freeRows
+                ->groupBy(fn($a) => implode('|', [$a->fiscal_year, $a->operating_area_province_id, $a->operating_area_district_id, $a->operating_area_tambon_id, $a->operating_area_village_id, trim((string) $a->operating_area), round((float) $a->operating_area_latitude, 5), round((float) $a->operating_area_longitude, 5)]))
+                ->map(function ($g) use ($homeProvMap, $freeDistNames, $freeTamNames) {
+                    $f = $g->first();
+                    $done = [];
+                    for ($i = 1; $i <= 7; $i++) {
+                        $fld = "category_$i";
+                        if ($g->contains(fn($a) => !empty($a->$fld))) {
+                            $done[] = (string) $i;
+                        }
+                    }
+                    if ($g->contains(fn($a) => !empty($a->category_8_1) || !empty($a->category_8_2) || !empty($a->category_8_3))) {
+                        $done[] = '8';
+                    }
+                    return [
+                        'district_id' => $f->operating_area_district_id,
+                        'province_name' => $homeProvMap[$f->operating_area_province_id] ?? null,
+                        'progress' => count($done),
+                        'progress_total' => 8,
+                        'done_items' => $done,
+                        'lat' => (float) $f->operating_area_latitude,
+                        'lng' => (float) $f->operating_area_longitude,
+                        'label' => trim((string) $f->operating_area) ?: null,
+                        'breadcrumb' => implode(' › ', array_filter([$freeDistNames[$f->operating_area_district_id] ?? null, $freeTamNames[$f->operating_area_tambon_id] ?? null, $f->operating_area_village_name_snapshot])),
+                        'fiscal_year' => $f->fiscal_year,
+                    ];
+                })->values();
+            $pins = $pins->concat($freePins)->values();
+            $pins = $pins->concat($this->legacyUnpinnedAreaPins($year, $homeProvMap))->values();
+        }
+
+        $pinTotal = $pins->count();
+        $answeredPins = $pins->filter(fn($p) => $p['progress'] > 0);
+        $completePins = $pins->filter(fn($p) => $p['progress'] >= 8);
+        $districtsTotal = $pins->pluck('district_id')->filter()->unique()->count();
+        $districtsCovered = $answeredPins->pluck('district_id')->filter()->unique()->count();
+
+        $kidneyProvinces = collect($scopeProvinces)->map(function ($prov) use ($pins) {
+            $pp = $pins->where('province_name', $prov);
+            $total = $pp->pluck('district_id')->filter()->unique()->count();
+            $answered = $pp->filter(fn($p) => $p['progress'] > 0)->pluck('district_id')->filter()->unique()->count();
+            $pc = $pp->count();
+            $ap = $pp->filter(fn($p) => $p['progress'] > 0)->count();
+            $cp = $pp->filter(fn($p) => $p['progress'] >= 8)->count();
+            return [
+                'province' => $prov,
+                'answered' => $answered,
+                'total' => $total,
+                'percent' => $total > 0 ? (int) round($answered / $total * 100) : null,
+                'pin_count' => $pc,
+                'complete_pins' => $cp,
+                'data_status' => ($pc === 0 || $ap === 0) ? 'none' : ($cp === $pc ? 'complete' : 'partial'),
+            ];
+        })->values();
+
+        $kidneyItems = collect(['1', '2', '3', '4', '5', '6', '7', '8'])->map(function ($k) use ($pins, $pinTotal) {
+            $done = $pins->filter(fn($p) => in_array($k, $p['done_items'], true))->count();
+            return ['key' => $k, 'done' => $done, 'total' => $pinTotal, 'percent' => $pinTotal > 0 ? (int) round($done / $pinTotal * 100) : 0];
+        })->values();
+
+        $kidney = [
+            'pin_total' => $pinTotal,
+            'answered_pins' => $answeredPins->count(),
+            'complete_pins' => $completePins->count(),
+            'districts_total' => $districtsTotal,
+            'districts_covered' => $districtsCovered,
+            'coverage_percent' => $districtsTotal > 0 ? min(100, (int) round($districtsCovered / $districtsTotal * 100)) : 0,
+            'items_done_sum' => (int) $pins->sum('progress'),
+            'items_possible' => $pinTotal * 8,
+            'items' => $kidneyItems,
+            'items_top' => $kidneyItems->filter(fn($s) => $s['done'] > 0)->sortBy([['done', 'desc'], ['key', 'asc']])->take(3)->values(),
+            'items_pending' => $kidneyItems->filter(fn($s) => $s['done'] === 0)->values(),
+            'provinces' => $kidneyProvinces,
+            'pins' => array_merge(
+                $pins->map(fn($p) => collect($p)->except(['done_items'])->all())->all(),
+                // หมุดแสดงผล: วาดบนแผนที่เท่านั้น ไม่นับรวมในตัวเลขสรุป
+                $this->displayOnlyPinList($scopeProvinces, $year)
+            ),
+        ];
+
+        // ------------------------------------------------------------------ menu
+        $menuQuery = ReducedSodiumMenu::query()->whereIn('province', $scopeProvinces);
+        if ($year !== '') {
+            $menuQuery->where('year', $year);
+        }
+        $menus = $menuQuery->get();
+        $measured = $menus->filter(fn($m) => $m->sodium_before > 0 && $m->sodium_after > 0);
+        $tierOf = function ($after) {
+            if ($after < 600) return 'ดีมาก';
+            if ($after <= 800) return 'ดี';
+            if ($after <= 1000) return 'ปานกลาง';
+            return 'ควรปรับปรุง';
+        };
+        $tierCounts = ['ดีมาก' => 0, 'ดี' => 0, 'ปานกลาง' => 0, 'ควรปรับปรุง' => 0];
+        foreach ($measured as $m) {
+            $tierCounts[$tierOf($m->sodium_after)]++;
+        }
+        $measuredCount = $measured->count();
+        $avgBefore = round($measured->avg('sodium_before') ?: 0, 1);
+        $avgAfter = round($measured->avg('sodium_after') ?: 0, 1);
+
+        $placeCategories = [
+            'โรงพยาบาล' => ['โรงพยาบาล', 'รพ.', 'โรงครัวรพ.'],
+            'ตลาด' => ['ตลาด'],
+            'โรงเรียน' => ['โรงเรียน', 'รร.', 'เรียน', 'โรงครัวรร.', 'วิทยาลัย', 'มหาลัย'],
+            'ร้านอาหารในชุมชน' => ['ร้านอาหาร', 'ร้าน', 'ครัว', 'ป้า', 'ลุง', 'โภชนาการ', 'กุ๊ก'],
+        ];
+        $places = $menus->groupBy(function ($m) use ($placeCategories) {
+            $fields = array_filter([$m->kitchen_type, $m->org_name, $m->agency]);
+            foreach ($placeCategories as $cat => $patterns) {
+                foreach ($fields as $v) {
+                    foreach ($patterns as $pt) {
+                        if (mb_strpos($v, $pt) !== false) {
+                            return $cat;
+                        }
+                    }
+                }
+            }
+            return 'อื่นๆ';
+        })->map->count()->sortDesc();
+
+        $menu = [
+            'total' => $menus->count(),
+            'measured' => $measuredCount,
+            'unmeasured' => $menus->count() - $measuredCount,
+            'avg_before' => $avgBefore,
+            'avg_after' => $avgAfter,
+            'reduction_percent' => $avgBefore > 0 ? round(($avgBefore - $avgAfter) / $avgBefore * 100, 1) : null,
+            'best_count' => $tierCounts['ดีมาก'],
+            'best_percent' => $measuredCount > 0 ? round($tierCounts['ดีมาก'] / $measuredCount * 100, 1) : null,
+            'high_risk_count' => $tierCounts['ควรปรับปรุง'],
+            'tiers' => $tierCounts,
+            // Per-province: every menu recorded (total), the re-tested subset
+            // (measured), and the paired average sodium before/after over
+            // exactly that subset - never two averages over different menus.
+            'provinces' => collect($scopeProvinces)->map(function ($prov) use ($menus) {
+                $all = $menus->where('province', $prov);
+                $m = $all->filter(fn($x) => $x->sodium_before > 0 && $x->sodium_after > 0);
+                $b = $m->count() > 0 ? round($m->avg('sodium_before'), 1) : null;
+                $a = $m->count() > 0 ? round($m->avg('sodium_after'), 1) : null;
+                return [
+                    'province' => $prov,
+                    'total' => $all->count(),
+                    'measured' => $m->count(),
+                    'avg_before' => $b,
+                    'avg_after' => $a,
+                    'reduction_percent' => ($b !== null && $b > 0) ? round(($b - $a) / $b * 100, 1) : null,
+                ];
+            })->values(),
+            'places' => $places->map(fn($c, $name) => ['name' => $name, 'count' => $c])->values(),
+        ];
+
+        // -------------------------------------------------------------------- HT
+        $hiYears = Hi::whereNotNull('year')->distinct()->pluck('year');
+        // ไม่ได้เลือกปี -> ใช้ปีล่าสุดที่ "มีข้อมูลผู้ป่วยแล้ว" (ปีใหม่ที่เพิ่งเปิดแต่ยังไม่มีข้อมูลจะไม่ทำให้การ์ดว่าง)
+        $hiYearsWithCases = Hi::whereNotNull('year')->where('total_a', '>', 0)->distinct()->pluck('year');
+        $htYear = $year !== '' ? $year : (string) ($hiYearsWithCases->max() ?? $hiYears->max());
+        $provinceIds = Province::whereIn('province_name', $scopeProvinces)->pluck('province_id', 'province_name');
+        $hiRows = Hi::query()
+            ->when($htYear !== '', fn($q) => $q->where('year', $htYear))
+            ->whereIn('Province_id', $provinceIds->values())
+            ->get();
+
+        $monthCols = [
+            'm10_oct' => 'ต.ค.', 'm11_nov' => 'พ.ย.', 'm12_dec' => 'ธ.ค.', 'm01_jan' => 'ม.ค.',
+            'm02_feb' => 'ก.พ.', 'm03_mar' => 'มี.ค.', 'm04_apr' => 'เม.ย.', 'm05_may' => 'พ.ค.',
+            'm06_jun' => 'มิ.ย.', 'm07_jul' => 'ก.ค.', 'm08_aug' => 'ส.ค.', 'm09_sep' => 'ก.ย.',
+        ];
+        $trend = [];
+        foreach ($monthCols as $col => $label) {
+            $trend[] = ['label' => $label, 'value' => (int) $hiRows->sum($col)];
+        }
+        // Latest month = last fiscal-order month that already has cases.
+        $latestIdx = null;
+        foreach ($trend as $i => $t) {
+            if ($t['value'] > 0) {
+                $latestIdx = $i;
+            }
+        }
+        $latestMonth = $latestIdx !== null ? $trend[$latestIdx] : null;
+        $prevMonth = ($latestIdx !== null && $latestIdx > 0) ? $trend[$latestIdx - 1] : null;
+        $monthChange = ($latestMonth && $prevMonth && $prevMonth['value'] > 0)
+            ? round(($latestMonth['value'] - $prevMonth['value']) / $prevMonth['value'] * 100, 1)
+            : null;
+
+        $htProvinces = collect($scopeProvinces)->map(function ($prov) use ($provinceIds, $hiRows) {
+            $items = $hiRows->where('Province_id', $provinceIds->get($prov));
+            $cases = (int) $items->sum('total_a');
+            $target = (int) $items->sum('target_b');
+            return [
+                'province' => $prov,
+                'cases' => $cases,
+                'target' => $target,
+                'rate' => $target > 0 ? round($cases / $target * 100000, 2) : null,
+            ];
+        })->values();
+        $rated = $htProvinces->filter(fn($r) => $r['rate'] !== null);
+        $totalCases = (int) $htProvinces->sum('cases');
+        // Like-for-like regional rate: numerator AND denominator both come
+        // only from provinces that actually have a target population.
+        // /new-ht-cases divides ALL cases by only the populated provinces'
+        // target, which overstates the rate whenever a province has cases
+        // but no target_b (see 'unrated_provinces' below).
+        $ratedCases = (int) $rated->sum('cases');
+        $totalTarget = (int) $rated->sum('target');
+        $unratedProvinces = $htProvinces->filter(fn($r) => $r['rate'] === null && $r['cases'] > 0)->pluck('province')->values();
+
+        // Year-over-year trend of that same like-for-like rate.
+        $hiAllYears = Hi::whereIn('Province_id', $provinceIds->values())->whereNotNull('year')->get()->groupBy('year');
+        $yearTrend = $this->htYearTrend($hiAllYears);
+
+        $trendPop = $this->buildHtTrendPop($scopeProvinces, $provinceIds, $hiAllYears, $yearTrend, $monthCols);
+
+        $ht = [
+            'year' => $htYear,
+            'year_is_fallback' => $year === '',
+            'total_cases' => $totalCases,
+            'total_target' => $totalTarget,
+            'rate' => $totalTarget > 0 ? round($ratedCases / $totalTarget * 100000, 2) : null,
+            'unrated_provinces' => $unratedProvinces,
+            'year_trend' => $yearTrend,
+            'trend_pop' => $trendPop,
+            'trend' => $trend,
+            'latest_month' => $latestMonth,
+            'prev_month' => $prevMonth,
+            'month_change' => $monthChange,
+            'provinces' => $htProvinces,
+            'top_province' => $rated->sortByDesc('rate')->first(),
+            'low_province' => $rated->sortBy('rate')->first(),
+            // วันที่ข้อมูล HT ถูกอัปโหลด/แก้ไขล่าสุด (ปี+จังหวัดที่แสดงอยู่) - ใช้โชว์ที่หัวการ์ด
+            'updated_at' => $hiRows->max('updated_at'),
+        ];
+
+        return compact('kidney', 'menu', 'ht');
+    }
+
+    /**
+     * ข้อมูล + ข้อความวิเคราะห์ของ popup "สถานการณ์แนวโน้ม" (ใช้ร่วมกันที่หน้าแรกและ /new-ht-cases)
+     * $hiAllYears = แถว Hi ทุกปีของจังหวัดในขอบเขต (groupBy year), $yearTrend = อัตรา like-for-like รายปี
+     */
+    private function buildHtTrendPop(array $scopeProvinces, $provinceIds, $hiAllYears, $yearTrend, array $monthCols): ?array
+    {
+        // ---- ข้อมูลสำหรับ popup "สถานการณ์แนวโน้ม" (ปุ่มที่หัวการ์ด HT) ----
+        // ใช้ชุดข้อมูลเดียวกับ $hiAllYears / $yearTrend ด้านบน จึงตรงกับตัวเลขในการ์ด
+        // ปีล่าสุดที่ข้อมูลยังไม่ครบ 12 เดือนจะไม่ถูกนำไปเทียบอัตรารายปีโดยตรง (เทียบเฉพาะช่วงเดือนเดียวกันกับปีก่อน)
+        $monthKeys = array_keys($monthCols);
+        $monthLabels = array_values($monthCols);
+        $yearRateMap = $yearTrend->keyBy('year');
+        $popYearsInfo = $hiAllYears->sortKeys()->map(function ($rows, $y) use ($monthKeys, $yearRateMap) {
+            $months = array_map(fn($c) => (int) $rows->sum($c), $monthKeys);
+            $lastIdx = null;
+            foreach ($months as $i => $v) {
+                if ($v > 0) {
+                    $lastIdx = $i;
+                }
+            }
+            return [
+                'year' => (string) $y,
+                'cases' => (int) $rows->sum('total_a'),
+                'rate' => ($yearRateMap->get((string) $y)['rate'] ?? null),
+                'months' => $months,
+                'last_idx' => $lastIdx,
+                'complete' => $lastIdx === null || $lastIdx === 11,
+            ];
+        })->filter(fn($r) => $r['cases'] > 0)->values();
+
+        $trendPop = null;
+        if ($popYearsInfo->isNotEmpty()) {
+            $popYearKeys = $popYearsInfo->pluck('year')->all();
+            $popProvinces = collect($scopeProvinces)->map(function ($prov) use ($provinceIds, $hiAllYears, $popYearKeys) {
+                $pid = $provinceIds->get($prov);
+                $rates = [];
+                $casesArr = [];
+                foreach ($popYearKeys as $y) {
+                    $rows = ($hiAllYears->get($y) ?? collect())->where('Province_id', $pid);
+                    $c = (int) $rows->sum('total_a');
+                    $t = (int) $rows->sum('target_b');
+                    $casesArr[] = $c;
+                    $rates[] = $t > 0 ? round($c / $t * 100000, 2) : null;
+                }
+                return ['name' => $prov, 'rate' => $rates, 'cases' => $casesArr];
+            })->values();
+
+            $nY = $popYearsInfo->count();
+            $Linfo = $popYearsInfo->last();
+            $Pinfo = $nY >= 2 ? $popYearsInfo[$nY - 2] : null;
+            $pctOf = fn($new, $old) => $old > 0 ? ($new - $old) / $old * 100 : null;
+            $toneOf = fn($p) => $p === null ? 'info' : (abs($p) < 2 ? 'flat' : ($p > 0 ? 'up' : 'down'));
+            $verbOf = fn($p) => abs($p) < 2 ? 'ใกล้เคียงเดิม' : ($p > 0 ? 'เพิ่มขึ้น' : 'ลดลง');
+            $sgn = fn($p) => ($p > 0 ? '+' : '') . number_format($p, 1) . '%';
+            $insights = [];
+            $summary = null;
+
+            // 1) เทียบอัตรารายปี (เฉพาะปีที่ข้อมูลครบ 12 เดือน)
+            $comp = $popYearsInfo->filter(fn($r) => $r['complete'] && $r['rate'] !== null)->values();
+            $c1 = $c2 = null;
+            if ($comp->count() >= 2) {
+                $c1 = $comp[$comp->count() - 2];
+                $c2 = $comp[$comp->count() - 1];
+                $p = $pctOf($c2['rate'], $c1['rate']);
+                if ($p !== null) {
+                    // (ไม่แสดงเป็นการ์ดวิเคราะห์แล้ว - การ์ดแนวโน้มหน้าแรกแสดงเฉพาะข้อมูลรายเดือน แต่ยังใช้คำนวณป้ายสรุปหัวการ์ด)
+                    $summary = ['tone' => $toneOf($p), 'label' => 'แนวโน้ม' . (abs($p) < 2 ? 'ทรงตัว' : ($p > 0 ? 'เพิ่มขึ้น' : 'ลดลง')), 'pct' => $sgn($p)];
+                }
+            }
+
+            // 2) เทียบช่วงเดือนเดียวกันกับปีก่อน (ใช้ได้แม้ปีล่าสุดยังไม่ครบ)
+            if ($Pinfo && $Linfo['last_idx'] !== null) {
+                $k = $Linfo['last_idx'] + 1;
+                $ytdL = array_sum(array_slice($Linfo['months'], 0, $k));
+                $ytdP = array_sum(array_slice($Pinfo['months'], 0, $k));
+                if ($ytdP > 0) {
+                    $p = $pctOf($ytdL, $ytdP);
+                    $span = $Linfo['complete'] ? 'ตลอดปี' : 'สะสมถึง' . $monthLabels[$Linfo['last_idx']];
+                    $insights[] = [
+                        'tone' => $toneOf($p),
+                        'title' => 'เทียบช่วงเดียวกัน',
+                        'text' => 'ปีงบ ' . $Linfo['year'] . ' ' . $span . ' มีผู้ป่วยใหม่ ' . number_format($ytdL) . ' คน เทียบช่วงเดียวกันของปีงบ ' . $Pinfo['year']
+                            . ' (' . number_format($ytdP) . ' คน) ' . $verbOf($p) . ' (' . $sgn($p) . ')',
+                    ];
+                    if ($summary === null) {
+                        $summary = ['tone' => $toneOf($p), 'label' => 'แนวโน้ม' . (abs($p) < 2 ? 'ทรงตัว' : ($p > 0 ? 'เพิ่มขึ้น' : 'ลดลง')), 'pct' => $sgn($p)];
+                    }
+                }
+            }
+
+            // 3) เดือนที่สูงสุดของปีล่าสุด
+            if ($Linfo['last_idx'] !== null && $Linfo['last_idx'] >= 2) {
+                $reported = array_slice($Linfo['months'], 0, $Linfo['last_idx'] + 1);
+                $maxV = max($reported);
+                $maxI = array_search($maxV, $reported);
+                if ($maxV > 0) {
+                    $insights[] = [
+                        'tone' => 'info',
+                        'title' => 'เดือนที่พบมากสุด',
+                        'text' => 'ปีงบ ' . $Linfo['year'] . ' พบผู้ป่วยใหม่สูงสุดในเดือน' . $monthLabels[$maxI] . ' ' . number_format($maxV) . ' คน (เฉลี่ย ' . number_format(array_sum($reported) / count($reported)) . ' คนต่อเดือน)',
+                    ];
+                }
+            }
+
+            // 4) เดือนที่เพิ่มขึ้น/ลดลงจากเดือนก่อนมากสุด (เฉพาะเดือนที่มีข้อมูลแล้ว ของปีล่าสุด)
+            if ($Linfo['last_idx'] !== null && $Linfo['last_idx'] >= 2) {
+                $reportedM = array_slice($Linfo['months'], 0, $Linfo['last_idx'] + 1);
+                $bestUp = $bestDown = null;
+                for ($mi = 1; $mi < count($reportedM); $mi++) {
+                    $d = $reportedM[$mi] - $reportedM[$mi - 1];
+                    if ($d > 0 && ($bestUp === null || $d > $bestUp['d'])) {
+                        $bestUp = ['i' => $mi, 'd' => $d];
+                    }
+                    if ($d < 0 && ($bestDown === null || $d < $bestDown['d'])) {
+                        $bestDown = ['i' => $mi, 'd' => $d];
+                    }
+                }
+                if ($bestUp) {
+                    $pp = $pctOf($reportedM[$bestUp['i']], $reportedM[$bestUp['i'] - 1]);
+                    $insights[] = [
+                        'tone' => 'up',
+                        'title' => 'เดือนที่เพิ่มขึ้นมากสุด',
+                        'text' => 'ปีงบ ' . $Linfo['year'] . ' เดือน' . $monthLabels[$bestUp['i']] . ' เพิ่มขึ้น ' . number_format($bestUp['d']) . ' คน เทียบกับก่อนหน้า' . ($pp !== null ? ' (' . $sgn($pp) . ')' : ''),
+                    ];
+                }
+                if ($bestDown) {
+                    $pp = $pctOf($reportedM[$bestDown['i']], $reportedM[$bestDown['i'] - 1]);
+                    $insights[] = [
+                        'tone' => 'down',
+                        'title' => 'เดือนที่ลดลงมากสุด',
+                        'text' => 'ปีงบ ' . $Linfo['year'] . ' เดือน' . $monthLabels[$bestDown['i']] . ' ลดลง ' . number_format(abs($bestDown['d'])) . ' คน เทียบกับก่อนหน้า' . ($pp !== null ? ' (' . $sgn($pp) . ')' : ''),
+                    ];
+                }
+            }
+
+            // 5) ข้อควรระวัง: ปีล่าสุดยังไม่ครบปี
+            if (!$Linfo['complete'] && $Linfo['last_idx'] !== null) {
+                $insights[] = [
+                    'tone' => 'info',
+                    'title' => 'ข้อควรระวัง',
+                    'text' => 'ปีงบ ' . $Linfo['year'] . ' มีข้อมูลถึงเดือน' . $monthLabels[$Linfo['last_idx']] . ' เท่านั้น ตัวเลขรายปีของปีนี้จึงยังต่ำกว่าปีเต็ม ไม่ควรเทียบตรงกับปีก่อน (ดูการเทียบช่วงเดียวกันแทน)',
+                ];
+            }
+            if ($nY < 2) {
+                $insights[] = [
+                    'tone' => 'info',
+                    'title' => 'ข้อมูลยังน้อย',
+                    'text' => 'ตอนนี้มีข้อมูลเพียงปี ' . $Linfo['year'] . ' จึงยังเทียบแนวโน้มข้ามปีไม่ได้ เมื่อมีข้อมูลปีถัดไประบบจะคำนวณให้อัตโนมัติ',
+                ];
+            }
+
+            $fillMonths = fn($info, $cut) => $info === null ? null : array_map(
+                fn($v, $i) => ($cut !== null && $i > $cut) ? null : $v,
+                $info['months'],
+                array_keys($info['months'])
+            );
+            $trendPop = [
+                'years' => $popYearKeys,
+                'partial_year' => $Linfo['complete'] ? null : $Linfo['year'],
+                'partial_label' => ($Linfo['last_idx'] !== null) ? $monthLabels[$Linfo['last_idx']] : null,
+                'overall' => [
+                    'rate' => $popYearsInfo->pluck('rate')->all(),
+                    'cases' => $popYearsInfo->pluck('cases')->all(),
+                ],
+                'provinces' => $popProvinces->all(),
+                'month_labels' => $monthLabels,
+                'last_idx' => $Linfo['last_idx'],
+                'month_latest' => ['year' => $Linfo['year'], 'values' => $fillMonths($Linfo, $Linfo['last_idx'])],
+                'month_prev' => $Pinfo ? ['year' => $Pinfo['year'], 'values' => $fillMonths($Pinfo, null)] : null,
+                // รายเดือนของ "ทุกปี" ที่มีข้อมูลรายเดือน (เรียงเก่า -> ใหม่) ให้กราฟรายเดือนแสดงครบทุกปีงบประมาณ
+                'month_series' => $popYearsInfo->filter(fn($i) => $i['last_idx'] !== null)->map(fn($i) => [
+                    'year' => $i['year'],
+                    'values' => $fillMonths($i, $i['last_idx']),
+                ])->values()->all(),
+                'insights' => $insights,
+                'summary' => $summary,
+            ];
+        }
+
+        return $trendPop;
+    }
+
+
+    /**
+     * ข้อมูลเทียบปีก่อนของกราฟ/ตารางรายเดือนในหน้า /new-ht-cases
+     * - series: สูงสุด 2 ปีก่อนหน้าปีที่เลือก (เก่า -> ใหม่) พร้อมยอดรายเดือน/ยอดสะสม (ตัดเดือนที่ยังไม่มีข้อมูลเป็น null)
+     * - insights: ข้อความวิเคราะห์ (tone/mode/title/text) คำนวณจากข้อมูลจริงชุดเดียวกับกราฟ
+     *   mode: 'm' = แสดงเฉพาะมุมมองรายเดือน, 'c' = เฉพาะยอดสะสม, 'both' = ทั้งคู่
+     */
+    private function buildMonthlyCompare($selectedYear, $provinceName, $districtName, array $months, array $monthlyTrend): array
+    {
+        $keys = array_keys($months);
+        $labels = array_values($months);
+        $hasYear = $selectedYear && $selectedYear != 'ทั้งหมด';
+        $series = [];
+        if ($hasYear) {
+            $q = Hi::query()->whereNotNull('year')->where('year', '<', $selectedYear);
+            if ($provinceName && $provinceName != 'ทั้งหมด') {
+                $pid = Province::where('province_name', $provinceName)->value('province_id');
+                $pid ? $q->where('Province_id', $pid) : $q->whereRaw('1 = 0');
+            }
+            if ($districtName && $districtName != 'ทั้งหมด') {
+                $q->where('District_name', $districtName);
+            }
+            foreach ($q->get(array_merge(['year'], $keys))->groupBy('year')->sortKeys() as $y => $items) {
+                $vals = array_map(fn($k) => (int) $items->sum($k), $keys);
+                $last = null;
+                foreach ($vals as $i => $v) {
+                    if ($v > 0) {
+                        $last = $i;
+                    }
+                }
+                if ($last === null) {
+                    continue;
+                }
+                $run = 0;
+                $cum = [];
+                foreach ($vals as $i => $v) {
+                    $run += $v;
+                    $cum[] = $i <= $last ? $run : null;
+                }
+                $series[] = [
+                    'year' => (string) $y,
+                    'last_idx' => $last,
+                    'complete' => $last === 11,
+                    'total' => array_sum($vals),
+                    'values' => array_map(fn($v, $i) => $i <= $last ? $v : null, $vals, array_keys($vals)),
+                    'cum' => $cum,
+                ];
+            }
+            $series = array_slice($series, -2);
+        }
+
+        $cur = array_values($monthlyTrend);
+        $curLast = null;
+        foreach ($cur as $i => $v) {
+            if ($v > 0) {
+                $curLast = $i;
+            }
+        }
+        $prev = $series ? end($series) : null;
+        $yLabel = $hasYear ? 'ปีงบ ' . $selectedYear : 'ทุกปีรวมกัน';
+        $pctOf = fn($new, $old) => $old > 0 ? ($new - $old) / $old * 100 : null;
+        $toneOf = fn($p) => $p === null ? 'info' : (abs($p) < 2 ? 'flat' : ($p > 0 ? 'up' : 'down'));
+        $verbOf = fn($p) => abs($p) < 2 ? 'ใกล้เคียงเดิม' : ($p > 0 ? 'เพิ่มขึ้น' : 'ลดลง');
+        $sgn = fn($p) => ($p > 0 ? '+' : '') . number_format($p, 1) . '%';
+        $ins = [];
+
+        if ($curLast === null) {
+            $ins[] = ['tone' => 'info', 'mode' => 'both', 'title' => 'ยังไม่มีข้อมูล', 'text' => 'ตัวกรองที่เลือกยังไม่มีข้อมูลผู้ป่วยรายใหม่รายเดือน'];
+        } else {
+            $k = $curLast + 1;
+            $ytd = array_sum(array_slice($cur, 0, $k));
+            $span = $curLast === 11 ? 'ตลอดปี' : 'สะสมถึงเดือน' . $labels[$curLast];
+
+            // 1) เทียบช่วงเดือนเดียวกันกับปีก่อน (เทียบเมื่อปีก่อนมีข้อมูลถึงเดือนเดียวกันเท่านั้น)
+            if ($prev && $prev['last_idx'] >= $curLast) {
+                $ytdP = array_sum(array_slice($prev['values'], 0, $k));
+                $p = $pctOf($ytd, $ytdP);
+                if ($p !== null) {
+                    $ins[] = [
+                        'tone' => $toneOf($p), 'mode' => 'both', 'title' => 'เทียบช่วงเดียวกัน',
+                        'text' => $yLabel . ' ' . $span . ' มีผู้ป่วยใหม่ ' . number_format($ytd) . ' คน เทียบช่วงเดียวกันของปีงบ ' . $prev['year']
+                            . ' (' . number_format($ytdP) . ' คน) ' . $verbOf($p) . ' (' . $sgn($p) . ')',
+                    ];
+                }
+            }
+
+            // 2) ยอดสะสม เทียบกับยอดรวมทั้งปีก่อน (ใช้เมื่อปีก่อนมีข้อมูลครบ 12 เดือน)
+            if ($prev && $prev['complete'] && $prev['total'] > 0) {
+                $ins[] = [
+                    'tone' => 'info', 'mode' => 'c', 'title' => 'ยอดสะสมเทียบทั้งปีก่อน',
+                    'text' => $yLabel . ' สะสมถึงเดือน' . $labels[$curLast] . ' แล้ว ' . number_format($ytd) . ' คน คิดเป็น '
+                        . number_format($ytd / $prev['total'] * 100, 1) . '% ของยอดรวมทั้งปี ' . $prev['year'] . ' (' . number_format($prev['total']) . ' คน)',
+                ];
+            } elseif (!$prev) {
+                $ins[] = [
+                    'tone' => 'info', 'mode' => 'c', 'title' => 'ยอดสะสม',
+                    'text' => $yLabel . ' สะสมถึงเดือน' . $labels[$curLast] . ' แล้ว ' . number_format($ytd) . ' คน (เฉลี่ย ' . number_format($ytd / $k) . ' คนต่อเดือน)',
+                ];
+            }
+
+            // 3) เดือนที่พบมากสุด + 4) เดือนที่เปลี่ยนจากเดือนก่อนมากสุด (เฉพาะเดือนที่มีข้อมูลแล้ว)
+            $reported = array_slice($cur, 0, $k);
+            if (count($reported) >= 2 && max($reported) > 0) {
+                $maxV = max($reported);
+                $maxI = array_search($maxV, $reported);
+                $ins[] = [
+                    'tone' => 'info', 'mode' => 'm', 'title' => 'เดือนที่พบมากสุด',
+                    'text' => $yLabel . ' พบผู้ป่วยใหม่สูงสุดในเดือน' . $labels[$maxI] . ' ' . number_format($maxV) . ' คน (เฉลี่ย ' . number_format(array_sum($reported) / count($reported)) . ' คนต่อเดือน)',
+                ];
+            }
+            if (count($reported) >= 3) {
+                $bestUp = $bestDown = null;
+                for ($i = 1; $i < count($reported); $i++) {
+                    $d = $reported[$i] - $reported[$i - 1];
+                    if ($d > 0 && ($bestUp === null || $d > $bestUp['d'])) {
+                        $bestUp = ['i' => $i, 'd' => $d];
+                    }
+                    if ($d < 0 && ($bestDown === null || $d < $bestDown['d'])) {
+                        $bestDown = ['i' => $i, 'd' => $d];
+                    }
+                }
+                if ($bestUp) {
+                    $pp = $pctOf($reported[$bestUp['i']], $reported[$bestUp['i'] - 1]);
+                    $ins[] = [
+                        'tone' => 'up', 'mode' => 'm', 'title' => 'เดือนที่เพิ่มขึ้นมากสุด',
+                        'text' => $yLabel . ' เดือน' . $labels[$bestUp['i']] . ' เพิ่มขึ้น ' . number_format($bestUp['d']) . ' คน เทียบกับก่อนหน้า' . ($pp !== null ? ' (' . $sgn($pp) . ')' : ''),
+                    ];
+                }
+                if ($bestDown) {
+                    $pp = $pctOf($reported[$bestDown['i']], $reported[$bestDown['i'] - 1]);
+                    $ins[] = [
+                        'tone' => 'down', 'mode' => 'm', 'title' => 'เดือนที่ลดลงมากสุด',
+                        'text' => $yLabel . ' เดือน' . $labels[$bestDown['i']] . ' ลดลง ' . number_format(abs($bestDown['d'])) . ' คน เทียบกับก่อนหน้า' . ($pp !== null ? ' (' . $sgn($pp) . ')' : ''),
+                    ];
+                }
+            }
+
+            // 5) ข้อควรระวัง
+            if ($hasYear && $curLast < 11) {
+                $ins[] = [
+                    'tone' => 'info', 'mode' => 'both', 'title' => 'ข้อควรระวัง',
+                    'text' => 'ปีงบ ' . $selectedYear . ' มีข้อมูลถึงเดือน' . $labels[$curLast] . ' เท่านั้น ยอดสะสมจึงยังต่ำกว่าปีเต็ม ควรดูการเทียบช่วงเดียวกันกับปีก่อน',
+                ];
+            }
+            if ($hasYear && !$prev) {
+                $ins[] = ['tone' => 'info', 'mode' => 'both', 'title' => 'ยังไม่มีปีก่อนให้เทียบ', 'text' => 'ไม่พบข้อมูลรายเดือนของปีก่อนหน้า ตามตัวกรองจังหวัด/อำเภอที่เลือก จึงยังไม่แสดงเส้นเทียบ'];
+            }
+        }
+
+        return ['year' => $hasYear ? (string) $selectedYear : null, 'last_idx' => $curLast, 'series' => $series, 'insights' => $ins];
+    }
+    /** อัตรา HT รายปีแบบ like-for-like (ตัวตั้งและตัวหารนับเฉพาะจังหวัดที่มีเป้าหมายประชากร) */
+    private function htYearTrend($hiAllYears)
+    {
+        return $hiAllYears->sortKeys()->map(function ($rows, $y) {
+            $byProv = $rows->groupBy('Province_id')->map(fn($r) => ['c' => (int) $r->sum('total_a'), 't' => (int) $r->sum('target_b')]);
+            $withTarget = $byProv->filter(fn($x) => $x['t'] > 0);
+            $t = $withTarget->sum('t');
+            return [
+                'year' => (string) $y,
+                'cases' => (int) $byProv->sum('c'),
+                'rate' => $t > 0 ? round($withTarget->sum('c') / $t * 100000, 2) : null,
+            ];
+        })->values()->filter(fn($r) => $r['cases'] > 0)->values();
+    }
+
+    /**
+     * ฟีดสำหรับการ์ด/popup "สถานการณ์แนวโน้ม HT" ให้หน้าเว็บอัปเดตตัวเองเมื่อข้อมูลเปลี่ยน (poll เบาๆ ด้วย stamp)
+     * - ?province=all|ชื่อจังหวัด (ขอบเขตเดียวกับที่หน้ากำลังแสดง)  - ?stamp=ค่าที่ได้ครั้งก่อน
+     * - stamp ไม่เปลี่ยน -> ตอบ changed:false (ไม่คำนวณใหม่); เปลี่ยน -> ส่งข้อมูลทั้งชุด (แคชตาม stamp)
+     */
+    public function htTrendFeed(Request $request)
+    {
+        $targets = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
+        $province = (string) $request->query('province', 'all');
+        $scope = in_array($province, $targets, true) ? [$province] : $targets;
+
+        $row = DB::table((new Hi)->getTable())->selectRaw('COUNT(*) as c, MAX(updated_at) as u, COALESCE(SUM(total_a), 0) as s')->first();
+        $stamp = md5(($row->c ?? 0) . '|' . ($row->u ?? '') . '|' . ($row->s ?? 0) . '|' . implode(',', $scope));
+        $headers = ['Cache-Control' => 'no-store'];
+
+        if ($request->boolean('only')) {
+            return response()->json(['stamp' => $stamp], 200, $headers);
+        }
+
+        if ((string) $request->query('stamp') === $stamp) {
+            return response()->json(['changed' => false, 'stamp' => $stamp], 200, $headers);
+        }
+
+        $trend = Cache::remember('ht_trend_feed_v1:' . $stamp, now()->addMinutes(10), fn () => $this->htTrendPopForScope($scope));
+
+        return response()->json(['changed' => true, 'stamp' => $stamp, 'trend' => $trend], 200, $headers);
+    }
+
+    /** popup แนวโน้มของ /new-ht-cases: ดึงข้อมูลทุกปีของจังหวัดในขอบเขตเอง */
+    private function htTrendPopForScope(array $scopeProvinces): ?array
+    {
+        $monthCols = [
+            'm10_oct' => 'ต.ค.', 'm11_nov' => 'พ.ย.', 'm12_dec' => 'ธ.ค.', 'm01_jan' => 'ม.ค.',
+            'm02_feb' => 'ก.พ.', 'm03_mar' => 'มี.ค.', 'm04_apr' => 'เม.ย.', 'm05_may' => 'พ.ค.',
+            'm06_jun' => 'มิ.ย.', 'm07_jul' => 'ก.ค.', 'm08_aug' => 'ส.ค.', 'm09_sep' => 'ก.ย.',
+        ];
+        $provinceIds = Province::whereIn('province_name', $scopeProvinces)->pluck('province_id', 'province_name');
+        $hiAllYears = Hi::whereIn('Province_id', $provinceIds->values())->whereNotNull('year')->get()->groupBy('year');
+        return $this->buildHtTrendPop($scopeProvinces, $provinceIds, $hiAllYears, $this->htYearTrend($hiAllYears), $monthCols);
+    }
+
     public function consumptionReport(Request $request)
+    {
+        // ข้อมูลของหน้านี้เป็นฟังก์ชันของตัวกรอง (query string) + เนื้อหาตาราง - แคชไว้ตามนั้น
+        // คีย์ผูกกับจำนวนแถว/เวลาแก้ไขล่าสุดของตารางที่เกี่ยวข้อง จึงอัปเดตทันทีเมื่อข้อมูลเปลี่ยน
+        $data = $this->cachedPageData('consumption-report', $request, [SaltAssessment::class, User::class, FiscalYear::class], fn () => $this->consumptionReportData($request), false);
+
+        return view('pages.consumption-report', $data);
+    }
+
+    private function consumptionReportData(Request $request): array
     {
         $targetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
 
@@ -1391,7 +2788,7 @@ class MainController extends Controller
         $statsQLimit = ($selectedQuarter === 'ทั้งหมด') ? 4 : (int) $selectedQuarter;
         $milestoneFields = ['ans_1_detail', 'ans_2_detail', 'ans_3_detail', 'ans_4_detail', 'ans_5_1_detail', 'ans_5_2_detail', 'ans_5_3_detail', 'ans_5_4_detail', 'ans_5_5_detail'];
 
-        $agencyStatsRecords = $regionalAgencies->map(function ($agencyUser) use ($fiscalYear, $statsQLimit, $milestoneFields, $regionalReporters) {
+        $agencyStatsRecords = $regionalAgencies->map(function ($agencyUser) use ($fiscalYear, $statsQLimit, $milestoneFields, $regionalReporters, $stepDefs) {
             $peerIds = $regionalReporters->where('agency_key', $agencyUser->agency_key)->pluck('id');
             $assessmentsQuery = SaltAssessment::whereIn('user_id', $peerIds)->where('quarter', '<=', $statsQLimit);
             if ($fiscalYear !== 'ทั้งหมด') {
@@ -1411,9 +2808,22 @@ class MainController extends Controller
                 }
             }
 
+            // ขั้นตอน (1-5) ที่หน่วยงานนี้ดำเนินการแล้ว: ขั้น 5 นับเมื่อทำข้อย่อย 5.1-5.5 ข้อใดข้อหนึ่ง
+            // (กติกาเดียวกับการ์ด "ขั้นตอนดำเนินงาน 5 ข้อ") - ใช้ทำการ์ดตัวชี้วัดด้านบน
+            $doneSteps = [];
+            foreach ($stepDefs as $step) {
+                foreach ($step['fields'] as $f) {
+                    if ($assessments->contains(fn($a) => !empty($a->$f))) {
+                        $doneSteps[] = (string) $step['num'];
+                        break;
+                    }
+                }
+            }
+
             return (object) [
                 'agency_key' => $agencyUser->agency_key,
                 'province' => $agencyUser->province->province_name ?? 'N/A',
+                'done_steps' => $doneSteps,
                 'is_complete' => $doneCount === count($milestoneFields),
                 'done_count' => $doneCount,
                 'field_count' => count($milestoneFields),
@@ -1438,9 +2848,30 @@ class MainController extends Controller
             $stats['in_progress'] += $pFiltered->where('is_complete', false)->count();
         }
 
+        // การ์ด "ตัวชี้วัดที่ดำเนินการได้ดี / ต้องเร่งดำเนินการ": นับว่ามีกี่หน่วยงาน (ตามตัวกรองเดียวกับกราฟ)
+        // ที่ดำเนินการแต่ละขั้นตอนแล้ว - ได้ดี = 3 ขั้นที่หน่วยงานทำมากที่สุด,
+        // ต้องเร่ง = ขั้นที่หน่วยงานทำน้อยกว่า 60% (เกณฑ์เดียวกับสีเขียว/ส้มของอันดับรายจังหวัด) เรียงจากน้อยสุด
+        $indicatorTotal = $agencyStatsRecords->count();
+        $indicatorRows = collect($stepDefs)->map(function ($step) use ($agencyStatsRecords, $indicatorTotal) {
+            $done = $agencyStatsRecords->filter(fn($r) => in_array((string) $step['num'], $r->done_steps, true))->count();
+
+            return [
+                'key' => (string) $step['num'],
+                'title' => $step['title'],
+                'done' => $done,
+                'total' => $indicatorTotal,
+                'percent' => $indicatorTotal > 0 ? round($done / $indicatorTotal * 100, 1) : 0,
+            ];
+        });
+        $indicatorTop = $indicatorRows->filter(fn($i) => $i['done'] > 0)->sortByDesc('percent')->take(3)->values();
+        $indicatorPending = $indicatorRows->filter(fn($i) => $i['percent'] < 60)->sortBy('percent')->values();
+
         $years = FiscalYear::selectableYearsFor('salt_assessment', SaltAssessment::distinct()->pluck('fiscal_year'));
 
-        return view('pages.consumption-report', compact(
+        return compact(
+            'indicatorTop',
+            'indicatorPending',
+            'indicatorTotal',
             'paginatedSalt',
             'years',
             'fiscalYear',
@@ -1450,7 +2881,7 @@ class MainController extends Controller
             'dbAgencies',
             'selectedAgency',
             'stats'
-        ));
+        );
     }
 
     /**
@@ -1590,7 +3021,10 @@ class MainController extends Controller
         // here (was previously computed a second time, later, just for the
         // dropdown) and reused both for the "latest year" default below and
         // for the criteria/dropdown logic further down.
-        $allFiscalYears = SodiumSurvey::query()->distinct()->pluck('fiscal_year');
+        // แคช 5 นาที: ใช้ทุกครั้งที่เปิดหน้า/เปลี่ยนตัวกรอง แต่ปีใหม่เพิ่มนาน ๆ ครั้ง
+        $allFiscalYears = Cache::remember('awareness_fiscal_years', now()->addMinutes(5), function () {
+            return SodiumSurvey::query()->distinct()->pluck('fiscal_year');
+        });
 
         // "ปีงบประมาณ" defaults to the LATEST year with data instead of every
         // year at once. With years of history piling up, a bare first visit
@@ -1686,35 +3120,21 @@ class MainController extends Controller
             'settings_version' => $mappingsVersion,
         ]));
 
-        $dashboardData = Cache::remember($dashboardCacheKey, now()->addMinutes(60), function () use ($statsQueryAll, $effectiveFiscalYear, $allFiscalYears) {
-        // --- SQL-side aggregation helpers -------------------------------
-        // Runs "SELECT col, COUNT(*) GROUP BY col" against the database and
-        // returns a Collection shaped exactly like the old
-        // ->countBy($col)/->groupBy($col)->map->count() results: keyed by
-        // distinct column value, valued by row count.
-        $countByColumn = function ($builder, string $column) {
-            return (clone $builder)
-                ->select($column)
-                ->selectRaw('COUNT(*) as aggregate_count')
-                ->groupBy($column)
-                ->get()
-                ->mapWithKeys(function ($row) use ($column) {
-                    return [$row->$column => (int) $row->aggregate_count];
-                });
+        $dashboardData = Cache::remember($dashboardCacheKey, now()->addMinutes(60), function () use ($statsQueryAll, $effectiveFiscalYear, $allFiscalYears, $request) {
+        // --- ตารางสรุปรายปี (AwarenessYearGrid) ---------------------------
+        // สแกน sodium_surveys ครั้งเดียวต่อปี (แคชไว้) แล้วตัวกรองจังหวัด/อำเภอแค่กรองจากตารางนั้นใน PHP
+        $filterProvinceValue = $request->filled('province') ? (string) $request->input('province') : null;
+        $filterDistrictValue = $request->filled('district') ? (string) $request->input('district') : null;
+        $cellMatches = function ($province, $district) use ($filterProvinceValue, $filterDistrictValue) {
+            return ($filterProvinceValue === null || (string) $province === $filterProvinceValue)
+                && ($filterDistrictValue === null || (string) $district === $filterDistrictValue);
         };
+        $scopeYears = $effectiveFiscalYear !== ''
+            ? [(string) $effectiveFiscalYear]
+            : $allFiscalYears->map(fn ($y) => (string) $y)->all();
 
-        // Chart 1: Respondents by Province (Donut)
-        $provinceStats = $countByColumn($statsQueryAll, 'province_name');
-
-        // Demographic Stats
-        $genderStats = $countByColumn($statsQueryAll, 'gender');
-
-        // Map Age Ranges into 5 main groups. The bucketing is bespoke PHP
-        // logic (not a plain column value), so this one still needs actual
-        // rows - but only the age_range column, not a full model hydration
-        // (which would also decode every row's survey_data JSON for no
-        // reason here).
-        $ageStats = (clone $statsQueryAll)->pluck('age_range')->map(function($ageText) {
+        // จัดกลุ่มอายุเป็น 5 ช่วง (ลอจิกเดิม - ทำกับค่า age_range ที่ไม่ซ้ำ ไม่ใช่ทุกแถว)
+        $ageBucket = function ($ageText) {
             $ageText = $ageText ?? '';
             $age = (int) filter_var($ageText, FILTER_SANITIZE_NUMBER_INT);
             if (!$age && $ageText !== '0' && $ageText !== '0 ปี') {
@@ -1726,9 +3146,31 @@ class MainController extends Controller
             if ($age <= 50) return '36 - 50 ปี';
             if ($age <= 60) return '51 - 60 ปี';
             return 'มากกว่า 60 ปี';
-        })->countBy();
+        };
 
-        $educationStats = $countByColumn($statsQueryAll, 'education');
+        $provinceCounts = [];
+        $genderCounts = [];
+        $educationCounts = [];
+        $ageCounts = [];
+        foreach ($scopeYears as $scopeYear) {
+            foreach (AwarenessYearGrid::forYear($scopeYear)['demo'] as [$gProvince, $gDistrict, $gGender, $gAge, $gEducation, $gCount]) {
+                if (!$cellMatches($gProvince, $gDistrict)) {
+                    continue;
+                }
+                $kProvince = $gProvince ?? '';
+                $kGender = $gGender ?? '';
+                $kEducation = $gEducation ?? '';
+                $kAge = $ageBucket($gAge);
+                $provinceCounts[$kProvince] = ($provinceCounts[$kProvince] ?? 0) + $gCount;
+                $genderCounts[$kGender] = ($genderCounts[$kGender] ?? 0) + $gCount;
+                $educationCounts[$kEducation] = ($educationCounts[$kEducation] ?? 0) + $gCount;
+                $ageCounts[$kAge] = ($ageCounts[$kAge] ?? 0) + $gCount;
+            }
+        }
+        $provinceStats = collect($provinceCounts);
+        $genderStats = collect($genderCounts);
+        $educationStats = collect($educationCounts);
+        $ageStats = collect($ageCounts);
 
         // Chart 2/3: Pass/Fail by Province & Awareness % by District
         // Logic: Aware (ตระหนักรู้) = criteria 1 answered one of its own
@@ -1809,70 +3251,66 @@ class MainController extends Controller
         // single respondent, once per column. Computing both columns from
         // one query (grouped by province+district together) and one
         // chunked PHP pass halves that work.
-        $buildPassFailStats = function () use ($statsQueryAll, $criteriaByYear, $questionYears, $scoreYears, $scoreCalculators, $criteriaSqlCondFromList) {
+        $buildPassFailStats = function () use ($questionYears, $scoreYears, $scoreCalculators, $cellMatches, $request, $effectiveFiscalYear) {
             $byProvince = [];
             $byDistrict = [];
 
-            if ($questionYears->isNotEmpty()) {
-                $subQueries = [];
-                foreach ($questionYears as $year) {
-                    $keys = $criteriaByYear[$year];
-                    $awareCond = $criteriaSqlCondFromList($keys['is_aware_health']);
-                    $limitCond = $criteriaSqlCondFromList($keys['is_know_limit']);
-                    $subQueries[] = (clone $statsQueryAll)->where('fiscal_year', $year)
-                        ->select(['province_name', 'district_name'])
-                        ->selectRaw("SUM(CASE WHEN {$awareCond} AND {$limitCond} THEN 1 ELSE 0 END) as pass_count")
-                        ->selectRaw('COUNT(*) as total_count')
-                        ->groupBy(['province_name', 'district_name']);
+            foreach ($questionYears as $year) {
+                if ($effectiveFiscalYear !== '' && (string) $year !== (string) $effectiveFiscalYear) {
+                    continue;
                 }
+                foreach (AwarenessYearGrid::forYear($year)['pass'] ?? [] as [$gProvince, $gDistrict, $pass, $total]) {
+                    if (!$cellMatches($gProvince, $gDistrict)) {
+                        continue;
+                    }
 
-                $combined = array_shift($subQueries);
-                foreach ($subQueries as $sub) {
-                    $combined->unionAll($sub);
-                }
+                    $byProvince[$gProvince] = $byProvince[$gProvince] ?? ['pass' => 0, 'total' => 0];
+                    $byProvince[$gProvince]['pass'] += $pass;
+                    $byProvince[$gProvince]['total'] += $total;
 
-                foreach ($combined->get() as $row) {
-                    $pass = (int) $row->pass_count;
-                    $total = (int) $row->total_count;
-
-                    $byProvince[$row->province_name] = $byProvince[$row->province_name] ?? ['pass' => 0, 'total' => 0];
-                    $byProvince[$row->province_name]['pass'] += $pass;
-                    $byProvince[$row->province_name]['total'] += $total;
-
-                    $byDistrict[$row->district_name] = $byDistrict[$row->district_name] ?? ['pass' => 0, 'total' => 0];
-                    $byDistrict[$row->district_name]['pass'] += $pass;
-                    $byDistrict[$row->district_name]['total'] += $total;
+                    $byDistrict[$gDistrict] = $byDistrict[$gDistrict] ?? ['pass' => 0, 'total' => 0];
+                    $byDistrict[$gDistrict]['pass'] += $pass;
+                    $byDistrict[$gDistrict]['total'] += $total;
                 }
             }
 
+            // ปีแบบ "score": การให้คะแนนทีละแถวใน PHP คือส่วนที่แพงที่สุดของหน้านี้ (ถอด survey_data +
+            // คำนวณราว 26 บทบาทต่อผู้ตอบ) และผลลัพธ์ "ไม่ขึ้นกับตัวกรองจังหวัด/อำเภอ" เลย -
+            // จึงคำนวณครั้งเดียวต่อปี เก็บเป็นตาราง จังหวัด x อำเภอ -> [ผ่าน, ทั้งหมด] ไว้ในแคช แล้วให้ทุกตัวกรอง
+            // (รวมถึง "ทั้งหมด") แค่กรองจากตารางนี้ แทนที่จะให้คะแนนทุกแถวใหม่ทุกครั้งที่เปลี่ยนจังหวัด/อำเภอ.
+            // คีย์แคชผูกกับเวลาแก้ไขการตั้งค่าเช่นเดียวกับแคชหลักด้านบน (บันทึกตั้งค่าแล้วคำนวณใหม่ทันที).
+            $filterProvince = $request->filled('province') ? (string) $request->input('province') : null;
+            $filterDistrict = $request->filled('district') ? (string) $request->input('district') : null;
+            $passSettingsVersion = AwarenessPassSetting::max('updated_at');
+
             foreach ($scoreYears as $year) {
+                // เลือกปีงบประมาณเฉพาะปี -> นับเฉพาะปีนั้น (เหมือนเดิมที่ $statsQueryAll กรองด้วยปีอยู่แล้ว)
+                if ($effectiveFiscalYear !== '' && (string) $year !== (string) $effectiveFiscalYear) {
+                    continue;
+                }
                 $calculator = $scoreCalculators[$year];
-                // 2000 (was 500) - see the matching note in
-                // AwarenessPassResolver::passFailCountsByColumn(): compute()
-                // is CPU-bound, so a bigger chunk mainly cuts query
-                // round-trips, not the real cost.
-                (clone $statsQueryAll)->where('fiscal_year', $year)
-                    ->select(['province_name', 'district_name', 'survey_data', 'id'])
-                    ->chunkById(2000, function ($rows) use (&$byProvince, &$byDistrict, $calculator) {
-                        foreach ($rows as $row) {
-                            $score = $calculator->compute($row);
-                            $isPass = $score && $score['is_pass'];
+                $grid = AwarenessYearGrid::scoreGrid($year, $calculator);
 
-                            $province = $row->province_name;
-                            $byProvince[$province] = $byProvince[$province] ?? ['pass' => 0, 'total' => 0];
-                            $byProvince[$province]['total']++;
-                            if ($isPass) {
-                                $byProvince[$province]['pass']++;
-                            }
-
-                            $district = $row->district_name;
-                            $byDistrict[$district] = $byDistrict[$district] ?? ['pass' => 0, 'total' => 0];
-                            $byDistrict[$district]['total']++;
-                            if ($isPass) {
-                                $byDistrict[$district]['pass']++;
-                            }
+                foreach ($grid as $province => $districts) {
+                    $province = (string) $province;
+                    if ($filterProvince !== null && $province !== $filterProvince) {
+                        continue;
+                    }
+                    foreach ($districts as $district => $cell) {
+                        $district = (string) $district;
+                        if ($filterDistrict !== null && $district !== $filterDistrict) {
+                            continue;
                         }
-                    });
+
+                        $byProvince[$province] = $byProvince[$province] ?? ['pass' => 0, 'total' => 0];
+                        $byProvince[$province]['pass'] += $cell['pass'];
+                        $byProvince[$province]['total'] += $cell['total'];
+
+                        $byDistrict[$district] = $byDistrict[$district] ?? ['pass' => 0, 'total' => 0];
+                        $byDistrict[$district]['pass'] += $cell['pass'];
+                        $byDistrict[$district]['total'] += $cell['total'];
+                    }
+                }
             }
 
             return [collect($byProvince), collect($byDistrict)];
@@ -1896,7 +3334,7 @@ class MainController extends Controller
         // reads whatever's configured and charts it, so any fiscal year
         // (including one that doesn't exist yet) works without a code
         // change here.
-        $statsForPanel = function (int $panel) use ($statsQueryAll, $effectiveFiscalYear) {
+        $statsForPanel = function (int $panel) use ($effectiveFiscalYear, $cellMatches) {
             $mappingsQuery = SurveyYearMapping::where('dashboard_panel', $panel);
 
             // When a specific fiscal year is selected in the filter above,
@@ -1925,27 +3363,27 @@ class MainController extends Controller
             $labelByBranch = [];
             $polarityByBranch = [];
             $extremeValuesByBranch = [];
-            $subQueries = [];
+            $rowsByBranch = [];
             $i = 0;
             foreach ($mappings as $m) {
                 $branch = 'p' . $i++;
                 $labelByBranch[$branch] = \App\Support\DefaultQuestionPanels::shortLabelFor($m->question_label ?: $m->question_key);
                 $polarityByBranch[$branch] = $m->chart_polarity;
                 $extremeValuesByBranch[$branch] = $m->chart_polarity_values;
-                $expr = "JSON_UNQUOTE(JSON_EXTRACT(`survey_data`, '$.{$m->question_key}'))";
-                $subQueries[] = (clone $statsQueryAll)->where('fiscal_year', $m->fiscal_year)
-                    ->select([
-                        \DB::raw("'" . $branch . "' as field_name"),
-                        \DB::raw("{$expr} as field_value"),
-                        \DB::raw('COUNT(*) as aggregate_count'),
-                    ])->groupBy(\DB::raw($expr));
-            }
 
-            $combined = array_shift($subQueries);
-            foreach ($subQueries as $sub) {
-                $combined->unionAll($sub);
+                // ค่าคำตอบของข้อนี้ในปีของมัน จากตารางสรุปรายปี (แคช) กรองด้วยจังหวัด/อำเภอใน PHP
+                // - ไม่ต้องสแกน JSON_EXTRACT ใหม่ทุกครั้งที่เปลี่ยนตัวกรอง
+                $dist = [];
+                $gridRows = AwarenessYearGrid::forYear($m->fiscal_year)['panels'][$m->question_key] ?? [];
+                foreach ($gridRows as [$gProvince, $gDistrict, $gValue, $gCount]) {
+                    if (!$cellMatches($gProvince, $gDistrict)) {
+                        continue;
+                    }
+                    $gKey = $gValue ?? '';
+                    $dist[$gKey] = ($dist[$gKey] ?? 0) + $gCount;
+                }
+                $rowsByBranch[$branch] = $dist;
             }
-            $rowsByBranch = $combined->get()->groupBy('field_name');
 
             // Same question label used by more than one fiscal year (e.g.
             // wording that hasn't changed year to year) is merged into one
@@ -1958,14 +3396,13 @@ class MainController extends Controller
             $polarityByLabel = [];
             $extremeValuesByLabel = [];
             foreach ($labelByBranch as $branch => $label) {
-                $dist = ($rowsByBranch[$branch] ?? collect())
-                    ->mapWithKeys(fn ($r) => [$r->field_value => (int) $r->aggregate_count]);
+                $dist = $rowsByBranch[$branch] ?? [];
                 if (isset($result[$label])) {
                     foreach ($dist as $value => $count) {
                         $result[$label][$value] = ($result[$label][$value] ?? 0) + $count;
                     }
                 } else {
-                    $result[$label] = $dist->toArray();
+                    $result[$label] = $dist;
                 }
                 if (empty($polarityByLabel[$label]) && !empty($polarityByBranch[$branch])) {
                     $polarityByLabel[$label] = $polarityByBranch[$branch];
@@ -2023,9 +3460,11 @@ class MainController extends Controller
         $provinces = Cache::remember('awareness_provinces_list', now()->addMinutes(30), function () {
             return SodiumSurvey::distinct()->orderBy('province_name')->pluck('province_name');
         });
-        $districts = SodiumSurvey::when($request->filled('province'), function ($q) use ($request) {
-            return $q->where('province_name', $request->province);
-        })->distinct()->orderBy('district_name')->pluck('district_name');
+        $districts = Cache::remember('awareness_districts_list:' . md5((string) $request->input('province')), now()->addMinutes(30), function () use ($request) {
+            return SodiumSurvey::when($request->filled('province'), function ($q) use ($request) {
+                return $q->where('province_name', $request->province);
+            })->distinct()->orderBy('district_name')->pluck('district_name');
+        });
 
         return view('pages.awareness', compact(
             'provinceStats',
@@ -2075,6 +3514,15 @@ class MainController extends Controller
     }
 
     public function reducedSodiumMenu(Request $request)
+    {
+        // ข้อมูลของหน้านี้เป็นฟังก์ชันของตัวกรอง (query string) + เนื้อหาตาราง - แคชไว้ตามนั้น
+        // คีย์ผูกกับจำนวนแถว/เวลาแก้ไขล่าสุดของตารางที่เกี่ยวข้อง จึงอัปเดตทันทีเมื่อข้อมูลเปลี่ยน
+        $data = $this->cachedPageData('reduced-sodium-menu', $request, [ReducedSodiumMenu::class, User::class, FiscalYear::class], fn () => $this->reducedSodiumMenuData($request), $request->get('org_lock') == 1);
+
+        return view('pages.reduced-sodium-menu', $data);
+    }
+
+    private function reducedSodiumMenuData(Request $request): array
     {
         $user = auth()->user();
         $isLocked = $request->get('org_lock') == 1 && $user;
@@ -2194,7 +3642,8 @@ class MainController extends Controller
             }
         }
 
-        $allData = $query->get();
+        // เลือกเฉพาะคอลัมน์ที่ใช้คำนวณกราฟ - ไม่ต้องสร้างโมเดลเต็มทุกแถว
+        $allData = (clone $query)->get(['id', 'province', 'sodium_before', 'sodium_after', 'kitchen_type', 'org_name', 'agency']);
 
         // 3. Prepare Chart Data
         // Paired average, not two independently-filtered ones: Collection::
@@ -2242,6 +3691,38 @@ class MainController extends Controller
             'best_count' => $bestTierCount,
             'best_percent' => $evaluatedCount > 0 ? round($bestTierCount / $evaluatedCount * 100, 1) : 0,
             'high_risk_count' => $highRiskCount,
+        ];
+
+        // ตารางเปรียบเทียบรายจังหวัด + ระดับการประเมิน (การ์ดใต้กราฟ 3 ใบ): คำนวณจากชุดข้อมูลเดียวกับกราฟด้านบน
+        // (ตามตัวกรองของหน้านี้) - ค่าเฉลี่ยก่อน/หลังคิดเฉพาะเมนูที่วัดครบทั้งสองค่าเท่านั้น ไม่ใช้คนละชุดเมนู
+        $insightTiers = ['ดีมาก' => 0, 'ดี' => 0, 'ปานกลาง' => 0, 'ควรปรับปรุง' => 0];
+        foreach ($measuredMenus as $m) {
+            $insightTiers[$evaluationTier($m->sodium_after)]++;
+        }
+        $insightProvinces = collect(['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'])
+            ->map(function ($prov) use ($allData) {
+                $all = $allData->where('province', $prov);
+                $m = $all->filter(fn($x) => $x->sodium_before > 0 && $x->sodium_after > 0);
+                $b = $m->count() > 0 ? round($m->avg('sodium_before'), 1) : null;
+                $a = $m->count() > 0 ? round($m->avg('sodium_after'), 1) : null;
+                return [
+                    'province' => $prov,
+                    'total' => $all->count(),
+                    'measured' => $m->count(),
+                    'avg_before' => $b,
+                    'avg_after' => $a,
+                    'reduction_percent' => ($b !== null && $b > 0) ? round(($b - $a) / $b * 100, 1) : null,
+                ];
+            })->values();
+        $sodiumInsight = [
+            'total' => $allData->count(),
+            'measured' => $evaluatedCount,
+            'avg_before' => $barChartData['before'],
+            'avg_after' => $barChartData['after'],
+            'reduction_percent' => $barChartData['before'] > 0 ? round(($barChartData['before'] - $barChartData['after']) / $barChartData['before'] * 100, 1) : null,
+            'best_percent' => $evaluatedCount > 0 ? round($insightTiers['ดีมาก'] / $evaluatedCount * 100, 1) : null,
+            'tiers' => $insightTiers,
+            'provinces' => $insightProvinces,
         ];
 
         $pieChartData = $allData->groupBy(function ($item) {
@@ -2322,7 +3803,7 @@ class MainController extends Controller
 
         $hideLayout = $request->has('iframe');
 
-        return view('pages.reduced-sodium-menu', compact(
+        return compact(
             'menus',
             'barChartData',
             'pieChartData',
@@ -2335,11 +3816,21 @@ class MainController extends Controller
             'isLocked',
             'lockedOrgName',
             'lockedProvinceName',
-            'sodiumEvalSummary'
-        ));
+            'sodiumEvalSummary',
+            'sodiumInsight'
+        );
     }
 
     public function reducedSodiumProducts(Request $request)
+    {
+        // ข้อมูลของหน้านี้เป็นฟังก์ชันของตัวกรอง (query string) + เนื้อหาตาราง - แคชไว้ตามนั้น
+        // คีย์ผูกกับจำนวนแถว/เวลาแก้ไขล่าสุดของตารางที่เกี่ยวข้อง จึงอัปเดตทันทีเมื่อข้อมูลเปลี่ยน
+        $data = $this->cachedPageData('reduced-sodium-products', $request, [\App\Models\ReducedSodiumProduct::class, User::class, FiscalYear::class], fn () => $this->reducedSodiumProductsData($request), $request->get('org_lock') == 1);
+
+        return view('pages.reduced-sodium-products', $data);
+    }
+
+    private function reducedSodiumProductsData(Request $request): array
     {
         $user = auth()->user();
         $isLocked = $request->get('org_lock') == 1 && $user;
@@ -2417,7 +3908,9 @@ class MainController extends Controller
             $query->where('product_type', $request->type);
         }
 
-        $allData = $query->get();
+        // เฉพาะคอลัมน์ที่ใช้ทำกราฟ + จังหวัดของเจ้าของ (ไม่ต้องโหลดอำเภอ/ทุกคอลัมน์ของทุกแถว)
+        $allData = (clone $query)->setEagerLoads([])->with('user.province')
+            ->get(['user_id', 'product_type', 'standard_certification', 'province_name']);
 
         // 3. Prepare Chart Data
         $typeChartData = $allData->groupBy('product_type')->map->count();
@@ -2490,7 +3983,7 @@ class MainController extends Controller
 
         $types = (clone $dropdownQuery)->distinct()->whereNotNull('product_type')->pluck('product_type');
 
-        return view('pages.reduced-sodium-products', compact(
+        return compact(
             'products',
             'typeChartData',
             'standardChartData',
@@ -2502,7 +3995,7 @@ class MainController extends Controller
             'hideLayout',
             'isLocked',
             'lockedProvinceName'
-        ));
+        );
     }
 
     public function kidneyDHB()
@@ -2511,6 +4004,27 @@ class MainController extends Controller
     }
 
     public function newHTCases(Request $request)
+    {
+        // ข้อมูลของหน้านี้เป็นฟังก์ชันของตัวกรอง (query string) + เนื้อหาตาราง - แคชไว้ตามนั้น
+        // คีย์ผูกกับจำนวนแถว/เวลาแก้ไขล่าสุดของตารางที่เกี่ยวข้อง จึงอัปเดตทันทีเมื่อข้อมูลเปลี่ยน
+        $data = $this->cachedPageData('new-ht-cases', $request, [Hi::class, User::class, FiscalYear::class], fn () => $this->newHTCasesData($request), $request->get('org_lock') == 1);
+
+        return view('pages.new-ht-cases', $data);
+    }
+
+    /**
+     * ปีเริ่มต้นของหน้า /new-ht-cases = ปีล่าสุดที่เปิดให้เลือก "และมีข้อมูลผู้ป่วยแล้ว"
+     * (ปีใหม่เข้ามาแล้วจะกลายเป็นค่าเริ่มต้นเองเมื่อมีข้อมูล ไม่ต้องแก้โค้ด; ถ้ายังไม่มีข้อมูลปีไหนเลยใช้ปีล่าสุดที่เลือกได้)
+     */
+    private function defaultHiYear()
+    {
+        $withCases = Hi::whereNotNull('year')->where('total_a', '>', 0)->distinct()->pluck('year')->map(fn($y) => (int) $y);
+        $selectable = FiscalYear::selectableYearsFor('hi', Hi::whereNotNull('year')->distinct()->pluck('year'));
+
+        return $selectable->first(fn($y) => $withCases->contains((int) $y)) ?? $selectable->first();
+    }
+
+    private function newHTCasesData(Request $request): array
     {
         $user = auth()->user();
         // Same "embed this public dashboard inside the admin panel, locked
@@ -2533,11 +4047,12 @@ class MainController extends Controller
         // defined below ($quarters) and narrows the province/district/map
         // figures down to that quarter's 3-month case total, while the
         // 12-month trend chart itself keeps showing the whole year.
-        $selectedQuarter = $request->get('quarter', 'ทั้งหมด');
+        // ตัวกรองไตรมาสถูกนำออกจากหน้านี้แล้ว - ใช้ยอดทั้งปีเสมอ (ลิงก์เก่าที่มี ?quarter= จะไม่มีผล)
+        $selectedQuarter = 'ทั้งหมด';
 
         // Defaults if not provided (Only on first load without query params)
         if (!$request->has('year') && !$request->has('province') && !$lockedProvinceName) {
-            $selectedYear = 2569;
+            $selectedYear = $this->defaultHiYear();
             $selectedProvinceName = 'ทั้งหมด';
         }
 
@@ -2559,7 +4074,10 @@ class MainController extends Controller
             $query->where('District_name', $selectedDistrict);
         }
 
-        $allData = $query->get();
+        $hiChartCols = ['Province_id', 'District_name', 'target_b', 'total_a',
+            'm10_oct', 'm11_nov', 'm12_dec', 'm01_jan', 'm02_feb', 'm03_mar',
+            'm04_apr', 'm05_may', 'm06_jun', 'm07_jul', 'm08_aug', 'm09_sep'];
+        $allData = $query->get($hiChartCols);
 
         // Monthly Trends
         $months = [
@@ -2606,6 +4124,9 @@ class MainController extends Controller
             $monthlyTrend[$label] = $monthSum;
             $cumulativeTrend[$label] = $totalSum;
         }
+
+        // กราฟ/ตารางรายเดือน: เส้นเทียบ 2 ปีก่อนหน้า (ตัวกรองจังหวัด/อำเภอเดียวกัน) + ข้อความวิเคราะห์จากข้อมูลจริง
+        $monthlyCompare = $this->buildMonthlyCompare($selectedYear, $selectedProvinceName, $selectedDistrict, $months, $monthlyTrend);
 
         // Provincial Stats
         //
@@ -2663,7 +4184,7 @@ class MainController extends Controller
         if ($selectedYear && $selectedYear != 'ทั้งหมด') {
             $mapQuery->where('year', $selectedYear);
         }
-        $mapAllData = $mapQuery->get()->groupBy('Province_id');
+        $mapAllData = $mapQuery->get($hiChartCols)->groupBy('Province_id');
         // One query for all 5 provinces instead of one PER province inside
         // the ->map() below (this runs unconditionally on every page view,
         // regardless of filters - see the comment above on why the map
@@ -2681,6 +4202,58 @@ class MainController extends Controller
                 'rate' => $targetB > 0 ? ($caseCount / $targetB) * 100000 : 0,
             ];
         })->values();
+
+        // เกณฑ์แบ่งสี "แผนที่อัตราป่วยต่อแสนประชากร (รายอำเภอ)" = ค่าเฉลี่ย ± 1 SD ของอัตราป่วยรายอำเภอ
+        // "ภายในจังหวัดที่เลือก" (เกณฑ์เปลี่ยนอัตโนมัติตามข้อมูลของแต่ละจังหวัด/ปีงบประมาณ/ไตรมาส)
+        //   แดง = เฉลี่ย + SD ขึ้นไป · เขียว = เฉลี่ย - SD ลงมา · เหลือง = ระหว่างสองค่านี้
+        // SD = ส่วนเบี่ยงเบนมาตรฐานของตัวอย่าง (n-1) เหมือนฟังก์ชัน STDEV ของ Excel
+        // อำเภอที่ไม่มีเป้าหมายประชากร (หาอัตราไม่ได้) ไม่นำมาคิด
+        // อัตราปัดทศนิยม 2 ตำแหน่งก่อนคิด เพื่อให้ตรงกับตัวเลขที่แสดงบนหน้าจอ/ไฟล์ Excel
+        $districtRateStats = null;
+        if ($selectedProvinceName && $selectedProvinceName != 'ทั้งหมด') {
+            $selProvId = $mapProvinceIdsByName->get($selectedProvinceName);
+            $districtRates = collect($selProvId ? ($mapAllData->get($selProvId) ?? collect()) : [])
+                ->groupBy('District_name')
+                ->map(function ($items) use ($sumForSelectedPeriod) {
+                    $target = $items->sum('target_b');
+                    return $target > 0 ? round(($sumForSelectedPeriod($items) / $target) * 100000, 2) : null;
+                })
+                ->filter(fn($r) => $r !== null)
+                ->values();
+            $rateCount = $districtRates->count();
+            $rateMean = $rateCount > 0 ? $districtRates->avg() : 0;
+            $rateSd = $rateCount > 1
+                ? sqrt($districtRates->sum(fn($r) => ($r - $rateMean) ** 2) / ($rateCount - 1))
+                : 0;
+            $hasBands = $rateCount > 1 && $rateSd > 0;
+            $districtRateStats = [
+                'province' => $selectedProvinceName,
+                'count' => $rateCount,
+                'mean' => round($rateMean, 2),
+                'sd' => round($rateSd, 2),
+                'low' => $hasBands ? round($rateMean - $rateSd, 2) : null,
+                'high' => $hasBands ? round($rateMean + $rateSd, 2) : null,
+            ];
+        }
+
+        // เกณฑ์แบ่งสี "แผนที่อัตราป่วยต่อแสนประชากร (รายจังหวัด)" - วิธีเดียวกับรายอำเภอ แต่คิดจาก 5 จังหวัดของเขต 10:
+        //   แดง = เฉลี่ย + SD ขึ้นไป · เขียว = เฉลี่ย - SD ลงมา · เหลือง = ระหว่างสองค่านี้ (SD แบบตัวอย่าง n-1 เหมือน STDEV ใน Excel)
+        // นับเฉพาะจังหวัดที่มีเป้าหมายประชากร และปัดอัตราเป็น 2 ตำแหน่งให้ตรงกับตัวเลขที่แสดงบนหน้าจอ
+        $provRates = $mapProvinceTotals->filter(fn($p) => ($p['target_b'] ?? 0) > 0)
+            ->map(fn($p) => round($p['rate'], 2))->values();
+        $provRateCount = $provRates->count();
+        $provRateMean = $provRateCount > 0 ? $provRates->avg() : 0;
+        $provRateSd = $provRateCount > 1
+            ? sqrt($provRates->sum(fn($r) => ($r - $provRateMean) ** 2) / ($provRateCount - 1))
+            : 0;
+        $provHasBands = $provRateCount > 1 && $provRateSd > 0;
+        $provinceRateStats = [
+            'count' => $provRateCount,
+            'mean' => round($provRateMean, 2),
+            'sd' => round($provRateSd, 2),
+            'low' => $provHasBands ? round($provRateMean - $provRateSd, 2) : null,
+            'high' => $provHasBands ? round($provRateMean + $provRateSd, 2) : null,
+        ];
 
         // Filter Options
         $years = FiscalYear::selectableYearsFor('hi', Hi::whereNotNull('year')->distinct()->pluck('year'));
@@ -2700,12 +4273,31 @@ class MainController extends Controller
 
         $quarterOptions = collect($quarters)->map(fn($q) => $q['label'])->all();
 
-        return view('pages.new-ht-cases', compact(
+        // ปุ่ม "สถานการณ์แนวโน้ม" + ป้าย "ข้อมูลอัปเดตล่าสุด" ที่หัวหน้า (ใช้ตัวเลขชุดเดียวกับหน้าแรก)
+        $htTargetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
+        $htScopeProvinces = ($selectedProvinceName && $selectedProvinceName != 'ทั้งหมด') ? [$selectedProvinceName] : $htTargetProvinces;
+        $htTrendPop = $this->htTrendPopForScope($htScopeProvinces);
+        $htUpdatedQuery = Hi::query();
+        if ($selectedYear && $selectedYear != 'ทั้งหมด') {
+            $htUpdatedQuery->where('year', $selectedYear);
+        }
+        if ($selectedProvinceName && $selectedProvinceName != 'ทั้งหมด') {
+            $htUpdatedProvId = Province::where('province_name', $selectedProvinceName)->value('province_id');
+            $htUpdatedProvId ? $htUpdatedQuery->where('Province_id', $htUpdatedProvId) : $htUpdatedQuery->whereRaw('1 = 0');
+        }
+        $htUpdatedAt = $htUpdatedQuery->max('updated_at');
+
+        return compact(
+            'htTrendPop',
+            'htUpdatedAt',
+            'monthlyCompare',
             'monthlyTrend',
             'cumulativeTrend',
             'provinceTotals',
             'districtTotals',
             'mapProvinceTotals',
+            'districtRateStats',
+            'provinceRateStats',
             'years',
             'provinces',
             'districts',
@@ -2717,7 +4309,7 @@ class MainController extends Controller
             'hideLayout',
             'isLocked',
             'lockedProvinceName'
-        ));
+        );
     }
 
 

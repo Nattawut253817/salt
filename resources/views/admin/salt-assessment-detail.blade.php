@@ -310,19 +310,7 @@
                 </div>
             </div>
 
-            @if (session('error'))
-                <div
-                    style="background: #fef2f2; color: #ef4444; border: 1px solid #fca5a5; padding: 12px 20px; border-radius: 12px; margin-top: 15px; margin-bottom: 0; font-weight: 600; font-size: 0.9rem;">
-                    <i class="fas fa-exclamation-circle" style="margin-right: 8px;"></i> {{ session('error') }}
-                </div>
-            @endif
-
-            @if (session('success'))
-                <div
-                    style="background: #ecfdf5; color: #047857; border: 1px solid #6ee7b7; padding: 12px 20px; border-radius: 12px; margin-top: 15px; margin-bottom: 0; font-weight: 600; font-size: 0.9rem;">
-                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i> {{ session('success') }}
-                </div>
-            @endif
+            @include('partials.flash-alert')
 
             <div style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 12px; margin-top: 15px;">
                 @if($assessment->confirmed_at)

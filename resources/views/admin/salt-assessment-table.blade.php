@@ -294,6 +294,7 @@
         table.report-table {
             border-collapse: collapse;
             width: 100%;
+            min-width: 1060px; /* ต่ำกว่านี้ให้เลื่อนแนวนอนแทนการบีบคอลัมน์ */
             table-layout: fixed;
             font-size: 0.8rem;
         }
@@ -312,6 +313,7 @@
         table.report-table td:first-child {
             text-align: left;
             padding-left: 14px;
+            padding-right: 6px;
         }
 
         table.report-table th:nth-child(2),
@@ -324,6 +326,7 @@
             font-size: 0.78rem;
             color: #475569;
             background-color: #f8fafc;
+            white-space: nowrap; /* หัวคอลัมน์ไม่ตัดกลางคำ เช่น ปีงบประมาณ */
         }
 
         .grp-org { background: #fff; }
@@ -358,43 +361,105 @@
             white-space: nowrap;
         }
 
+        /* คอลัมน์ "จัดการ": กลุ่มปุ่มในแคปซูลเดียว — ปุ่มหลัก (ทำแบบประเมิน) เด่นด้วยสีเต็ม,
+           ปุ่มลบเป็นไอคอนโปร่ง เปลี่ยนเป็นแดงเมื่อชี้ เพื่อลดโอกาสกดพลาด */
         .row-actions {
-            display: flex;
-            gap: 5px;
-            justify-content: center;
-        }
-
-        .btn-action {
-            width: 25px;
-            height: 25px;
-            border-radius: 7px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border: none;
+            gap: 4px;
+            padding: 3px;
+            border: 1px solid #e6e8f7;
+            border-radius: 999px;
+            background: #f8f9ff;
+        }
+
+        .row-actions form { display: inline-flex; margin: 0; }
+
+        .btn-action {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid transparent;
             cursor: pointer;
-            transition: all 0.2s ease;
-            color: #fff;
-            font-size: 0.68rem;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            font-size: 0.72rem;
             text-decoration: none;
             flex-shrink: 0;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px) scale(1.05);
-            filter: brightness(1.05);
+        .btn-view {
+            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
             color: #fff;
         }
 
-        .btn-view {
-            background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
-            box-shadow: 0 3px 8px rgba(14, 165, 233, 0.35);
+        .btn-delete {
+            background: transparent;
+            color: #f43f5e;
         }
 
-        .btn-delete {
-            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+        .btn-delete:hover,
+        .btn-delete:focus-visible {
+            background: #e11d48;
+            color: #fff;
             box-shadow: 0 3px 8px rgba(225, 29, 72, 0.35);
+            outline: none;
         }
+
+        .btn-do-assess {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 28px;
+            padding: 0 14px 0 11px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            box-shadow: 0 2px 6px rgba(67, 56, 202, 0.32);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 600;
+            white-space: nowrap;
+            text-decoration: none;
+            transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease, filter 0.18s ease;
+        }
+
+        .btn-do-assess.btn-do-assess-lg {
+            height: 36px;
+            padding: 0 20px 0 16px;
+            font-size: 0.85rem;
+        }
+
+        a.btn-do-assess,
+        a.btn-do-assess:hover,
+        a.btn-do-assess:focus,
+        a.btn-do-assess:focus-visible,
+        a.btn-do-assess:active,
+        a.btn-do-assess:hover *,
+        a.btn-do-assess:focus * {
+            text-decoration: none;
+        }
+
+        .btn-do-assess:hover,
+        .btn-do-assess:focus-visible {
+            color: #fff;
+            filter: brightness(1.08);
+            transform: scale(1.06);
+            box-shadow: 0 5px 14px rgba(67, 56, 202, 0.45);
+            outline: none;
+        }
+
+        .btn-do-assess:active { transform: scale(0.98); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-do-assess { transition: box-shadow 0.15s ease, filter 0.15s ease; }
+            .btn-do-assess:hover, .btn-do-assess:focus-visible { transform: none; }
+        }
+
+        .btn-do-assess i { font-size: 0.74rem; }
 
         .table-footer {
             display: flex;
@@ -489,12 +554,12 @@
         <div class="table-responsive">
     <table class="table table-bordered table-hover table-sm table-custom-sm report-table">
         <colgroup>
-            <col style="width:6%">
-            <col style="width:29%">
+            <col style="width:9.5%">
+            <col style="width:19.5%">
             <col style="width:4.5%"><col style="width:4.5%"><col style="width:4.5%"><col style="width:4.5%">
             <col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%"><col style="width:4.2%">
             <col style="width:4%"><col style="width:4%"><col style="width:4%"><col style="width:4%">
-            <col style="width:10%">
+            <col style="width:16%">
         </colgroup>
         <thead class="thead-light">
             <tr class="text-center">
@@ -626,9 +691,17 @@
 
                     <td class="text-center align-middle">
                         <div class="row-actions">
-                            <a href="{{ route('admin.salt-assessment.show', $item->id) }}"
-                                class="btn-action btn-view trigger-loader" title="ดูข้อมูล">
-                                <i class="fas fa-eye"></i>
+                            {{-- เปิดแบบฟอร์มทำแบบประเมินของปี/ไตรมาสนี้ พร้อมข้อมูลเดิม เพื่อแก้ไขต่อได้ --}}
+                            <a href="{{ route('admin.report-progress', array_filter([
+                                    'fiscal_year' => $item->fiscal_year,
+                                    'quarter' => $item->quarter,
+                                    'only' => 1,
+                                    'target_user_id' => auth()->user()->User_rank_id == 1 ? $item->user_id : null,
+                                ])) }}"
+                                class="btn-do-assess trigger-loader"
+                                title="{{ auth()->user()->User_rank_id == 1 ? 'ติดตามผลการประเมิน' : 'ทำแบบประเมิน / แก้ไขข้อมูล' }}">
+                                <i class="fas {{ auth()->user()->User_rank_id == 1 ? 'fa-eye' : 'fa-file-signature' }}"></i>
+                                <span>{{ auth()->user()->User_rank_id == 1 ? 'ติดตาม' : 'ทำแบบประเมิน' }}</span>
                             </a>
                             <form action="{{ route('admin.salt-assessment.destroy', $item->id) }}" method="POST"
                                 style="display: inline;" onsubmit="return confirmDelete(event)">
@@ -646,6 +719,15 @@
                     <td colspan="16" class="text-center py-4 text-muted">
                         <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.5;"></i><br>
                         ยังไม่มีข้อมูลการบันทึก
+                        @if(auth()->user()->User_rank_id != 1)
+                            <div class="mt-3">
+                                <a href="{{ route('admin.report-progress', ['new' => 1]) }}" class="btn-do-assess btn-do-assess-lg trigger-loader"
+                                    title="เริ่มทำแบบประเมินครั้งแรก">
+                                    <i class="fas fa-file-signature"></i>
+                                    <span>ทำแบบประเมิน</span>
+                                </a>
+                            </div>
+                        @endif
                     </td>
                 </tr>
             @endforelse

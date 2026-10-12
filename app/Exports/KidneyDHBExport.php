@@ -9,10 +9,11 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\Exportable;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Http\Request;
 
-class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize
+class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithColumnWidths
 {
     use Exportable;
 
@@ -27,6 +28,10 @@ class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     {
         $user = auth()->user();
         $query = KidneyAssessment::query()->with(['user.province', 'user.district']);
+        // รูปภาพประกอบ (ตาราง kidney_assessment_images) - โหลดล่วงหน้าเพื่อใส่ลิงก์รูปในคอลัมน์ท้ายตาราง
+        if (\App\Services\KidneyImageService::available()) {
+            $query->with('images');
+        }
 
         // Data Isolation
         if ($user->User_rank_id != 1) {
@@ -72,8 +77,25 @@ class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             'หมวด 8.3',
             'ปัญหา อุปสรรค',
             'ข้อเสนอแนะ/โอกาสพัฒนา',
-            'วันที่บันทึก'
+            'วันที่บันทึก',
+            // รูปภาพประกอบ (ลิงก์ไฟล์รูป สูงสุด 3 รูปต่อข้อ - 1 บรรทัดต่อ 1 รูป)
+            'รูปภาพ หมวด 1',
+            'รูปภาพ หมวด 2',
+            'รูปภาพ หมวด 3',
+            'รูปภาพ หมวด 4',
+            'รูปภาพ หมวด 5',
+            'รูปภาพ หมวด 6',
+            'รูปภาพ หมวด 7',
+            'รูปภาพ หมวด 8.1',
+            'รูปภาพ หมวด 8.2',
+            'รูปภาพ หมวด 8.3',
         ];
+    }
+
+    /** คอลัมน์รูปภาพ (Q..Z) กว้างคงที่ + ตัดบรรทัด เพราะเป็นลิงก์ยาว */
+    public function columnWidths(): array
+    {
+        return array_fill_keys(['Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], 42);
     }
 
     public function styles(Worksheet $sheet)
@@ -83,7 +105,10 @@ class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             1 => ['font' => ['bold' => true]],
 
             // Style the rest of the rows as normal (not bold)
-            'A2:P' . $sheet->getHighestRow() => ['font' => ['bold' => false]],
+            'A2:Z' . $sheet->getHighestRow() => ['font' => ['bold' => false]],
+
+            // ลิงก์รูปภาพหลายบรรทัดในช่องเดียว
+            'Q2:Z' . $sheet->getHighestRow() => ['alignment' => ['wrapText' => true, 'vertical' => 'top']],
         ];
     }
 
@@ -147,7 +172,16 @@ class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $resolved[$cat] = $winner->$cat;
         }
 
-        return [
+        // รูปภาพประกอบของรายงานแถวนี้เอง (ไม่ไหลข้ามไตรมาส) - ลิงก์ละบรรทัด
+        $imageCells = [];
+        $byCat = $item->relationLoaded('images') ? $item->images->groupBy('category') : collect();
+        foreach (['1', '2', '3', '4', '5', '6', '7', '8_1', '8_2', '8_3'] as $catKey) {
+            $imageCells[] = $byCat->has($catKey)
+                ? $byCat[$catKey]->sortBy('slot')->map(fn($img) => $img->url)->implode("\n")
+                : '';
+        }
+
+        return array_merge([
             $item->fiscal_year,
             $item->quarter,
             $agency,
@@ -164,6 +198,6 @@ class KidneyDHBExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             trim($item->problems_obstacles),
             trim($item->recommendations_opportunities),
             $item->created_at ? $item->created_at->format('d/m/Y H:i') : '-'
-        ];
+        ], $imageCells);
     }
 }

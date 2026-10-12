@@ -299,6 +299,16 @@
             align-items: stretch;
         }
 
+        /* การ์ด "ร้อยละผลิตภัณฑ์ ... แยกตามประเภท": วงกลมเต็มการ์ด ป้ายนอกวง = แคปซูลสีตามชิ้น(ร้อยละขาว) + ชื่อเทา + จำนวนตัวหนา */
+        .chart-fill { flex: 1 1 0; width: 100%; min-height: var(--fill-min, 300px); }
+        .tpl-lbl { width: max-content; max-width: 132px; line-height: 1.3; font-family: inherit; pointer-events: none; }
+        .tpl-lbl .nm { display: block; font-size: 13.5px; font-weight: 700; color: #334155; white-space: normal; }
+        .tpl-lbl .pc { display: block; margin-top: 1px; font-size: 19px; font-weight: 800; letter-spacing: -.3px; line-height: 1.15; }
+        .tpl-lbl .pc small { font-size: 12px; font-weight: 700; margin-left: 1px; }
+        .tpl-lbl .ct { display: block; font-size: 12px; font-weight: 600; color: #64748b; white-space: nowrap; }
+        .tpl-center { text-align: center; line-height: 1.1; font-family: inherit; pointer-events: none; }
+        .tpl-center .n { display: block; font-size: 34px; font-weight: 800; color: #0f172a; letter-spacing: -.5px; }
+        .tpl-center .u { display: block; margin-top: 2px; font-size: 13px; font-weight: 600; color: #64748b; }
         .chart-card {
             background: #fff;
             border-radius: 15px;
@@ -314,6 +324,21 @@
             transform: translateY(-3px);
             box-shadow: 0 16px 34px -8px rgba(15, 23, 42, 0.14);
         }
+
+        /* การ์ดแยกตามประเภท: โดนัท + รายการสัดส่วนข้างกราฟ (กว้างไม่พอจะเรียงซ้อนลงมาเอง) */
+        .tp-chip { align-self: flex-start; flex: 0 0 auto; padding: 5px 14px; border-radius: 999px; background: #eef1f6; color: #334155; font-size: .82rem; font-weight: 800; white-space: nowrap; }
+        .tp-body { flex: 1; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 4px 2px 2px; }
+        .tp-donut { flex: 1 1 250px; min-width: 0; min-height: 290px; }
+        .tp-list { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+        .tp-item { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 16px; background: #f8fafc; border: 1px solid #eef1f6; cursor: default; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+        .tp-item:hover, .tp-item.is-hover { background: #ffffff; border-color: var(--tp-c); box-shadow: 0 6px 16px -8px var(--tp-c); }
+        .tp-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--tp-c); flex: 0 0 auto; }
+        .tp-name { flex: 1; min-width: 0; font-size: .92rem; font-weight: 700; color: #1e293b; line-height: 1.3; }
+        .tp-val { text-align: right; line-height: 1.2; white-space: nowrap; }
+        .tp-pct { display: block; font-size: 1rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .tp-cnt { display: block; margin-top: 2px; font-size: .76rem; font-weight: 600; color: #94a3b8; }
+        .tp-card .tpl-center .n { font-size: 40px; transition: color .15s ease; }
+        .tp-card .tpl-center .u { max-width: 150px; margin-left: auto; margin-right: auto; line-height: 1.25; color: #94a3b8; }
 
         /* Card header, matching the dashboard's design language:
            icon badge + title + subtitle, separated with a divider. */
@@ -353,15 +378,38 @@
             margin-top: 2px;
         }
 
+        /* การ์ด "ผลิตภัณฑ์ลดโซเดียม แยกตามจังหวัด": ป้ายทึบสีน้ำเงินเข้ม ตัวหนังสือขาว - ตัดกับพื้นแผนที่ทุกเฉดสี */
+        .chart-card-subtitle.prd-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.9rem; color: #475569; margin-top: 4px; }
+        .prd-total { display: inline-flex; align-items: baseline; gap: 5px; padding: 0; background: none; color: #1d4ed8; font-weight: 700; font-size: 0.92rem; }
+        .prd-total b { font-size: 1.2rem; font-weight: 800; color: #1d4ed8; }
+        .prd-map-label { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; padding: 2px 7px 3px; border-radius: 7px; background: #312e81; color: #fff; line-height: 1.1; white-space: nowrap; pointer-events: none; box-shadow: 0 2px 6px rgba(30, 27, 75, .35); font-family: inherit; }
+        .prd-map-label .t { font-size: 11px; font-weight: 600; color: #c7d2fe; }
+        .prd-map-label .n { font-size: 15px; font-weight: 800; color: #fff; }
+        .prd-map-label .n small { font-size: 10px; font-weight: 700; margin-left: 3px; color: #c7d2fe; }
+
         .chart-card.accent-pink   { --chart-accent: #ec4899; background: #fffafc; }
         .chart-card.accent-purple { --chart-accent: #8b5cf6; background: #fbfaff; }
         .chart-card.accent-amber  { --chart-accent: #f59e0b; background: #fffdf7; }
+
+        /* แถว 3 คอลัมน์: หัวการ์ดสูงเท่ากัน เส้นคั่นและพื้นที่กราฟเริ่มที่ระดับเดียวกัน แม้ชื่อการ์ดตัดเป็น 2 บรรทัด */
+        @media (min-width: 1201px) {
+            .chart-row .chart-card-head { min-height: 92px; box-sizing: border-box; align-items: center; }
+        }
 
         @media (max-width: 1200px) {
             .chart-row {
                 grid-template-columns: 1fr;
             }
         }
+
+        /* หัวข้อรายการเหนือตาราง: ไอคอน + ชื่อรายการ + จำนวนที่แสดง (สอดคล้องกับหน้าเมนูลดโซเดียม) */
+        .product-list-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 2px 12px; }
+        .product-list-head .mlh-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+        .product-list-head .mlh-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 12px; background: #6366f1; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; box-shadow: 0 8px 16px -6px rgba(99, 102, 241, .6); }
+        .product-list-head .mlh-title { font-size: 1.2rem; font-weight: 800; color: #1e293b; line-height: 1.25; }
+        .product-list-head .mlh-sub { margin-top: 1px; font-size: .84rem; font-weight: 600; color: #64748b; }
+        .product-list-head .mlh-count { display: inline-flex; align-items: baseline; gap: 5px; padding: 5px 14px; border-radius: 999px; background: #eef2ff; color: #4338ca; font-size: .84rem; font-weight: 700; white-space: nowrap; }
+        .product-list-head .mlh-count b { font-size: 1.05rem; font-weight: 800; }
 
         /* Table styles */
         .product-table-container {
@@ -954,26 +1002,31 @@
                     <div class="chart-card-icon"><i class="fas fa-map-location-dot"></i></div>
                     <div>
                         <div class="chart-card-title">ผลิตภัณฑ์ลดโซเดียม แยกตามจังหวัด</div>
-                        <div class="chart-card-subtitle">ปี
+                        <div class="chart-card-subtitle prd-sub"><span>ปี
                             {{-- request('fiscal_year')/$years[0] are already Buddhist-era
                                  (see $years above) - only the last-resort fallback (no years
                                  at all) needs converting from the current Gregorian year. --}}
-                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}</div>
+                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}</span>
+                            <span class="prd-total">รวมทั้งเขต <b>{{ number_format(collect($mapData)->sum()) }}</b> รายการ</span></div>
                     </div>
                 </div>
-                <div id="map-container" style="height: 340px;"></div>
+                <div id="map-container" class="chart-fill" style="--fill-min: 340px;"></div>
             </div>
 
             <!-- Chart 1: Types -->
-            <div class="chart-card accent-purple">
+            <div class="chart-card accent-purple tp-card">
                 <div class="chart-card-head">
                     <div class="chart-card-icon"><i class="fas fa-chart-pie"></i></div>
-                    <div>
+                    <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ร้อยละผลิตภัณฑ์อาหารที่ปรับสูตรลดโซเดียม</div>
-                        <div class="chart-card-subtitle">แยกตามประเภท</div>
+                        <div class="chart-card-subtitle">แยกตามประเภท · นำเมาส์ชี้บนกราฟเพื่อดูสัดส่วนและจำนวนรายการ</div>
                     </div>
+                    <span class="tp-chip">{{ number_format(collect($typeChartData)->sum()) }} รายการ</span>
                 </div>
-                <div id="typePieChart" style="height: 320px; width: 100%;"></div>
+                <div class="tp-body">
+                    <div id="typePieChart" class="tp-donut"></div>
+                    <div id="typePieList" class="tp-list"></div>
+                </div>
             </div>
 
             <!-- Chart 2: Standard -->
@@ -985,11 +1038,23 @@
                         <div class="chart-card-subtitle">แยกตามมาตรฐาน</div>
                     </div>
                 </div>
-                <div id="standardPieChart" style="height: 320px; width: 100%;"></div>
+                <div id="standardPieChart" class="chart-fill" style="--fill-min: 320px;"></div>
             </div>
         </div>
 
         <!-- Table Section -->
+        <div class="product-list-head">
+            <div class="mlh-main">
+                <div class="mlh-icon"><i class="fas fa-box-open"></i></div>
+                <div>
+                    <div class="mlh-title">รายการผลิตภัณฑ์ลดโซเดียม</div>
+                    <div class="mlh-sub">เปรียบเทียบโซเดียมก่อน-หลังปรับสูตรรายผลิตภัณฑ์ แยกตามประเภทและมาตรฐาน</div>
+                </div>
+            </div>
+            @if ($products->total() > 0)
+                <span class="mlh-count">แสดง <b>{{ number_format($products->firstItem()) }}–{{ number_format($products->lastItem()) }}</b> จากทั้งหมด <b>{{ number_format($products->total()) }}</b> รายการ</span>
+            @endif
+        </div>
         <div class="product-table-container">
             <table class="product-table">
                 <thead>
@@ -1202,6 +1267,14 @@
                             </div>
                         </div>
                         <div class="info-row">
+                            <span class="info-label"><i class="fas fa-chart-line"></i> โซเดียมที่ลดได้</span>
+                            <div id="detailReducedPill" class="sodium-pill">
+                                <i id="detailReducedIcon" class="fas fa-arrow-down" style="font-size: 1rem;"></i>
+                                <span id="detailReducedMg">0</span>
+                                <span class="sodium-badge-label">มก. <span id="detailReducedPercent"></span></span>
+                            </div>
+                        </div>
+                        <div class="info-row">
                             <span class="info-label"><i class="fas fa-industry"></i> หน่วยงาน / แหล่งผลิต</span>
                             <span class="info-value" id="detailManufacturer">-</span>
                         </div>
@@ -1258,10 +1331,16 @@
             };
 
             const mapDataRaw = @json($mapData);
+            // ขยับป้ายของจังหวัดที่พื้นที่แคบ/ติดกัน ไม่ให้ทับกัน (พิกเซลจากจุดกึ่งกลางพื้นที่)
+            const prdLabelOffsets = {
+                'ยโสธร': { x: -26, y: -4 }, 'อำนาจเจริญ': { x: 16, y: 10 },
+                'อุบลราชธานี': { x: 18, y: 16 }, 'ศรีสะเกษ': { x: -6, y: 10 }
+            };
             const mapSeriesData = Object.keys(hcMapKeys).map(name => ({
                 'hc-key': hcMapKeys[name],
                 'value': mapDataRaw[name] || 0,
-                'name': name
+                'name': name,
+                'dataLabels': prdLabelOffsets[name] || {}
             }));
 
             const fullMapData = Highcharts.maps['countries/th/th-all'];
@@ -1294,13 +1373,15 @@
                         shadow: barShadow,
                         dataLabels: {
                             enabled: true,
-                            format: '{point.name}<br>{point.value} รายการ',
-                            style: {
-                                fontSize: '10px',
-                                fontWeight: '700',
-                                textOutline: 'none',
-                                color: '#1e293b'
-                            }
+                            useHTML: true,
+                            allowOverlap: true,
+                            crop: false,
+                            overflow: 'allow',
+                            formatter: function () {
+                                return '<div class="prd-map-label"><span class="t">' + this.point.name + '</span>'
+                                    + '<span class="n">' + Highcharts.numberFormat(this.point.value || 0, 0) + '<small>รายการ</small></span></div>';
+                            },
+                            style: { textOutline: 'none', pointerEvents: 'none' }
                         }
                     }
                 },
@@ -1314,47 +1395,82 @@
                 }
             });
 
-            // 2. Pie Chart: Types
+            // 2. Donut: Types (โดนัท + รายการสัดส่วนข้างกราฟ ชี้แล้วตัวเลขกลางวงเปลี่ยนตามชิ้นที่ชี้)
             const typeDataRaw = @json($typeChartData);
-            const typeSeries = Object.keys(typeDataRaw).map(key => ({
-                name: key || 'ไม่ระบุ',
-                y: typeDataRaw[key]
-            }));
+            const typeColors = ['#38bdf8', '#5b4fe9', '#10b981', '#f97316', '#ec4899', '#eab308', '#14b8a6', '#ef4444'];
+            const typeSeries = Object.keys(typeDataRaw)
+                .map(key => ({ name: key || 'ไม่ระบุ', y: Number(typeDataRaw[key]) || 0 }))
+                .sort((a, b) => b.y - a.y)
+                .map((d, i) => ({ ...d, color: typeColors[i % typeColors.length] }));
+            const typeTotal = typeSeries.reduce((s, d) => s + d.y, 0);
+            const escType = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+            const typeCenterHtml = (n, label, color) =>
+                '<div class="tpl-center"><span class="n"' + (color ? ' style="color:' + color + ';"' : '') + '>' + Highcharts.numberFormat(n, 0) + '</span><span class="u">' + escType(label) + '</span></div>';
 
-            Highcharts.chart('typePieChart', {
-                chart: {
-                    type: 'pie',
-                    backgroundColor: 'transparent'
-                },
-                title: { text: '' },
+            const typeChart = Highcharts.chart('typePieChart', {
+                chart: { type: 'pie', backgroundColor: 'transparent', spacing: [6, 6, 6, 6] },
+                title: { useHTML: true, text: typeCenterHtml(typeTotal, 'รายการทั้งหมด'), align: 'center', verticalAlign: 'middle', y: 6 },
                 tooltip: {
-                    pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                    useHTML: true,
+                    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+                    borderWidth: 0,
+                    borderRadius: 10,
+                    shadow: false,
+                    style: { color: '#ffffff', fontSize: '13px' },
+                    formatter: function () {
+                        return '<div style="font-family:inherit;"><div style="font-weight:800;margin-bottom:4px;">' + escType(this.point.name) + '</div>'
+                            + '<div><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:' + this.point.color + ';margin-right:7px;vertical-align:-1px;"></span>'
+                            + 'จำนวน: ' + Highcharts.numberFormat(this.y, 0) + ' รายการ (' + Highcharts.numberFormat(this.percentage, 1) + '%)</div></div>';
+                    }
                 },
                 plotOptions: {
                     pie: {
-                        allowPointSelect: true,
+                        allowPointSelect: false,
                         cursor: 'pointer',
-                        shadow: barShadow,
-                        dataLabels: {
-                            enabled: true,
-                            format: '<b>{point.name}</b><br>{point.percentage:.1f}%',
-                            style: {
-                                fontSize: '10px',
-                                textOutline: 'none'
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        borderRadius: 8,
+                        innerSize: '68%',
+                        size: '100%',
+                        dataLabels: { enabled: false },
+                        showInLegend: false,
+                        states: { hover: { brightness: 0.04, halo: { size: 7, opacity: 0.12 } } },
+                        point: {
+                            events: {
+                                mouseOver: function () {
+                                    typeChart.setTitle({ text: typeCenterHtml(this.y, this.name, this.color) });
+                                    const el = document.querySelector('#typePieList .tp-item[data-i="' + this.index + '"]');
+                                    if (el) el.classList.add('is-hover');
+                                },
+                                mouseOut: function () {
+                                    typeChart.setTitle({ text: typeCenterHtml(typeTotal, 'รายการทั้งหมด') });
+                                    const el = document.querySelector('#typePieList .tp-item[data-i="' + this.index + '"]');
+                                    if (el) el.classList.remove('is-hover');
+                                }
                             }
                         }
                     }
                 },
-                colors: Highcharts.getOptions().colors.map(toGradient),
-                series: [{
-                    name: 'สัดส่วน',
-                    colorByPoint: true,
-                    data: typeSeries
-                }],
-                credits: {
-                    enabled: false
-                }
+                series: [{ name: 'สัดส่วน', colorByPoint: true, data: typeSeries }],
+                credits: { enabled: false }
             });
+
+            // รายการสัดส่วนข้างโดนัท: ชี้ที่รายการ -> ชิ้นของโดนัทและตัวเลขกลางวงตามไปด้วย
+            const typeListEl = document.getElementById('typePieList');
+            if (typeListEl) {
+                typeListEl.innerHTML = typeSeries.map((d, i) =>
+                    '<div class="tp-item" data-i="' + i + '" style="--tp-c:' + d.color + ';">'
+                    + '<span class="tp-dot"></span>'
+                    + '<span class="tp-name">' + escType(d.name) + '</span>'
+                    + '<span class="tp-val"><span class="tp-pct">' + Highcharts.numberFormat(typeTotal > 0 ? d.y / typeTotal * 100 : 0, 1) + '%</span>'
+                    + '<span class="tp-cnt">' + Highcharts.numberFormat(d.y, 0) + ' รายการ</span></span>'
+                    + '</div>').join('');
+                typeListEl.querySelectorAll('.tp-item').forEach(el => {
+                    const pt = () => typeChart.series[0].points[Number(el.dataset.i)];
+                    el.addEventListener('mouseenter', () => { const p = pt(); if (p) p.onMouseOver(); });
+                    el.addEventListener('mouseleave', () => { const p = pt(); if (p) { p.onMouseOut(); typeChart.tooltip.hide(0); } });
+                });
+            }
 
             // 3. Pie Chart: Standard
             const standardDataRaw = @json($standardChartData);
@@ -1369,8 +1485,7 @@
             Highcharts.chart('standardPieChart', {
                 chart: {
                     type: 'bar',
-                    backgroundColor: 'transparent',
-                    height: 320
+                    backgroundColor: 'transparent'
                 },
                 title: { text: '' },
                 xAxis: {
@@ -1411,6 +1526,7 @@
                             }
                         },
                         borderRadius: 5,
+                        maxPointWidth: 44,
                         colorByPoint: true,
                         colors: standardColors.map(toGradient)
                     }
@@ -1485,6 +1601,43 @@
                     } else {
                         sodiumPill.style.backgroundColor = "#f0fdf4";
                         sodiumPill.style.color = "#10b981";
+                    }
+
+                    // โซเดียมที่ลดได้ - reduced_mg/reduced_percent are only set
+                    // (non-null) when the product has a recorded "ก่อนปรับสูตร"
+                    // reading, same guard the table's own column uses. A
+                    // negative reduced_mg means the product got saltier, not
+                    // more reduced, so the pill flips to red/up-arrow for that
+                    // case rather than just showing a negative number.
+                    const reducedPill = document.getElementById("detailReducedPill");
+                    const reducedIcon = document.getElementById("detailReducedIcon");
+                    const reducedMgEl = document.getElementById("detailReducedMg");
+                    const reducedPercentEl = document.getElementById("detailReducedPercent");
+                    if (product.reduced_mg === null || product.reduced_mg === undefined) {
+                        reducedPill.style.backgroundColor = "#f8fafc";
+                        reducedPill.style.color = "#94a3b8";
+                        reducedPill.title = "ยังไม่มีข้อมูลก่อนปรับสูตร จึงยังไม่สามารถคำนวณโซเดียมที่ลดได้";
+                        reducedIcon.style.display = "none";
+                        reducedMgEl.textContent = "-";
+                        reducedPercentEl.textContent = "";
+                    } else {
+                        const reducedMg = parseFloat(product.reduced_mg);
+                        const isReduced = reducedMg >= 0;
+                        reducedPill.title = "";
+                        reducedIcon.style.display = "inline";
+                        reducedIcon.className = "fas " + (isReduced ? "fa-arrow-down" : "fa-arrow-up");
+                        if (isReduced) {
+                            reducedPill.style.backgroundColor = "#ecfdf5";
+                            reducedPill.style.color = "#047857";
+                        } else {
+                            reducedPill.style.backgroundColor = "#fef2f2";
+                            reducedPill.style.color = "#b91c1c";
+                        }
+                        reducedMgEl.textContent = Math.abs(reducedMg).toFixed(1);
+                        const pct = product.reduced_percent !== null && product.reduced_percent !== undefined
+                            ? Math.abs(parseFloat(product.reduced_percent)).toFixed(1)
+                            : "0.0";
+                        reducedPercentEl.textContent = "(" + (isReduced ? "" : "+") + pct + "%)";
                     }
 
                     positionDetailOverlay();

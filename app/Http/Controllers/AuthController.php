@@ -16,6 +16,18 @@ use Carbon\Carbon;
 
 class AuthController extends Controller
 {
+    /** Max wrong guesses for an OTP code / failed password logins before lockout. */
+    private const OTP_MAX_ATTEMPTS = 5;
+    private const LOGIN_MAX_ATTEMPTS = 5;
+    private const LOGIN_LOCK_SECONDS = 300;
+    private const LOGIN_OTP_TTL_SECONDS = 300;
+
+    /** Cache key holding the wrong-guess counter for a forgot-password OTP. */
+    private function resetOtpAttemptsKey(string $email): string
+    {
+        return 'pwreset_otp_attempts_' . sha1(strtolower($email));
+    }
+
     // ... (existing methods)
 
     public function showForgotPasswordForm()
@@ -57,6 +69,9 @@ class AuthController extends Controller
             ]
         );
 
+        // A newly issued code starts with a fresh wrong-guess budget.
+        \Illuminate\Support\Facades\Cache::forget($this->resetOtpAttemptsKey($request->email));
+
         // Send email
         try {
             \Illuminate\Support\Facades\Mail::send('auth.emails.otp-code', ['otp' => $otp, 'email' => $request->email], function ($message) use ($request) {
@@ -70,6 +85,8 @@ class AuthController extends Controller
         // Keep the email in the session (not the URL/query string) for the
         // OTP-entry and resend steps.
         $request->session()->put('otp_reset_email', $request->email);
+
+        \App\Support\ActivityLog::record('password_reset_requested', 'ขอรหัส OTP เพื่อตั้งรหัสผ่านใหม่', $user, [], $request);
 
         return redirect()->route('password.otp.form')->with('success', 'เราได้ส่งรหัส OTP ไปที่อีเมลของคุณแล้ว');
     }
@@ -135,9 +152,24 @@ class AuthController extends Controller
             return back()->with('error', 'รหัส OTP หมดอายุแล้ว กรุณากดขอรหัสใหม่อีกครั้ง');
         }
 
+        $attemptsKey = $this->resetOtpAttemptsKey($email);
         if (!Hash::check($request->otp, $reset->token)) {
-            return back()->with('error', 'รหัส OTP ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
+            // Max 5 wrong guesses per issued code, same budget as the
+            // login OTP. On the 5th miss the code is destroyed, so the
+            // user has to request a new one from step 1.
+            $attempts = (int) \Illuminate\Support\Facades\Cache::get($attemptsKey, 0) + 1;
+            if ($attempts >= self::OTP_MAX_ATTEMPTS) {
+                DB::table('password_reset_tokens')->where('email', $email)->delete();
+                \Illuminate\Support\Facades\Cache::forget($attemptsKey);
+                $request->session()->forget('otp_reset_email');
+                \App\Support\ActivityLog::record('password_reset_otp_failed', 'กรอก OTP ลืมรหัสผ่านผิดครบ 5 ครั้ง (ยกเลิกรหัส)', null, ['reason' => 'locked'], $request, $email);
+                return redirect()->route('password.request')->with('error', 'กรอกรหัส OTP ผิดเกินจำนวนครั้งที่กำหนด กรุณาขอรหัส OTP ใหม่อีกครั้ง');
+            }
+            \Illuminate\Support\Facades\Cache::put($attemptsKey, $attempts, now()->addMinutes(10));
+            \App\Support\ActivityLog::record('password_reset_otp_failed', 'กรอก OTP ลืมรหัสผ่านไม่ถูกต้อง (ครั้งที่ ' . $attempts . ')', null, ['reason' => 'wrong_otp'], $request, $email);
+            return back()->with('error', 'รหัส OTP ไม่ถูกต้อง เหลืออีก ' . (self::OTP_MAX_ATTEMPTS - $attempts) . ' ครั้ง');
         }
+        \Illuminate\Support\Facades\Cache::forget($attemptsKey);
 
         // OTP confirmed - issue a fresh unguessable token for the actual
         // password-change step and give it its own full window.
@@ -172,8 +204,8 @@ class AuthController extends Controller
                 // and one that's missing something is always rejected.
                 function ($attribute, $value, $fail) use ($request) {
                     $unmet = [];
-                    if (mb_strlen($value) < 10) {
-                        $unmet[] = 'อย่างน้อย 10 ตัวอักษร';
+                    if (mb_strlen($value) < 8) {
+                        $unmet[] = 'อย่างน้อย 8 ตัวอักษร';
                     }
                     if (!preg_match('/[A-Z]/', $value)) {
                         $unmet[] = 'ตัวพิมพ์ใหญ่ (A-Z)';
@@ -227,6 +259,8 @@ class AuthController extends Controller
         // Delete token after use
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
+        \App\Support\ActivityLog::record('password_reset_done', 'ตั้งรหัสผ่านใหม่สำเร็จ (ผ่านการยืนยัน OTP)', $user, [], $request);
+
         // "จดจำฉันไว้" - if checked, log the admin straight in (with a
         // remember-me cookie) instead of sending them back to the login
         // form, same as a normal remembered login would. Skipped for an
@@ -261,17 +295,27 @@ class AuthController extends Controller
         return response()->json($hospitals);
     }
 
+    /**
+     * Backs the ตำบล dropdown on the staff registration form (รพ.สต. rank).
+     * This route existed before the dropdown did - it used to read distinct
+     * (subdistrict, subdistrict_code) pairs out of subdistrict_hospital,
+     * but that table only lists subdistrict for a tambon that already has
+     * a รพ.สต. row in it, and subdistrict_code was actually populated with
+     * the district_id (see SubdistrictHospitalImport's comment), so every
+     * tambon in a district came back with the same bogus id. Tambon_id on
+     * users needs a real, unique code, so this now reads the dedicated
+     * tambon reference table (imported from the official ตำบล list)
+     * instead - complete for every tambon in the 5 provinces, not just
+     * ones with a facility already on file.
+     */
     public function getSubdistricts($province_id, $district_id)
     {
-        $subdistricts = \DB::table('subdistrict_hospital')
-            ->where('province_id', $province_id)
+        $tambons = \App\Models\Tambon::where('province_id', $province_id)
             ->where('district_id', $district_id)
-            ->select('subdistrict as tambon_name', 'subdistrict_code as tambon_id')
-            ->distinct()
             ->orderBy('tambon_name', 'asc')
-            ->get();
+            ->get(['tambon_id', 'tambon_name']);
 
-        return response()->json($subdistricts);
+        return response()->json($tambons);
     }
 
     public function getSubdistrictHospitals($province_id, $district_id, $tambon_id = null)
@@ -293,6 +337,11 @@ class AuthController extends Controller
 
     public function register(Request $request)
     {
+        // แอดมิน (สคร.) ปิดรับสมัครระดับ สคร. ได้ที่ จัดการระบบ - กันการส่งค่าตรงมาโดยไม่ผ่านฟอร์ม
+        if ((string) $request->input('User_rank_id') === '1' && !\App\Support\SystemSettings::get('register_rank1_enabled', true)) {
+            return back()->withErrors(['User_rank_id' => 'ขณะนี้ปิดรับสมัครสมาชิกระดับ สคร.'])->withInput();
+        }
+
         $validator = Validator::make($request->all(), [
             'prefix' => 'required|string|max:10',
             'User_firstname' => 'required|string|max:255',
@@ -333,11 +382,14 @@ class AuthController extends Controller
             'User_rank_id' => $request->User_rank_id,
             'Province_id' => $request->Province_id,
             'District_id' => $request->District_id,
+            'Tambon_id' => $request->Tambon_id,
             'hos_id' => $request->Hospital_id,
             'sh_id' => $request->Subdistrict_Hospital_id,
             'Con_name' => $request->Con_name,
             'is_approved' => ($request->User_rank_id == 1) ? 1 : 0,
         ]);
+
+        \App\Support\ActivityLog::record('register', 'สมัครสมาชิกใหม่ (รอการอนุมัติ)', $user, ['rank' => (string) $request->User_rank_id], $request);
 
         // You can auto-login the user or redirect to login page
         return redirect()->route('staff')->with('success', 'สมัครสมาชิกเรียบร้อยแล้ว กรุณาเข้าสู่ระบบ');
@@ -354,19 +406,33 @@ class AuthController extends Controller
             'password.required' => 'กรุณากรอกรหัสผ่าน',
         ]);
 
+        // Throttle: max 5 failed sign-ins per email + IP, then locked for 5 minutes.
+        $throttleKey = 'login|' . strtolower($request->email) . '|' . $request->ip();
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)) {
+            $minutes = (int) ceil(\Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey) / 60);
+            \App\Support\ActivityLog::record('login_failed', 'ถูกล็อกชั่วคราว: กรอกรหัสผ่านผิดเกินกำหนด', null, ['reason' => 'locked'], $request, strtolower($request->email));
+            return back()->with('error', 'กรอกรหัสผ่านผิดเกินจำนวนครั้งที่กำหนด กรุณาลองใหม่อีกครั้งใน ' . max(1, $minutes) . ' นาที')->withInput();
+        }
+
         // Single lookup, reused for both the existence check and the password
         // check (avoids Auth::attempt() re-querying the same row a second time).
         $user = User::where('email', $request->email)->first();
         if (!$user) {
+            \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
+            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: ไม่พบอีเมลนี้ในระบบ', null, ['reason' => 'unknown_email'], $request, strtolower($request->email));
             return back()->with('error', 'ไม่มีอีเมลนี้ในฐานข้อมูล')->withInput();
         }
 
         if (!Hash::check($request->password, $user->password)) {
+            \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
+            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
             return back()->with('error', 'รหัสผ่านไม่ถูกต้อง')->withInput();
         }
+        \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
 
         // Bypass approval check for Level 1 users
         if ($user->User_rank_id != 1 && !$user->is_approved) {
+            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: บัญชียังรอการอนุมัติ', $user, ['reason' => 'pending_approval'], $request);
             return back()->with('error', 'บัญชีของคุณอยู่ระหว่างรอการอนุมัติจากผู้ดูแลระบบ')->withInput();
         }
 
@@ -378,9 +444,19 @@ class AuthController extends Controller
         // fixation the same way the old immediate-login code did.
         $request->session()->regenerate();
 
-        if (!$this->issueLoginOtp($user)) {
-            return back()->with('error', 'ไม่สามารถส่งอีเมลยืนยันตัวตนได้ในขณะนี้ กรุณาตรวจสอบการตั้งค่าเมล์ของเซิร์ฟเวอร์')->withInput();
+        // Level-1-only switch (admin/system-management) - lets an admin
+        // turn the login OTP step off entirely, e.g. while diagnosing a
+        // mail-server problem. Defaults to true (today's behavior)
+        // whenever the setting has never been touched.
+        if (!\App\Support\SystemSettings::get('login_otp_enabled', true)) {
+            // The session id was already regenerated above, before any
+            // login state was written - regenerating it a second time only
+            // costs another session-file rewrite.
+            Auth::login($user, $request->boolean('remember'));
+            return redirect()->intended('admin');
         }
+
+        $this->issueLoginOtp($user);
 
         // Only the pending user id (and the "remember me" choice, so
         // it isn't lost across the OTP detour) lives in the session
@@ -417,10 +493,10 @@ class AuthController extends Controller
         }
 
         $entry = \Illuminate\Support\Facades\Cache::get('login_otp_' . $user->id);
-        $remainingSeconds = 300;
+        $remainingSeconds = self::LOGIN_OTP_TTL_SECONDS;
         if ($entry) {
             $elapsed = Carbon::now()->timestamp - $entry['created_at'];
-            $remainingSeconds = max(0, 300 - $elapsed);
+            $remainingSeconds = max(0, self::LOGIN_OTP_TTL_SECONDS - $elapsed);
         }
 
         return view('auth.login.otp', ['email' => $user->email, 'remainingSeconds' => (int) $remainingSeconds]);
@@ -461,21 +537,24 @@ class AuthController extends Controller
         }
 
         $elapsed = Carbon::now()->timestamp - $entry['created_at'];
-        if ($elapsed > 300) {
+        if ($elapsed > self::LOGIN_OTP_TTL_SECONDS) {
             \Illuminate\Support\Facades\Cache::forget($cacheKey);
             $request->session()->forget('login_2fa_user_id');
+            \App\Support\ActivityLog::record('otp_failed', 'OTP เข้าสู่ระบบหมดอายุ', $user, ['reason' => 'expired'], $request);
             return redirect()->route('staff')->with('error', 'รหัส OTP หมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
         }
 
-        if (!Hash::check($request->otp, $entry['hash'])) {
+        if (!$this->otpMatches($request->otp, $entry['hash'])) {
             $attempts = $entry['attempts'] + 1;
             if ($attempts >= 5) {
                 \Illuminate\Support\Facades\Cache::forget($cacheKey);
                 $request->session()->forget('login_2fa_user_id');
+                \App\Support\ActivityLog::record('otp_failed', 'กรอก OTP เข้าสู่ระบบผิดครบ 5 ครั้ง (ยกเลิกรหัส)', $user, ['reason' => 'locked'], $request);
                 return redirect()->route('staff')->with('error', 'กรอกรหัส OTP ผิดเกินจำนวนครั้งที่กำหนด กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
             }
             $entry['attempts'] = $attempts;
             \Illuminate\Support\Facades\Cache::put($cacheKey, $entry, now()->addMinutes(10));
+            \App\Support\ActivityLog::record('otp_failed', 'กรอก OTP เข้าสู่ระบบไม่ถูกต้อง (ครั้งที่ ' . $attempts . ')', $user, ['reason' => 'wrong_otp'], $request);
             return back()->with('error', 'รหัส OTP ไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง');
         }
 
@@ -507,9 +586,7 @@ class AuthController extends Controller
             return redirect()->route('staff')->with('error', 'ไม่พบบัญชีผู้ใช้นี้ กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
         }
 
-        if (!$this->issueLoginOtp($user)) {
-            return redirect()->route('login.otp.form')->with('error', 'ไม่สามารถส่งอีเมลได้ในขณะนี้ กรุณาตรวจสอบการตั้งค่าเมล์ของเซิร์ฟเวอร์');
-        }
+        $this->issueLoginOtp($user);
 
         return redirect()->route('login.otp.form')->with('success', 'เราได้ส่งรหัส OTP ไปที่อีเมลของคุณอีกครั้งแล้ว');
     }
@@ -518,34 +595,70 @@ class AuthController extends Controller
      * Generates a fresh 6-digit code, (re)writes it into the cache for
      * this user, and emails it. Shared by login() (first send) and
      * resendLoginOtp() (every resend), so the two paths can never drift.
-     * Returns false only if the email could not be sent - the cache entry
-     * is already written either way, so a retry from the OTP page's
-     * resend button works without the admin re-entering their password.
+     * The code is cached before the mail goes out (see
+     * sendLoginOtpAfterResponse()), so a retry from the OTP page's resend
+     * button works without the admin re-entering their password.
      */
-    private function issueLoginOtp(User $user): bool
+    private function issueLoginOtp(User $user): void
     {
         $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
         \Illuminate\Support\Facades\Cache::put(
             'login_otp_' . $user->id,
             [
-                'hash' => Hash::make($otp),
+                'hash' => $this->otpDigest($otp),
                 'attempts' => 0,
                 'created_at' => Carbon::now()->timestamp,
             ],
             now()->addMinutes(10)
         );
 
-        try {
-            \Illuminate\Support\Facades\Mail::send('auth.emails.login-otp-code', ['otp' => $otp, 'email' => $user->email], function ($message) use ($user) {
-                $message->to($user->email);
-                $message->subject('รหัส OTP สำหรับเข้าสู่ระบบ - Salt & Sodium Smart Monitor');
-            });
-        } catch (\Exception $e) {
-            return false;
+        $this->sendLoginOtpAfterResponse($user->email, $otp);
+    }
+
+    /**
+     * Keyed digest of a 6-digit code. The code lives at most 5 minutes and
+     * dies after 5 wrong guesses, so a slow password hash (bcrypt, ~0.25 s
+     * for make() and again for check()) buys nothing here - while keying
+     * the digest with the app key still keeps the code unrecoverable from a
+     * leaked cache file.
+     */
+    private function otpDigest(string $otp): string
+    {
+        return hash_hmac('sha256', $otp, (string) config('app.key'));
+    }
+
+    /**
+     * Accepts the keyed digest, and the bcrypt hash that codes issued by the
+     * previous version carry (they expire within minutes of deploy).
+     */
+    private function otpMatches(string $otp, string $stored): bool
+    {
+        if (str_starts_with($stored, '$2y$')) {
+            return Hash::check($otp, $stored);
         }
 
-        return true;
+        return hash_equals($stored, $this->otpDigest($otp));
+    }
+
+    /**
+     * Mails the code once the redirect to the OTP page has been sent, so the
+     * SMTP handshake (typically 1-4 s) no longer delays the login response.
+     * A failed send is logged; the OTP page's "ส่งรหัสใหม่อีกครั้ง" button is
+     * the retry path.
+     */
+    private function sendLoginOtpAfterResponse(string $email, string $otp): void
+    {
+        app()->terminating(function () use ($email, $otp) {
+            try {
+                \Illuminate\Support\Facades\Mail::send('auth.emails.login-otp-code', ['otp' => $otp, 'email' => $email], function ($message) use ($email) {
+                    $message->to($email);
+                    $message->subject('รหัส OTP สำหรับเข้าสู่ระบบ - Salt & Sodium Smart Monitor');
+                });
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        });
     }
 
     public function logout(Request $request)

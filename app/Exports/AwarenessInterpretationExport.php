@@ -5,7 +5,8 @@ namespace App\Exports;
 use App\Http\Controllers\SurveyQuestionSettingsController;
 use App\Models\SodiumSurvey;
 use App\Services\AwarenessScoreCalculator;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -286,9 +287,10 @@ class AwarenessInterpretationExport implements FromQuery, WithMapping, WithHeadi
      * the sheet immediately via map() below, instead of this export having
      * to load every respondent into one PHP array itself first.
      */
-    public function query(): Builder
+    public function query(): QueryBuilder
     {
-        return SodiumSurvey::query()
+        // Query Builder (แถวดิบ) ไม่ใช่ Eloquent - ไม่ต้องสร้างโมเดล + cast วันที่/JSON ต่อแถวหลายหมื่นครั้ง
+        return DB::table((new SodiumSurvey)->getTable())
             ->where('fiscal_year', $this->fiscalYear)
             ->select(['id', 'survey_date', 'province_name', 'district_name', 'sub_district', 'survey_data'])
             ->orderBy('id');
@@ -306,7 +308,8 @@ class AwarenessInterpretationExport implements FromQuery, WithMapping, WithHeadi
         // the "คะแนนเต็ม" raw codes, so they're resolved in the SAME pass
         // compute() already makes over ROLES/survey_data rather than a
         // second one per row.
-        $score = $this->calculator()->compute($survey, true);
+        $answers = json_decode((string) $survey->survey_data, true);
+        $score = $this->calculator()->computeFromData(is_array($answers) ? $answers : [], true);
         if (!$score) {
             // Defensive only: this export is only ever built for a fiscal
             // year that already passed AwarenessScoreCalculator::
@@ -335,7 +338,13 @@ class AwarenessInterpretationExport implements FromQuery, WithMapping, WithHeadi
         return $row;
     }
 
-    protected function rowFor(SodiumSurvey $survey, array $score): array
+    /** 'Y-m-d H:i:s' จากฐานข้อมูล -> 'd/m/Y' (ตัดข้อความตรง ๆ เร็วกว่าสร้าง Carbon ต่อแถว) */
+    protected function formatSurveyDate(?string $surveyDate): string
+    {
+        return $surveyDate ? substr($surveyDate, 8, 2) . '/' . substr($surveyDate, 5, 2) . '/' . substr($surveyDate, 0, 4) : '-';
+    }
+
+    protected function rowFor(object $survey, array $score): array
     {
         $roleScores = $score['role_scores'];
         $rawCodes = $score['raw_codes'] ?? [];
@@ -343,7 +352,7 @@ class AwarenessInterpretationExport implements FromQuery, WithMapping, WithHeadi
 
         $row = [
             $survey->id,
-            $survey->survey_date ? $survey->survey_date->format('d/m/Y') : '-',
+            $this->formatSurveyDate($survey->survey_date),
             $survey->province_name ?: '-',
             $survey->district_name ?: '-',
             $survey->sub_district ?: '-',

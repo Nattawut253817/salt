@@ -63,6 +63,13 @@ class HiImport implements ToCollection, SkipsEmptyRows
             if ($index < 2) {
                 continue;
             }
+            // The template ends with a "รวม" (grand total) row. It is a
+            // sum of the district rows above it, not a district, so it is
+            // never imported - otherwise it would be saved as a district
+            // named "รวม" and double every total on the dashboards.
+            if ($this->isTotalRow($row[0] ?? null)) {
+                continue;
+            }
             $this->importRow($row->toArray());
         }
     }
@@ -107,6 +114,18 @@ class HiImport implements ToCollection, SkipsEmptyRows
                 );
             }
         }
+    }
+
+    /**
+     * True for the footer total row of the template ("รวม", also tolerated:
+     * "รวมทั้งหมด", "รวมทั้งสิ้น", "รวมเขต", "รวมจังหวัด", "Total").
+     */
+    protected function isTotalRow($firstCell): bool
+    {
+        $label = trim(preg_replace('/\s+/u', '', (string) ($firstCell ?? '')));
+
+        return $label !== ''
+            && (bool) preg_match('/^(รวม(ทั้งหมด|ทั้งสิ้น|เขต|จังหวัด)?|total)$/iu', $label);
     }
 
     protected function importRow(array $row): void

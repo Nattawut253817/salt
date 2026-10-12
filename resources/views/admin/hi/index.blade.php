@@ -320,7 +320,7 @@
                             <div class="imp-num" id="hiStep3Num">3</div>
                             <div class="imp-step-body">
                                 <div class="imp-step-title">อัปโหลดไฟล์ Excel</div>
-                                <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 500; margin: 2px 0 8px;">รองรับเฉพาะไฟล์ .xlsx เท่านั้น</div>
+                                <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 500; margin: 2px 0 8px;">รองรับเฉพาะไฟล์ .xlsx เท่านั้น · แถว "รวม" ท้ายไฟล์จะถูกข้ามอัตโนมัติ</div>
                                 <div class="imp-dropzone" onclick="document.getElementById('hiFileInput').click()">
                                     <i class="fas fa-cloud-upload-alt"></i>
                                     <div>

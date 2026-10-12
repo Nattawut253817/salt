@@ -49,6 +49,10 @@ class UsersPerProvinceSheet implements FromQuery, WithTitle, WithHeadings, WithM
             }
         }
 
+        if (!empty($this->filters['_exclude_super'])) {
+            $query->withoutSuperAdmins();
+        }
+
         return $query->orderByRaw('FIELD(User_rank_id, 1, 2, 3, 5, 4)');
     }
 

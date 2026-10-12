@@ -988,6 +988,96 @@
             transform: translateY(-1px);
         }
 
+        /* ตัวนับจำนวนการเข้าชมรายหน้า (ใต้แผนที่) - พื้นชมพูอ่อนเรืองแสง ตัวหนังสือ/ตัวเลขชมพูเข้ม */
+        .footer-view-counter {
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 14px;
+            padding: 12px 16px 12px 12px;
+            border-radius: 16px;
+            background:
+                radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0) 55%),
+                linear-gradient(135deg, #fff0f7 0%, #ffd9ea 100%);
+            border: 1.5px solid #f9a8d4;
+            box-shadow:
+                0 0 0 4px rgba(244, 114, 182, 0.14),
+                0 0 22px rgba(236, 72, 153, 0.38),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .footer-view-icon {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #db2777 0%, #9d174d 100%);
+            color: #ffffff;
+            font-size: 1.1rem;
+            box-shadow: 0 0 14px rgba(219, 39, 119, 0.55), 0 3px 8px rgba(157, 23, 77, 0.3);
+        }
+
+        .footer-view-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            flex: 1;
+            line-height: 1.3;
+        }
+
+        .footer-view-label {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: #9d174d;
+            letter-spacing: 0.01em;
+        }
+
+        .footer-view-since {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #be4a85;
+        }
+
+        .footer-view-num {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #9d174d;
+        }
+
+        .footer-view-num b {
+            min-width: 44px;
+            text-align: center;
+            padding: 5px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 800;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 1px 2px rgba(76, 5, 38, 0.35);
+            box-shadow: 0 0 16px rgba(236, 72, 153, 0.7), 0 3px 8px rgba(157, 23, 77, 0.3);
+            animation: footerViewGlow 3.2s ease-in-out infinite;
+        }
+
+        @keyframes footerViewGlow {
+            0%, 100% { box-shadow: 0 0 10px rgba(236, 72, 153, 0.5), 0 3px 8px rgba(157, 23, 77, 0.3); }
+            50% { box-shadow: 0 0 22px rgba(236, 72, 153, 0.85), 0 3px 8px rgba(157, 23, 77, 0.3); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .footer-view-num b { animation: none; }
+        }
+
         .footer-bottom {
             display: flex;
             flex-wrap: wrap;
@@ -1228,6 +1318,21 @@
                             <i class="fa-solid fa-diamond-turn-right"></i> นำทาง
                         </a>
                     </div>
+                    @if (!empty($pageViewStat))
+                        @php
+                            $pvSince = $pageViewStat['since'];
+                            $pvMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                            $pvSinceText = $pvSince->day . ' ' . $pvMonths[$pvSince->month - 1] . ' ' . ($pvSince->year + 543);
+                        @endphp
+                        <div class="footer-view-counter" role="status">
+                            <span class="footer-view-icon" aria-hidden="true"><i class="fa-solid fa-chart-simple"></i></span>
+                            <span class="footer-view-text">
+                                <span class="footer-view-label">จำนวนการเข้าชมหน้านี้</span>
+                                <span class="footer-view-since">เริ่มนับ {{ $pvSinceText }}</span>
+                            </span>
+                            <span class="footer-view-num"><b>{{ number_format($pageViewStat['views']) }}</b> ครั้ง</span>
+                        </div>
+                    @endif
                 </div>
 
             </div>

@@ -727,6 +727,16 @@
             color: #fff;
         }
 
+        /* ปุ่ม "เลือกพื้นที่ดำเนินงาน" - สีส้ม */
+        .btn-take-assessment.btn-pick-area {
+            background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
+            box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);
+        }
+
+        .btn-take-assessment.btn-pick-area:hover {
+            box-shadow: 0 10px 22px rgba(234, 88, 12, 0.45);
+        }
+
         .btn-take-assessment:active,
         .btn-back-home:active {
             transform: translateY(0);
@@ -876,6 +886,9 @@
             5 => 'รพ.',
         ];
         $adminBannerRankLabel = $adminBannerRankLabels[$adminBannerUser->User_rank_id] ?? '';
+        if ($adminBannerUser->isSuperAdmin()) {
+            $adminBannerRankLabel = 'SuperAdmin';
+        }
     @endphp
 
     <!-- Full-width pink brand banner (spans above the sidebar). Left: logo
@@ -992,12 +1005,20 @@
                 <div class="nav-section-title">จัดการแบบประเมิน</div>
                 <li class="nav-item">
                     <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
                         <i class="fas fa-file-medical"></i>
                         <span>แบบประเมินพชอ.ไต</span>
                         @if (isset($unreadKidneyCount) && $unreadKidneyCount > 0)
                             <span class="nav-badge">{{ $unreadKidneyCount }}</span>
                         @endif
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{{ route('admin.operating-areas.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.operating-areas.index') ? 'active' : '' }}"
+                        style="padding-left: 40px;">
+                        <i class="fas fa-map-location-dot"></i>
+                        <span style="font-style: italic;">จัดการพื้นที่ดำเนินงาน</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -1036,6 +1057,15 @@
                         <span>จัดการแบบฟอร์ม Excel</span>
                     </a>
                 </li>
+                @if (auth()->user()->isSuperAdmin())
+                <li class="nav-item">
+                    <a href="{{ route('admin.system-management.index') }}"
+                        class="nav-link {{ request()->routeIs('admin.system-management.index') ? 'active' : '' }}">
+                        <i class="fas fa-gears"></i>
+                        <span>จัดการระบบ</span>
+                    </a>
+                </li>
+                @endif
             @elseif(auth()->user()->User_rank_id == 2)
                 <!-- สสจ. Menus -->
                 <div class="nav-section-title">แดชบอร์ด</div>
@@ -1048,7 +1078,7 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
                         <i class="fas fa-stethoscope"></i>
                         <span>การประเมินพชอ.ไต</span>
                     </a>
@@ -1074,7 +1104,7 @@
                 <div class="nav-section-title">แดชบอร์ด</div>
                 <li class="nav-item">
                     <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
                         <i class="fas fa-file-medical"></i>
                         <span>การประเมินพชอ.ไต</span>
                     </a>
@@ -1091,7 +1121,7 @@
                 <div class="nav-section-title">แดชบอร์ด</div>
                 <li class="nav-item">
                     <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
                         <i class="fas fa-file-medical"></i>
                         <span>การประเมินพชอ.ไต</span>
                     </a>
@@ -1116,7 +1146,7 @@
 
                 {{-- <li class="nav-item">
                     <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
                         <i class="fas fa-file-medical"></i>
                         <span>พชอ.ไต</span>
                     </a>
@@ -1142,14 +1172,10 @@
                     </div>
                 @endif
             </div>
-            <div class="admin-user-nav">
+            <div class="admin-user-nav" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
                 <!-- User profile moved to sidebar -->
-                @if(auth()->user()->User_rank_id == 2 && request()->routeIs('admin.salt-assessment-list'))
-                    <a href="{{ route('admin.report-progress') }}" class="btn-take-assessment">
-                        <i class="fas fa-file-signature"></i>
-                        <span>ทำแบบประเมิน</span>
-                    </a>
-                @elseif(auth()->user()->User_rank_id == 2 && request()->routeIs('admin.report-progress'))
+                {{-- หน้ารายการ salt-assessment-list: ไม่มีปุ่ม "ทำแบบประเมิน" ที่ส่วนหัวแล้ว (ใช้ปุ่มในแต่ละแถวของตารางแทน) --}}
+                @if(auth()->user()->User_rank_id == 2 && request()->routeIs('admin.report-progress'))
                     <a href="{{ route('admin.salt-assessment-list') }}" class="btn-back-home">
                         <i class="fas fa-arrow-left"></i>
                         <span>กลับหน้าหลัก</span>
@@ -1175,9 +1201,14 @@
                         <span>กลับหน้าหลัก</span>
                     </a>
                 @elseif(in_array(auth()->user()->User_rank_id, [2, 3, 4]) && request()->routeIs('admin.kidney-dhb-list'))
-                    <a href="{{ route('admin.kidney-dhb') }}" class="btn-take-assessment">
-                        <i class="fas fa-file-signature"></i>
-                        <span>ทำแบบประเมิน</span>
+                    <a href="{{ route('admin.kidney-dhb.areas') }}" class="btn-take-assessment btn-pick-area">
+                        <i class="fas fa-map-location-dot"></i>
+                        <span>เลือกพื้นที่ดำเนินงาน</span>
+                    </a>
+                @elseif(in_array(auth()->user()->User_rank_id, [2, 3, 4]) && request()->routeIs('admin.kidney-dhb.areas'))
+                    <a href="{{ route('admin.kidney-dhb-list') }}" class="btn-back-home">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>กลับหน้าหลัก</span>
                     </a>
                 @elseif(in_array(auth()->user()->User_rank_id, [2, 3, 4]) && request()->routeIs('admin.kidney-dhb'))
                     <a href="{{ route('admin.kidney-dhb-list') }}" class="btn-back-home">
@@ -1653,6 +1684,53 @@
             </div>
         </div>
     </div>
+
+    {{-- แจ้งเตือน: ยังไม่ได้เลือกพื้นที่ดำเนินงาน (ปุ่มทำแบบประเมิน / redirect จากหน้าแบบประเมิน) --}}
+    <style>
+        .swal2-popup.need-area-popup { border-radius: 24px; padding: 0 0 26px; width: 440px; max-width: calc(100vw - 32px); overflow: hidden; box-shadow: 0 30px 70px -20px rgba(49, 46, 129, .45); }
+        .need-area-hero { background: linear-gradient(160deg, #eef2ff 0%, #e0e7ff 100%); padding: 34px 28px 26px; border-bottom: 1px solid #e0e7ff; }
+        .need-area-badge { position: relative; width: 76px; height: 76px; margin: 0 auto 14px; border-radius: 50%; background: #fff; display: grid; place-items: center; color: #4f46e5; font-size: 1.9rem; box-shadow: 0 10px 24px -8px rgba(79, 70, 229, .5); }
+        .need-area-badge::after { content: "!"; position: absolute; right: -2px; top: -2px; width: 26px; height: 26px; border-radius: 50%; background: #f59e0b; color: #fff; font: 800 .9rem/26px 'Noto Serif Thai', sans-serif; text-align: center; border: 3px solid #eef2ff; }
+        .need-area-title { font-family: 'Noto Serif Thai', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1e1b4b; margin: 0; }
+        .need-area-body { padding: 20px 30px 4px; text-align: center; color: #475569; font-size: .92rem; line-height: 1.7; }
+        .need-area-steps { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 16px; font-size: .8rem; font-weight: 600; color: #94a3b8; }
+        .need-area-steps .on { color: #4338ca; }
+        .need-area-steps .dot { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; margin-right: 6px; background: #e2e8f0; color: #64748b; font-size: .72rem; }
+        .need-area-steps .on .dot { background: #4f46e5; color: #fff; }
+        .need-area-steps .bar { width: 28px; height: 2px; background: #e2e8f0; border-radius: 2px; }
+        .need-area-popup .swal2-actions { margin-top: 22px; gap: 10px; }
+        .need-area-popup .swal2-confirm { border-radius: 999px !important; padding: 11px 26px !important; font-family: 'Noto Serif Thai', sans-serif; font-weight: 600; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; box-shadow: 0 8px 18px rgba(67, 56, 202, .35) !important; }
+        .need-area-popup .swal2-cancel { border-radius: 999px !important; padding: 11px 22px !important; font-family: 'Noto Serif Thai', sans-serif; font-weight: 600; background: #f1f5f9 !important; color: #475569 !important; }
+        .need-area-popup .swal2-confirm:focus-visible, .need-area-popup .swal2-cancel:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; box-shadow: none !important; }
+    </style>
+    <script>
+        (function () {
+            const areasUrl = @json(route('admin.kidney-dhb.areas'));
+            function showNeedAreaAlert() {
+                Swal.fire({
+                    html: '<div class="need-area-hero"><div class="need-area-badge"><i class="fas fa-map-location-dot"></i></div>' +
+                        '<h2 class="need-area-title">ท่านยังไม่ได้เลือกพื้นที่ดำเนินงาน</h2></div>' +
+                        '<div class="need-area-body">กรุณาเลือกพื้นที่ดำเนินงานของหน่วยงานก่อน จึงจะเริ่มทำแบบประเมินได้' +
+                        '<div class="need-area-steps"><span class="on"><span class="dot">1</span>เลือกพื้นที่</span><span class="bar"></span><span><span class="dot">2</span>ทำแบบประเมิน</span></div></div>',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-map-pin mr-2"></i> เลือกพื้นที่ดำเนินงาน',
+                    cancelButtonText: 'ไว้ทีหลัง',
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    customClass: { popup: 'need-area-popup', confirmButton: 'swal2-confirm', cancelButton: 'swal2-cancel' },
+                    showClass: { popup: 'swal2-show' }
+                }).then(function (r) { if (r.isConfirmed) window.location.href = areasUrl; });
+            }
+            document.querySelectorAll('.js-assess-link').forEach(function (a) {
+                a.addEventListener('click', function (e) {
+                    if (a.dataset.needArea === '1') { e.preventDefault(); showNeedAreaAlert(); }
+                });
+            });
+            @if (session('need_area'))
+                document.addEventListener('DOMContentLoaded', showNeedAreaAlert);
+            @endif
+        })();
+    </script>
 
     @yield('extra_js')
 </body>

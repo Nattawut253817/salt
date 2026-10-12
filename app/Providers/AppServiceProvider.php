@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +23,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // บันทึกการใช้งานระบบ: เข้า/ออกจากระบบ (ครอบคลุมทุกทางที่เรียก Auth::login / Auth::logout)
+        Event::listen(Login::class, function (Login $event) {
+            \App\Support\ActivityLog::record('login_success', 'เข้าสู่ระบบสำเร็จ', $event->user, ['remember' => (bool) $event->remember]);
+        });
+        Event::listen(Logout::class, function (Logout $event) {
+            if ($event->user) {
+                \App\Support\ActivityLog::record('logout', 'ออกจากระบบ', $event->user);
+            }
+        });
+
         view()->composer('layouts.admin', function ($view) {
             // These badge counts render on every admin page, including the
             // page a user lands on right after logging in. They don't need

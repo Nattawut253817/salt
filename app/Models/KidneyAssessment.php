@@ -14,6 +14,14 @@ class KidneyAssessment extends Model
         'fiscal_year',
         'quarter',
         'operating_area',
+        'operating_area_pin_id',
+        'operating_area_province_id',
+        'operating_area_district_id',
+        'operating_area_tambon_id',
+        'operating_area_village_id',
+        'operating_area_village_name_snapshot',
+        'operating_area_latitude',
+        'operating_area_longitude',
         'category_1',
         'category_2',
         'category_3',
@@ -52,8 +60,42 @@ class KidneyAssessment extends Model
         return $this->belongsTo(User::class);
     }
 
+    /** รูปภาพประกอบ (สูงสุด 3 รูปต่อข้อ) */
+    public function images()
+    {
+        return $this->hasMany(KidneyAssessmentImage::class, 'kidney_assessment_id')
+            ->orderBy('category')
+            ->orderBy('slot');
+    }
+
+    protected static function booted()
+    {
+        // ลบรายงาน -> ลบไฟล์รูปและแถวรูปภาพของรายงานนั้นด้วย
+        static::deleting(function (KidneyAssessment $assessment) {
+            if (!\Illuminate\Support\Facades\Schema::hasTable('kidney_assessment_images')) {
+                return;
+            }
+            foreach (KidneyAssessmentImage::where('kidney_assessment_id', $assessment->id)->get() as $img) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($img->path);
+                $img->delete();
+            }
+        });
+    }
+
     public function confirmedBy()
     {
         return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
+    /**
+     * The registered operating-area pin this assessment was filed under,
+     * when the reporter picked one of Level 1's existing pins rather than
+     * placing an ad hoc one of their own. FK-less, like every other
+     * location column on this model - see the migration that added these
+     * columns.
+     */
+    public function operatingAreaPin()
+    {
+        return $this->belongsTo(OperatingAreaPin::class, 'operating_area_pin_id');
     }
 }

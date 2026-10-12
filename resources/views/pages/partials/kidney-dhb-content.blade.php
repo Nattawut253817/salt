@@ -1,3 +1,11 @@
+{{-- Leaflet, for the "พื้นที่การดำเนินงาน" pin picker below (เลือกจากพื้นที่
+     ที่มีอยู่ / ปักหน่วยงานพื้นที่ใหม่). Loaded inline here, right beside this
+     partial's own <style>/<script>, rather than through the wrapper view's
+     @section('extra_js') - that section renders near the end of <body>,
+     AFTER this partial's own inline <script> below runs, which would call
+     L.map(...) before Leaflet itself had loaded. --}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
     /* Taviraj (formal Thai serif) for notification titles, matching the
        treatment already shipped on the SDA0902 report-progress page. */
@@ -283,6 +291,16 @@
         gap: 5px;
     }
 
+    /* ไตรมาสที่ สคร. ยืนยันข้อมูลแล้ว: ฝั่งผู้ตอบแก้ไขไม่ได้ */
+    .quarter-lock-banner { display: none; align-items: flex-start; gap: 14px; margin: 0 0 20px; padding: 15px 18px; border-radius: 14px; background: #f8fafc; border: 1px solid #cbd5e1; }
+    .quarter-lock-banner.is-visible { display: flex; }
+    .quarter-lock-banner .qlb-ic { width: 38px; height: 38px; min-width: 38px; border-radius: 11px; display: flex; align-items: center; justify-content: center; color: #fff; background: linear-gradient(145deg, #94a3b8, #64748b); box-shadow: 0 6px 12px -6px rgba(71, 85, 105, .7); }
+    .quarter-lock-banner b { display: block; font-size: .95rem; font-weight: 700; color: #1e293b; line-height: 1.35; }
+    .quarter-lock-banner span { display: block; margin-top: 2px; font-size: .84rem; font-weight: 500; color: #64748b; line-height: 1.5; }
+    #kidneyForm.is-quarter-locked .report-section { opacity: .6; }
+    #kidneyForm.is-quarter-locked .btn-submit,
+    #kidneyForm.is-quarter-locked .btn-submit:hover { background: #cbd5e1; color: #64748b; cursor: not-allowed; box-shadow: none; transform: none; }
+
     .btn-submit {
         display: flex;
         align-items: center;
@@ -309,9 +327,41 @@
 
     .year-quarter-section {
         display: grid;
-        grid-template-columns: 1fr 1fr 1.4fr;
+        /* ปีงบประมาณ/ไตรมาส plus a quick-jump "พื้นที่ดำเนินงาน" picker (just
+           the dropdown - not the full cascade/map editor, which still lives
+           in its own full-width section below where there's room for the
+           map). This one only needs to flip the SAME oaRegisteredSelect
+           further down to a different already-registered pin, so a person
+           switching between areas they've already pinned doesn't have to
+           scroll down to find that dropdown first. A touch wider than the
+           other two since area names run longer than a year or a quarter. */
+        /* minmax(0, …) not bare fr: a bare 1fr has an auto minimum, so the long
+           option text of the พื้นที่ดำเนินงาน select used to push that column
+           wide and squeeze ปีงบประมาณ into a narrow one (label wrapped, select
+           sat lower than its neighbours). Equal-height controls on one row,
+           top-aligned so the helper text under the area select can't shift them. */
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 2fr);
         gap: 20px;
+        align-items: start;
         margin-bottom: 30px;
+    }
+
+    .year-quarter-section .form-group { min-width: 0; }
+
+    .year-quarter-section .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+        line-height: 1.4;
+    }
+
+    .year-quarter-section .form-group select {
+        width: 100%;
+        min-width: 0;
+        height: 50px;
+        box-sizing: border-box;
+        text-overflow: ellipsis;
     }
 
     .form-group {
@@ -343,42 +393,218 @@
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
     }
 
-    /* พื้นที่การดำเนินงาน: a <select> (existing areas) and a text <input>
-       (typing a new one) share the row, toggled by the button between
-       them - only one of the pair is ever visible/enabled at a time. */
-    .operating-area-field {
+    /* พื้นที่การดำเนินงาน picker: two modes sharing one map -
+       "เลือกจากพื้นที่ที่มีอยู่" (a registered pin from จัดการพื้นที่ดำเนินงาน)
+       or "ปักหน่วยงานพื้นที่ใหม่" (คาสเคด จังหวัด->อำเภอ->ตำบล->หมู่บ้าน + ลากหน่วยงาน
+       เอง, same mechanic as admin.operating-areas.index). Same card/number
+       treatment as the numbered category sections above, so it reads as
+       part of the same form rather than a bolted-on widget. */
+    .oa-picker-section {
+        margin-bottom: 30px;
+    }
+
+    /* The area picker now lives on its own page (admin.kidney-dhb.areas,
+       "เลือกพื้นที่ดำเนินงาน"). Here the section is a read-only view: the
+       map (saved areas as pins - click one to choose it, or use the
+       "พื้นที่ดำเนินงาน" dropdown above) plus the chosen area's name,
+       location and coordinates. The tabs and the pin-placing controls stay
+       in the DOM (the JS drives them) but are never shown. */
+    .oa-picker-section .oa-mode-tabs,
+    .oa-picker-section #oaModeExisting,
+    .oa-picker-section #oaModeNew,
+    .oa-picker-section #oaMapHintNew {
+        display: none !important;
+    }
+
+    .oa-view-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.7fr) minmax(220px, 1fr);
+        gap: 22px;
+        align-items: start;
+    }
+
+    .oa-view-map { min-width: 0; }
+
+    .oa-info {
+        border: 1px solid #e8ecf3;
+        border-radius: 16px;
+        background: #fbfcfe;
+        padding: 6px 20px;
+    }
+
+    .oa-info-row { padding: 14px 0; border-bottom: 1px solid #eef1f6; }
+    .oa-info-row:last-child { border-bottom: none; }
+    .oa-info-label { font-size: .74rem; font-weight: 600; color: #94a3b8; margin-bottom: 4px; }
+    .oa-info-value { font-size: .98rem; font-weight: 700; color: #1e293b; line-height: 1.5; word-break: break-word; }
+    .oa-info-value.is-empty { font-weight: 500; color: #94a3b8; }
+
+    /* พื้นที่อื่นที่ครอบคลุมในรายงานเดียวกัน (เลือกได้หลายพื้นที่) */
+    .oa-extra-box {
+        margin: 0 0 18px;
+        padding: 16px 18px;
+        border: 1px solid #dbe4f3;
+        border-radius: 16px;
+        background: #f7faff;
+    }
+    .oa-extra-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .oa-extra-title { font-size: .95rem; font-weight: 700; color: #1e3a8a; }
+    .oa-extra-title i { margin-right: 6px; color: #2563eb; }
+    .oa-extra-count {
+        font-size: .78rem; font-weight: 700; color: #1d4ed8;
+        background: #dbeafe; border-radius: 999px; padding: 3px 12px;
+    }
+    .oa-extra-count.is-zero { color: #64748b; background: #eef1f6; }
+    .oa-extra-note { margin: 6px 0 12px; font-size: .8rem; color: #64748b; line-height: 1.6; }
+    .oa-extra-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+    .oa-extra-item {
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; background: #fff;
+        cursor: pointer; transition: border-color .15s ease, background .15s ease;
+        margin: 0;
+    }
+    .oa-extra-item:hover { border-color: #93b4f5; }
+    .oa-extra-item.is-on { border-color: #2563eb; background: #eff5ff; }
+    .oa-extra-item.is-taken { opacity: .55; cursor: not-allowed; background: #f8fafc; }
+    .oa-extra-item input { margin-top: 3px; width: 17px; height: 17px; accent-color: #2563eb; flex: none; }
+    .oa-extra-name { display: block; font-size: .88rem; font-weight: 700; color: #1e293b; line-height: 1.4; word-break: break-word; }
+    .oa-extra-sub { display: block; font-size: .74rem; color: #64748b; line-height: 1.4; word-break: break-word; }
+    .oa-extra-tag { display: inline-block; margin-top: 3px; font-size: .7rem; font-weight: 700; color: #b45309; background: #fef3c7; border-radius: 999px; padding: 1px 8px; }
+    .oa-extra-empty { margin: 0; font-size: .82rem; color: #94a3b8; }
+    .oa-info-value.oa-info-list { font-size: .9rem; font-weight: 600; }
+    .oa-info-value.oa-info-list div + div { margin-top: 4px; }
+
+    @media (max-width: 860px) {
+        .oa-view-grid { grid-template-columns: minmax(0, 1fr); }
+    }
+
+    .oa-areas-link {
+        display: block;
+        margin-top: 4px;
+        font-size: .78rem;
+        color: #64748b;
+    }
+
+    .oa-areas-link a {
+        color: #4f46e5;
+        font-weight: 700;
+        text-decoration: underline;
+    }
+
+    .oa-mode-tabs {
         display: flex;
-        gap: 8px;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+    }
+
+    .oa-mode-tab {
+        display: inline-flex;
         align-items: center;
-    }
-
-    .operating-area-field select,
-    .operating-area-field input[type="text"] {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .btn-toggle-area {
-        flex-shrink: 0;
-        width: 44px;
-        height: 44px;
+        gap: 8px;
+        padding: 10px 18px;
         border-radius: 12px;
         border: 2px solid #edeff2;
         background: #fcfdfe;
-        color: var(--primary-blue);
-        font-size: 1rem;
+        color: #64748b;
+        font-family: 'Noto Serif Thai', sans-serif;
+        font-size: 0.88rem;
+        font-weight: 600;
         cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        transition: all 0.2s ease;
     }
 
-    .btn-toggle-area:hover {
-        background: var(--primary-blue);
-        border-color: var(--primary-blue);
+    .oa-mode-tab:hover {
+        border-color: var(--accent-blue);
+        color: var(--primary-blue);
+    }
+
+    .oa-mode-tab.active {
+        background: var(--blue-gradient);
+        border-color: transparent;
         color: #fff;
-        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+    }
+
+    .oa-mode-panel {
+        margin-bottom: 14px;
+    }
+
+    .oa-empty-hint {
+        margin: 10px 2px 0;
+        font-size: 0.82rem;
+        color: #64748b;
+        line-height: 1.6;
+    }
+
+    .oa-link-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--primary-blue);
+        font-weight: 700;
+        font-family: inherit;
+        font-size: inherit;
+        cursor: pointer;
+        text-decoration: underline;
+    }
+
+    .oa-cascade-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    .oa-name-field {
+        margin-bottom: 14px;
+    }
+
+    .oa-map {
+        width: 100%;
+        height: 360px;
+        border-radius: 16px;
+        border: 2px solid #edeff2;
+        overflow: hidden;
+    }
+
+    .oa-pin-icon {
+        background: transparent;
+        border: none;
+    }
+
+    .oa-map-hint {
+        font-size: 0.8rem;
+        color: #64748b;
+        margin: 10px 2px 0;
+        line-height: 1.6;
+    }
+
+    /* Legend for renderOaOverviewMarkers()'s per-province pin colors -
+       only lists the provinces actually present among the current pins/
+       areas (built in JS), so a single-province account just sees its one
+       color instead of a fixed always-5 list. */
+    .oa-province-legend {
+        display: none;
+        flex-wrap: wrap;
+        gap: 6px 14px;
+        margin: 10px 2px 0;
+        font-size: 0.78rem;
+        color: #475569;
+    }
+    .oa-province-legend.has-items {
+        display: flex;
+    }
+    .oa-province-legend .oa-legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .oa-province-legend .oa-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        display: inline-block;
+        flex: none;
     }
 
     /* --- Premium Alerts ---
@@ -978,14 +1204,17 @@
         z-index: 20000;
         align-items: flex-start;
         justify-content: center;
-        padding: 40px 16px;
-        overflow-y: auto;
+        padding: 24px 16px;
+        overflow: hidden; /* กรอบ pop-up อยู่นิ่ง - เลื่อนเฉพาะเนื้อหาด้านใน (.import-modal-body) */
     }
     .import-modal-overlay.open { display: flex; }
     .import-modal {
         background: #fff;
         width: 100%;
         max-width: 920px;
+        max-height: 100%;
+        display: flex;
+        flex-direction: column;
         border-radius: 20px;
         box-shadow: 0 30px 60px -20px rgba(0,0,0,0.4);
         overflow: hidden;
@@ -1009,7 +1238,8 @@
         cursor: pointer;
         font-size: 0.95rem;
     }
-    .import-modal-body { padding: 24px 26px; }
+    .import-modal-header { flex: 0 0 auto; }
+    .import-modal-body { padding: 24px 26px; flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
     .import-field-group { margin-bottom: 16px; }
     .import-field-group label {
         display: block;
@@ -1081,6 +1311,58 @@
         color: #78350f;
         white-space: pre-wrap;
     }
+    .btn-import-manual {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        border-radius: 12px;
+        border: 1px solid #bbf7d0;
+        background: #f0fdf4;
+        color: #15803d;
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .btn-import-manual:hover {
+        background: #dcfce7;
+        border-color: #86efac;
+        transform: translateY(-1px);
+    }
+    .import-field-preview textarea,
+    .import-rep-grid input,
+    .import-unmatched-block select {
+        width: 100%;
+        box-sizing: border-box;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-family: inherit;
+        font-size: 0.85rem;
+        color: #334155;
+        background: #fff;
+    }
+    .import-field-preview textarea { resize: vertical; line-height: 1.6; min-height: 64px; }
+    .import-field-preview textarea:focus,
+    .import-rep-grid input:focus { outline: none; border-color: #60a5fa; box-shadow: 0 0 0 3px rgba(96,165,250,.2); }
+    .import-field-preview.empty textarea { background: #f8fafc; }
+    .import-rep-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .import-rep-grid label { display: block; font-size: 0.78rem; font-weight: 700; color: #475569; margin-bottom: 3px; }
+    @media (max-width: 560px) { .import-rep-grid { grid-template-columns: 1fr; } }
+    .import-unmatched-block .iub-text { white-space: pre-wrap; margin-bottom: 8px; }
+    .import-unmatched-block .iub-actions { display: flex; gap: 8px; align-items: center; }
+    .import-unmatched-block .iub-actions select { flex: 1 1 auto; }
+    .import-unmatched-block .btn-add-unmatched {
+        flex: 0 0 auto; border: none; border-radius: 8px; padding: 8px 14px;
+        background: #f59e0b; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.82rem;
+    }
+    .import-unmatched-block.used { opacity: .55; border-style: solid; }
+    .import-unmatched-block.used .btn-add-unmatched { background: #16a34a; }
+    .import-note-box {
+        background: #fffbeb; border: 1px solid #fde68a; color: #78350f;
+        padding: 10px 14px; border-radius: 10px; font-size: 0.82rem; margin-bottom: 12px; line-height: 1.6;
+    }
     .btn-apply-import {
         width: 100%;
         margin-top: 14px;
@@ -1118,6 +1400,9 @@
     <div class="import-bar">
         <button type="button" class="btn-import-word" id="btnOpenWordImport">
             <i class="fas fa-file-word"></i> นำเข้าจากไฟล์ Word
+        </button>
+        <button type="button" class="btn-import-manual" id="btnOpenManualImport">
+            <i class="fas fa-keyboard"></i> นำเข้าด้วยตนเอง
         </button>
         <div class="import-active-banner" id="importActiveBanner" style="display:none;">
             <i class="fas fa-random"></i>
@@ -1321,8 +1606,8 @@
                 <div class="form-group">
                     <label for="fiscal_year"><i class="fas fa-calendar-alt"></i> ปีงบประมาณ</label>
                     <select name="fiscal_year" id="fiscal_year" required>
-                        @php 
-                            $currentYear = (int) date('Y') + 543; 
+                        @php
+                            $currentYear = (int) date('Y') + 543;
                             $maxYear = $currentYear;
                             $minYear = 2568;
                             $selectedYear = old('fiscal_year', $fiscal_year ?? $currentYear);
@@ -1343,38 +1628,203 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="operating_area_select"><i class="fas fa-map-marker-alt"></i> พื้นที่การดำเนินงาน</label>
+                    <label for="oaTopAreaSelect"><i class="fas fa-map-location-dot"></i> พื้นที่ดำเนินงาน</label>
+                    {{-- Quick-jump to view/edit an already-registered pin's
+                         data without scrolling down to "พื้นที่การดำเนินงาน" -
+                         a second face on that SAME oaRegisteredSelect
+                         further below (kept in sync both ways in JS, see
+                         populateRegisteredPinOptions()/applyRegisteredPinSelection()),
+                         so picking one here loads its data AND drops the
+                         map pin exactly like picking it down there would.
+                         PLUS a second group of options for this agency's
+                         own previously-used free-text areas (saved on a
+                         report but never formally registered as a pin -
+                         see usedOperatingAreasForAgency()), each one
+                         prefixed "area:" + its index in $usedOperatingAreas
+                         to tell the two groups apart in JS (applyUsedAreaSelection()
+                         vs. applyRegisteredPinSelection()) since a used
+                         area has no numeric pin id of its own.
+                         Starts with no option pre-selected the same way
+                         oaRegisteredSelect does - loadKidneyData(true) on
+                         page load restores whichever pin/area this record
+                         actually has via restoreOaFromData(). --}}
+                    {{-- Disabled only when there is truly nothing to jump
+                         to yet - neither a registered pin nor a
+                         previously-used free-text area. --}}
                     @php
-                        $hasAreaOptions = isset($operatingAreas) && $operatingAreas->isNotEmpty();
-                        $currentArea = old('operating_area', $operatingArea ?? '');
-                        // Default to the dropdown once areas exist, but fall
-                        // back to the free-text box when there's nothing to
-                        // pick yet, or when redisplaying a failed submission
-                        // whose typed value doesn't match any known area.
-                        $showAreaInput = !$hasAreaOptions || ($currentArea !== '' && !$operatingAreas->contains($currentArea));
+                        $hasUsedAreas = isset($usedOperatingAreas) && $usedOperatingAreas->isNotEmpty();
                     @endphp
-                    <div class="operating-area-field">
-                        <select id="operating_area_select" name="operating_area"
-                            style="{{ $showAreaInput ? 'display:none;' : '' }}"
-                            {{ $showAreaInput ? 'disabled' : '' }}>
-                            <option value="">-- ไม่ระบุพื้นที่ย่อย --</option>
-                            @foreach($operatingAreas ?? [] as $area)
-                                <option value="{{ $area }}" {{ $currentArea === $area ? 'selected' : '' }}>{{ $area }}</option>
+                    <select id="oaTopAreaSelect" {{ ((isset($registeredPins) && $registeredPins->isNotEmpty()) || $hasUsedAreas) ? '' : 'disabled' }}>
+                        <option value="">-- เลือกพื้นที่ --</option>
+                        @foreach(($registeredPins ?? []) as $pin)
+                            <option value="{{ $pin['id'] }}" @if(!empty($pin['view_only'])) disabled @endif>{{ $pin['display_name'] }}@if($pin['breadcrumb']) ({{ $pin['breadcrumb'] }})@endif @if(!empty($pin['view_only'])) · ดำเนินงานโดย {{ $pin['agency_label'] ?: 'หน่วยงานอื่น' }} · ดูอย่างเดียว @endif</option>
+                        @endforeach
+                        @foreach(($usedOperatingAreas ?? []) as $areaIndex => $area)
+                            <option value="area:{{ $areaIndex }}">{{ $area['display_name'] }}@if($area['breadcrumb']) ({{ $area['breadcrumb'] }})@endif</option>
+                        @endforeach
+                    </select>
+                    <small id="oaTakenHint" style="display:none; margin-top:4px; color:#64748b; font-size:.78rem;"></small>
+                    <small class="oa-areas-link">
+                        ยังไม่มีพื้นที่ที่ต้องการ? <a href="{{ route('admin.kidney-dhb.areas') }}">เลือกพื้นที่ดำเนินงาน</a>
+                    </small>
+                </div>
+            </div>
+
+            @php
+                // Mode 1 "เลือกจากพื้นที่ที่มีอยู่" picks one of Level 1's own
+                // registered pins (จัดการพื้นที่ดำเนินงาน), scoped to this
+                // account's province - the common case once that registry
+                // has anything in it. Mode 2 "ปักหน่วยงานพื้นที่ใหม่" is the
+                // same คาสเคด+ลากหน่วยงาน picker as admin.operating-areas.index,
+                // for an area that isn't registered yet. Both ultimately
+                // just fill the same hidden operating_area* inputs below.
+                $hasRegisteredPins = isset($registeredPins) && $registeredPins->isNotEmpty();
+                // Pins are only chosen on "เลือกพื้นที่ดำเนินงาน" now - this form always starts in the read-only "existing" view.
+                $oaDefaultMode = 'existing';
+            @endphp
+            <div class="report-section oa-picker-section" id="section-operating-area">
+                <div class="section-title">
+                    <div class="section-number"><i class="fas fa-map-location-dot"></i></div>
+                    <label class="section-label">พื้นที่การดำเนินงาน</label>
+                </div>
+
+                <div class="oa-mode-tabs" role="tablist">
+                    <button type="button" id="oaModeExistingBtn" class="oa-mode-tab{{ $oaDefaultMode === 'existing' ? ' active' : '' }}" data-mode="existing">
+                        <i class="fas fa-list-check"></i> เลือกจากพื้นที่ที่มีอยู่
+                    </button>
+                    <button type="button" id="oaModeNewBtn" class="oa-mode-tab{{ $oaDefaultMode === 'new' ? ' active' : '' }}" data-mode="new">
+                        <i class="fas fa-map-pin"></i> ปักหน่วยงานพื้นที่ใหม่
+                    </button>
+                </div>
+
+                {{-- Mode 1: a registered pin from จัดการพื้นที่ดำเนินงาน --}}
+                <div id="oaModeExisting" class="oa-mode-panel" style="{{ $oaDefaultMode === 'existing' ? '' : 'display:none;' }}">
+                    <div class="form-group">
+                        <label for="oaRegisteredSelect">เลือกพื้นที่ที่เคยปักหน่วยงานไว้</label>
+                        <select id="oaRegisteredSelect">
+                            <option value="">-- เลือกพื้นที่ --</option>
+                            @foreach(($registeredPins ?? []) as $pin)
+                                <option value="{{ $pin['id'] }}"
+                                    @if(!empty($pin['view_only'])) disabled @endif
+                                    data-name="{{ $pin['display_name'] }}"
+                                    data-breadcrumb="{{ $pin['breadcrumb'] }}"
+                                    data-province-id="{{ $pin['province_id'] }}"
+                                    data-district-id="{{ $pin['district_id'] }}"
+                                    data-tambon-id="{{ $pin['tambon_id'] }}"
+                                    data-village-id="{{ $pin['village_id'] }}"
+                                    data-village-name="{{ $pin['village_name_snapshot'] }}"
+                                    data-lat="{{ $pin['latitude'] }}"
+                                    data-lng="{{ $pin['longitude'] }}">{{ $pin['display_name'] }}@if($pin['breadcrumb']) ({{ $pin['breadcrumb'] }})@endif @if(!empty($pin['view_only'])) · ดำเนินงานโดย {{ $pin['agency_label'] ?: 'หน่วยงานอื่น' }} · ดูอย่างเดียว @endif</option>
                             @endforeach
                         </select>
-                        <input type="text" id="operating_area_input" name="operating_area"
-                            value="{{ $showAreaInput ? $currentArea : '' }}"
-                            placeholder="เช่น ตำบล.../รพ.สต..../ทีมดำเนินงาน..."
-                            style="{{ $showAreaInput ? '' : 'display:none;' }}"
-                            {{ $showAreaInput ? '' : 'disabled' }}>
-                        <button type="button" id="btnToggleArea" class="btn-toggle-area"
-                            title="{{ $showAreaInput ? 'เลือกจากพื้นที่ที่มีอยู่' : 'เพิ่มพื้นที่ใหม่' }}"
-                            style="{{ $hasAreaOptions ? '' : 'display:none;' }}">
-                            <i class="fas {{ $showAreaInput ? 'fa-list' : 'fa-plus' }}"></i>
-                        </button>
                     </div>
-                    <div id="operating_area_attribution" class="field-attribution" style="display: none;"></div>
+                    <p class="oa-empty-hint" id="oaNoRegisteredHint" style="{{ $hasRegisteredPins ? 'display:none;' : '' }}">
+                        ยังไม่มีพื้นที่ที่ถูกปักหน่วยงานไว้ในจังหวัดของท่าน -
+                        <button type="button" class="oa-link-btn" id="oaSwitchToNewFromEmpty">ปักหน่วยงานพื้นที่ใหม่</button> ได้เลย
+                    </p>
                 </div>
+
+                {{-- Mode 2: free คาสเคด + ลากหน่วยงานเอง, same mechanic as
+                     admin.operating-areas.index's pin picker. --}}
+                <div id="oaModeNew" class="oa-mode-panel" style="{{ $oaDefaultMode === 'new' ? '' : 'display:none;' }}">
+                    <div class="oa-cascade-grid">
+                        <div class="form-group">
+                            <label for="oaNewProvince">จังหวัด</label>
+                            <select id="oaNewProvince">
+                                <option value="">-- เลือกจังหวัด --</option>
+                                @foreach(($provinces ?? []) as $province)
+                                    <option value="{{ $province->province_id }}"
+                                        data-lat="{{ optional(($provinceCoords ?? collect())->get($province->province_id))->lat }}"
+                                        data-lng="{{ optional(($provinceCoords ?? collect())->get($province->province_id))->lng }}">{{ $province->province_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="oaNewDistrict">อำเภอ</label>
+                            <select id="oaNewDistrict" disabled>
+                                <option value="">-- เลือกอำเภอ --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="oaNewTambon">ตำบล</label>
+                            <select id="oaNewTambon" disabled>
+                                <option value="">-- เลือกตำบล --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="oaNewVillage">ชุมชน/หมู่บ้าน</label>
+                            <select id="oaNewVillage" disabled>
+                                <option value="">-- เลือกชุมชน/หมู่บ้าน --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group oa-name-field">
+                        <label for="oaNewNameInput">ชื่อ/รายละเอียดพื้นที่</label>
+                        <input type="text" id="oaNewNameInput"
+                            placeholder="เช่น ตำบล.../รพ.สต..../ทีมดำเนินงาน...">
+                    </div>
+                </div>
+
+                {{-- พื้นที่ที่ปักพร้อมกันเป็นแบบประเมินเดียว: ระบบใส่รหัสพื้นที่อื่นในชุดเดียวกันให้เอง (renderOaExtras())
+                     ไม่มีช่องให้ติ๊ก - แสดงทุกพื้นที่บนแผนที่และในกล่องข้อมูลด้านล่าง --}}
+                <div id="oaExtraBox" style="display:none;">
+                    <input type="hidden" name="extra_pin_ids_submitted" value="1">
+                    <div id="oaExtraList"></div>
+                </div>
+
+                <div class="oa-view-grid">
+                <div class="oa-view-map">
+                <div id="oa_picker_map" class="oa-map"></div>
+                {{-- Filled in by renderOaOverviewMarkers() - one dot per
+                     province actually present among the pins/areas just
+                     drawn (see oaProvinceColors), so the 5 colors used to
+                     tell เขตสุขภาพที่ 10's provinces apart on the map above
+                     are explained rather than left to guesswork. --}}
+                <div id="oaProvinceLegend" class="oa-province-legend"></div>
+                <p class="oa-map-hint" id="oaMapHint">
+                    <i class="fas fa-circle-info"></i>
+                    <span id="oaMapHintExisting">เลือกพื้นที่จากช่อง "พื้นที่ดำเนินงาน" ด้านบน หรือคลิกหมุดบนแผนที่เพื่อเลือกพื้นที่</span>
+                    <span id="oaMapHintNew" style="display:none;">เลือกจังหวัด อำเภอ ตำบล หรือชุมชน/หมู่บ้านระดับใดก็ได้
+                        แผนที่และหน่วยงานจะเลื่อนไปยังตำแหน่งโดยประมาณให้อัตโนมัติ (ไม่จำเป็นต้องเลือกจนถึงชุมชน/หมู่บ้าน) -
+                        คลิกหรือลากหน่วยงานบนแผนที่เพื่อปรับตำแหน่งที่ตั้งจริงของพื้นที่ดำเนินงาน</span>
+                </p>
+                </div>
+                <aside class="oa-info" aria-live="polite">
+                    <div class="oa-info-row">
+                        <div class="oa-info-label">ชื่อพื้นที่</div>
+                        <div class="oa-info-value is-empty" id="oaInfoName">ยังไม่ได้เลือกพื้นที่</div>
+                    </div>
+                    <div class="oa-info-row" id="oaInfoExtraRow" style="display:none;">
+                        <div class="oa-info-label">พื้นที่อื่นในรายงานนี้</div>
+                        <div class="oa-info-value oa-info-list" id="oaInfoExtra"></div>
+                    </div>
+                    <div class="oa-info-row">
+                        <div class="oa-info-label">ที่ตั้ง</div>
+                        <div class="oa-info-value is-empty" id="oaInfoPlace">-</div>
+                    </div>
+                    <div class="oa-info-row">
+                        <div class="oa-info-label">พิกัด (ละติจูด, ลองจิจูด)</div>
+                        <div class="oa-info-value is-empty" id="oaInfoCoords">-</div>
+                    </div>
+                </aside>
+                </div>
+
+                {{-- Everything above only ever feeds these - the actual
+                     values the form submits. operating_area stays the
+                     same lookup key it always was (uniqueness, year/quarter
+                     matching, exports, the kidney-dhb-list filter); the
+                     rest are new, all nullable, additive columns. --}}
+                <input type="hidden" name="operating_area" id="oaAreaNameHidden" value="{{ old('operating_area', $operatingArea ?? '') }}">
+                <input type="hidden" name="operating_area_pin_id" id="oaPinIdHidden" value="">
+                <input type="hidden" name="operating_area_province_id" id="oaProvinceIdHidden" value="">
+                <input type="hidden" name="operating_area_district_id" id="oaDistrictIdHidden" value="">
+                <input type="hidden" name="operating_area_tambon_id" id="oaTambonIdHidden" value="">
+                <input type="hidden" name="operating_area_village_id" id="oaVillageIdHidden" value="">
+                <input type="hidden" name="operating_area_village_name_snapshot" id="oaVillageNameHidden" value="">
+                <input type="hidden" name="operating_area_latitude" id="oaLatHidden" value="">
+                <input type="hidden" name="operating_area_longitude" id="oaLngHidden" value="">
+
+                <div id="operating_area_attribution" class="field-attribution" style="display: none;"></div>
             </div>
 
             @php
@@ -1396,8 +1846,11 @@
                         <label class="section-label">{{ $label }}</label>
                     </div>
                     <label class="result-label" for="category_{{ $num }}">ผลการดำเนินงาน</label>
-                    <textarea name="category_{{ $num }}" id="category_{{ $num }}" class="report-textarea"
-                        placeholder="ระบุรายละเอียด..."></textarea>
+                    <div class="answer-row">
+                        <textarea name="category_{{ $num }}" id="category_{{ $num }}" class="report-textarea"
+                            placeholder="ระบุรายละเอียด..."></textarea>
+                        @include('pages.partials.kidney-image-uploader', ['cat' => (string) $num])
+                    </div>
                     <div id="category_{{ $num }}_attribution" class="field-attribution" style="display: none;"></div>
                 </div>
             @endforeach
@@ -1423,8 +1876,11 @@
                             <label class="section-label"
                                 style="font-size: 0.95rem; display: block; margin-bottom: 10px;">{{ str_replace('_', '.', $id) }}
                                 {{ $label }}</label>
-                            <textarea name="category_{{ $id }}" id="category_{{ $id }}" class="report-textarea"
-                                style="min-height: 80px;" placeholder="ระบุรายละเอียด..."></textarea>
+                            <div class="answer-row">
+                                <textarea name="category_{{ $id }}" id="category_{{ $id }}" class="report-textarea"
+                                    style="min-height: 80px;" placeholder="ระบุรายละเอียด..."></textarea>
+                                @include('pages.partials.kidney-image-uploader', ['cat' => $id])
+                            </div>
                             <div id="category_{{ $id }}_attribution" class="field-attribution" style="display: none;"></div>
                         </div>
                     @endforeach
@@ -1459,7 +1915,7 @@
         </form>
 
         <div id="reporter-info" style="text-align: right; margin-top: 20px; font-size: 0.85rem; color: #64748b; font-weight: 600; display: none; padding-top: 15px; border-top: 1px solid #f1f5f9;">
-            <i class="fas fa-user-edit" style="margin-right: 5px; color: #3b82f6;"></i> ผู้บันทึกล่าสุด: <span id="reporter-name" style="color: #1e293b; font-weight: 750;"></span> 
+            <i class="fas fa-user-edit" style="margin-right: 5px; color: #3b82f6;"></i> ผู้บันทึกล่าสุด: <span id="reporter-name" style="color: #1e293b; font-weight: 750;"></span>
             <span style="margin-left: 15px;"><i class="fas fa-calendar-check" style="margin-right: 5px; color: #3b82f6;"></i> เมื่อ: <span id="updated-at" style="color: #1e293b; font-weight: 750;"></span></span>
         </div>
     </div>
@@ -1474,11 +1930,11 @@
 <div class="import-modal-overlay" id="importModalOverlay">
     <div class="import-modal">
         <div class="import-modal-header">
-            <h3><i class="fas fa-file-word"></i> นำเข้าข้อมูลจากไฟล์ Word</h3>
+            <h3 id="importModalTitle"><i class="fas fa-file-word"></i> นำเข้าข้อมูลจากไฟล์ Word</h3>
             <button type="button" id="btnCloseImportModal" title="ปิด"><i class="fas fa-times"></i></button>
         </div>
         <div class="import-modal-body">
-            <div class="import-info-box">
+            <div class="import-info-box" id="importInfoBox">
                 <i class="fas fa-circle-info"></i>
                 อัปโหลดไฟล์รายงาน พชอ.ไต ที่เป็น Word (.docx) ระบบจะอ่านและแสดงข้อมูลตามหัวข้อให้ตรวจสอบก่อน จากนั้นจึงนำไปเติมในฟอร์มด้านล่างเพื่อตรวจทาน/แก้ไข แล้วกดบันทึกตามปกติ (ยังไม่มีการบันทึกข้อมูลใด ๆ ในขั้นตอนนี้)
             </div>
@@ -1547,7 +2003,7 @@
                 <div style="display:flex; flex-direction:column; gap:6px; font-family:'Noto Serif Thai', sans-serif; font-size:0.85rem; color:#334155;">
                     <label style="display:flex; align-items:flex-start; gap:8px; font-weight:400; cursor:pointer;">
                         <input type="radio" name="import_reporter_source" id="import_reporter_source_file" value="file" checked style="margin-top:3px;">
-                        <span>จากไฟล์ Word ที่นำเข้า <span id="import_reporter_source_file_preview" style="color:#64748b;"></span></span>
+                        <span><span id="import_reporter_source_file_label">จากไฟล์ Word ที่นำเข้า</span> <span id="import_reporter_source_file_preview" style="color:#64748b;"></span></span>
                     </label>
                     <label style="display:flex; align-items:flex-start; gap:8px; font-weight:400; cursor:pointer;">
                         <input type="radio" name="import_reporter_source" id="import_reporter_source_account" value="account" style="margin-top:3px;">
@@ -1566,7 +2022,7 @@
                 </select>
             </div>
 
-            <div class="import-field-group">
+            <div class="import-field-group" id="import_group_file">
                 <label for="import_docx_file"><i class="fas fa-paperclip"></i> ไฟล์ Word (.docx)</label>
                 <input type="file" id="import_docx_file" accept=".docx">
             </div>
@@ -1618,76 +2074,1293 @@
     let statusTimeout = null;
     window.currentMilestones = {};
 
-    // --- Operating Area (พื้นที่การดำเนินงาน) selector ---
-    // The <select> (existing areas) and the text <input> (a brand new area)
-    // both submit as name="operating_area" - only the visible one is ever
-    // enabled, so only its value is actually sent with the form.
-    const areaSelect = document.getElementById('operating_area_select');
-    const areaInput = document.getElementById('operating_area_input');
-    const areaToggleBtn = document.getElementById('btnToggleArea');
+    // --- Operating Area (พื้นที่การดำเนินงาน) picker ---
+    // Two modes sharing one Leaflet map and one set of hidden inputs (see
+    // the markup above): "existing" selects one of Level 1's registered
+    // pins (จัดการพื้นที่ดำเนินงาน), "new" cascades จังหวัด->อำเภอ->ตำบล->
+    // หมู่บ้าน and drops a draggable pin - same mechanic as
+    // admin.operating-areas.index's picker. Whichever mode last set a
+    // location wins; both write the SAME hidden inputs below, so nothing
+    // from the other mode is ever left dangling.
+    let registeredPins = @json($registeredPins ?? []);
+    const hasRegisteredPinsInitially = @json($hasRegisteredPins ?? false);
+    // This agency's own previously-used free-text areas - never formally
+    // registered as a pin, so they have no numeric id of their own; each
+    // one is addressed by its own index in THIS array instead (see the
+    // "area:"-prefixed options on #oaTopAreaSelect and
+    // applyUsedAreaSelection() below). Refreshed the same way
+    // registeredPins is, from result.used_areas / ctx.used_areas.
+    let usedOperatingAreas = @json($usedOperatingAreas ?? []);
+    // Every (fiscal_year, area) this agency has already saved (quarter
+    // ignored) - applyRecordedAreaFilter() hides those areas from the
+    // "พื้นที่ดำเนินงาน" pickers for the fiscal year currently selected, so a
+    // new assessment can only be started for an area with no record that
+    // year. Refreshed from result.recorded_areas / ctx.recorded_areas.
+    let recordedAreas = @json($recordedAreas ?? []);
+    // Whether one of usedOperatingAreas is the one currently applied to the
+    // form (set by applyUsedAreaSelection(), cleared by clearOaHiddenFields()) -
+    // the "has a used area been picked" counterpart to oaPinIdHidden.value's
+    // "has a registered pin been picked", so syncOaOverview() can tell
+    // whether EITHER kind of specific pick has been made.
+    let oaUsedAreaSelected = false;
+    // The reporting office's own จังหวัด/อำเภอ/ตำบล, to pre-fill a brand new
+    // "ปักหน่วยงานพื้นที่ใหม่" pick with (see prefillOaNewModeFromUserLocation()).
+    // Re-sent on every loadKidneyData() response too, scoped to whichever
+    // agency is currently selected for Word-import, so it rescopes exactly
+    // like registeredPins does.
+    let oaUserOwnLocation = @json($userOwnLocation ?? null);
+
+    const oaAreaNameHidden = document.getElementById('oaAreaNameHidden');
+    const oaPinIdHidden = document.getElementById('oaPinIdHidden');
+    const oaProvinceIdHidden = document.getElementById('oaProvinceIdHidden');
+    const oaDistrictIdHidden = document.getElementById('oaDistrictIdHidden');
+    const oaTambonIdHidden = document.getElementById('oaTambonIdHidden');
+    const oaVillageIdHidden = document.getElementById('oaVillageIdHidden');
+    const oaVillageNameHidden = document.getElementById('oaVillageNameHidden');
+    const oaLatHidden = document.getElementById('oaLatHidden');
+    const oaLngHidden = document.getElementById('oaLngHidden');
     const areaAttribution = document.getElementById('operating_area_attribution');
 
-    function setAreaMode(mode) { // 'select' | 'new'
-        if (!areaInput) return;
-        if (mode === 'new') {
-            if (areaSelect) { areaSelect.style.display = 'none'; areaSelect.disabled = true; }
-            areaInput.style.display = '';
-            areaInput.disabled = false;
-            areaInput.value = '';
-            areaInput.focus();
-            if (areaToggleBtn) {
-                areaToggleBtn.innerHTML = '<i class="fas fa-list"></i>';
-                areaToggleBtn.title = 'เลือกจากพื้นที่ที่มีอยู่';
+    const oaModeExistingBtn = document.getElementById('oaModeExistingBtn');
+    const oaModeNewBtn = document.getElementById('oaModeNewBtn');
+    const oaModeExistingPanel = document.getElementById('oaModeExisting');
+    const oaModeNewPanel = document.getElementById('oaModeNew');
+    const oaMapHintExisting = document.getElementById('oaMapHintExisting');
+    const oaMapHintNew = document.getElementById('oaMapHintNew');
+    const oaRegisteredSelect = document.getElementById('oaRegisteredSelect');
+    // Second face on oaRegisteredSelect, up next to ปีงบประมาณ/ไตรมาส for a
+    // quick jump straight to an already-registered pin's data - see the
+    // comment on its <select> in the blade markup above. Kept in sync with
+    // oaRegisteredSelect in both directions: populateRegisteredPinOptions()
+    // rebuilds both option lists together, and every place that sets
+    // oaRegisteredSelect.value programmatically mirrors it here too (via
+    // syncOaTopAreaSelectValue()) so neither one can show a stale pick.
+    const oaTopAreaSelect = document.getElementById('oaTopAreaSelect');
+    // พื้นที่อื่นที่ครอบคลุมในรายงานเดียวกัน: ที่ติ๊กอยู่ตอนนี้ / ที่บันทึกไว้แล้วในรายงานที่โหลดมา (รหัสหมุดเป็น string)
+    const oaExtraList = document.getElementById('oaExtraList');
+    const oaExtraEmpty = document.getElementById('oaExtraEmpty');
+    const oaExtraCount = document.getElementById('oaExtraCount');
+    let oaExtraChecked = new Set();
+    let oaExtraSaved = new Set();
+    let oaExtraTouched = false;   // ผู้ใช้ติ๊กเอง - ไม่ติ๊กชุดพื้นที่ให้อัตโนมัติอีก
+    const oaNoRegisteredHint = document.getElementById('oaNoRegisteredHint');
+    const oaProvinceLegend = document.getElementById('oaProvinceLegend');
+    const oaSwitchToNewFromEmpty = document.getElementById('oaSwitchToNewFromEmpty');
+    const oaNewProvince = document.getElementById('oaNewProvince');
+    const oaNewDistrict = document.getElementById('oaNewDistrict');
+    const oaNewTambon = document.getElementById('oaNewTambon');
+    const oaNewVillage = document.getElementById('oaNewVillage');
+    const oaNewNameInput = document.getElementById('oaNewNameInput');
+
+    let oaMode = (oaModeExistingBtn && oaModeExistingBtn.classList.contains('active')) ? 'existing' : 'new';
+    let oaMap = null;
+    let oaMarker = null;
+    // Bumped on every pin pick/clear so a slow by-name lookup can't overwrite a newer choice.
+    let oaGeoToken = 0;
+    // Pin id arriving from "เลือกพื้นที่ดำเนินงาน" (?pin=) - kept selected through the first load.
+    let oaPreselectedPin = null;
+    let oaNameManuallyEdited = false;
+
+    function getCurrentOperatingArea() {
+        return oaAreaNameHidden ? oaAreaNameHidden.value.trim() : '';
+    }
+    window.getCurrentOperatingArea = getCurrentOperatingArea;
+
+    function initOaMap() {
+        if (oaMap || !document.getElementById('oa_picker_map')) return;
+        oaMap = L.map('oa_picker_map').setView([15.9, 104.5], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(oaMap);
+    }
+
+    // Same inline-SVG teardrop as admin.operating-areas.index's pin picker
+    // (no external marker-icon file to break) - blue for a registered,
+    // read-only pin; red for one being placed/dragged in "ปักหน่วยงาน
+    // พื้นที่ใหม่", matching that page's saved-vs-draft convention.
+    function oaPinIcon(fill, stroke) {
+        const svg = '<svg width="34" height="46" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">' +
+            '<ellipse cx="17" cy="41" rx="8" ry="2.6" fill="#1d4ed8" opacity="0.28"/>' +
+            '<path d="M17 2C9.8 2 4 7.8 4 15c0 10.2 13 27 13 27s13-16.8 13-27C30 7.8 24.2 2 17 2z" ' +
+            'fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linejoin="round"/>' +
+            '<circle cx="17" cy="15" r="5.5" fill="#fff"/>' +
+            '</svg>';
+        return L.divIcon({
+            html: svg,
+            className: 'oa-pin-icon',
+            iconSize: [34, 46],
+            iconAnchor: [17, 44],
+            popupAnchor: [0, -40]
+        });
+    }
+    const oaStaticIcon = oaPinIcon('#2563eb', '#1e40af');
+    // Red (not orange) so a pin being placed never gets mistaken for one of
+    // the per-province colors below (ศรีสะเกษ's amber/มุกดาหาร's pink) that
+    // mark areas which already have data.
+    const oaDraftIcon = oaPinIcon('#dc2626', '#7f1d1d');
+
+    // renderOaOverviewMarkers() shows every pin/area WITH data at once (see
+    // syncOaOverview()), which - for a Level 1 (สคร.) account especially -
+    // can span all 5 provinces of เขตสุขภาพที่ 10 at the same time
+    // (operatingAreaPinsForUser() only scopes by province for rank 2+).
+    // Coloring each province differently there is what actually lets
+    // someone tell "which province is this pin in" apart on sight, rather
+    // than the previous registered-pin-vs-used-area distinction (dropped
+    // here - tooltip/breadcrumb text already says the province either
+    // way, and one color dimension is as much as a small teardrop marker
+    // can carry clearly). oaColorForProvinceDefault covers anything
+    // outside these 5 (shouldn't happen given how this app's location
+    // data is seeded, but a pin with no province match at all is still
+    // better shown gray than invisible).
+    const oaProvinceColors = {
+        'อุบลราชธานี': { fill: '#2563eb', stroke: '#1e40af' },
+        'ศรีสะเกษ': { fill: '#d97706', stroke: '#92400e' },
+        'ยโสธร': { fill: '#7c3aed', stroke: '#5b21b6' },
+        'อำนาจเจริญ': { fill: '#16a34a', stroke: '#15803d' },
+        'มุกดาหาร': { fill: '#db2777', stroke: '#9d174d' },
+    };
+    const oaColorForProvinceDefault = { fill: '#6b7280', stroke: '#374151' };
+    const oaProvinceIconCache = {};
+    function oaIconForProvince(provinceName) {
+        const key = provinceName || '__default';
+        if (!oaProvinceIconCache[key]) {
+            const c = oaProvinceColors[provinceName] || oaColorForProvinceDefault;
+            oaProvinceIconCache[key] = oaPinIcon(c.fill, c.stroke);
+        }
+        return oaProvinceIconCache[key];
+    }
+
+    function clearOaMarker() {
+        if (typeof clearOaExtraMarkers === 'function') clearOaExtraMarkers();
+        if (oaMap && oaMarker) oaMap.removeLayer(oaMarker);
+        oaMarker = null;
+        oaGeoToken++;
+        updateOaInfo();
+    }
+
+    // Read-only summary beside the map: name / location / coordinates of
+    // whichever area is currently applied to the form's hidden inputs.
+    function updateOaInfo() {
+        const nameEl = document.getElementById('oaInfoName');
+        if (!nameEl || !oaAreaNameHidden) return;
+        const placeEl = document.getElementById('oaInfoPlace');
+        const coordEl = document.getElementById('oaInfoCoords');
+        const name = oaAreaNameHidden.value.trim();
+        const lat = oaLatHidden.value, lng = oaLngHidden.value;
+        let place = '';
+        const pin = oaPinIdHidden.value ? registeredPins.find(function (p) { return String(p.id) === String(oaPinIdHidden.value); }) : null;
+        if (pin) place = pin.breadcrumb || '';
+        const hasPick = !!(name || lat);
+        function set(el, text, filled) {
+            el.textContent = text;
+            el.classList.toggle('is-empty', !filled);
+        }
+        set(nameEl, hasPick ? (name || '-') : 'ยังไม่ได้เลือกพื้นที่', hasPick && !!name);
+        set(placeEl, place || '-', !!place);
+        set(coordEl, (lat && lng) ? (parseFloat(lat).toFixed(6) + ', ' + parseFloat(lng).toFixed(6)) : '-', !!(lat && lng));
+    }
+
+
+    function setOaMarker(lat, lng, draggable, zoom) {
+        initOaMap();
+        clearOaMarker();
+        if (lat === null || lat === undefined || lng === null || lng === undefined || isNaN(lat) || isNaN(lng)) return;
+        let staticIcon = oaStaticIcon;
+        if (!draggable && oaPinIdHidden && oaPinIdHidden.value) {
+            const rp = registeredPins.find(function (p) { return String(p.id) === String(oaPinIdHidden.value); });
+            if (rp) staticIcon = oaIconForProvince(rp.province_name);
+        }
+        oaMarker = L.marker([lat, lng], { icon: draggable ? oaDraftIcon : staticIcon, draggable: !!draggable }).addTo(oaMap);
+        if (draggable) {
+            oaMarker.on('dragend', function () {
+                const pos = oaMarker.getLatLng();
+                oaLatHidden.value = pos.lat.toFixed(6);
+                oaLngHidden.value = pos.lng.toFixed(6);
+            });
+        }
+        // zoom is optional: callers that pass one (the cascade below) get
+        // exactly that level; everything else keeps the old "never zoom
+        // out below 12" behavior.
+        oaMap.flyTo([lat, lng], (zoom !== undefined && zoom !== null) ? zoom : Math.max(oaMap.getZoom(), 12));
+        updateOaInfo();
+    }
+
+    // "Overview" markers: every registered pin shown at once, so landing
+    // on the "เลือกจากพื้นที่ที่มีอยู่" tab with nothing picked yet lets the
+    // person just click a pin on the map instead of hunting through the
+    // dropdown first. Once a specific pin IS picked (map click or dropdown),
+    // these are cleared so the map only shows that one confirmed location.
+    let oaOverviewMarkers = [];
+
+    function clearOaOverviewMarkers() {
+        oaOverviewMarkers.forEach(function (m) { if (oaMap) oaMap.removeLayer(m); });
+        oaOverviewMarkers = [];
+        if (oaProvinceLegend) {
+            oaProvinceLegend.innerHTML = '';
+            oaProvinceLegend.classList.remove('has-items');
+        }
+    }
+
+    function renderOaOverviewMarkers() {
+        initOaMap();
+        clearOaOverviewMarkers();
+        const pts = [];
+        // Tracks which provinces actually turn up among the pins/areas
+        // plotted below, in oaProvinceColors' own order first (so the
+        // legend reads เขตสุขภาพที่ 10's 5 provinces in a stable, familiar
+        // order) and then anything outside that list - built alongside the
+        // markers instead of a separate pass over the same two arrays.
+        const provincesSeen = {};
+        function noteProvince(name) { provincesSeen[name || ''] = true; }
+
+        registeredPins.forEach(function (p) {
+            const lat = parseFloat(p.latitude);
+            const lng = parseFloat(p.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const marker = L.marker([lat, lng], { icon: oaIconForProvince(p.province_name) }).addTo(oaMap);
+            const label = p.breadcrumb ? (p.display_name + ' (' + p.breadcrumb + ')') : p.display_name;
+            if (p.view_only) {
+                // หมุดแสดงผล: บอกหน่วยงานที่ดำเนินงาน แต่คลิกเลือกไม่ได้
+                marker.bindTooltip(label + ' · ดำเนินงานโดย ' + (p.agency_label || 'หน่วยงานอื่น') + ' · ดูอย่างเดียว', { direction: 'top', offset: [0, -40] });
+                oaOverviewMarkers.push(marker);
+                pts.push([lat, lng]);
+                noteProvince(p.province_name);
+                return;
             }
+            marker.bindTooltip(label, { direction: 'top', offset: [0, -40] });
+            marker.on('click', function () {
+                // The overview now also shows on the "ปักหน่วยงานพื้นที่ใหม่" tab
+                // (see syncOaOverview()) - switch back to "เลือกจากพื้นที่ที่
+                // มีอยู่" first so the visible panel matches what this click
+                // is about to apply, exactly like picking one from
+                // oaTopAreaSelect already does.
+                if (oaMode !== 'existing') setOaMode('existing', { silent: true });
+                applyRegisteredPinSelection(String(p.id), true);
+            });
+            oaOverviewMarkers.push(marker);
+            pts.push([lat, lng]);
+            noteProvince(p.province_name);
+        });
+        // This agency's own previously-used free-text areas (see
+        // usedOperatingAreasForAgency()) that have a saved map position -
+        // shown alongside the registered pins above, colored by the SAME
+        // per-province scheme (see oaProvinceColors) so every pin/area
+        // from the same province reads as one color regardless of which
+        // of the two lists it came from.
+        usedOperatingAreas.forEach(function (a, idx) {
+            const lat = parseFloat(a.latitude);
+            const lng = parseFloat(a.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const marker = L.marker([lat, lng], { icon: oaIconForProvince(a.province_name) }).addTo(oaMap);
+            const label = a.breadcrumb ? (a.display_name + ' (' + a.breadcrumb + ')') : a.display_name;
+            marker.bindTooltip(label, { direction: 'top', offset: [0, -40] });
+            marker.on('click', function () {
+                if (oaMode !== 'new') setOaMode('new', { silent: true });
+                applyUsedAreaSelection(idx, true);
+            });
+            oaOverviewMarkers.push(marker);
+            pts.push([lat, lng]);
+            noteProvince(a.province_name);
+        });
+        if (pts.length) {
+            oaMap.fitBounds(pts, { padding: [40, 40], maxZoom: 13 });
+        }
+        renderOaProvinceLegend(provincesSeen);
+    }
+
+    // One dot per province actually present in provincesSeen (an object
+    // used as a string set - see renderOaOverviewMarkers()), in
+    // oaProvinceColors' own order first so a Level 1 account viewing all
+    // of เขตสุขภาพที่ 10 always sees the same left-to-right order, then any
+    // name outside that list (shouldn't normally happen - see
+    // oaColorForProvinceDefault). Hidden entirely once there is nothing to
+    // show (no pins/areas with a saved position at all).
+    function renderOaProvinceLegend(provincesSeen) {
+        if (!oaProvinceLegend) return;
+        const names = Object.keys(provincesSeen).filter(Boolean);
+        if (!names.length) {
+            oaProvinceLegend.innerHTML = '';
+            oaProvinceLegend.classList.remove('has-items');
+            return;
+        }
+        const known = Object.keys(oaProvinceColors).filter(n => provincesSeen[n]);
+        const extra = names.filter(n => !oaProvinceColors[n]).sort();
+        const ordered = known.concat(extra);
+        oaProvinceLegend.innerHTML = ordered.map(function (name) {
+            const c = oaProvinceColors[name] || oaColorForProvinceDefault;
+            return '<span class="oa-legend-item">' +
+                '<span class="oa-legend-dot" style="background:' + c.fill + '"></span>' +
+                name +
+                '</span>';
+        }).join('');
+        oaProvinceLegend.classList.add('has-items');
+    }
+
+    // Single source of truth for whether the overview should be showing:
+    // whenever nothing specific is picked yet - neither a registered pin
+    // (oaPinIdHidden) nor a previously-used free-text area
+    // (oaUsedAreaSelected) - regardless of which tab is currently active,
+    // so every area with data stays reachable from either tab.
+    function syncOaOverview() {
+        updateOaInfo();
+        // "ปักหน่วยงานพื้นที่ใหม่": the map shows ONLY the red pin being placed -
+        // never the pins/areas that already have data.
+        if (oaMode === 'new') {
+            clearOaOverviewMarkers();
+            return;
+        }
+        if (!oaPinIdHidden.value && !oaUsedAreaSelected) {
+            renderOaOverviewMarkers();
         } else {
-            if (areaSelect) { areaSelect.style.display = ''; areaSelect.disabled = false; areaSelect.value = ''; }
-            areaInput.style.display = 'none';
-            areaInput.disabled = true;
-            areaInput.value = '';
-            if (areaToggleBtn) {
-                areaToggleBtn.innerHTML = '<i class="fas fa-plus"></i>';
-                areaToggleBtn.title = 'เพิ่มพื้นที่ใหม่';
+            clearOaOverviewMarkers();
+        }
+    }
+
+    function oaResetSelect(sel, placeholder) {
+        sel.innerHTML = '<option value="">' + placeholder + '</option>';
+        sel.disabled = true;
+    }
+
+    function clearOaHiddenFields() {
+        oaAreaNameHidden.value = '';
+        oaPinIdHidden.value = '';
+        oaProvinceIdHidden.value = '';
+        oaDistrictIdHidden.value = '';
+        oaTambonIdHidden.value = '';
+        oaVillageIdHidden.value = '';
+        oaVillageNameHidden.value = '';
+        oaLatHidden.value = '';
+        oaLngHidden.value = '';
+        oaUsedAreaSelected = false;
+        renderOaExtras();
+    }
+
+    function setOaMode(mode, opts) {
+        opts = opts || {};
+        oaMode = mode;
+        oaModeExistingBtn.classList.toggle('active', mode === 'existing');
+        oaModeNewBtn.classList.toggle('active', mode === 'new');
+        oaModeExistingPanel.style.display = mode === 'existing' ? '' : 'none';
+        oaModeNewPanel.style.display = mode === 'new' ? '' : 'none';
+        oaMapHintExisting.style.display = mode === 'existing' ? '' : 'none';
+        oaMapHintNew.style.display = mode === 'new' ? '' : 'none';
+        if (mode === 'new') clearOaOverviewMarkers();
+        // The top quick-jump select now also offers this agency's own
+        // previously-used free-text areas (see populateRegisteredPinOptions()),
+        // which are just as valid to jump to from the "ปักหน่วยงานพื้นที่ใหม่" tab
+        // as from "เลือกจากพื้นที่ที่มีอยู่" - so it only disables when there is
+        // truly nothing in EITHER list to offer, never based on which tab
+        // is currently active.
+        if (oaTopAreaSelect) oaTopAreaSelect.disabled = (registeredPins.length === 0 && usedOperatingAreas.length === 0);
+        // Overview visibility no longer depends on which tab this is - see
+        // syncOaOverview() - so switching tabs here doesn't need to force
+        // it either way; whatever already set oaPinIdHidden/oaUsedAreaSelected
+        // (or resetOaPickerToBlank() just below, on an explicit switch)
+        // decides it.
+        if (!opts.silent) {
+            // The person explicitly switched tabs - start that mode fresh
+            // rather than carrying over the other mode's pick.
+            resetOaPickerToBlank(mode);
+            if (mode === 'new') {
+                // "ปักหน่วยงานพื้นที่ใหม่" is a brand-new area - there is nothing
+                // saved to show, so leave every text field empty instead of
+                // loading a record (or the carry-over from another quarter).
+                resetFormFields(false);
+                const st = document.getElementById('dataStatus');
+                if (st) st.style.display = 'none';
+                updateProgressStepper();
+            } else {
+                loadKidneyData(false);
             }
         }
     }
 
-    function getCurrentOperatingArea() {
-        if (areaInput && !areaInput.disabled) return areaInput.value.trim();
-        if (areaSelect && !areaSelect.disabled) return areaSelect.value;
-        return '';
+    // Blanks every operating-area field/select back to "nothing picked",
+    // then re-shows whichever starting point fits the mode (the registered-
+    // pin overview, or the new-pin cascade pre-filled from the reporting
+    // office's own location). Shared by setOaMode()'s own tab-switch reset
+    // and by the Word-import flow below, which needs the exact same reset
+    // after rescoping to a different target office - but, unlike a tab
+    // switch, must NOT call loadKidneyData() itself (that would overwrite
+    // the text fields the import just filled in), so that part stays with
+    // each caller instead of living in here.
+    // async (and every caller that can race with the person's own clicks
+    // awaits it) specifically because the "new pin" branch kicks off its
+    // own further AJAX chain (prefillOaNewModeFromUserLocation() loads
+    // districts/tambons and finally drops a marker) - if that were left
+    // fire-and-forget, as it originally was, it could still be in flight
+    // when the person starts picking a province/district by hand (most
+    // likely right after a Word-import rescope, since the picker becomes
+    // interactive again the instant the import modal closes), and when it
+    // finally resolved it would overwrite whatever they'd already chosen.
+    // Callers that don't need to block on it (a plain tab switch) can
+    // still call this without awaiting - it's only unsafe to let two
+    // different triggers race on the SAME picker at once.
+    async function resetOaPickerToBlank(mode) {
+        clearOaHiddenFields();
+        oaRegisteredSelect.value = '';
+        syncOaTopAreaSelectValue('');
+        oaNewNameInput.value = '';
+        oaNewProvince.value = '';
+        oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+        oaNameManuallyEdited = false;
+        clearOaMarker();
+        if (mode === 'new') {
+            // Fresh "ปักหน่วยงานพื้นที่ใหม่" - start the cascade from the
+            // reporter's own จังหวัด/อำเภอ/ตำบล instead of blank selects.
+            await prefillOaNewModeFromUserLocation();
+        }
+        // Nothing is picked anymore after this reset, on EITHER tab - show
+        // every registered pin AND every previously-used free-text area
+        // again (see syncOaOverview()) so the person can click straight
+        // into one rather than only via the dropdown.
+        syncOaOverview();
     }
 
-    window.getCurrentOperatingArea = getCurrentOperatingArea;
+    oaModeExistingBtn.addEventListener('click', () => { if (oaMode !== 'existing') setOaMode('existing'); });
+    oaModeNewBtn.addEventListener('click', () => { if (oaMode !== 'new') setOaMode('new'); });
+    if (oaSwitchToNewFromEmpty) {
+        oaSwitchToNewFromEmpty.addEventListener('click', () => setOaMode('new'));
+    }
 
-    if (areaToggleBtn) {
-        areaToggleBtn.addEventListener('click', () => {
-            if (areaInput.disabled) {
-                // Currently showing the dropdown -> start a fresh new-area
-                // entry: clear the whole form, since this is a blank
-                // "เพิ่มแบบประเมิน" for an area that has no data yet.
-                setAreaMode('new');
-                resetFormFields();
-            } else {
-                // Currently typing a new area -> go back to picking an
-                // existing one and reload its data.
-                setAreaMode('select');
-                loadKidneyData(false);
+    // Mode "existing": a registered pin from จัดการพื้นที่ดำเนินงาน ---------
+
+    // oaTopAreaSelect only ever needs value+label (never the dataset of
+    // province/district/tambon/village/lat/lng that oaRegisteredSelect's
+    // own options carry) - every lookup that actually needs those still
+    // reads them off oaRegisteredSelect's selected option, since
+    // applyRegisteredPinSelection() keeps that one in sync first.
+    function syncOaTopAreaSelectValue(value) {
+        if (oaTopAreaSelect) oaTopAreaSelect.value = value || '';
+    }
+
+    function populateRegisteredPinOptions(pins, usedAreas) {
+        registeredPins = pins || [];
+        // usedAreas is optional - every call site that doesn't have a
+        // fresh list to offer (e.g. none returned in this response) keeps
+        // whatever usedOperatingAreas already held, rather than wiping it.
+        if (usedAreas !== undefined) usedOperatingAreas = usedAreas || [];
+        const current = oaRegisteredSelect.value;
+        const currentTop = oaTopAreaSelect ? oaTopAreaSelect.value : '';
+        oaRegisteredSelect.innerHTML = '<option value="">-- เลือกพื้นที่ --</option>';
+        if (oaTopAreaSelect) oaTopAreaSelect.innerHTML = '<option value="">-- เลือกพื้นที่ --</option>';
+        registeredPins.forEach(function (p) {
+            let label = p.breadcrumb ? (p.display_name + ' (' + p.breadcrumb + ')') : p.display_name;
+            // หมุดแสดงผล: ขึ้นในรายการแต่เลือกไม่ได้ (ดูอย่างเดียว)
+            if (p.view_only) label += ' · ดำเนินงานโดย ' + (p.agency_label || 'หน่วยงานอื่น') + ' · ดูอย่างเดียว';
+
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.disabled = !!p.view_only;
+            opt.textContent = label;
+            opt.dataset.name = p.display_name || '';
+            opt.dataset.provinceId = p.province_id || '';
+            opt.dataset.districtId = p.district_id || '';
+            opt.dataset.tambonId = p.tambon_id || '';
+            opt.dataset.villageId = p.village_id || '';
+            opt.dataset.villageName = p.village_name_snapshot || '';
+            opt.dataset.lat = (p.latitude === null || p.latitude === undefined) ? '' : p.latitude;
+            opt.dataset.lng = (p.longitude === null || p.longitude === undefined) ? '' : p.longitude;
+            oaRegisteredSelect.appendChild(opt);
+
+            if (oaTopAreaSelect) {
+                const topOpt = document.createElement('option');
+                topOpt.value = p.id;
+                topOpt.disabled = !!p.view_only;
+                topOpt.textContent = label;
+                oaTopAreaSelect.appendChild(topOpt);
             }
+        });
+        // Second group on oaTopAreaSelect ONLY - this agency's own
+        // previously-used free-text areas (see usedOperatingAreasForAgency()).
+        // oaRegisteredSelect deliberately does NOT get these: it is specifically
+        // "เลือกพื้นที่ที่เคยปักหน่วยงานไว้" (registered pins), and folding free-text
+        // areas into it would risk the already-hardened pin-selection flow
+        // (applyRegisteredPinSelection() keys everything off a numeric pin id).
+        if (oaTopAreaSelect) {
+            usedOperatingAreas.forEach(function (a, idx) {
+                const label = a.breadcrumb ? (a.display_name + ' (' + a.breadcrumb + ')') : a.display_name;
+                const topOpt = document.createElement('option');
+                topOpt.value = 'area:' + idx;
+                topOpt.textContent = label;
+                oaTopAreaSelect.appendChild(topOpt);
+            });
+        }
+        oaRegisteredSelect.value = current;
+        syncOaTopAreaSelectValue(currentTop && currentTop.indexOf('area:') === 0 ? currentTop : current);
+        if (oaNoRegisteredHint) oaNoRegisteredHint.style.display = registeredPins.length ? 'none' : '';
+        // Either list may have just changed (e.g. switching the Word-import
+        // target agency rescopes both) - keep the quick-jump select's
+        // disabled state in sync with whether there is now anything to
+        // offer, same condition setOaMode() applies on a tab switch.
+        if (oaTopAreaSelect) oaTopAreaSelect.disabled = (registeredPins.length === 0 && usedOperatingAreas.length === 0);
+        // The overview likewise needs to stay in sync with the pin list.
+        syncOaOverview();
+        applyRecordedAreaFilter();
+    }
+
+    // Hide (and disable) every area that already has a saved record in the
+    // fiscal year currently selected, in BOTH area pickers. The option that
+    // is currently selected is never hidden, so a record that was just
+    // loaded or saved still shows its own area.
+    function areaNameOfOption(opt) {
+        const v = opt.value;
+        if (!v) return '';
+        if (v.indexOf('area:') === 0) {
+            const a = usedOperatingAreas[parseInt(v.slice(5), 10)];
+            return a ? a.display_name : '';
+        }
+        const p = registeredPins.find(function (x) { return String(x.id) === String(v); });
+        return p ? p.display_name : (opt.dataset.name || '');
+    }
+
+    // Switch ปีงบประมาณ/ไตรมาส to the newest saved record of the given area
+    // (highest fiscal year, then highest quarter). No-op when the area has no
+    // record yet or an unsaved Word import is still in the form.
+    function jumpToLatestRecord(areaName) {
+        if (window.kdImportDraft) return false;
+        const name = String(areaName || '').trim();
+        if (!name) return false;
+        let best = null;
+        (recordedAreas || []).forEach(function (r) {
+            if (r.extra || String(r.area).trim() !== name) return;
+            const fy = parseInt(r.fiscal_year, 10), q = parseInt(r.quarter, 10) || 1;
+            if (!best || fy > best.fy || (fy === best.fy && q > best.q)) best = { fy: fy, q: q };
+        });
+        if (!best) return false;
+        const fyEl = document.getElementById('fiscal_year');
+        const qEl = document.getElementById('quarter');
+        if (!fyEl || !qEl) return false;
+        if (!Array.from(fyEl.options).some(function (o) { return o.value === String(best.fy); })) return false;
+        fyEl.value = String(best.fy);
+        qEl.value = String(best.q);
+        fyEl.dataset.prev = fyEl.value;
+        qEl.dataset.prev = qEl.value;
+        applyRecordedAreaFilter();
+        return true;
+    }
+
+    // พื้นที่ที่รวมอยู่ในรายงานอื่นของปีงบประมาณ+ไตรมาสที่เลือกแล้ว (เลือกซ้ำไม่ได้ ยกเว้นเป็นของรายงานนี้เอง)
+    function oaExtraTakenByOther(p) {
+        const fyEl = document.getElementById('fiscal_year');
+        const qEl = document.getElementById('quarter');
+        if (!fyEl || !qEl || oaExtraSaved.has(String(p.id))) return false;
+        const fy = String(fyEl.value), q = String(qEl.value), nm = String(p.display_name || '').trim();
+        return (recordedAreas || []).some(function (r) {
+            return String(r.fiscal_year) === fy && String(r.quarter) === q && String(r.area).trim() === nm;
         });
     }
 
-    if (areaSelect) {
-        areaSelect.addEventListener('change', () => loadKidneyData(false));
+    // พื้นที่อื่นที่รายงานนี้ครอบคลุม = ที่บันทึกไว้แล้ว + พื้นที่ที่ปักพร้อมกันในชุดเดียวกับพื้นที่หลัก
+    // (ตัดพื้นที่ที่อยู่ในรายงานอื่นของไตรมาสนี้แล้วออก) - ไม่มีช่องให้ติ๊ก ใส่เป็น hidden input ให้เอง
+    let oaExtraPins = [];
+    let oaExtraMarkers = [];
+
+    function clearOaExtraMarkers() {
+        oaExtraMarkers.forEach(function (m) { if (oaMap) oaMap.removeLayer(m); });
+        oaExtraMarkers = [];
+        if (oaMarker && oaMarker.unbindTooltip) oaMarker.unbindTooltip();
+    }
+
+    function renderOaExtras() {
+        if (!oaExtraList) return;
+        const primary = String(oaPinIdHidden.value || '');
+        oaExtraList.innerHTML = '';
+        oaExtraPins = [];
+        if (primary) {
+            const pp = registeredPins.find(function (x) { return String(x.id) === primary; });
+            const ids = new Set(oaExtraSaved);
+            if (pp && pp.group) {
+                registeredPins.forEach(function (x) { if (x.group === pp.group) ids.add(String(x.id)); });
+            }
+            ids.delete(primary);
+            registeredPins.forEach(function (p) {
+                if (!ids.has(String(p.id)) || p.view_only || oaExtraTakenByOther(p)) return;
+                oaExtraPins.push(p);
+                const hid = document.createElement('input');
+                hid.type = 'hidden';
+                hid.name = 'extra_pin_ids[]';
+                hid.value = String(p.id);
+                oaExtraList.appendChild(hid);
+            });
+        }
+        updateOaExtraSummary();
+    }
+
+    function updateOaExtraSummary() {
+        const infoRow = document.getElementById('oaInfoExtraRow');
+        const infoEl = document.getElementById('oaInfoExtra');
+        if (infoRow && infoEl) {
+            infoEl.innerHTML = '';
+            oaExtraPins.forEach(function (p) {
+                const d = document.createElement('div');
+                d.textContent = p.display_name || '';
+                infoEl.appendChild(d);
+            });
+            infoRow.style.display = oaExtraPins.length ? '' : 'none';
+        }
+
+        // แผนที่: แสดงทุกพื้นที่ของรายงานนี้ (พื้นที่หลัก + พื้นที่อื่น) พร้อมชื่อกำกับ
+        clearOaExtraMarkers();
+        if (!oaMap || !oaExtraPins.length) return;
+        const bounds = [];
+        oaExtraPins.forEach(function (p) {
+            const lat = parseFloat(p.latitude), lng = parseFloat(p.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const m = L.marker([lat, lng], { icon: oaIconForProvince(p.province_name) }).addTo(oaMap);
+            m.bindTooltip(p.display_name || '', { permanent: true, direction: 'top', offset: [0, -28] });
+            oaExtraMarkers.push(m);
+            bounds.push([lat, lng]);
+        });
+        const plat = parseFloat(oaLatHidden.value), plng = parseFloat(oaLngHidden.value);
+        if (oaMarker && !isNaN(plat) && !isNaN(plng)) {
+            oaMarker.bindTooltip(oaAreaNameHidden.value || '', { permanent: true, direction: 'top', offset: [0, -28] });
+            bounds.push([plat, plng]);
+        }
+        if (bounds.length > 1) oaMap.fitBounds(bounds, { padding: [60, 60], maxZoom: 13, animate: false });
+    }
+
+    function applyRecordedAreaFilter() {
+        // Areas that already have a record in the selected fiscal year stay
+        // selectable (picking one loads that record so it can be edited and
+        // saved again) - they are just tagged so the user can tell them apart.
+        const fyEl = document.getElementById('fiscal_year');
+        if (!fyEl) return;
+        const fy = String(fyEl.value);
+        const taken = new Set((recordedAreas || [])
+            .filter(function (r) { return String(r.fiscal_year) === fy; })
+            .map(function (r) { return String(r.area).trim(); }));
+        const tag = ' \u2713 \u0e21\u0e35\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e41\u0e25\u0e49\u0e27';
+        let doneTop = 0;
+        [oaTopAreaSelect, oaRegisteredSelect].forEach(function (sel) {
+            if (!sel) return;
+            Array.from(sel.options).forEach(function (opt) {
+                if (!opt.value) return;
+                if (opt.dataset.baseLabel === undefined) opt.dataset.baseLabel = opt.textContent;
+                const isDone = taken.has(String(areaNameOfOption(opt)).trim());
+                opt.hidden = false;
+                opt.disabled = false;
+                opt.textContent = opt.dataset.baseLabel + (isDone ? tag : '');
+                if (isDone && sel === oaTopAreaSelect) doneTop++;
+            });
+        });
+        renderOaExtras();
+        const hint = document.getElementById('oaTakenHint');
+        if (hint) {
+            if (doneTop > 0) {
+                hint.textContent = 'มี ' + doneTop + ' พื้นที่ที่บันทึกข้อมูลแล้วในปีงบประมาณ ' + fy + ' เลือกเพื่อดูและแก้ไขได้';
+                hint.style.display = '';
+            } else {
+                hint.style.display = 'none';
+            }
+        }
+    }
+
+    function applyRegisteredPinSelection(pinId, reload) {
+        oaRegisteredSelect.value = pinId || '';
+        syncOaTopAreaSelectValue(oaRegisteredSelect.value);
+        if (!pinId || oaRegisteredSelect.value !== String(pinId)) {
+            clearOaHiddenFields();
+            clearOaMarker();
+            syncOaOverview();
+            return;
+        }
+        // A specific pin is now chosen - the "pick any of these" overview
+        // would just duplicate this one marker, so drop it.
+        clearOaOverviewMarkers();
+        const opt = oaRegisteredSelect.options[oaRegisteredSelect.selectedIndex];
+        if (!opt || !opt.value) return;
+        oaUsedAreaSelected = false;
+        oaPinIdHidden.value = opt.value;
+        oaProvinceIdHidden.value = opt.dataset.provinceId || '';
+        oaDistrictIdHidden.value = opt.dataset.districtId || '';
+        oaTambonIdHidden.value = opt.dataset.tambonId || '';
+        oaVillageIdHidden.value = opt.dataset.villageId || '';
+        oaVillageNameHidden.value = opt.dataset.villageName || '';
+        oaLatHidden.value = opt.dataset.lat || '';
+        oaLngHidden.value = opt.dataset.lng || '';
+        oaAreaNameHidden.value = opt.dataset.name || '';
+        setOaMarker(parseFloat(opt.dataset.lat), parseFloat(opt.dataset.lng), false);
+        renderOaExtras();
+        if (reload) {
+            jumpToLatestRecord(opt.dataset.name);
+            loadKidneyData(false);
+        }
+    }
+
+    // A previously-used free-text area (see usedOperatingAreasForAgency())
+    // picked from oaTopAreaSelect's second option group - these never have
+    // a numeric pin id, so instead of applyRegisteredPinSelection()'s
+    // oaRegisteredSelect/pin-dataset path, this fills the SAME hidden
+    // operating_area* inputs directly from usedOperatingAreas[index] and
+    // restores the "ปักหน่วยงานพื้นที่ใหม่" cascade/map, mirroring exactly what
+    // restoreOaFromData() already does for a record that has saved geo
+    // columns but no registered pin.
+    function applyUsedAreaSelection(index, reload) {
+        const area = usedOperatingAreas[index];
+        syncOaTopAreaSelectValue(area ? ('area:' + index) : '');
+        oaRegisteredSelect.value = '';
+        if (!area) {
+            clearOaHiddenFields();
+            clearOaMarker();
+            syncOaOverview();
+            return;
+        }
+        // A specific area is now chosen - same as picking a registered
+        // pin, the "pick any of these" overview would just duplicate it.
+        clearOaOverviewMarkers();
+        oaUsedAreaSelected = true;
+        oaNameManuallyEdited = true;
+        oaNewNameInput.value = area.display_name || '';
+        oaAreaNameHidden.value = area.display_name || '';
+        oaPinIdHidden.value = '';
+        oaProvinceIdHidden.value = area.province_id || '';
+        oaDistrictIdHidden.value = area.district_id || '';
+        oaTambonIdHidden.value = area.tambon_id || '';
+        oaVillageIdHidden.value = area.village_id || '';
+        oaVillageNameHidden.value = area.village_name_snapshot || '';
+        if (area.latitude !== null && area.latitude !== undefined && area.longitude !== null && area.longitude !== undefined) {
+            oaLatHidden.value = area.latitude;
+            oaLngHidden.value = area.longitude;
+            restoreOaCascade(
+                area.province_id, area.district_id, area.tambon_id, area.village_id,
+                parseFloat(area.latitude), parseFloat(area.longitude)
+            );
+        } else {
+            // No saved geo for this area (filed before the map-pin columns
+            // existed, or saved from a plain free-text field) - just the
+            // name carries over; the cascade/map stay blank for the person
+            // to fill in if they want to add a pin now.
+            oaLatHidden.value = '';
+            oaLngHidden.value = '';
+            oaNewProvince.value = '';
+            oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+            oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+            oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+            clearOaMarker();
+        }
+        if (reload) {
+            jumpToLatestRecord(area.display_name);
+            loadKidneyData(false);
+        }
+    }
+
+    oaRegisteredSelect.addEventListener('change', function () {
+        if (!this.value) {
+            syncOaTopAreaSelectValue('');
+            clearOaHiddenFields();
+            clearOaMarker();
+            syncOaOverview();
+            loadKidneyData(false);
+            return;
+        }
+        applyRegisteredPinSelection(this.value, true);
+    });
+
+    // Second face on the same dropdown, up next to ปีงบประมาณ/ไตรมาส (see
+    // the blade markup comment on #oaTopAreaSelect) - forwards a registered-
+    // pin pick to whatever oaRegisteredSelect's own 'change' handler above
+    // already does, so picking a pin here behaves identically to picking
+    // it down in "พื้นที่การดำเนินงาน" (switches to that tab first if
+    // "ปักหน่วยงานพื้นที่ใหม่" was active, since there is nothing to apply this
+    // pick onto otherwise). An "area:"-prefixed value is this agency's own
+    // previously-used free-text area instead (second option group, only on
+    // THIS select - see populateRegisteredPinOptions()) and goes through
+    // applyUsedAreaSelection()/mode "new" instead, since it has no
+    // registered pin id to apply.
+    if (oaTopAreaSelect) {
+        oaTopAreaSelect.addEventListener('change', function () {
+            if (this.value && this.value.indexOf('area:') === 0) {
+                setOaMode('new', { silent: true });
+                applyUsedAreaSelection(parseInt(this.value.slice(5), 10), true);
+                return;
+            }
+            if (oaMode !== 'existing') {
+                setOaMode('existing', { silent: true });
+            }
+            if (!this.value) {
+                syncOaTopAreaSelectValue('');
+                clearOaHiddenFields();
+                clearOaMarker();
+                syncOaOverview();
+                loadKidneyData(false);
+                return;
+            }
+            applyRegisteredPinSelection(this.value, true);
+        });
+    }
+
+    // Mode "new": free คาสเคด + ลากหน่วยงานเอง ------------------------------
+
+    // Picking any level of the cascade (จังหวัด / อำเภอ / ตำบล / หมู่บ้าน) drops
+    // the draggable red pin right there. The stored centroid/village
+    // coordinates are used first; when a place has none (not every ตำบล or
+    // หมู่บ้าน has a usable coordinate), the place is looked up by its Thai
+    // name instead so the pin still jumps to it. Either way the hidden
+    // latitude/longitude inputs follow the pin.
+    const oaGeoCache = {};
+
+    function oaCurrentPlaceQuery() {
+        const parts = [];
+        const txt = function (sel, prefix) {
+            if (!sel || !sel.value) return;
+            const o = sel.options[sel.selectedIndex];
+            if (o) parts.push(prefix + o.textContent.trim());
+        };
+        txt(oaNewVillage, '');
+        txt(oaNewTambon, 'ตำบล');
+        txt(oaNewDistrict, 'อำเภอ');
+        txt(oaNewProvince, 'จังหวัด');
+        return parts.join(' ');
+    }
+
+    function oaGeocodePlace(query) {
+        if (Object.prototype.hasOwnProperty.call(oaGeoCache, query)) return Promise.resolve(oaGeoCache[query]);
+        return fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&accept-language=th&q=' + encodeURIComponent(query))
+            .then(function (r) { return r.json(); })
+            .then(function (rows) {
+                const r = rows && rows[0];
+                const pt = r ? { lat: parseFloat(r.lat), lng: parseFloat(r.lon) } : null;
+                oaGeoCache[query] = (pt && !isNaN(pt.lat) && !isNaN(pt.lng)) ? pt : null;
+                return oaGeoCache[query];
+            })
+            .catch(function () { return null; });
+    }
+
+    function oaPlacePin(lat, lng, zoom, draggable) {
+        setOaMarker(lat, lng, draggable !== false, zoom);
+        oaLatHidden.value = lat.toFixed(6);
+        oaLngHidden.value = lng.toFixed(6);
+    }
+
+    function oaFlyToOptionCoords(option, zoom, draggable) {
+        const token = ++oaGeoToken;
+        const lat = option ? parseFloat(option.dataset.lat) : NaN;
+        const lng = option ? parseFloat(option.dataset.lng) : NaN;
+        if (option && option.dataset.lat && option.dataset.lng && !isNaN(lat) && !isNaN(lng)) {
+            oaPlacePin(lat, lng, zoom, draggable);
+            return true;
+        }
+        // No stored coordinates for this place - look it up by name.
+        const query = oaCurrentPlaceQuery();
+        if (!query) return false;
+        oaGeocodePlace(query).then(function (pt) {
+            // A newer pick (or a cleared selection) wins over a slow lookup.
+            if (token !== oaGeoToken || !pt) return;
+            oaPlacePin(pt.lat, pt.lng, zoom, draggable);
+        });
+        return false;
+    }
+
+    function suggestOaName() {
+        if (oaNameManuallyEdited) return;
+        const villageOpt = oaNewVillage.options[oaNewVillage.selectedIndex];
+        const tambonOpt = oaNewTambon.options[oaNewTambon.selectedIndex];
+        const districtOpt = oaNewDistrict.options[oaNewDistrict.selectedIndex];
+        let suggestion = '';
+        if (oaNewVillage.value && villageOpt) suggestion = villageOpt.textContent.trim();
+        else if (oaNewTambon.value && tambonOpt) suggestion = 'ตำบล' + tambonOpt.textContent.trim();
+        else if (oaNewDistrict.value && districtOpt) suggestion = 'อำเภอ' + districtOpt.textContent.trim();
+        if (suggestion) oaNewNameInput.value = suggestion;
+    }
+
+    function syncOaNameFromInput() {
+        oaAreaNameHidden.value = oaNewNameInput.value.trim();
+    }
+
+    oaNewNameInput.addEventListener('input', function () {
+        oaNameManuallyEdited = true;
+        syncOaNameFromInput();
+    });
+    oaNewNameInput.addEventListener('change', function () {
+        syncOaNameFromInput();
+    });
+    // This is a plain <input type="text"> sitting inside <form id="kidneyForm">
+    // alongside a submit button - by default, pressing Enter while typing
+    // here submits the WHOLE form immediately (the browser's normal
+    // "implicit submission" behavior for a single-line text field), not
+    // just this one field. That silently saves the record right then -
+    // with whatever else on the form happens to be filled in at that
+    // moment, which after a Word import may not be everything yet - while
+    // looking to the person like the page just "bounced" out from under
+    // them. Blurring instead of letting Enter reach the form fires this
+    // input's own 'change' handler above (applying the typed name and
+    // refreshing), which is almost certainly what someone pressing Enter
+    // here actually wants.
+    oaNewNameInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            this.blur();
+        }
+    });
+
+    oaNewProvince.addEventListener('change', function () {
+        oaProvinceIdHidden.value = this.value;
+        oaDistrictIdHidden.value = '';
+        oaTambonIdHidden.value = '';
+        oaVillageIdHidden.value = '';
+        oaVillageNameHidden.value = '';
+        oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+
+        if (!this.value) { clearOaMarker(); return; }
+
+        oaFlyToOptionCoords(this.options[this.selectedIndex], 8);
+
+        fetch(`/admin/operating-areas/get-districts/${this.value}`)
+            .then(r => r.json())
+            .then(districts => {
+                oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+                districts.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.district_id;
+                    opt.textContent = d.district_name;
+                    opt.dataset.lat = d.lat ?? '';
+                    opt.dataset.lng = d.lng ?? '';
+                    oaNewDistrict.appendChild(opt);
+                });
+                oaNewDistrict.disabled = false;
+            });
+    });
+
+    oaNewDistrict.addEventListener('change', function () {
+        oaDistrictIdHidden.value = this.value;
+        oaTambonIdHidden.value = '';
+        oaVillageIdHidden.value = '';
+        oaVillageNameHidden.value = '';
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+        suggestOaName();
+        syncOaNameFromInput();
+
+        if (!this.value) { clearOaMarker(); return; }
+
+        oaFlyToOptionCoords(this.options[this.selectedIndex], 10);
+
+        const provinceId = oaNewProvince.value;
+        fetch(`/admin/operating-areas/get-tambons/${provinceId}/${this.value}`)
+            .then(r => r.json())
+            .then(tambons => {
+                oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+                tambons.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.tambon_id;
+                    opt.textContent = t.tambon_name;
+                    opt.dataset.lat = t.lat ?? '';
+                    opt.dataset.lng = t.lng ?? '';
+                    oaNewTambon.appendChild(opt);
+                });
+                oaNewTambon.disabled = false;
+            });
+    });
+
+    oaNewTambon.addEventListener('change', function () {
+        oaTambonIdHidden.value = this.value;
+        oaVillageIdHidden.value = '';
+        oaVillageNameHidden.value = '';
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+        suggestOaName();
+        syncOaNameFromInput();
+
+        if (!this.value) { return; }
+
+        oaFlyToOptionCoords(this.options[this.selectedIndex], 12);
+
+        const provinceId = oaNewProvince.value;
+        const districtId = oaNewDistrict.value;
+        fetch(`/admin/operating-areas/get-villages/${provinceId}/${districtId}/${this.value}`)
+            .then(r => r.json())
+            .then(villages => {
+                oaNewVillage.innerHTML = '<option value="">-- เลือกชุมชน/หมู่บ้าน --</option>';
+                villages.forEach(v => {
+                    const opt = document.createElement('option');
+                    opt.value = v.village_id;
+                    opt.textContent = v.village_name;
+                    opt.dataset.lat = v.latitude ?? '';
+                    opt.dataset.lng = v.longitude ?? '';
+                    oaNewVillage.appendChild(opt);
+                });
+                oaNewVillage.disabled = false;
+            });
+    });
+
+    oaNewVillage.addEventListener('change', function () {
+        oaVillageIdHidden.value = this.value;
+        const selectedOption = this.options[this.selectedIndex];
+        oaVillageNameHidden.value = this.value ? selectedOption.textContent : '';
+        suggestOaName();
+        syncOaNameFromInput();
+        oaFlyToOptionCoords(selectedOption, 14);
+    });
+
+    // Restore whichever mode/location a loaded record (or the initial
+    // page load) actually has - called from loadKidneyData()'s own
+    // success handler below, exactly like every other field it restores.
+    async function restoreOaCascade(provinceId, districtId, tambonId, villageId, lat, lng) {
+        oaNewProvince.value = provinceId || '';
+        oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+
+        if (provinceId) {
+            try {
+                if (districtId) {
+                    const districts = await fetch(`/admin/operating-areas/get-districts/${provinceId}`).then(r => r.json());
+                    oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+                    districts.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d.district_id;
+                        opt.textContent = d.district_name;
+                        opt.dataset.lat = d.lat ?? '';
+                        opt.dataset.lng = d.lng ?? '';
+                        oaNewDistrict.appendChild(opt);
+                    });
+                    oaNewDistrict.disabled = false;
+                    oaNewDistrict.value = districtId;
+                }
+                if (tambonId && districtId) {
+                    const tambons = await fetch(`/admin/operating-areas/get-tambons/${provinceId}/${districtId}`).then(r => r.json());
+                    oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+                    tambons.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.tambon_id;
+                        opt.textContent = t.tambon_name;
+                        opt.dataset.lat = t.lat ?? '';
+                        opt.dataset.lng = t.lng ?? '';
+                        oaNewTambon.appendChild(opt);
+                    });
+                    oaNewTambon.disabled = false;
+                    oaNewTambon.value = tambonId;
+                }
+                if (villageId && districtId && tambonId) {
+                    const villages = await fetch(`/admin/operating-areas/get-villages/${provinceId}/${districtId}/${tambonId}`).then(r => r.json());
+                    oaNewVillage.innerHTML = '<option value="">-- เลือกชุมชน/หมู่บ้าน --</option>';
+                    villages.forEach(v => {
+                        const opt = document.createElement('option');
+                        opt.value = v.village_id;
+                        opt.textContent = v.village_name;
+                        opt.dataset.lat = v.latitude ?? '';
+                        opt.dataset.lng = v.longitude ?? '';
+                        oaNewVillage.appendChild(opt);
+                    });
+                    oaNewVillage.disabled = false;
+                    oaNewVillage.value = villageId;
+                }
+            } catch (e) {
+                // Best-effort cascade restore - the saved lat/lng is the
+                // authoritative position regardless of whether this finished.
+            }
+        }
+
+        setOaMarker(lat, lng, true);
+    }
+
+    // Pre-fill "ปักหน่วยงานพื้นที่ใหม่" with the reporting office's own
+    // จังหวัด/อำเภอ/ตำบล when nothing has been picked yet - most new areas
+    // get added inside the reporter's own district, so starting from their
+    // own location saves re-selecting it from scratch every time. Stops at
+    // ตำบล (never pre-picks ชุมชน/หมู่บ้าน - that still needs an actual
+    // choice) and never overwrites a cascade already in progress.
+    async function prefillOaNewModeFromUserLocation() {
+        const loc = oaUserOwnLocation;
+        if (!loc || !loc.province_id || oaNewProvince.value) return;
+
+        oaNewProvince.value = String(loc.province_id);
+        oaProvinceIdHidden.value = String(loc.province_id);
+        oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+
+        const provinceOpt = oaNewProvince.options[oaNewProvince.selectedIndex];
+        let centerLat = (provinceOpt && provinceOpt.dataset.lat) ? parseFloat(provinceOpt.dataset.lat) : null;
+        let centerLng = (provinceOpt && provinceOpt.dataset.lng) ? parseFloat(provinceOpt.dataset.lng) : null;
+
+        try {
+            const districts = await fetch(`/admin/operating-areas/get-districts/${loc.province_id}`).then(r => r.json());
+            oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
+            districts.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.district_id;
+                opt.textContent = d.district_name;
+                opt.dataset.lat = d.lat ?? '';
+                opt.dataset.lng = d.lng ?? '';
+                oaNewDistrict.appendChild(opt);
+            });
+            oaNewDistrict.disabled = false;
+
+            if (loc.district_id) {
+                oaNewDistrict.value = String(loc.district_id);
+                if (oaNewDistrict.value === String(loc.district_id)) {
+                    oaDistrictIdHidden.value = String(loc.district_id);
+                    const dOpt = oaNewDistrict.options[oaNewDistrict.selectedIndex];
+                    if (dOpt && dOpt.dataset.lat && dOpt.dataset.lng) {
+                        centerLat = parseFloat(dOpt.dataset.lat);
+                        centerLng = parseFloat(dOpt.dataset.lng);
+                    }
+
+                    const tambons = await fetch(`/admin/operating-areas/get-tambons/${loc.province_id}/${loc.district_id}`).then(r => r.json());
+                    oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
+                    tambons.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = t.tambon_id;
+                        opt.textContent = t.tambon_name;
+                        opt.dataset.lat = t.lat ?? '';
+                        opt.dataset.lng = t.lng ?? '';
+                        oaNewTambon.appendChild(opt);
+                    });
+                    oaNewTambon.disabled = false;
+
+                    if (loc.tambon_id) {
+                        oaNewTambon.value = String(loc.tambon_id);
+                        if (oaNewTambon.value === String(loc.tambon_id)) {
+                            oaTambonIdHidden.value = String(loc.tambon_id);
+                            const tOpt = oaNewTambon.options[oaNewTambon.selectedIndex];
+                            if (tOpt && tOpt.dataset.lat && tOpt.dataset.lng) {
+                                centerLat = parseFloat(tOpt.dataset.lat);
+                                centerLng = parseFloat(tOpt.dataset.lng);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            // Best-effort - whatever loaded stays selected; the person can
+            // still fill in the rest of the cascade by hand.
+        }
+
+        suggestOaName();
+        syncOaNameFromInput();
+
+        if (centerLat !== null && centerLng !== null && !isNaN(centerLat) && !isNaN(centerLng)) {
+            oaLatHidden.value = centerLat.toFixed(6);
+            oaLngHidden.value = centerLng.toFixed(6);
+            setOaMarker(centerLat, centerLng, true);
+            // setOaMarker() above just flew the camera in tight on this
+            // one suggested point - but when the overview (see
+            // syncOaOverview()) is ALSO showing every pin/area with data
+            // at the same time, that tight fly-to would scroll every one
+            // of them out of view, defeating the point of showing them.
+            // Re-fit over the union of both instead, so landing on a blank
+            // "ปักหน่วยงานพื้นที่ใหม่" still leaves the existing data visible.
+            if (oaOverviewMarkers.length) {
+                const pts = [[centerLat, centerLng]].concat(
+                    oaOverviewMarkers.map(function (m) { const p = m.getLatLng(); return [p.lat, p.lng]; })
+                );
+                oaMap.fitBounds(pts, { padding: [40, 40], maxZoom: 12 });
+            }
+        }
+    }
+
+    function restoreOaFromData(data, isInitial) {
+        // พื้นที่อื่นที่รายงานฉบับนี้ครอบคลุมเพิ่ม (แสดงหลังตั้งพื้นที่หลักแล้ว)
+        oaExtraSaved = new Set((data.extra_pin_ids || []).map(String));
+        oaExtraChecked = new Set(oaExtraSaved);
+        oaExtraTouched = false;
+        const pinId = data.operating_area_pin_id;
+        const lat = data.operating_area_latitude;
+        const lng = data.operating_area_longitude;
+
+        if (pinId) {
+            setOaMode('existing', { silent: true });
+            applyRegisteredPinSelection(String(pinId), false);
+            return;
+        }
+
+        if (lat !== null && lat !== undefined && lng !== null && lng !== undefined) {
+            setOaMode('new', { silent: true });
+            // A specific, already-saved location is being restored here -
+            // same as picking a registered pin or a used area from the
+            // dropdown, so the "pick any of these" overview would just
+            // duplicate this one marker.
+            clearOaOverviewMarkers();
+            oaUsedAreaSelected = true;
+            oaNameManuallyEdited = true;
+            oaNewNameInput.value = data.operating_area || '';
+            oaAreaNameHidden.value = data.operating_area || '';
+            oaProvinceIdHidden.value = data.operating_area_province_id || '';
+            oaDistrictIdHidden.value = data.operating_area_district_id || '';
+            oaTambonIdHidden.value = data.operating_area_tambon_id || '';
+            oaVillageIdHidden.value = data.operating_area_village_id || '';
+            oaVillageNameHidden.value = data.operating_area_village_name_snapshot || '';
+            oaLatHidden.value = lat;
+            oaLngHidden.value = lng;
+            restoreOaCascade(
+                data.operating_area_province_id, data.operating_area_district_id,
+                data.operating_area_tambon_id, data.operating_area_village_id,
+                parseFloat(lat), parseFloat(lng)
+            );
+            return;
+        }
+
+        // Legacy text-only area, no saved geo columns to restore - very
+        // common, since every record filed before this feature shipped
+        // (and any record someone just saved via plain free-text) looks
+        // like this. operating_area is one of THIS fetch's own filters, so
+        // whoever is currently looking at the picker already put it in
+        // this exact state (picked a registered pin, typed a new name,
+        // mid-cascade, etc). Only reset the picker to a bare "nothing
+        // picked" view on the page's actual first load - never on a
+        // reload the widget's own change handlers triggered, or selecting
+        // a registered pin whose text happens to match an old free-text
+        // record would immediately undo that very selection.
+        if (!isInitial || oaPreselectedPin) {
+            // (a pin chosen on "เลือกพื้นที่ดำเนินงาน" stays selected - the
+            // text-only record found for its name must not undo that)
+            return;
+        }
+        setOaMode(hasRegisteredPinsInitially ? 'existing' : 'new', { silent: true });
+        clearOaHiddenFields();
+        clearOaMarker();
+        oaAreaNameHidden.value = data.operating_area || '';
+        oaRegisteredSelect.value = '';
+        syncOaTopAreaSelectValue('');
+        oaNewProvince.value = '';
+        oaResetSelect(oaNewDistrict, '-- เลือกอำเภอ --');
+        oaResetSelect(oaNewTambon, '-- เลือกตำบล --');
+        oaResetSelect(oaNewVillage, '-- เลือกชุมชน/หมู่บ้าน --');
+        oaNewNameInput.value = data.operating_area || '';
+        oaNameManuallyEdited = !!data.operating_area;
+        if (!hasRegisteredPinsInitially) {
+            // No registered pins at all for this office - "new" is the
+            // starting tab, so pre-fill it the same way a manual tab
+            // switch would. This agency may still have its own previously-
+            // used free-text areas though (see usedOperatingAreasForAgency()) -
+            // syncOaOverview() just below covers both lists, so it still
+            // shows them here.
+            prefillOaNewModeFromUserLocation();
+        }
+        syncOaOverview();
     }
 
     // Shared "blank the form" used both when loading a different
     // quarter/area and when starting a fresh new-area entry.
-    function resetFormFields() {
+    //
+    // preserveTextValues=true keeps whatever the person already typed into
+    // ข้อ 1-7/8 ("ผลการดำเนินงาน"), ปัญหาอุปสรรค, ข้อเสนอแนะ, etc. instead of
+    // blanking them here. loadKidneyData() below still overwrites a field
+    // the instant its fetch resolves with an actual saved value for it -
+    // this only skips the *pre-emptive* clear-to-blank that used to run
+    // before that fetch even started. That pre-emptive clear is correct
+    // when the person is deliberately switching to a DIFFERENT saved
+    // record (a different quarter, a different registered pin) - stale
+    // text from the previous record must not linger. But every keystroke/
+    // selection while still composing a brand-new, not-yet-saved area
+    // (typing its name, picking province/อำเภอ/ตำบล/village one at a time)
+    // also calls loadKidneyData() - purely to check whether that exact
+    // area string happens to already have a saved record - and a new area
+    // by definition usually doesn't, so the fetch comes back with nothing
+    // to refill, and whatever the person had already written stayed wiped
+    // for good. See the callers of loadKidneyData(isInitial, true).
+    function resetFormFields(preserveTextValues = false) {
         textFields.forEach(f => {
             const el = document.getElementById(f);
             const attr = document.getElementById(f + '_attribution');
             if (el) {
-                el.value = '';
+                if (!preserveTextValues) el.value = '';
                 el.disabled = false;
                 el.classList.remove('disabled-field');
             }
@@ -1703,6 +3376,8 @@
         const reporterInfo = document.getElementById('reporter-info');
         if (reporterInfo) reporterInfo.style.display = 'none';
         window.currentMilestones = {};
+        // รูปภาพประกอบ: ล้างพร้อมข้อความ (ยกเว้นตอนเก็บร่างจาก Word / กำลังปรับพื้นที่ที่ยังไม่บันทึก)
+        if (!preserveTextValues && window.kimgReset) window.kimgReset();
         updateProgressStepper();
     }
 
@@ -1722,7 +3397,12 @@
         card.style.display = 'block';
     }
 
-    function loadKidneyData(isInitial = false) {
+    // preserveTextFields: see resetFormFields()'s own comment - pass true
+    // from a caller that's only adjusting the operating-area identity of
+    // the CURRENT, still-unsaved entry (composing its name/province/อำเภอ/
+    // ตำบล/village), as opposed to deliberately switching to a different
+    // saved record (a different quarter, a different registered pin).
+    function loadKidneyData(isInitial = false, preserveTextFields = false) {
         const fiscalYear = document.getElementById('fiscal_year').value;
         const quarter = document.getElementById('quarter').value;
         const operatingArea = getCurrentOperatingArea();
@@ -1735,8 +3415,42 @@
         formLoader.style.display = 'flex';
         status.style.display = 'none';
 
+        // Word-import draft guard: after "นำเข้าจากไฟล์ Word" the form holds
+        // text that is NOT saved anywhere yet. Everything the person does
+        // next to choose/pin the operating area (switching to "ปักหน่วยงาน
+        // พื้นที่ใหม่", picking a registered pin or a used area, composing
+        // the new pin's จังหวัด/อำเภอ/ตำบล/หมู่บ้าน) also calls this
+        // function to look the picked area up - and that lookup used to
+        // blank the draft first and then refill it from whatever record (or
+        // cross-quarter template) the server had for that area. While a
+        // draft is active we keep the typed/imported text, the picker the
+        // person just set, and the imported reporter info exactly as they
+        // are; the lookup only tells the person whether a saved record
+        // already exists for the area they picked.
+        const keepDraft = window.kdImportDraft === true;
+
+        // Placing a brand-new pin ("ปักหน่วยงานพื้นที่ใหม่", nothing picked from
+        // the saved areas): there is no saved record to look up, so never
+        // fetch one - that is what used to fill the form with another
+        // record's / quarter's text. Only a page landing that already names an
+        // area (e.g. right after saving) still loads it.
+        const freshNewPin = oaMode === 'new' && !oaUsedAreaSelected && !oaPinIdHidden.value && !keepDraft
+            && (!isInitial || !getCurrentOperatingArea());
+        if (freshNewPin) {
+            formLoader.style.display = 'none';
+            if (!container.classList.contains('visible')) {
+                const pl = document.getElementById('page-loader');
+                if (pl) pl.style.display = 'none';
+                container.classList.add('visible');
+            }
+            status.style.display = 'none';
+            applyQuarterLock({});
+            updateProgressStepper();
+            return;
+        }
+
         // Reset all fields and attribution
-        resetFormFields();
+        resetFormFields(preserveTextFields || keepDraft);
 
         const targetUserIdVal = document.getElementById('target_user_id') ? document.getElementById('target_user_id').value : '';
         fetch(`{{ route('admin.get-kidney-dhb-data') }}?fiscal_year=${fiscalYear}&quarter=${quarter}&operating_area=${encodeURIComponent(operatingArea)}&target_user_id=${encodeURIComponent(targetUserIdVal)}&t=${new Date().getTime()}`)
@@ -1750,16 +3464,55 @@
                     container.classList.add('visible');
                 }
 
+                // Refresh the registered-pin list every time (it can change
+                // when switching the import target agency via target_user_id),
+                // regardless of whether this quarter/area already has data.
+                // Same for this agency's own previously-used free-text areas.
+                if (result.recorded_areas) recordedAreas = result.recorded_areas;
+                populateRegisteredPinOptions(result.registered_pins || registeredPins, result.used_areas || usedOperatingAreas);
+                // Same rescoping for the "ปักหน่วยงานพื้นที่ใหม่" pre-fill location.
+                if (result.own_location) {
+                    oaUserOwnLocation = result.own_location;
+                }
+                applyQuarterLock(result);
+
+                if (keepDraft) {
+                    const hasSaved = !!(result.data && !result.is_template);
+                    status.className = 'data-status' + (hasSaved ? '' : ' new-record');
+                    status.innerHTML = `<div class="status-icon"><i class="fas fa-file-word"></i></div>
+                        <div class="status-text">
+                            <div class="status-title">ข้อมูลจากไฟล์ Word ยังอยู่ในฟอร์ม (ยังไม่บันทึก)</div>
+                            <div class="status-sub">${hasSaved
+                                ? 'พื้นที่นี้มีข้อมูลที่บันทึกไว้แล้วในไตรมาสนี้ — เมื่อกดบันทึกจะถูกแทนที่ด้วยข้อมูลที่นำเข้า'
+                                : 'เลือก/ปักหน่วยงานพื้นที่ แล้วกดบันทึก ระบบจะเก็บพิกัดพร้อมข้อมูลด้านล่าง'}</div>
+                        </div>`;
+                    status.style.display = 'flex';
+                    updateProgressStepper();
+                    statusTimeout = setTimeout(() => { status.style.display = 'none'; }, 8000);
+                    return;
+                }
+
                 if (result.data) {
                     const data = result.data;
                     window.currentMilestones = result.global_milestones || result.milestones;
+
+                    // Restore the operating-area picker (map pin / registered
+                    // selection / cascade) to match what was actually saved
+                    // for this record, so revisiting an answered quarter shows
+                    // the same pin instead of whatever was last clicked.
+                    window.kdRecordExists = !!result.exists;
+                    restoreOaFromData(data, isInitial);
+                    renderOaExtras();
+
+                    // รูปภาพประกอบที่บันทึกไว้ของรายงานไตรมาสนี้ (ไม่ไหลข้ามไตรมาส)
+                    if (!preserveTextFields && window.kimgSetImages) window.kimgSetImages(result.images || {});
 
                     // Populate text fields from server data and update attribution
                     textFields.forEach(f => {
                         const el = document.getElementById(f);
                         const attr = document.getElementById(f + '_attribution');
                         if (el && data[f]) el.value = data[f];
-                        
+
                         // Per-field attribution
                         if (attr) {
                             const reporter = data[f + '_reporter'];
@@ -1820,6 +3573,23 @@
                                         </div>`;
                     if (!(isInitial && hasSuccess)) status.style.display = 'flex';
                     document.getElementById('reporter-info').style.display = 'none';
+
+                    // No saved record for this exact area yet - leave the
+                    // picker exactly as the person has it (mode, pin, cascade
+                    // selections, marker). operating_area is itself one of
+                    // this fetch's filters, so re-restoring from an empty
+                    // payload here would wipe out the very selection that
+                    // triggered the request (e.g. mid-cascade on a brand new
+                    // area). restoreOaFromData() is only for replaying what
+                    // the SERVER actually has saved, which is the other branch.
+                }
+
+                // Landed from "เลือกพื้นที่นี้": make sure that area is the one
+                // showing in the dropdown (name included) after the first load.
+                if (isInitial && oaPreselectedPin && String(oaPinIdHidden.value) !== oaPreselectedPin
+                    && registeredPins.some(function (p) { return String(p.id) === oaPreselectedPin; })) {
+                    if (oaMode !== 'existing') setOaMode('existing', { silent: true });
+                    applyRegisteredPinSelection(oaPreselectedPin, false);
                 }
 
                 updateRespondentInfoCard(result.respondent_info);
@@ -1828,6 +3598,52 @@
                 statusTimeout = setTimeout(() => { status.style.display = 'none'; }, 5000);
             })
             .catch(error => { console.error(error); formLoader.style.display = 'none'; });
+    }
+
+    // ไตรมาสที่ สคร. (level 1) ยืนยันข้อมูลแล้ว: ฝั่งผู้ตอบแก้ไขไม่ได้ - ปิดฟอร์ม + ปุ่มบันทึก และแสดงข้อความแจ้ง
+    // ที่ตัวเลือกไตรมาสจะมีป้าย "ยืนยันแล้ว" กำกับไตรมาสที่ถูกยืนยัน (ของปี/พื้นที่ที่เลือกอยู่)
+    function applyQuarterLock(result) {
+        const form = document.getElementById('kidneyForm');
+        if (!form) return;
+        const locked = !!(result && result.locked);
+        const confirmed = ((result && result.confirmed_quarters) || []).map(Number);
+
+        document.querySelectorAll('#quarter option').forEach(function (o) {
+            if (!o.dataset.base) o.dataset.base = o.textContent;
+            o.textContent = o.dataset.base + (confirmed.indexOf(Number(o.value)) !== -1 ? ' · ยืนยันแล้ว' : '');
+        });
+
+        let banner = document.getElementById('quarterLockBanner');
+        const firstSection = form.querySelector('.report-section');
+        if (!banner && firstSection) {
+            banner = document.createElement('div');
+            banner.id = 'quarterLockBanner';
+            banner.className = 'quarter-lock-banner';
+            banner.setAttribute('role', 'status');
+            banner.innerHTML = '<div class="qlb-ic"><i class="fas fa-lock"></i></div>' +
+                '<div><b>ไตรมาสนี้ได้รับการยืนยันข้อมูลแล้ว</b>' +
+                '<span>สคร. ตรวจสอบและยืนยันข้อมูลแล้ว จึงไม่สามารถแก้ไขได้ หากต้องแก้ไขกรุณาติดต่อ สคร. เพื่อยกเลิกการยืนยัน</span></div>';
+            firstSection.parentNode.insertBefore(banner, firstSection);
+        }
+        if (banner) banner.classList.toggle('is-visible', locked);
+
+        form.classList.toggle('is-quarter-locked', locked);
+        form.querySelectorAll('.report-section').forEach(function (el) {
+            if (locked) el.setAttribute('inert', ''); else el.removeAttribute('inert');
+        });
+
+        const btn = form.querySelector('.btn-submit');
+        if (btn) {
+            if (!btn.dataset.html) btn.dataset.html = btn.innerHTML;
+            btn.disabled = locked;
+            btn.innerHTML = locked ? '<i class="fas fa-lock"></i> ไตรมาสนี้ยืนยันข้อมูลแล้ว · แก้ไขไม่ได้' : btn.dataset.html;
+        }
+        if (!form.dataset.lockGuard) {
+            form.dataset.lockGuard = '1';
+            form.addEventListener('submit', function (e) {
+                if (form.classList.contains('is-quarter-locked')) e.preventDefault();
+            });
+        }
     }
 
     function updateProgressStepper() {
@@ -1921,10 +3737,54 @@
     });
 
     // Reload data when year/quarter changes
-    document.getElementById('fiscal_year').addEventListener('change', () => loadKidneyData(false));
-    document.getElementById('quarter').addEventListener('change', () => loadKidneyData(false));
+    // Changing year/quarter deliberately loads a different saved record. If a
+    // Word-import draft is still unsaved, confirm first instead of silently
+    // replacing it (the select snaps back if the person cancels).
+    ['fiscal_year', 'quarter'].forEach(id => {
+        const el = document.getElementById(id);
+        el.dataset.prev = el.value;
+        el.addEventListener('change', async () => {
+            if (window.kdImportDraft) {
+                const r = await Swal.fire({
+                    icon: 'warning',
+                    title: 'ข้อมูลที่นำเข้ายังไม่ได้บันทึก',
+                    text: 'หากเปลี่ยนปีงบประมาณ/ไตรมาส ข้อมูลที่นำเข้าจากไฟล์ Word ในฟอร์มจะถูกแทนที่ด้วยข้อมูลที่บันทึกไว้ ต้องการเปลี่ยนต่อหรือไม่?',
+                    showCancelButton: true,
+                    confirmButtonText: 'เปลี่ยนและล้างข้อมูลที่นำเข้า',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#ef4444',
+                });
+                if (!r.isConfirmed) { el.value = el.dataset.prev; return; }
+                window.kdImportDraft = false;
+            }
+            el.dataset.prev = el.value;
+            applyRecordedAreaFilter();
+            loadKidneyData(false);
+        });
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
+        // Show every registered pin up front on first landing (before any
+        // fetch resolves) so a first-time visitor can click straight into
+        // one instead of only via the dropdown - loadKidneyData()'s own
+        // restore logic takes over correctly from here afterwards.
+        syncOaOverview();
+        // Offices with no registered pins at all start on "ปักหน่วยงานพื้นที่ใหม่"
+        // by default (see $oaDefaultMode) - pre-fill it the same way.
+        if (oaMode === 'new') {
+            prefillOaNewModeFromUserLocation();
+        }
+        // Arrived from "เลือกพื้นที่ดำเนินงาน" -> "เลือกพื้นที่นี้": start with
+        // that saved area already chosen (applied before the first load so
+        // loadKidneyData() fetches this area's record, if it has one).
+        const oaPreselectPinId = @json($selectedPinId ?? null);
+        if (oaPreselectPinId && registeredPins.some(function (p) { return String(p.id) === String(oaPreselectPinId); })) {
+            if (oaMode !== 'existing') setOaMode('existing', { silent: true });
+            applyRegisteredPinSelection(String(oaPreselectPinId), false);
+            oaPreselectedPin = String(oaPreselectPinId);
+            const oaPreselOpt = oaRegisteredSelect.options[oaRegisteredSelect.selectedIndex];
+            if (oaPreselOpt && oaPreselOpt.value) jumpToLatestRecord(oaPreselOpt.dataset.name);
+        }
         loadKidneyData(true);
 
         // Final update after data might have loaded
@@ -1980,6 +3840,19 @@
 
         if (!btnOpen || !overlay) return;
 
+        const btnOpenManual = document.getElementById('btnOpenManualImport');
+        const modalTitle = document.getElementById('importModalTitle');
+        const infoBox = document.getElementById('importInfoBox');
+        const groupFile = document.getElementById('import_group_file');
+        const reporterSourceFileLabel = document.getElementById('import_reporter_source_file_label');
+        // 'file'   = upload a Word report and review what was read
+        // 'manual' = type the data in by hand (same picker/year/quarter/apply flow)
+        let importMode = 'file';
+        // true while the ประเภท/จังหวัด/อำเภอ pickers were filled automatically
+        // from a parsed file (so a later file may refill them) - becomes false
+        // as soon as the admin changes one of them by hand.
+        let pickerAuto = false;
+
         let lastParseResult = null;
         // Resolved by tryResolveTarget() below once the ประเภทหน่วยงาน ->
         // จังหวัด -> อำเภอ -> โรงพยาบาล/ชื่อหน่วยงาน cascade narrows down to
@@ -2016,14 +3889,55 @@
                 return;
             }
             const fileParts = [lastParseResult.reporter_name, lastParseResult.reporter_position, lastParseResult.reporter_phone, lastParseResult.reporter_email].filter(Boolean);
-            reporterSourceFilePreview.textContent = fileParts.length ? ('(' + fileParts.join(' • ') + ')') : '(ไม่พบข้อมูลนี้ในไฟล์)';
+            reporterSourceFilePreview.textContent = fileParts.length ? ('(' + fileParts.join(' • ') + ')') : (importMode === 'manual' ? '(ยังไม่ได้กรอก)' : '(ไม่พบข้อมูลนี้ในไฟล์)');
             reporterSourceAccountPreview.textContent = formatAccountInfoPreview(getResolvedAccountInfo(resolvedTargetUserId));
             groupReporterSource.style.display = 'block';
         }
 
-        function openModal() { overlay.classList.add('open'); }
-        function closeModal() { overlay.classList.remove('open'); }
-        btnOpen.addEventListener('click', openModal);
+        function openModal() { overlay.classList.add('open'); document.body.style.overflow = 'hidden'; }
+        function closeModal() { overlay.classList.remove('open'); document.body.style.overflow = ''; }
+
+        function setImportMode(mode) {
+            importMode = mode;
+            const isFile = mode === 'file';
+            groupFile.style.display = isFile ? '' : 'none';
+            btnParse.style.display = isFile ? '' : 'none';
+            modalTitle.innerHTML = isFile
+                ? '<i class="fas fa-file-word"></i> นำเข้าข้อมูลจากไฟล์ Word'
+                : '<i class="fas fa-keyboard"></i> นำเข้าข้อมูลด้วยตนเอง';
+            infoBox.innerHTML = isFile
+                ? '<i class="fas fa-circle-info"></i> อัปโหลดไฟล์รายงาน พชอ.ไต ที่เป็น Word (.docx) ระบบจะอ่านเท่าที่พบและแสดงเป็นช่องให้ตรวจสอบ/แก้ไข/เพิ่มเติมก่อน จากนั้นจึงนำไปเติมในฟอร์มด้านล่างเพื่อตรวจทาน แล้วกดบันทึกตามปกติ (ยังไม่มีการบันทึกข้อมูลใด ๆ ในขั้นตอนนี้)'
+                : '<i class="fas fa-circle-info"></i> เลือกหน่วยงาน ปีงบประมาณ และไตรมาส แล้วกรอกข้อมูลตามหัวข้อที่มี (เว้นว่างหัวข้อที่ไม่มีได้) จากนั้นนำไปเติมในฟอร์มด้านล่างเพื่อตรวจทาน แล้วกดบันทึกตามปกติ (ยังไม่มีการบันทึกข้อมูลใด ๆ ในขั้นตอนนี้)';
+            reporterSourceFileLabel.textContent = isFile ? 'จากไฟล์ Word ที่นำเข้า' : 'ตามที่กรอกด้านบน';
+        }
+
+        function startFileImport() {
+            if (importMode !== 'file') {
+                resetPreview();
+                setImportMode('file');
+            }
+            openModal();
+        }
+
+        function startManualImport() {
+            if (importMode !== 'manual' || !lastParseResult) {
+                resetPreview();
+                setImportMode('manual');
+                lastParseResult = {
+                    is_valid_template: true, quarter: null, quarter_detected: true, quarter_source: null,
+                    fields: {}, unmatched: [], warnings: [],
+                    reporter_name: '', reporter_position: '', reporter_phone: '', reporter_email: '',
+                    reporter_agency: null, reporter_district: null, reporter_province: null, suggested_rank: null,
+                };
+                renderPreview(lastParseResult, { manual: true });
+                btnApply.disabled = false;
+                updateReporterSourceUI();
+            }
+            openModal();
+        }
+
+        btnOpen.addEventListener('click', startFileImport);
+        if (btnOpenManual) btnOpenManual.addEventListener('click', startManualImport);
         btnClose.addEventListener('click', closeModal);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
 
@@ -2039,7 +3953,9 @@
 
         function escapeHtml(s) {
             const d = document.createElement('div');
-            d.innerText = (s === null || s === undefined) ? '' : s;
+            // textContent, not innerText: innerText turns every "\n" into a <br>,
+            // which then shows up literally inside <textarea> previews.
+            d.textContent = (s === null || s === undefined) ? '' : s;
             return d.innerHTML;
         }
 
@@ -2257,58 +4173,198 @@
             updateReporterSourceUI();
         });
 
+        [rankSelect, provinceSelect, districtSelect, hospitalSelect, subdistrictHospitalSelect].forEach(el => {
+            el.addEventListener('change', function (e) { if (e.isTrusted) pickerAuto = false; });
+        });
+
+        // Name matching for the auto-pick below: strips the type/prefix words
+        // ("อำเภอ", "จังหวัด", "รพ.สต.", "โรงพยาบาล" ...) and spaces, longest first.
+        function normName(s) {
+            let n = String(s || '').replace(/\s+/g, '');
+            ['โรงพยาบาลส่งเสริมสุขภาพตำบล', 'สำนักงานสาธารณสุข', 'ส่งเสริมสุขภาพตำบล', 'โรงพยาบาล', 'รพ.สต.', 'รพสต.', 'รพ.สต', 'รพสต', 'รพ.', 'อำเภอ', 'จังหวัด', 'สสอ.', 'สสจ.']
+                .forEach(w => { n = n.split(w).join(''); });
+            return n;
+        }
+
+        function findOptionValue(selectEl, name) {
+            const target = normName(name);
+            if (!target) return null;
+            const opts = Array.from(selectEl.options).filter(o => o.value);
+            let hit = opts.find(o => normName(o.textContent) === target);
+            if (!hit && target.length >= 3) {
+                hit = opts.find(o => {
+                    const n = normName(o.textContent);
+                    return n.length >= 3 && (n.includes(target) || target.includes(n));
+                });
+            }
+            return hit ? hit.value : null;
+        }
+
+        // Pre-selects ประเภทหน่วยงาน / จังหวัด / อำเภอ / หน่วยงาน from the
+        // reporter block read out of the file, as far as it can be matched.
+        // Anything it can't match is left for the admin. Never overrides a
+        // choice the admin made by hand.
+        async function autoSelectPicker(result) {
+            if (!result) return;
+            if (rankSelect.value && !pickerAuto) return;
+            const rank = String(result.suggested_rank || '');
+            if (!['2', '3', '4', '5'].includes(rank)) return;
+
+            pickerAuto = true;
+            rankSelect.value = rank;
+            rankSelect.dispatchEvent(new Event('change'));
+
+            const provinceValue = findOptionValue(provinceSelect, result.reporter_province);
+            if (!provinceValue) return;
+            provinceSelect.value = provinceValue;
+            if (rank === '2') { tryResolveTarget(); return; }
+
+            try {
+                const districts = await fetch('{{ route("get-districts", ["province_id" => ":id"]) }}'.replace(':id', provinceValue)).then(r => r.json());
+                populateSelect(districtSelect, districts, 'district_id', 'district_name', '-- เลือกอำเภอ --');
+                const districtValue = findOptionValue(districtSelect, result.reporter_district);
+                if (!districtValue) return;
+                districtSelect.value = districtValue;
+                if (rank === '3') { tryResolveTarget(); return; }
+
+                if (rank === '5') {
+                    const hospitals = await fetch('/get-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
+                    populateSelect(hospitalSelect, hospitals, 'hos_id', 'hos_name', '-- เลือกโรงพยาบาล --');
+                    const hv = findOptionValue(hospitalSelect, result.reporter_agency);
+                    if (hv) { hospitalSelect.value = hv; tryResolveTarget(); }
+                } else {
+                    const list = await fetch('/get-subdistrict-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
+                    populateSelect(subdistrictHospitalSelect, list, 'sh_id', 'sh_name', '-- เลือกหน่วยงาน --');
+                    const sv = findOptionValue(subdistrictHospitalSelect, result.reporter_agency);
+                    if (sv) { subdistrictHospitalSelect.value = sv; tryResolveTarget(); }
+                }
+            } catch (e) {
+                // best-effort only - the admin can finish the pickers by hand
+            }
+        }
+
         function quarterLabelShort(q) {
             return { '1': 'ไตรมาส 1', '2': 'ไตรมาส 2', '3': 'ไตรมาส 3', '4': 'ไตรมาส 4' }[q] || '';
         }
 
-        function renderPreview(result) {
+        const REPORTER_INPUTS = [
+            ['name', 'ชื่อ-สกุลผู้รายงาน'],
+            ['position', 'ตำแหน่ง'],
+            ['phone', 'เบอร์ติดต่อ'],
+            ['email', 'E-mail'],
+        ];
+        const QUARTER_SOURCE_TEXT = {
+            checkbox: 'อ่านจากช่องรอบที่ติ๊กไว้ในไฟล์',
+            title: 'อ่านจากหัวเรื่องของไฟล์',
+            filename: 'เดาจากชื่อไฟล์ - โปรดตรวจสอบ',
+        };
+
+        function renderPreview(result, opts) {
+            const manual = !!(opts && opts.manual);
+            const fields = result.fields || {};
             let html = '';
 
-            if (!result.is_valid_template) {
-                html += '<div class="import-warning-box"><i class="fas fa-triangle-exclamation"></i> ไฟล์นี้อาจไม่ใช่แบบฟอร์ม พชอ.ไต ที่ระบบรู้จัก - โปรดตรวจสอบข้อมูลด้านล่างอย่างละเอียดก่อนนำเข้า</div>';
+            if (!manual) {
+                const warnings = result.warnings || [];
+                const hasContent = (result.found_count || 0) > 0;
+                if (!result.is_valid_template) {
+                    html += '<div class="import-note-box"><i class="fas fa-circle-info"></i> ไฟล์นี้ไม่ตรงกับแบบฟอร์มมาตรฐานทั้งหมด ระบบแสดงเท่าที่อ่านได้ - ตรวจสอบ แก้ไข หรือพิมพ์เพิ่มในช่องด้านล่างได้ก่อนนำเข้า</div>';
+                }
+                if (warnings.length) {
+                    html += '<div class="' + (hasContent ? 'import-info-box' : 'import-warning-box') + '"><i class="fas fa-circle-exclamation"></i> ' +
+                        warnings.map(w => escapeHtml(w)).join('<br>') + '</div>';
+                }
             }
 
-            (result.warnings || []).forEach(w => {
-                html += '<div class="import-warning-box"><i class="fas fa-circle-exclamation"></i> ' + escapeHtml(w) + '</div>';
-            });
-
             const quarterLabels = { '1': 'ไตรมาส 1 (เดือน 3)', '2': 'ไตรมาส 2 (เดือน 6)', '3': 'ไตรมาส 3 (เดือน 9)', '4': 'ไตรมาส 4 (เดือน 12)' };
-            html += '<div class="import-field-group"><label><i class="fas fa-clock"></i> ไตรมาสที่ตรวจพบ (เลือก/แก้ไขได้)</label>';
+            html += '<div class="import-field-group"><label><i class="fas fa-clock"></i> ' + (manual ? 'ไตรมาสที่จะนำเข้า' : 'ไตรมาสที่ตรวจพบ (เลือก/แก้ไขได้)') + '</label>';
             html += '<select id="import_detected_quarter">';
             html += '<option value="">-- เลือกไตรมาส --</option>';
             ['1', '2', '3', '4'].forEach(q => {
                 const sel = (result.quarter && String(result.quarter) === q) ? 'selected' : '';
                 html += '<option value="' + q + '" ' + sel + '>' + quarterLabels[q] + '</option>';
             });
-            html += '</select></div>';
-            if (!result.quarter_detected) {
-                html += '<div class="import-warning-box"><i class="fas fa-triangle-exclamation"></i> ไม่สามารถตรวจจับไตรมาสจากไฟล์ได้อัตโนมัติ กรุณาเลือกไตรมาสด้วยตนเองก่อนนำเข้า</div>';
+            html += '</select>';
+            if (!manual && result.quarter_detected && QUARTER_SOURCE_TEXT[result.quarter_source]) {
+                html += '<div style="font-size:0.78rem; color:#64748b; margin-top:4px;">' + QUARTER_SOURCE_TEXT[result.quarter_source] + '</div>';
+            }
+            html += '</div>';
+            if (!manual && !result.quarter_detected) {
+                html += '<div class="import-note-box"><i class="fas fa-circle-info"></i> ไม่พบรอบการรายงานในไฟล์ (ไม่มีการติ๊กเลือกรอบ) กรุณาเลือกไตรมาสด้วยตนเองก่อนนำเข้า</div>';
             }
 
-            if (result.reporter_summary) {
-                html += '<div class="import-info-box"><i class="fas fa-user"></i> ข้อมูลผู้รายงานในไฟล์: ' + escapeHtml(result.reporter_summary) + '<br><small>โปรดตรวจสอบว่าตรงกับหน่วยงานที่เลือกไว้ด้านบน</small></div>';
+            if (!manual && result.reporter_agency) {
+                const where = [result.reporter_agency, result.reporter_district ? ('อ.' + result.reporter_district) : '', result.reporter_province ? ('จ.' + result.reporter_province) : ''].filter(Boolean).join(' ');
+                html += '<div class="import-info-box"><i class="fas fa-building"></i> หน่วยงานในไฟล์: ' + escapeHtml(where) + '<br><small>โปรดตรวจสอบว่าตรงกับหน่วยงานที่เลือกไว้ด้านบน</small></div>';
             }
 
-            html += '<div style="font-weight:700; color:#334155; margin: 14px 0 8px;">หัวข้อที่พบในไฟล์</div>';
-            const fields = result.fields || {};
+            html += '<div style="font-weight:700; color:#334155; margin: 14px 0 8px;"><i class="fas fa-user"></i> ผู้รายงาน (แก้ไขได้)</div>';
+            html += '<div class="import-rep-grid">';
+            REPORTER_INPUTS.forEach(([k, label]) => {
+                html += '<div><label>' + label + '</label><input type="text" data-rep="' + k + '" value="' + escapeHtml(result['reporter_' + k] || '').replace(/"/g, '&quot;') + '"></div>';
+            });
+            html += '</div>';
+
+            html += '<div style="font-weight:700; color:#334155; margin: 14px 0 8px;">' + (manual ? 'ข้อมูลแต่ละหัวข้อ (เว้นว่างหัวข้อที่ไม่มีได้)' : 'หัวข้อที่พบในไฟล์ (แก้ไขหรือพิมพ์เพิ่มได้)') + '</div>';
             Object.keys(IMPORT_FIELD_LABELS).forEach(key => {
                 const val = (fields[key] || '').trim();
+                const rows = Math.min(12, Math.max(3, val.split('\n').length + 1));
                 html += '<div class="import-field-preview' + (val ? '' : ' empty') + '">';
                 html += '<div class="ifp-label">' + escapeHtml(IMPORT_FIELD_LABELS[key]) + '</div>';
-                html += '<div class="ifp-text">' + escapeHtml(val || '(ไม่พบข้อมูล)') + '</div>';
+                html += '<textarea data-field="' + key + '" rows="' + rows + '" placeholder="' + (manual ? 'พิมพ์ข้อมูลหัวข้อนี้' : 'ไม่พบข้อมูลในไฟล์ - พิมพ์เพิ่มได้') + '">' + escapeHtml(val) + '</textarea>';
                 html += '</div>';
             });
 
-            if (result.unmatched && result.unmatched.length > 0) {
-                html += '<div style="font-weight:700; color:#78350f; margin: 14px 0 8px;"><i class="fas fa-box-archive"></i> ข้อความอื่นที่พบในไฟล์ (ยังไม่ได้จับคู่กับหัวข้อใด)</div>';
+            if (!manual && result.unmatched && result.unmatched.length > 0) {
+                const optionHtml = '<option value="">-- เพิ่มไปที่หัวข้อ --</option>' +
+                    Object.keys(IMPORT_FIELD_LABELS).map(k => '<option value="' + k + '">' + escapeHtml(IMPORT_FIELD_LABELS[k]) + '</option>').join('');
+                html += '<div style="font-weight:700; color:#78350f; margin: 14px 0 8px;"><i class="fas fa-box-archive"></i> ข้อความอื่นที่พบในไฟล์ (ยังไม่ได้จับคู่กับหัวข้อใด) - เลือกหัวข้อแล้วกดเพิ่มได้</div>';
                 result.unmatched.forEach(u => {
-                    html += '<div class="import-unmatched-block">' + escapeHtml(u.text) + '</div>';
+                    html += '<div class="import-unmatched-block">';
+                    if (u.heading) html += '<div style="font-weight:700; margin-bottom:4px;">' + escapeHtml(u.heading) + '</div>';
+                    html += '<div class="iub-text">' + escapeHtml(u.text) + '</div>';
+                    html += '<div class="iub-actions"><select>' + optionHtml + '</select><button type="button" class="btn-add-unmatched">เพิ่ม</button></div>';
+                    html += '</div>';
                 });
             }
 
             previewArea.innerHTML = html;
             previewArea.style.display = 'block';
         }
+
+        // Edits made in the preview flow straight back into lastParseResult,
+        // so tryResolveTarget()/updateReporterSourceUI()/the apply button
+        // all work from what the admin sees, not from the raw parse.
+        previewArea.addEventListener('input', function (e) {
+            if (!lastParseResult) return;
+            const t = e.target;
+            if (t.dataset && t.dataset.field) {
+                lastParseResult.fields = lastParseResult.fields || {};
+                lastParseResult.fields[t.dataset.field] = t.value;
+                const box = t.closest('.import-field-preview');
+                if (box) box.classList.toggle('empty', !t.value.trim());
+            } else if (t.dataset && t.dataset.rep) {
+                lastParseResult['reporter_' + t.dataset.rep] = t.value;
+                updateReporterSourceUI();
+            }
+        });
+
+        previewArea.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-add-unmatched');
+            if (!btn) return;
+            const block = btn.closest('.import-unmatched-block');
+            const select = block.querySelector('select');
+            if (!select.value) { select.focus(); return; }
+            const ta = previewArea.querySelector('textarea[data-field="' + select.value + '"]');
+            if (!ta) return;
+            const text = block.querySelector('.iub-text').textContent;
+            ta.value = ta.value.trim() ? (ta.value.replace(/\s+$/, '') + '\n' + text) : text;
+            ta.rows = Math.min(12, Math.max(ta.rows, ta.value.split('\n').length + 1));
+            ta.dispatchEvent(new Event('input', { bubbles: true }));
+            block.classList.add('used');
+            btn.textContent = 'เพิ่มแล้ว';
+            ta.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        });
 
         btnParse.addEventListener('click', function () {
             if (!fileInput.files || !fileInput.files[0]) {
@@ -2343,7 +4399,11 @@
                     renderPreview(result);
                     btnApply.disabled = false;
                     updateReporterSourceUI();
-                    tryResolveTarget();
+                    if (!rankSelect.value || pickerAuto) {
+                        autoSelectPicker(result);
+                    } else {
+                        tryResolveTarget();
+                    }
                 })
                 .catch(err => {
                     btnParse.disabled = false;
@@ -2353,7 +4413,7 @@
                 });
         });
 
-        btnApply.addEventListener('click', function () {
+        btnApply.addEventListener('click', async function () {
             if (!lastParseResult) return;
 
             if (!resolvedTargetUserId) {
@@ -2377,6 +4437,11 @@
                     return;
                 }
             }
+            const hasAnyContent = textFields.some(f => ((lastParseResult.fields || {})[f] || '').trim() !== '');
+            if (!hasAnyContent) {
+                Swal.fire({ icon: 'warning', title: 'ยังไม่มีข้อมูลที่จะนำเข้า', text: 'กรุณากรอกอย่างน้อย 1 หัวข้อก่อนนำข้อมูลไปเติมในฟอร์ม', confirmButtonColor: '#f59e0b', confirmButtonText: 'ตกลง' });
+                return;
+            }
             const quarterSelectEl = document.getElementById('import_detected_quarter');
             const chosenQuarter = quarterSelectEl ? quarterSelectEl.value : '';
             if (!chosenQuarter) {
@@ -2390,6 +4455,53 @@
             // so loadKidneyData() (wired to 'change' below) does not run
             // and overwrite the fields we're about to fill in.
             targetUserIdInput.value = resolvedTargetUserId;
+
+            // Rescope the operating-area picker (registered-pin list +
+            // "ปักหน่วยงานพื้นที่ใหม่" location pre-fill) to the import's target
+            // office. This can't just piggyback on loadKidneyData() above -
+            // that call is deliberately skipped here (see the comment on
+            // targetUserIdInput.value) so the text fields we're about to
+            // fill in from the parsed Word file aren't immediately
+            // overwritten by a fetch of the target's EXISTING saved record.
+            // The operating-area picker has no such saved state to protect
+            // here (a historical import is, by definition, for a
+            // fiscal year/quarter that has no pin yet), so it's safe - and
+            // necessary - to rescope it on its own via a dedicated
+            // lightweight endpoint that returns only what the picker needs.
+            //
+            // Kicked off here but only AWAITED right before closeModal()
+            // below (see oaRescopePromise) - not fired-and-forgotten. The
+            // modal used to close immediately while this kept running in
+            // the background, so the admin could start picking a province/
+            // district on the now-visible main form WHILE this was still
+            // rescoping; whenever it finally resolved, resetOaPickerToBlank()
+            // would wipe out whatever they'd just picked (hidden fields
+            // included), making the save silently go out with no operating
+            // area at all. Keeping the modal open until this settles closes
+            // that window entirely.
+            const oaRescopePromise = fetch(`{{ route('admin.kidney-dhb.operating-area-context') }}?target_user_id=${encodeURIComponent(resolvedTargetUserId)}`)
+                .then(r => r.json())
+                .then(async ctx => {
+                    // populateRegisteredPinOptions() rebuilds the dropdown,
+                    // updates the shared registeredPins/usedOperatingAreas
+                    // arrays, and re-syncs the overview markers all in one
+                    // place - the same helper loadKidneyData() itself uses,
+                    // so this stays consistent with every other rescope path.
+                    if (ctx.recorded_areas) recordedAreas = ctx.recorded_areas;
+                    populateRegisteredPinOptions(ctx.registered_pins || [], ctx.used_areas || []);
+                    if (ctx.own_location) {
+                        oaUserOwnLocation = ctx.own_location;
+                    }
+                    const newMode = (ctx.registered_pins || []).length ? 'existing' : 'new';
+                    setOaMode(newMode, { silent: true });
+                    await resetOaPickerToBlank(newMode);
+                })
+                .catch(() => {
+                    // Best-effort - the picker keeps whatever it already had
+                    // (most likely the logged-in admin's own area/pins), and
+                    // the admin can still pick/correct it by hand before
+                    // saving.
+                });
 
             // Which side's name/position/phone/email gets saved as this
             // record's reporter info - the imported file's, or the
@@ -2416,12 +4528,17 @@
 
             document.getElementById('fiscal_year').value = chosenYear;
             document.getElementById('quarter').value = chosenQuarter;
+            document.getElementById('fiscal_year').dataset.prev = chosenYear;
+            document.getElementById('quarter').dataset.prev = chosenQuarter;
+            // From here until saved/cleared, the form holds an unsaved Word
+            // import - see the keepDraft guard in loadKidneyData().
+            window.kdImportDraft = true;
 
             const fields = lastParseResult.fields || {};
             textFields.forEach(f => {
                 const el = document.getElementById(f);
                 if (el && fields[f]) {
-                    el.value = fields[f];
+                    el.value = String(fields[f]).replace(/<br\s*\/?>/gi, '\n');
                 }
             });
 
@@ -2431,6 +4548,14 @@
 
             activeAgencyName.textContent = resolvedTargetLabel + ' • ปีงบประมาณ ' + chosenYear + ' • ' + quarterLabelShort(chosenQuarter);
             activeBanner.style.display = 'flex';
+
+            // Hold the modal open (and the main form's operating-area
+            // picker effectively out of reach behind it) until the rescope
+            // above has fully settled - see the comment on oaRescopePromise.
+            // This is the one `await` that matters for correctness; it's
+            // placed last so every other field is already filled in and
+            // visible the instant the modal does close.
+            await oaRescopePromise;
 
             closeModal();
         });
@@ -2442,6 +4567,7 @@
             importReporterPhoneInput.value = '';
             importReporterEmailInput.value = '';
             activeBanner.style.display = 'none';
+            window.kdImportDraft = false;
             // Reload whatever the currently-selected year/quarter looks
             // like under the logged-in admin's own agency again.
             loadKidneyData(false);
