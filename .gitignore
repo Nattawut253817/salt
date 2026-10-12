@@ -21,3 +21,11 @@ yarn-error.log
 /Claude outputs
 
 nul
+.DS_Store
+Thumbs.db
+*.swp
+*.bak
+/storage/pail
+/temp_docx
+/tmp
+/_to_delete
