@@ -23,6 +23,9 @@ class UsersExport implements WithMultipleSheets
         $sheets = [];
 
         $query = User::select('Province_id')->distinct();
+        if (!empty($this->filters['_exclude_super'])) {
+            $query->withoutImportPlaceholders();
+        }
         
         if (!empty($this->filters['province_id'])) {
             $query->where('Province_id', $this->filters['province_id']);

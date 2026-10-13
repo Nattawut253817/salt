@@ -1551,7 +1551,9 @@ class AdminController extends Controller
                 // disambiguates which literal account will end up as
                 // target_user_id.
                 $label = $this->resolveAgencyName($u);
-                if (!empty($u->email)) {
+                // อีเมลของบัญชีตัวแทน (สร้างตอนนำเข้า Word) แสดงเฉพาะ SuperAdmin
+                $showEmail = !empty($u->email) && (!$u->isImportPlaceholder() || auth()->user()->isSuperAdmin());
+                if ($showEmail) {
                     $label .= ' (' . $u->email . ')';
                 }
                 // The account's OWN registered contact details - offered
@@ -1566,7 +1568,7 @@ class AdminController extends Controller
                     'account_name' => $accountName ?: null,
                     'account_position' => $u->User_position ?: null,
                     'account_phone' => $u->phone ?: null,
-                    'account_email' => $u->email ?: null,
+                    'account_email' => $showEmail ? $u->email : null,
                 ];
             })
             ->sortBy('label')

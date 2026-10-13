@@ -150,9 +150,10 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
 
     // Operating Area (จัดการพื้นที่ดำเนินงาน) - SuperAdmin only (สคร. ทั่วไปไม่เห็นเมนูและเข้าตรงไม่ได้), under แบบประเมินพชอ.ไต
     Route::get('/operating-areas', [AdminController::class, 'operatingAreasIndex'])->middleware('super.admin')->name('admin.operating-areas.index');
-    Route::get('/operating-areas/get-districts/{province_id}', [AdminController::class, 'getDistrictsForOperatingArea'])->middleware('super.admin')->name('admin.operating-areas.get-districts');
-    Route::get('/operating-areas/get-tambons/{province_id}/{district_id}', [AdminController::class, 'getTambonsForOperatingArea'])->middleware('super.admin')->name('admin.operating-areas.get-tambons');
-    Route::get('/operating-areas/get-villages/{province_id}/{district_id}/{tambon_id}', [AdminController::class, 'getVillages'])->middleware('super.admin')->name('admin.operating-areas.get-villages');
+    //เส้นทางดึงรายชื่ออำเภอ/ตำบล/หมู่บ้าน (get-*) เปิดให้ทุกผู้ใช้ที่ล็อกอิน เพราะหน้าปักพื้นที่ (kidney-dhb-areas) ของทุกระดับใช้
+    Route::get('/operating-areas/get-districts/{province_id}', [AdminController::class, 'getDistrictsForOperatingArea'])->name('admin.operating-areas.get-districts');
+    Route::get('/operating-areas/get-tambons/{province_id}/{district_id}', [AdminController::class, 'getTambonsForOperatingArea'])->name('admin.operating-areas.get-tambons');
+    Route::get('/operating-areas/get-villages/{province_id}/{district_id}/{tambon_id}', [AdminController::class, 'getVillages'])->name('admin.operating-areas.get-villages');
     Route::post('/operating-areas', [AdminController::class, 'storeOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.store');
     Route::delete('/operating-areas/{id}', [AdminController::class, 'destroyOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.destroy');
     Route::post('/operating-areas-delete-filtered', [AdminController::class, 'deleteFilteredOperatingAreaPins'])->middleware('super.admin')->name('admin.operating-areas.delete-filtered');

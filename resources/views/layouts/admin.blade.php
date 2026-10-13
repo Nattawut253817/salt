@@ -10,8 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Sarabun:wght@400;500;600;700;800&family=Noto+Serif+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700;800&family=K2D:wght@400;500;600;700&family=Kodchasan:wght@500;600;700;800&family=Pridi:wght@400;500;600;700&family=Itim&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Sarabun:wght@100;200;300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700;800&family=K2D:wght@400;500;600;700&family=Kodchasan:wght@500;600;700;800&family=Pridi:wght@400;500;600;700&family=Itim&display=swap"
         rel="stylesheet">
+    <!-- ฟอนต์หลักของระบบหลังบ้าน: Noto Sans Thai Looped -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Bootstrap 4 CSS -->
@@ -858,6 +860,38 @@
         }
     </style>
     @yield('extra_css')
+    <style>
+        /* =====================================================================
+           ระบบหลังบ้านทั้งหมดใช้ฟอนต์ Noto Sans Thai Looped (ตัวเลข 0-9 และอีเมลใช้ Sarabun แบบมีหัว)
+           ยกเว้น: เมนู sidebar ด้านซ้าย, ปุ่ม Export (และข้อความในปุ่ม), ไอคอน Font Awesome,
+                   กราฟ/แผนที่ SVG และโค้ด (code/pre/kbd) - ทั้งหมดนี้คงฟอนต์เดิม
+           ปุ่ม Export ถูกติดคลาส .kd-keep-font อัตโนมัติด้วยสคริปต์ท้ายหน้า (ดู kd-keep-font)
+           ===================================================================== */
+        /* ตัวเลข 0-9 ใช้ Sarabun (Google Fonts) - ใช้เฉพาะช่วงตัวเลข (หนาขึ้นหนึ่งระดับจากที่ระบุ เพื่ออ่านง่าย) ส่วนอักษรอื่นยังเป็น Noto Sans Thai Looped */
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 100; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YNpoilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 200; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YL5rilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 300; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVjJx26TKEr37c9aBVJnw.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 400; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YOZqilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 500; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YMptilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 600; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YK5silss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 700; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 800; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
+        :root { --kd-font: 'Sarabun Digits', 'Noto Sans Thai Looped', 'Noto Serif Thai', 'TH Sarabun New', sans-serif; }
+        body *:not(.admin-sidebar):not(.admin-sidebar *):not(.kd-keep-font):not(.kd-keep-font *):not(.kd-email):not(.kd-email *):not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *):not(code):not(pre):not(kbd):not(samp),
+        body {
+            font-family: var(--kd-font) !important;
+        }
+        /* อีเมล: ใช้ Sarabun ทั้งตัวอักษรและตัวเลข - ติดคลาส .kd-email อัตโนมัติด้วยสคริปต์ท้ายหน้า (ไม่แตะไอคอน) */
+        .kd-email, .kd-email *:not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *) {
+            font-family: 'Sarabun', 'Noto Sans Thai Looped', sans-serif;
+            font-weight: 600;
+        }
+        /* ส่วนที่ยกเว้นต้องกลับไปใช้ฟอนต์เดิมของระบบ (ไม่ใช่สืบทอดจาก body ที่เปลี่ยนแล้ว) */
+        .admin-sidebar,
+        .kd-keep-font {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+        }
+    </style>
 </head>
 
 <body>
@@ -1735,6 +1769,43 @@
     </script>
 
     @yield('extra_js')
+    <script>
+        /* kd-keep-font: ปุ่ม/ลิงก์ Export (ข้อความ "Export" / "ส่งออก" หรือชี้ไปยังเส้นทาง export) คงฟอนต์เดิม */
+        (function () {
+            var RE = /export|ส่งออก|นำออก/i;
+            function isExport(el) {
+                if (el.classList.contains('kd-keep-font')) return false;
+                var attrs = [el.id, el.className && el.className.baseVal === undefined ? el.className : '',
+                    el.getAttribute('href'), el.getAttribute('data-target'), el.getAttribute('data-bs-target'),
+                    el.getAttribute('onclick'), el.getAttribute('title')].join(' ');
+                if (RE.test(attrs)) return true;
+                var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+                return t.length > 0 && t.length < 40 && RE.test(t);
+            }
+            function mark(root) {
+                (root.querySelectorAll ? root : document).querySelectorAll('a, button, .btn, [role="button"]').forEach(function (el) {
+                    if (!el.closest('.admin-sidebar') && isExport(el)) el.classList.add('kd-keep-font');
+                });
+            }
+            var EMAIL = /^[^\s@<>]+@[^\s@<>]+\.[A-Za-z]{2,}$/;
+            function markEmails(root) {
+                (root.querySelectorAll ? root : document).querySelectorAll('td, th, span, div, a, p, li, small, strong, b, label, dd, dt, option, h1, h2, h3, h4, h5, h6, input[type="email"]').forEach(function (el) {
+                    if (el.classList.contains('kd-email') || el.closest('.admin-sidebar') || el.closest('.kd-email')) return;
+                    if (el.tagName === 'INPUT') { el.classList.add('kd-email'); return; }
+                    var t = (el.textContent || '').trim();
+                    if (t.length > 3 && t.length < 120 && EMAIL.test(t)) el.classList.add('kd-email');
+                });
+            }
+            function markAll() { mark(document); markEmails(document); }
+            markAll();
+            document.addEventListener('DOMContentLoaded', markAll);
+            var timer = null;
+            new MutationObserver(function () {
+                clearTimeout(timer);
+                timer = setTimeout(markAll, 60);
+            }).observe(document.body, { childList: true, subtree: true });
+        })();
+    </script>
 </body>
 
 </html>

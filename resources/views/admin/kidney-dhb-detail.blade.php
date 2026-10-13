@@ -17,7 +17,14 @@
 
 @section('extra_css')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+    {{-- ฟอนต์ของหน้านี้: Noto Sans Thai Looped (ตัวอักษรไทยแบบมีหัว อ่านง่ายบนจอ) --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* เนื้อหาหน้ารายละเอียด พชอ.ไต ทั้งหมดใช้ Noto Sans Thai Looped (ปุ่ม/ช่องกรอกสืบทอดจาก main ผ่าน font-family: inherit) */
+        main.admin-content { font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', 'TH Sarabun New', sans-serif; }
+        main.admin-content :where(input, select, textarea, button, label, th, td, h1, h2, h3, h4, h5, h6, p, small, strong, a, li, .btn, .form-control) { font-family: inherit; }
         /* Reuse premium styles from kidney dhb form */
         :root {
             --glass-bg: rgba(255, 255, 255, 0.85);
@@ -92,7 +99,7 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             background: #f8fafc;
-            font-family: 'Noto Serif Thai', sans-serif;
+            font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif;
             font-size: 0.95rem;
             color: #334155;
             line-height: 1.6;
@@ -126,7 +133,7 @@
             border-radius: 8px;
             border: 1px solid #e2e8f0;
             background: #f8fafc;
-            font-family: 'Noto Serif Thai', sans-serif;
+            font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif;
             font-size: 0.95rem;
             color: #1e293b;
             font-weight: 600;
@@ -183,7 +190,7 @@
         .kd-qpick-item {
             height: 41px; padding: 0 8px; border-radius: 10px;
             border: 1.5px solid #e2e8f0; background: #fff; color: #475569;
-            font-family: 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 700; white-space: nowrap;
+            font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 700; white-space: nowrap;
             cursor: pointer;
             transition: background-color .18s ease, border-color .18s ease, color .18s ease,
                         box-shadow .18s ease, transform .2s cubic-bezier(.34, 1.56, .64, 1);
@@ -286,7 +293,7 @@
         .kd-edit-ta {
             display: none; width: 100%; min-height: 120px; padding: 14px 15px;
             border-radius: 8px; border: 1.5px solid #93c5fd; background: #fff;
-            font-family: 'Noto Serif Thai', sans-serif; font-size: 0.95rem; color: #1e293b;
+            font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif; font-size: 0.95rem; color: #1e293b;
             line-height: 1.6; resize: vertical; box-sizing: border-box;
         }
         .kd-edit-ta:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
@@ -821,12 +828,12 @@
                             @csrf
                             @if($assessment->confirmed_at)
                                 <button type="submit"
-                                    style="background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: #fff; border: none; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(100,116,139,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer;">
+                                    style="background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); color: #fff; border: none; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(100,116,139,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer;">
                                     <i class="fas fa-rotate-left"></i> ยกเลิกการยืนยัน
                                 </button>
                             @else
                                 <button type="submit"
-                                    style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: #fff; border: none; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(16,185,129,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer;">
+                                    style="background: linear-gradient(135deg, #34d399 0%, #10b981 100%); color: #fff; border: none; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(16,185,129,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; cursor: pointer;">
                                     <i class="fas fa-check-circle"></i> ยืนยันข้อมูล
                                 </button>
                             @endif
@@ -837,7 +844,7 @@
                 <div class="form-group">
                     <label style="visibility: hidden;">รีเซ็ต</label>
                     <a href="{{ route('admin.kidney-dhb.show', $anchorId) }}"
-                        style="background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%); color: #fff; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(6,182,212,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; text-decoration: none;"
+                        style="background: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%); color: #fff; border-radius: 8px; padding: 0 16px; white-space: nowrap; font-family: 'Noto Sans Thai Looped', 'Noto Serif Thai', sans-serif; font-size: 0.85rem; font-weight: 600; box-shadow: 0 4px 10px rgba(6,182,212,0.3); height: 41px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s ease; text-decoration: none;"
                         onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 6px 14px rgba(6,182,212,0.4)';"
                         onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(6,182,212,0.3)';">
                         <i class="fas fa-sync-alt"></i> รีเซ็ต

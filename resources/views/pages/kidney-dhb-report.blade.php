@@ -1762,8 +1762,9 @@
                 <div class="awr-kpi-icon"><i class="fas fa-map-pin"></i></div>
                 <div class="awr-kpi-text">
                     <div class="awr-kpi-label">พื้นที่ที่ปักหมุดทั้งหมด</div>
-                    <div class="awr-kpi-value">{{ number_format($indicatorTotalPins) }} <span class="awr-kpi-unit">พื้นที่</span></div>
-                    <div class="awr-kpi-sub">มีรายงานแล้ว {{ number_format($pinnedAnsweredCount) }} พื้นที่</div>
+                    @php $awrDisplayPinCount = count($displayOnlyPins ?? []); @endphp
+                    <div class="awr-kpi-value">{{ number_format($indicatorTotalPins + $awrDisplayPinCount) }} <span class="awr-kpi-unit">พื้นที่</span></div>
+                    <div class="awr-kpi-sub">มีรายงานแล้ว {{ number_format($pinnedAnsweredCount) }} พื้นที่@if ($awrDisplayPinCount > 0) · หมุดแสดงผล {{ number_format($awrDisplayPinCount) }}@endif</div>
                     <div class="awr-kpi-bar"><div class="awr-kpi-bar-fill" style="width:{{ $pinnedAnsweredPercent }}%;"></div></div>
                 </div>
             </div>

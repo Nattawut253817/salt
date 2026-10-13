@@ -166,6 +166,65 @@
             margin-bottom: 2px;
         }
 
+        /* คอลัมน์อีเมล: ไอคอนซองจดหมาย + อีเมลตัวหนาเข้มทั้งหมด เบอร์โทรเป็นบรรทัดรองพร้อมไอคอน */
+        .col-email { min-width: 270px; }
+        .user-email {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 0.95rem;
+            line-height: 1.35;
+            color: #1e293b;
+        }
+        .user-email .ue-icon {
+            flex: 0 0 auto;
+            width: 28px;
+            height: 28px;
+            border-radius: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #eef2ff;
+            border: 1px solid #dfe5ff;
+            color: #4338ca;
+            font-size: 0.78rem;
+        }
+        .user-email .ue-text { min-width: 0; overflow-wrap: anywhere; }
+        /* ทั้งชื่อผู้ใช้และโดเมนใช้ฟอนต์/สี/น้ำหนักเดียวกัน (Noto Sans Thai Looped ตามภาพตัวอย่าง) */
+        .user-email .ue-local,
+        .user-email .ue-domain { font-weight: 600; color: #1e293b; }
+        .ue-phone {
+            margin-left: 37px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+            padding: 2px 10px 2px 8px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #334155;
+            font-size: 0.76rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+        .ue-phone i { font-size: 0.62rem; color: #4f46e5; }
+        .ue-placeholder {
+            margin-left: 37px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .ue-placeholder i { font-size: 0.64rem; }
+
         .user-rank {
             font-size: 0.72rem;
             font-weight: 500;

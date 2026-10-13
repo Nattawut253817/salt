@@ -39,7 +39,7 @@ class AppServiceProvider extends ServiceProvider
             // to be second-accurate, so cache them briefly to avoid running
             // COUNT queries on every single request.
             $pendingUserCount = Cache::remember('badge.pending_user_count', 30, function () {
-                return \App\Models\User::where('is_approved', 0)->count();
+                return \App\Models\User::where('is_approved', 0)->withoutImportPlaceholders()->count();
             });
 
             $currentUser = auth()->user();

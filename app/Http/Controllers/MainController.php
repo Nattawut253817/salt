@@ -37,7 +37,7 @@ class MainController extends Controller
         $query = $request->query();
         ksort($query);
         $user = auth()->user();
-        $key = 'page_data_v10:' . $page . ':' . md5(json_encode([
+        $key = 'page_data_v11:' . $page . ':' . md5(json_encode([
             $query,
             ($perUser && $user) ? [$user->id, $user->User_rank_id] : null,
             array_map(fn ($m) => $this->tableStamp($m), $models),
@@ -1676,7 +1676,7 @@ class MainController extends Controller
         // awareness bundle above (different source tables, cheaper, and
         // they should not be invalidated together).
         $homeModules = Cache::remember(
-            'home_modules_v12:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
+            'home_modules_v13:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
             now()->addMinutes(10),
             fn() => $this->buildHomeModuleSummaries($activeFiscalYear, $selectedProvince, $targetProvinces)
         );
@@ -1942,8 +1942,13 @@ class MainController extends Controller
             return ['key' => $k, 'done' => $done, 'total' => $pinTotal, 'percent' => $pinTotal > 0 ? (int) round($done / $pinTotal * 100) : 0];
         })->values();
 
+        $displayPinsForHome = $this->displayOnlyPinList($scopeProvinces, $year);
+
         $kidney = [
             'pin_total' => $pinTotal,
+            // หมุดแสดงผล (SuperAdmin เพิ่มไว้แสดงบนแผนที่) - นับแยก ไม่ปนกับหมุดรายงาน แต่รวมในเลข "ปักหมุดทั้งหมด"
+            'display_pin_count' => count($displayPinsForHome),
+            'pin_all' => $pinTotal + count($displayPinsForHome),
             'answered_pins' => $answeredPins->count(),
             'complete_pins' => $completePins->count(),
             'districts_total' => $districtsTotal,
@@ -1957,8 +1962,8 @@ class MainController extends Controller
             'provinces' => $kidneyProvinces,
             'pins' => array_merge(
                 $pins->map(fn($p) => collect($p)->except(['done_items'])->all())->all(),
-                // หมุดแสดงผล: วาดบนแผนที่เท่านั้น ไม่นับรวมในตัวเลขสรุป
-                $this->displayOnlyPinList($scopeProvinces, $year)
+                // หมุดแสดงผล: วาดบนแผนที่ (ไม่นับในความครอบคลุม/ตัวชี้วัด แต่รวมในเลข pin_all)
+                $displayPinsForHome
             ),
         ];
 

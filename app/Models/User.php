@@ -50,10 +50,32 @@ class User extends Authenticatable
     }
 
     /**
-     * ตัด SuperAdmin ออกจากผลลัพธ์ - ใช้กับรายชื่อที่แสดงให้ผู้ที่ไม่ใช่ SuperAdmin เห็น
+     * "บัญชีตัวแทนหน่วยงาน" ที่ระบบสร้างให้อัตโนมัติตอนนำเข้า Word ของหน่วยงานที่ยังไม่มีบัญชี
+     * (ดู AdminController::ensureKidneyDhbTargetAgency) - อีเมลขึ้นต้น import-r และลงท้าย @import.invalid
+     * ล็อกอินไม่ได้ และเห็นได้เฉพาะ SuperAdmin
+     */
+    public const IMPORT_PLACEHOLDER_EMAIL_LIKE = 'import-r%@import.invalid';
+
+    public function isImportPlaceholder(): bool
+    {
+        $mail = strtolower((string) $this->email);
+
+        return str_starts_with($mail, 'import-r') && str_ends_with($mail, '@import.invalid');
+    }
+
+    public function scopeWithoutImportPlaceholders($query)
+    {
+        return $query->where('email', 'not like', self::IMPORT_PLACEHOLDER_EMAIL_LIKE);
+    }
+
+    /**
+     * ตัด SuperAdmin และบัญชีตัวแทนหน่วยงาน (นำเข้า Word) ออกจากผลลัพธ์
+     * - ใช้กับรายชื่อที่แสดงให้ผู้ที่ไม่ใช่ SuperAdmin เห็น
      */
     public function scopeWithoutSuperAdmins($query)
     {
+        $query->withoutImportPlaceholders();
+
         $emails = array_values(array_unique(array_filter(array_map('strtolower', array_merge(
             (array) config('app.super_admin_emails', []),
             (array) \App\Support\SystemSettings::get('super_admin_granted', [])

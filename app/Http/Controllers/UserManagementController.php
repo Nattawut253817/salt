@@ -68,7 +68,7 @@ class UserManagementController extends Controller
      */
     protected function hideSuperAdminFromNonSuper(User $target): void
     {
-        abort_if($target->isSuperAdmin() && ! auth()->user()->isSuperAdmin(), 404);
+        abort_if(($target->isSuperAdmin() || $target->isImportPlaceholder()) && ! auth()->user()->isSuperAdmin(), 404);
     }
 
     public function exportExcel(Request $request)

@@ -410,15 +410,15 @@
             box-shadow: 0 5px 14px rgba(14, 165, 233, 0.45);
         }
 
-        /* ปุ่ม "ติดตาม" ของหน่วยงานอื่น (ดูอย่างเดียว) - สีม่วงต่างจากปุ่ม "รายงานผล" สีฟ้า */
+        /* ปุ่ม "ติดตาม" ของหน่วยงานอื่น (ดูอย่างเดียว) - สีชมพูเข้มต่างจากปุ่ม "รายงานผล" สีฟ้า */
         .btn-view.btn-follow {
-            background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
-            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.32);
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            box-shadow: 0 2px 6px rgba(190, 24, 93, 0.35);
         }
 
         .btn-view.btn-follow:hover,
         .btn-view.btn-follow:focus-visible {
-            box-shadow: 0 5px 14px rgba(124, 58, 237, 0.45);
+            box-shadow: 0 5px 14px rgba(190, 24, 93, 0.48);
         }
 
         .row-pending-area td { background:#fff8f0; }
@@ -554,9 +554,9 @@
         .fy-cell { align-items: flex-start; gap: 5px; }
         table.report-table td.grp-merged .fy-cell, table.report-table tbody td:first-child .fy-cell { align-items: flex-start; }
         .fy-year {
-            display: inline-block; padding: 2px 11px; border-radius: 8px;
-            background: #eef0ff; color: #2f3796; border: 1px solid #d6dafc;
-            font-size: .9rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .2px;
+            display: inline-block; padding: 0; background: none; border: 0; border-radius: 0;
+            color: #3340a5; font-size: .95rem; font-weight: 700; line-height: 1.3;
+            font-variant-numeric: tabular-nums; letter-spacing: .6px;
         }
         .org-name { font-size: .86rem; font-weight: 700; color: var(--kd-ink); line-height: 1.45; }
         .area-name { font-size: .84rem; line-height: 1.5; }

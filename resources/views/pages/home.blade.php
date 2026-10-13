@@ -1347,7 +1347,7 @@
             <div class="hm-tile-name">พชอ.ไต - ผลการดำเนินงานพื้นที่</div>
             @if ($hmKd['pin_total'] > 0)
                 <div class="hm-tile-big">{{ $hmKd['districts_covered'] }} / {{ $hmKd['districts_total'] }}<small> หน่วยงานที่ดำเนินงาน</small></div>
-                <div class="hm-tile-sub">ปักหน่วยงาน {{ number_format($hmKd['pin_total']) }} หน่วยงาน · มีหน่วยงานทำแล้ว {{ 8 - $hmKd['items_pending']->count() }} จาก 8 ข้อ</div>
+                <div class="hm-tile-sub">ปักหมุดทั้งหมด {{ number_format($hmKd['pin_all'] ?? $hmKd['pin_total']) }} หมุด (หน่วยงานรายงาน {{ number_format($hmKd['pin_total']) }}@if (($hmKd['display_pin_count'] ?? 0) > 0) + หมุดแสดงผล {{ number_format($hmKd['display_pin_count']) }}@endif) · มีหน่วยงานทำแล้ว {{ 8 - $hmKd['items_pending']->count() }} จาก 8 ข้อ</div>
                 <div class="hm-tile-st">
                     @if ($hmKdPct >= 80)
                         <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ครอบคลุม {{ $hmKdPct }}%</span>

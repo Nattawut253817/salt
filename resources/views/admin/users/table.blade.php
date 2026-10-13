@@ -89,18 +89,26 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-3 text-muted">
+                    <td class="px-4 py-3 col-email">
                         @php
                             // บัญชี สคร. (ระดับ 1) แสดงอีเมลแบบปิดบังบางส่วน เช่น ta***@gmail.com
-                            $shownEmail = $user->email;
-                            if ((int) $user->User_rank_id === 1 && str_contains((string) $user->email, '@')) {
+                            $shownEmail = (string) $user->email;
+                            if ((int) $user->User_rank_id === 1 && str_contains($shownEmail, '@')) {
                                 [$mailLocal, $mailDomain] = explode('@', $user->email, 2);
                                 $shownEmail = mb_substr($mailLocal, 0, 2) . '***@' . $mailDomain;
                             }
+                            // แยกชื่อผู้ใช้กับโดเมน เพื่อเน้นชื่อผู้ใช้ให้เข้ม อ่านง่าย
+                            $emailParts = str_contains($shownEmail, '@') ? explode('@', $shownEmail, 2) : [$shownEmail, null];
                         @endphp
-                        {{ $shownEmail }}
+                        <div class="user-email" title="{{ $shownEmail }}">
+                            <span class="ue-icon"><i class="fas fa-envelope"></i></span>
+                            <span class="ue-text kd-email"><span class="ue-local">{{ $emailParts[0] }}</span>@if ($emailParts[1] !== null)<span class="ue-domain">&#64;{{ $emailParts[1] }}</span>@endif</span>
+                        </div>
+                        @if ($user->isImportPlaceholder())
+                            <span class="ue-placeholder" title="สร้างอัตโนมัติตอนนำเข้า Word - ล็อกอินไม่ได้ เห็นเฉพาะ SuperAdmin"><i class="fas fa-file-import"></i> บัญชีตัวแทน (นำเข้า Word)</span>
+                        @endif
                         @if ($user->phone)
-                            <div class="user-rank text-muted"><i class="fas fa-phone fa-xs"></i> {{ $user->phone }}</div>
+                            <div class="ue-phone"><i class="fas fa-phone"></i>{{ $user->phone }}</div>
                         @endif
                     </td>
                     <td class="px-4 py-3">
