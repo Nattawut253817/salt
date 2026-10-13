@@ -1580,6 +1580,87 @@ class AdminController extends Controller
     }
 
     /**
+     * นำเข้า Word: หน่วยงานที่เลือก (ประเภท/จังหวัด/อำเภอ/หน่วยบริการ) ยังไม่มีบัญชีผู้ใช้ -
+     * ไม่ต้องหยุดการนำเข้า: ใช้บัญชีที่มีอยู่ถ้ามี ไม่เช่นนั้นสร้างบัญชี "ตัวแทนหน่วยงาน" ให้อัตโนมัติ
+     * เพื่อให้ข้อมูลถูกบันทึกอยู่ภายใต้หน่วยงานที่เลือกจริง (ชื่อหน่วยงาน/จังหวัด/อำเภอในตารางถูกต้อง)
+     * บัญชีที่สร้างไม่อนุมัติ (is_approved = 0) และใช้รหัสผ่านสุ่มที่ไม่มีใครรู้ จึงล็อกอินไม่ได้
+     * ผู้ดูแลระบบค่อยอนุมัติ/ตั้งรหัสผ่านให้หน่วยงานภายหลังได้
+     */
+    public function ensureKidneyDhbTargetAgency(Request $request)
+    {
+        if (auth()->user()->User_rank_id != 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'เฉพาะผู้ใช้งานระดับ Level 1 เท่านั้นที่มีสิทธิ์ใช้งานส่วนนี้',
+            ], 403);
+        }
+
+        $request->validate([
+            'rank' => 'required|in:2,3,4,5',
+            'province_id' => 'required',
+            'district_id' => 'nullable',
+            'hos_id' => 'nullable',
+            'sh_id' => 'nullable',
+        ]);
+
+        $rank = (int) $request->rank;
+        $needsDistrict = in_array($rank, [3, 4, 5], true);
+        if (($needsDistrict && !$request->filled('district_id'))
+            || ($rank === 5 && !$request->filled('hos_id'))
+            || ($rank === 4 && !$request->filled('sh_id'))) {
+            return response()->json(['success' => false, 'message' => 'กรุณาเลือกหน่วยงานให้ครบก่อนนำเข้า'], 422);
+        }
+
+        $districtId = $needsDistrict ? $request->district_id : null;
+        $hosId = $rank === 5 ? $request->hos_id : null;
+        $shId = $rank === 4 ? $request->sh_id : null;
+
+        // มีบัญชีของหน่วยงานนี้อยู่แล้ว (เงื่อนไขเดียวกับ resolveKidneyDhbTargetAgency) - ใช้บัญชีเดิม
+        $query = User::where('User_rank_id', $rank)->where('Province_id', $request->province_id);
+        if ($needsDistrict) { $query->where('District_id', $districtId); }
+        if ($hosId !== null) { $query->where('hos_id', $hosId); }
+        if ($shId !== null) { $query->where('sh_id', $shId); }
+        $existing = $query->orderByDesc('is_approved')->orderBy('id')->first();
+
+        if ($existing) {
+            $existing->load(['province', 'district', 'hospital', 'subdistrictHospital']);
+            return response()->json([
+                'success' => true,
+                'created' => false,
+                'id' => $existing->id,
+                'label' => $this->resolveAgencyName($existing),
+            ]);
+        }
+
+        $email = sprintf('import-r%d-p%s-d%s-h%s-s%s@import.invalid',
+            $rank, $request->province_id, $districtId ?? '0', $hosId ?? '0', $shId ?? '0');
+
+        $user = User::firstOrCreate(['email' => $email], [
+            'name' => 'บัญชีหน่วยงาน (สร้างจากการนำเข้า Word)',
+            'password' => \Illuminate\Support\Facades\Hash::make(bin2hex(random_bytes(24))),
+            'User_rank_id' => $rank,
+            'Province_id' => $request->province_id,
+            'District_id' => $districtId,
+            'hos_id' => $hosId,
+            'sh_id' => $shId,
+            'is_approved' => 0,
+        ]);
+        $user->load(['province', 'district', 'hospital', 'subdistrictHospital']);
+        $label = $this->resolveAgencyName($user);
+        if ($label && $user->Con_name !== $label) {
+            $user->Con_name = $label;
+            $user->save();
+        }
+
+        return response()->json([
+            'success' => true,
+            'created' => $user->wasRecentlyCreated,
+            'id' => $user->id,
+            'label' => $label,
+        ]);
+    }
+
+    /**
      * Products may carry their own province_name (set by the "นำเข้า
      * Excel" bulk importer - see ReducedSodiumProductImport - since
      * reduced_sodium_products has no province of its own otherwise) OR
@@ -2899,8 +2980,9 @@ class AdminController extends Controller
         $assessments = $query->join('users', 'kidney_assessments.user_id', '=', 'users.id')
             ->select('kidney_assessments.*');
 
-        if ($request->input('sort') === 'updated') {
-            // รายการที่เพิ่ม/แก้ไขล่าสุดขึ้นก่อน - หาข้อมูลใหม่เจอทันทีโดยไม่ต้องไล่ทีละหน้า
+        if ($request->input('sort') !== 'org') {
+            // ค่าเริ่มต้น: รายการที่เพิ่ม/แก้ไขล่าสุดขึ้นก่อน - หาข้อมูลใหม่เจอทันทีโดยไม่ต้องไล่ทีละหน้า
+            // (เลือก sort=org เพื่อกลับไปเรียงตามหน่วยงาน/จังหวัดแบบเดิม)
             $assessments->orderBy('kidney_assessments.updated_at', 'desc')->orderBy('kidney_assessments.id', 'desc');
         } else {
             $assessments->orderBy('users.Province_id')
@@ -4453,7 +4535,7 @@ class AdminController extends Controller
     public function operatingAreasIndex(Request $request)
     {
         $user = auth()->user();
-        if ($user->User_rank_id != 1) {
+        if (!$user->isSuperAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 

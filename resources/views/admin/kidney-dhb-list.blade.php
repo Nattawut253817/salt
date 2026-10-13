@@ -81,8 +81,8 @@
                     <div class="filter-field">
                         <label>เรียงลำดับ</label>
                         <select class="filter-input" name="sort" id="sort">
-                            <option value="" {{ request('sort') ? '' : 'selected' }}>ตามหน่วยงาน</option>
-                            <option value="updated" {{ request('sort') === 'updated' ? 'selected' : '' }}>อัปเดตล่าสุดก่อน</option>
+                            <option value="updated" {{ request('sort') === 'org' ? '' : 'selected' }}>อัปเดตล่าสุดก่อน</option>
+                            <option value="org" {{ request('sort') === 'org' ? 'selected' : '' }}>ตามหน่วยงาน</option>
                         </select>
                     </div>
                 </div>
@@ -514,7 +514,7 @@
                 $('#district_id').html('<option value="">ทั้งหมด</option>');
                 $('#operating_area').val('');
                 $('#status').val('');
-                $('#sort').val('');
+                $('#sort').val('updated');
                 loadTable();
             });
 

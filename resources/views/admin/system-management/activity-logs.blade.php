@@ -75,6 +75,21 @@
         .al-fail { margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #fee2e2; color: #991b1b; font-size: .68rem; font-weight: 700; }
         .al-empty { padding: 40px 16px; text-align: center; color: #9ca3af; font-size: .85rem; }
         .al-pager { padding: 12px 16px; display: flex; justify-content: center; }
+        .al-tabs { align-items: center; }
+        .al-purge-btn { margin: 0 0 6px auto; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border: 1px solid #fecaca; border-radius: 10px; background: #fff5f5; color: #b91c1c; font-size: .8rem; font-weight: 700; cursor: pointer; transition: background .15s, border-color .15s; }
+        .al-purge-btn:hover { background: #fee2e2; border-color: #fca5a5; }
+        .al-purge-btn:focus-visible { outline: 3px solid #fca5a5; outline-offset: 2px; }
+        .al-purge-pop { font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif; border-radius: 20px; width: 460px; max-width: calc(100vw - 32px); }
+        .al-purge-pop .swal2-title { font-size: 1.15rem; font-weight: 800; color: #1f2937; }
+        .al-purge-body { text-align: left; font-size: .85rem; color: #374151; }
+        .al-purge-body label { display: block; margin: 0 0 4px; font-size: .75rem; font-weight: 700; color: #6b7280; }
+        .al-purge-body select, .al-purge-body input[type=text] { width: 100%; height: 40px; padding: 0 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: .85rem; background: #fff; color: #1f2937; }
+        .al-purge-count { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: #f8fafc; border: 1px solid #e5e7eb; font-weight: 700; }
+        .al-purge-count.is-danger { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+        .al-purge-count b { font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+        .al-purge-note { margin-top: 10px; font-size: .75rem; color: #6b7280; line-height: 1.5; }
+        .al-purge-confirm { margin-top: 12px; }
+        @media (max-width: 760px) { .al-tabs { flex-wrap: wrap; } .al-purge-btn { margin-left: 0; } }
         @media (max-width: 760px) {
             .al-stats { grid-template-columns: 1fr; }
             .al-filter input[type=text] { min-width: 0; width: 100%; }
@@ -110,6 +125,12 @@
             <div class="al-tabs">
                 <a class="al-tab {{ $tab === 'users' ? 'is-active' : '' }}" href="{{ route('admin.system-management.activity-logs', ['tab' => 'users']) }}">ผู้ใช้งานแต่ละคน</a>
                 <a class="al-tab {{ $tab === 'events' ? 'is-active' : '' }}" href="{{ route('admin.system-management.activity-logs', ['tab' => 'events']) }}">เหตุการณ์ทั้งหมด</a>
+                <button type="button" class="al-purge-btn" id="alPurgeBtn"
+                    data-preview-url="{{ route('admin.system-management.activity-logs.purge-preview') }}"
+                    data-purge-url="{{ route('admin.system-management.activity-logs.purge') }}"
+                    data-tab="{{ $tab }}" data-total="{{ $stats['total'] }}">
+                    <i class="fas fa-trash-can"></i> ลบบันทึก
+                </button>
             </div>
 
             <form class="al-filter" id="alFilterForm" method="GET" action="{{ route('admin.system-management.activity-logs') }}">
@@ -279,5 +300,120 @@
                 el.addEventListener('change', submitNow);
             });
         })();
+    </script>
+    <script>
+        // รอให้โหลดครบก่อน: SweetAlert2 ถูกโหลดท้ายหน้าใน layout (หลังเนื้อหาส่วนนี้)
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('alPurgeBtn');
+            if (!btn || typeof Swal === 'undefined') return;
+
+            var ranges = [
+                ['7', 'เก่ากว่า 7 วัน'], ['14', 'เก่ากว่า 14 วัน'], ['30', 'เก่ากว่า 1 เดือน'],
+                ['90', 'เก่ากว่า 3 เดือน'], ['180', 'เก่ากว่า 6 เดือน'], ['365', 'เก่ากว่า 1 ปี'],
+                ['all', 'ทั้งหมด (ล้างบันทึกทุกรายการ)']
+            ];
+            var CONFIRM_WORD = 'ลบทั้งหมด';
+            var fmt = function (n) { return Number(n).toLocaleString('en-US'); };
+
+            btn.addEventListener('click', function () {
+                var options = ranges.map(function (r) { return '<option value="' + r[0] + '">' + r[1] + '</option>'; }).join('');
+                Swal.fire({
+                    title: 'ลบบันทึกการใช้งานระบบ',
+                    icon: 'warning',
+                    customClass: { popup: 'al-purge-pop' },
+                    html:
+                        '<div class="al-purge-body">' +
+                        '<label for="alPurgeRange">เลือกช่วงที่ต้องการลบ</label>' +
+                        '<select id="alPurgeRange">' + options + '</select>' +
+                        '<div class="al-purge-count" id="alPurgeCount">กำลังนับจำนวน...</div>' +
+                        '<div class="al-purge-confirm" id="alPurgeConfirmWrap" hidden>' +
+                        '<label for="alPurgeConfirm">พิมพ์คำว่า "' + CONFIRM_WORD + '" เพื่อยืนยัน</label>' +
+                        '<input type="text" id="alPurgeConfirm" autocomplete="off" placeholder="' + CONFIRM_WORD + '"></div>' +
+                        '<div class="al-purge-note">บันทึกที่ลบแล้วกู้คืนไม่ได้ ระบบจะบันทึกการลบนี้ไว้ 1 รายการ ว่าใครลบและลบช่วงใด</div>' +
+                        '</div>',
+                    showCancelButton: true,
+                    confirmButtonText: 'ลบบันทึก',
+                    cancelButtonText: 'ยกเลิก',
+                    confirmButtonColor: '#dc2626',
+                    focusCancel: true,
+                    didOpen: function () {
+                        var select = document.getElementById('alPurgeRange');
+                        var countBox = document.getElementById('alPurgeCount');
+                        var wrap = document.getElementById('alPurgeConfirmWrap');
+                        var input = document.getElementById('alPurgeConfirm');
+                        var ok = Swal.getConfirmButton();
+                        var count = null;
+                        var seq = 0;
+
+                        var sync = function () {
+                            var isAll = select.value === 'all';
+                            wrap.hidden = !isAll;
+                            ok.disabled = count === null || count === 0 || (isAll && input.value.trim() !== CONFIRM_WORD);
+                        };
+
+                        var load = function () {
+                            var mine = ++seq;
+                            count = null;
+                            countBox.className = 'al-purge-count';
+                            countBox.textContent = 'กำลังนับจำนวน...';
+                            sync();
+                            fetch(btn.dataset.previewUrl + '?range=' + encodeURIComponent(select.value), {
+                                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                                credentials: 'same-origin'
+                            }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+                              .then(function (d) {
+                                  if (mine !== seq) return;
+                                  count = d.count;
+                                  if (count === 0) {
+                                      countBox.className = 'al-purge-count';
+                                      countBox.textContent = 'ไม่มีบันทึกในช่วงนี้ที่ต้องลบ';
+                                  } else {
+                                      countBox.className = 'al-purge-count is-danger';
+                                      countBox.innerHTML = 'จะลบ <b>' + fmt(count) + '</b> รายการ จากทั้งหมด ' + fmt(btn.dataset.total) + ' รายการ';
+                                  }
+                                  sync();
+                              })
+                              .catch(function () {
+                                  if (mine !== seq) return;
+                                  countBox.className = 'al-purge-count is-danger';
+                                  countBox.textContent = 'นับจำนวนไม่สำเร็จ กรุณาลองใหม่';
+                              });
+                        };
+
+                        select.addEventListener('change', function () { input.value = ''; load(); });
+                        input.addEventListener('input', sync);
+                        load();
+                    },
+                    preConfirm: function () {
+                        return {
+                            range: document.getElementById('alPurgeRange').value,
+                            confirm: document.getElementById('alPurgeConfirm').value
+                        };
+                    }
+                }).then(function (res) {
+                    if (!res.isConfirmed) return;
+                    var form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = btn.dataset.purgeUrl;
+                    var add = function (name, value) {
+                        var i = document.createElement('input');
+                        i.type = 'hidden'; i.name = name; i.value = value;
+                        form.appendChild(i);
+                    };
+                    add('_token', '{{ csrf_token() }}');
+                    add('range', res.value.range);
+                    add('confirm_text', res.value.confirm);
+                    add('tab', btn.dataset.tab);
+                    document.body.appendChild(form);
+                    form.submit();
+                });
+            });
+
+            @if (session('purge_done'))
+                Swal.fire({ icon: 'success', title: 'ลบเรียบร้อย', text: @json(session('purge_done')), confirmButtonText: 'ตกลง', confirmButtonColor: '#4f46e5' });
+            @elseif (session('purge_error'))
+                Swal.fire({ icon: 'error', title: 'ลบไม่สำเร็จ', text: @json(session('purge_error')), confirmButtonText: 'ตกลง', confirmButtonColor: '#4f46e5' });
+            @endif
+        });
     </script>
 @endsection

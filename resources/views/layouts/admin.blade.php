@@ -1013,6 +1013,7 @@
                         @endif
                     </a>
                 </li>
+                @if (auth()->user()->isSuperAdmin())
                 <li class="nav-item">
                     <a href="{{ route('admin.operating-areas.index') }}"
                         class="nav-link {{ request()->routeIs('admin.operating-areas.index') ? 'active' : '' }}"
@@ -1021,6 +1022,7 @@
                         <span style="font-style: italic;">จัดการพื้นที่ดำเนินงาน</span>
                     </a>
                 </li>
+                @endif
                 <li class="nav-item">
                     <a href="{{ route('admin.salt-assessment-list') }}"
                         class="nav-link {{ request()->routeIs('admin.salt-assessment-list', 'admin.report-progress') ? 'active' : '' }}">

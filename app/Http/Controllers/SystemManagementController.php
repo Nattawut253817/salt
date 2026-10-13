@@ -141,6 +141,86 @@ class SystemManagementController extends Controller
         return view('admin.system-management.activity-logs', $this->activityLogData($request));
     }
 
+    /** ช่วงที่ให้เลือกลบ: จำนวนวัน => ป้ายชื่อ (ลบเฉพาะบันทึกที่เก่ากว่าจำนวนวันนี้) */
+    private const PURGE_RANGES = [
+        7 => 'เก่ากว่า 7 วัน',
+        14 => 'เก่ากว่า 14 วัน',
+        30 => 'เก่ากว่า 1 เดือน',
+        90 => 'เก่ากว่า 3 เดือน',
+        180 => 'เก่ากว่า 6 เดือน',
+        365 => 'เก่ากว่า 1 ปี',
+    ];
+
+    /** ข้อความที่ต้องพิมพ์ยืนยันเมื่อเลือก "ลบทั้งหมด" */
+    private const PURGE_ALL_CONFIRM = 'ลบทั้งหมด';
+
+    /**
+     * query ของบันทึกที่จะถูกลบตามช่วงที่เลือก - ใช้ร่วมกันทั้งตอนนับ (preview) และตอนลบจริง
+     * เพื่อให้จำนวนที่แจ้งก่อนยืนยันตรงกับจำนวนที่ถูกลบเสมอ
+     *
+     * @return array{0: \Illuminate\Database\Query\Builder, 1: string}|null null = ช่วงไม่ถูกต้อง
+     */
+    private function purgeQuery(string $range): ?array
+    {
+        ActivityLog::ensureTable();
+
+        if ($range === 'all') {
+            return [DB::table('activity_logs'), 'ทั้งหมด'];
+        }
+
+        $days = (int) $range;
+        if (! isset(self::PURGE_RANGES[$days]) || (string) $days !== $range) {
+            return null;
+        }
+
+        return [
+            DB::table('activity_logs')->where('created_at', '<', now()->subDays($days)),
+            self::PURGE_RANGES[$days],
+        ];
+    }
+
+    /** นับจำนวนบันทึกที่จะถูกลบ (แสดงในหน้าต่างยืนยันก่อนลบจริง) */
+    public function purgeActivityLogsPreview(Request $request)
+    {
+        abort_unless((int) auth()->user()->User_rank_id === 1, 403);
+
+        $resolved = $this->purgeQuery((string) $request->query('range', ''));
+        abort_if($resolved === null, 422, 'ช่วงเวลาไม่ถูกต้อง');
+
+        return response()->json(['count' => (int) $resolved[0]->count(), 'label' => $resolved[1]]);
+    }
+
+    /** ลบบันทึกการใช้งานตามช่วงที่เลือก แล้วบันทึกเหตุการณ์การลบไว้ 1 รายการ */
+    public function purgeActivityLogs(Request $request)
+    {
+        abort_unless((int) auth()->user()->User_rank_id === 1, 403);
+
+        $range = (string) $request->input('range', '');
+        $back = redirect()->route('admin.system-management.activity-logs', ['tab' => $request->input('tab') === 'events' ? 'events' : 'users']);
+
+        $resolved = $this->purgeQuery($range);
+        if ($resolved === null) {
+            return $back->with('purge_error', 'ช่วงเวลาที่เลือกไม่ถูกต้อง');
+        }
+        if ($range === 'all' && trim((string) $request->input('confirm_text')) !== self::PURGE_ALL_CONFIRM) {
+            return $back->with('purge_error', 'ต้องพิมพ์คำว่า "' . self::PURGE_ALL_CONFIRM . '" เพื่อยืนยันการลบทั้งหมด');
+        }
+
+        [$query, $label] = $resolved;
+        $deleted = (int) $query->delete();
+
+        // บันทึกการลบไว้หลังลบเสร็จ เพื่อให้รายการนี้ไม่ถูกลบไปด้วย และตรวจสอบย้อนหลังได้ว่าใครลบอะไร
+        ActivityLog::record(
+            'data_change',
+            'ลบบันทึกการใช้งานระบบ (' . $label . ') จำนวน ' . number_format($deleted) . ' รายการ',
+            null,
+            ['action' => 'purge_activity_logs', 'range' => $range, 'deleted' => $deleted],
+            $request
+        );
+
+        return $back->with('purge_done', 'ลบบันทึกการใช้งาน (' . $label . ') แล้ว ' . number_format($deleted) . ' รายการ');
+    }
+
     public function activityLogData(Request $request): array
     {
         ActivityLog::ensureTable();

@@ -487,6 +487,99 @@
             font-size: 0.78rem;
             color: #64748b;
         }
+
+        /* =====================================================================
+           ตารางรายการข้อมูลที่บันทึกแล้ว — ชุดสไตล์ทางการ (override ท้ายสุด)
+           หัวตาราง 2 ชั้น: ชั้นบน = กลุ่มคอลัมน์ (กรมสีเข้ม ตัวอักษรขาว)
+                            ชั้นล่าง = ข้อ 1-7 / 8.1-8.3 / Q1-Q4 (พื้นสีอ่อน ขีดล่างสีเดียวกับกลุ่ม)
+           เนื้อหา: ตัวอักษรใหญ่ขึ้น ระยะห่างแถวมากขึ้น เส้นแบ่งกลุ่มคอลัมน์ชัดเจน
+           ===================================================================== */
+        .table-card { --kd-navy:#242b6e; --kd-g17:#3b45a8; --kd-g8:#6240b8; --kd-gq:#a16207; --kd-line:#edf0f7; --kd-ink:#1e293b; }
+
+        .table-title-bar { background: linear-gradient(180deg, #ffffff 0%, #fafbff 100%); }
+        .table-title-icon { background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%); box-shadow: 0 3px 8px rgba(99,102,241,.22); }
+
+        table.report-table { font-size: .86rem; color: var(--kd-ink); border-collapse: separate; border-spacing: 0; min-width: 1280px; }
+        table.report-table th,
+        table.report-table td { border-right: 0; }
+
+        /* ---------- หัวตาราง (แถบเดียวต่อเนื่อง โทนอ่อน) ----------
+           ไม่มีช่องว่างระหว่างเซลล์: แต่ละกลุ่มเป็นพื้นสีเดียวทั้งหัวกลุ่มและชิปด้านล่าง
+           เรียงชิดกันเป็นแถบยาวหนึ่งเดียว คั่นกลุ่มด้วยเส้นขาวบางเท่านั้น
+           (มุมมนมาจากขอบการ์ดที่ตัดส่วนเกินให้) */
+        .table-responsive { padding: 0; }
+        table.report-table thead th { white-space: nowrap; word-break: keep-all; vertical-align: middle; border: 0; border-radius: 0; }
+        table.report-table thead tr.hd-top th {
+            font-size: .84rem; font-weight: 700; line-height: 1.3;
+            padding: 11px 8px 4px; text-align: center;
+        }
+        table.report-table thead tr.hd-top th.hd-org { background: #eceffc; color: #2b3380; text-align: left; padding: 11px 8px; }
+        table.report-table thead tr.hd-top th.hd-org:first-child { padding-left: 18px; }
+        table.report-table thead tr.hd-top th.hd-org.hd-act { text-align: center; }
+        table.report-table thead tr.hd-top th.hd-g17 { background: #e4e9ff; color: #2f3796; }
+        table.report-table thead tr.hd-top th.hd-g8  { background: #ede6fd; color: #5b34b0; }
+        table.report-table thead tr.hd-top th.hd-gq  { background: #fcefcf; color: #8a4b08; }
+
+        table.report-table thead tr.hd-sub th {
+            text-align: center !important; padding: 2px 2px 10px !important;
+        }
+        table.report-table thead tr.hd-sub th.hd-s17 { background: #e4e9ff; }
+        table.report-table thead tr.hd-sub th.hd-s8  { background: #ede6fd; }
+        table.report-table thead tr.hd-sub th.hd-sq  { background: #fcefcf; }
+        /* เส้นคั่นกลุ่ม: ขาวบางเต็มความสูงหัวตาราง */
+        table.report-table thead th.grp-start { box-shadow: inset 1px 0 0 rgba(255,255,255,.85); }
+        table.report-table thead tr.hd-top th.hd-org + th.hd-org,
+        table.report-table thead tr.hd-top th.hd-org + th.hd-g17 { box-shadow: inset 1px 0 0 rgba(255,255,255,.85); }
+        table.report-table thead tr.hd-sub th, table.report-table thead tr.hd-top th.hd-org { border-bottom: 1px solid #d9dff2; }
+
+        .col-index-badge { font-size: .72rem; padding: 3px 8px; gap: 3px; border-width: 1px; border-radius: 999px; box-shadow: none; }
+        .col-index-badge .col-index-num { font-weight: 800; }
+        .col-index-badge.v8 { border-color: #c9b8f5; }
+        .col-index-badge.q { color: #92400e; border-color: #f2cf86; font-weight: 800; cursor: default; }
+
+        /* ---------- เนื้อหา ---------- */
+        table.report-table tbody td { padding: 12px 6px; border-bottom: 1px solid var(--kd-line); background-color: #fff; }
+        table.report-table tbody td.grp-cat17 { background-color: #fafbff; }
+        table.report-table tbody td.grp-cat8  { background-color: #fbfaff; }
+        table.report-table tbody td.grp-confirm { background-color: #fffdf6; }
+        table.report-table tbody tr:hover td { background-color: #f4f7ff; }
+        table.report-table tbody tr:hover td.grp-cat17 { background-color: #eceffe; }
+        table.report-table tbody tr:hover td.grp-cat8  { background-color: #f1ecfd; }
+        table.report-table tbody tr:hover td.grp-confirm { background-color: #fff6df; }
+        table.report-table tbody td.grp-start { border-left: 1px solid var(--kd-line); }
+
+        table.report-table tbody td:first-child { padding-left: 18px; }
+        table.report-table td.area-name, table.report-table td.area-name:first-child { padding: 12px 8px; }
+
+        .fy-cell { align-items: flex-start; gap: 5px; }
+        table.report-table td.grp-merged .fy-cell, table.report-table tbody td:first-child .fy-cell { align-items: flex-start; }
+        .fy-year {
+            display: inline-block; padding: 2px 11px; border-radius: 8px;
+            background: #eef0ff; color: #2f3796; border: 1px solid #d6dafc;
+            font-size: .9rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .2px;
+        }
+        .org-name { font-size: .86rem; font-weight: 700; color: var(--kd-ink); line-height: 1.45; }
+        .area-name { font-size: .84rem; line-height: 1.5; }
+        .area-name .area-place { font-size: .85rem; font-weight: 600; color: var(--kd-ink); }
+        .area-name .area-count, table.report-table td.grp-merged .grp-n { font-size: .72rem; }
+        .area-name .area-issue { font-size: .74rem; }
+
+        table.report-table td.grp-merged { background: #f9faff; border-right: 1px solid var(--kd-line); }
+        table.report-table tbody tr.grp-first td { border-top: 1px solid #dde3f0; }
+        table.report-table tbody tr.grp-cont td { border-top: 1px dashed #e6eaf4; }
+
+        .status-badge { width: 24px; height: 24px; font-size: .66rem; }
+        .confirm-badge { width: 26px; height: 26px; font-size: .68rem; }
+
+        table.report-table td.col-actions { padding-left: 8px; padding-right: 8px; }
+        .row-actions { border-color: #dfe3f7; background: #f6f7ff; padding: 4px; }
+        .btn-action.btn-report { height: 30px; font-size: .76rem; }
+
+        table.report-table tr.row-pending-area td { background-color: #fffaf3; }
+        table.report-table td.pa-msg { font-size: .82rem; }
+        .row-pending-area .pa-note { font-size: .76rem; }
+
+        .table-footer { background: #fafbff; border-top: 1px solid var(--kd-line); }
     </style>
 
     <!-- Summary Statistics Cards -->
@@ -567,49 +660,33 @@
             <col style="width:3.1%"><col style="width:3.1%"><col style="width:3.1%"><col style="width:3.1%">
             <col style="width:11.6%">
         </colgroup>
-        <thead class="thead-light">
-            <tr class="text-center">
-                <th class="grp-org">ปีงบประมาณ</th>
-                <th class="grp-org">หน่วยงาน</th>
-                <th class="grp-org">พื้นที่การดำเนินงาน</th>
-                <!-- Categories 1-7 -->
-                <th class="grp-cat17" title="การขับเคลื่อนการดำเนินงานป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง(ระดับอำเภอ)">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">1</span></span>
-                </th>
-                <th class="grp-cat17" title="การจัดการข้อมูลเฝ้าระวัง">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">2</span></span>
-                </th>
-                <th class="grp-cat17" title="การกำหนดประเด็นปัญหา เป้าหมาย พร้อมทั้งแผนงานและกิจกรรม">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">3</span></span>
-                </th>
-                <th class="grp-cat17" title="สนับสนุนการสร้างนโยบายสาธารณะที่เกี่ยวข้องกับการป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง/ โรคไตในชุมชน">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">4</span></span>
-                </th>
-                <th class="grp-cat17" title="การจัดการสิ่งแวดล้อมที่เอื้อต่อสุขภาพ">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">5</span></span>
-                </th>
-                <th class="grp-cat17" title="การสร้างความเข้มแข็งของชุมชนในการลดปัจจัยเสี่ยงของการเกิดโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">6</span></span>
-                </th>
-                <th class="grp-cat17" title="การจัดบริการเชิงรุกในชุมชน">
-                    <span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">7</span></span>
-                </th>
-                <!-- Category 8 Sub-items -->
-                <th class="grp-cat8" title="ร้อยละของผู้ป่วยโรคเบาหวานและ/หรือความดันโลหิตสูง ได้รับการค้นหาและคัดกรองโรคไตเรื้อรัง">
-                    <span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.1</span></span>
-                </th>
-                <th class="grp-cat8" title="การประเมินความตระหนักรู้การลดการบริโภคเกลือโซเดียมของประชาชนในพื้นที่">
-                    <span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.2</span></span>
-                </th>
-                <th class="grp-cat8" title="นวัตกรรม/บุคคลต้นแบบ/ภูมิปัญญาท้องถิ่น/งานวิจัยที่สนับสนุนการลดการบริโภคเกลือโซเดียมและ/หรือการป้องกันและชะลอภาวะไตเรื้อรัง">
-                    <span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.3</span></span>
-                </th>
-
-                <th class="grp-confirm">Q1</th>
-                <th class="grp-confirm">Q2</th>
-                <th class="grp-confirm">Q3</th>
-                <th class="grp-confirm">Q4</th>
-                <th class="grp-actions">จัดการ</th>
+        <thead class="kd-thead">
+            {{-- แถวบน: หัวกลุ่มคอลัมน์ (ข้อมูลทั่วไป / ข้อ 1-7 / ข้อ 8 / ยืนยันรายไตรมาส / จัดการ) --}}
+            <tr class="hd-top">
+                <th class="hd-org" rowspan="2" scope="col">ปีงบประมาณ</th>
+                <th class="hd-org" rowspan="2" scope="col">หน่วยงาน</th>
+                <th class="hd-org" rowspan="2" scope="col">พื้นที่การดำเนินงาน</th>
+                <th class="hd-g17 grp-start" colspan="7" scope="colgroup">รายการประเมิน ข้อ 1–7</th>
+                <th class="hd-g8 grp-start" colspan="3" scope="colgroup">ข้อ 8.1–8.3</th>
+                <th class="hd-gq grp-start" colspan="4" scope="colgroup">ยืนยันรายไตรมาส</th>
+                <th class="hd-org hd-act grp-start" rowspan="2" scope="col">จัดการ</th>
+            </tr>
+            {{-- แถวล่าง: หัวคอลัมน์รายข้อ (วางเมาส์เพื่อดูชื่อเต็มของแต่ละข้อ) --}}
+            <tr class="hd-sub">
+                <th class="hd-s17 grp-start" scope="col" title="การขับเคลื่อนการดำเนินงานป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง(ระดับอำเภอ)"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">1</span></span></th>
+                <th class="hd-s17" scope="col" title="การจัดการข้อมูลเฝ้าระวัง"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">2</span></span></th>
+                <th class="hd-s17" scope="col" title="การกำหนดประเด็นปัญหา เป้าหมาย พร้อมทั้งแผนงานและกิจกรรม"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">3</span></span></th>
+                <th class="hd-s17" scope="col" title="สนับสนุนการสร้างนโยบายสาธารณะที่เกี่ยวข้องกับการป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง/ โรคไตในชุมชน"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">4</span></span></th>
+                <th class="hd-s17" scope="col" title="การจัดการสิ่งแวดล้อมที่เอื้อต่อสุขภาพ"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">5</span></span></th>
+                <th class="hd-s17" scope="col" title="การสร้างความเข้มแข็งของชุมชนในการลดปัจจัยเสี่ยงของการเกิดโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">6</span></span></th>
+                <th class="hd-s17" scope="col" title="การจัดบริการเชิงรุกในชุมชน"><span class="col-index-badge"><span class="col-index-label">ข้อ</span><span class="col-index-num">7</span></span></th>
+                <th class="hd-s8 grp-start" scope="col" title="ร้อยละของผู้ป่วยโรคเบาหวานและ/หรือความดันโลหิตสูง ได้รับการค้นหาและคัดกรองโรคไตเรื้อรัง"><span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.1</span></span></th>
+                <th class="hd-s8" scope="col" title="การประเมินความตระหนักรู้การลดการบริโภคเกลือโซเดียมของประชาชนในพื้นที่"><span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.2</span></span></th>
+                <th class="hd-s8" scope="col" title="นวัตกรรม/บุคคลต้นแบบ/ภูมิปัญญาท้องถิ่น/งานวิจัยที่สนับสนุนการลดการบริโภคเกลือโซเดียมและ/หรือการป้องกันและชะลอภาวะไตเรื้อรัง"><span class="col-index-badge v8"><span class="col-index-label">ข้อ</span><span class="col-index-num">8.3</span></span></th>
+                <th class="hd-sq grp-start" scope="col" title="ไตรมาส 1"><span class="col-index-badge q">Q1</span></th>
+                <th class="hd-sq" scope="col" title="ไตรมาส 2"><span class="col-index-badge q">Q2</span></th>
+                <th class="hd-sq" scope="col" title="ไตรมาส 3"><span class="col-index-badge q">Q3</span></th>
+                <th class="hd-sq" scope="col" title="ไตรมาส 4"><span class="col-index-badge q">Q4</span></th>
             </tr>
         </thead>
         <tbody>
@@ -677,8 +754,8 @@
                         @endif
                         <div class="pa-note">เลือกไว้แล้ว · ยังไม่มีรายงานผล</div>
                     </td>
-                    <td class="text-center align-middle text-muted" colspan="14"><small>ยังไม่มีข้อมูล — กดปุ่มด้านขวาเพื่อเริ่มรายงานผลการดำเนินงานของพื้นที่นี้</small></td>
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle text-muted grp-start pa-msg" colspan="14"><small>ยังไม่มีข้อมูล — กดปุ่มด้านขวาเพื่อเริ่มรายงานผลการดำเนินงานของพื้นที่นี้</small></td>
+                    <td class="text-center align-middle grp-start col-actions">
                         <div class="row-actions">
                             <a href="{{ route('admin.kidney-dhb', ['pin' => $pa['id'], 'fiscal_year' => $pa['fiscal_year']]) }}"
                                 class="btn-action btn-view btn-report trigger-loader" title="{{ $isLevel1 ? 'ติดตามแบบรายงาน' : 'รายงานผลการดำเนินงาน' }}" aria-label="{{ $isLevel1 ? 'ติดตามแบบรายงาน' : 'รายงานผลการดำเนินงาน' }}">
@@ -704,7 +781,7 @@
                 $grpSpan = [];
                 $grpUnread = [];
                 $grpAreas = [];
-                if (request('sort') !== 'updated') {
+                if (request('sort') === 'org') {
                     $gStart = null;
                     foreach ($grpRows as $gi => $gItem) {
                         $prevItem = $gi > 0 ? $grpRows[$gi - 1] : null;
@@ -776,7 +853,7 @@
 
                     <!-- Status Icons 1-7 -->
                     @foreach(range(1, 7) as $cat)
-                        <td class="text-center align-middle grp-cat17">
+                        <td class="text-center align-middle grp-cat17{{ $cat === 1 ? ' grp-start' : '' }}">
                             @if($item->flowFilled['category_' . $cat] ?? false)
                                 <span class="status-badge status-done" title="บันทึกแล้ว"><i class="fas fa-check"></i></span>
                             @else
@@ -787,7 +864,7 @@
 
                     <!-- Status Icons 8.1-8.3 -->
                     @foreach(['1', '2', '3'] as $sub)
-                        <td class="text-center align-middle grp-cat8">
+                        <td class="text-center align-middle grp-cat8{{ $sub === '1' ? ' grp-start' : '' }}">
                             @if($item->flowFilled['category_8_' . $sub] ?? false)
                                 <span class="status-badge status-done" title="บันทึกแล้ว"><i class="fas fa-check"></i></span>
                             @else
@@ -797,7 +874,7 @@
                     @endforeach
 
                     @foreach([1, 2, 3, 4] as $q)
-                        <td class="text-center align-middle grp-confirm">
+                        <td class="text-center align-middle grp-confirm{{ $q === 1 ? ' grp-start' : '' }}">
                             @php $qStatus = $item->quarterConfirmations[$q] ?? 'none'; @endphp
                             @if($qStatus === 'confirmed')
                                 <span class="confirm-badge confirm-done" title="ไตรมาส {{ $q }}: ยืนยันแล้ว"><i class="fas fa-stamp"></i></span>
@@ -809,7 +886,7 @@
                         </td>
                     @endforeach
 
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle grp-start col-actions">
                         @php $viewOnly = $isViewOnlyRow($item->user); @endphp
                         <div class="row-actions">
                             <a href="{{ route('admin.kidney-dhb.show', $item->id) }}"
@@ -833,7 +910,7 @@
             @empty
                 @if($pendingAreas->isEmpty() && $pendingTail->isEmpty())
                 <tr>
-                    <td colspan="18" class="text-center py-5 text-muted">
+                    <td colspan="18" class="text-center py-5 text-muted kd-empty">
                         <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.5;"></i><br>
                         @if(request()->hasAny(['fiscal_year', 'quarter', 'province_id', 'district_id', 'org_type', 'operating_area']))
                             <strong>ไม่พบข้อมูลตามตัวกรองที่เลือก</strong><br>
@@ -885,13 +962,13 @@
                             @endif
                         </div>
                     </td>
-                    <td class="text-center align-middle text-muted" colspan="14"><small>
+                    <td class="text-center align-middle text-muted grp-start pa-msg" colspan="14"><small>
                         @if($pt['status'] === 'selected') ยังไม่มีข้อมูล &mdash; รอหน่วยงานที่เลือกรายงานผลการดำเนินงาน
                         @elseif($pt['status'] === 'display') ไม่มีรายงานในระบบ &mdash; แสดงเฉพาะว่าพื้นที่นี้มีการดำเนินงาน พชอ.ไต
                         @else ยังไม่มีข้อมูล &mdash; ยังไม่มีหน่วยงานเลือกพื้นที่นี้
                         @endif
                     </small></td>
-                    <td class="text-center align-middle">
+                    <td class="text-center align-middle grp-start col-actions">
                         @if($pt['own'])
                             <div class="row-actions">
                                 <a href="{{ route('admin.kidney-dhb', ['pin' => $pt['id'], 'fiscal_year' => $pt['fiscal_year']]) }}"

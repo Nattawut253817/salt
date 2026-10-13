@@ -134,6 +134,7 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::post('/kidney-dhb-areas/{id}/select', [AdminController::class, 'selectKidneyDhbArea'])->name('admin.kidney-dhb.areas.select');
     Route::post('/kidney-dhb-areas/{id}/deselect', [AdminController::class, 'deselectKidneyDhbArea'])->name('admin.kidney-dhb.areas.deselect');
     Route::get('/kidney-dhb/resolve-target-agency', [AdminController::class, 'resolveKidneyDhbTargetAgency'])->name('admin.kidney-dhb.resolve-target-agency');
+    Route::post('/kidney-dhb/ensure-target-agency', [AdminController::class, 'ensureKidneyDhbTargetAgency'])->name('admin.kidney-dhb.ensure-target-agency');
     Route::get('/kidney-dhb/operating-area-context', [AdminController::class, 'getKidneyDhbOperatingAreaContext'])->name('admin.kidney-dhb.operating-area-context');
     Route::get('/kidney-dhb/{id}', [AdminController::class, 'showKidneyDHB'])->name('admin.kidney-dhb.show');
     Route::put('/kidney-dhb/{id}', [AdminController::class, 'updateKidneyDHB'])->name('admin.kidney-dhb.update');
@@ -147,13 +148,13 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::get('/get-kidney-dhb-data', [AdminController::class, 'getKidneyDHBData'])->name('admin.get-kidney-dhb-data');
     Route::post('/kidney-dhb/parse-word', [AdminController::class, 'parseKidneyDhbWord'])->name('admin.kidney-dhb.parse-word');
 
-    // Operating Area (จัดการพื้นที่ดำเนินงาน) - level 1 only, under แบบประเมินพชอ.ไต
-    Route::get('/operating-areas', [AdminController::class, 'operatingAreasIndex'])->name('admin.operating-areas.index');
-    Route::get('/operating-areas/get-districts/{province_id}', [AdminController::class, 'getDistrictsForOperatingArea'])->name('admin.operating-areas.get-districts');
-    Route::get('/operating-areas/get-tambons/{province_id}/{district_id}', [AdminController::class, 'getTambonsForOperatingArea'])->name('admin.operating-areas.get-tambons');
-    Route::get('/operating-areas/get-villages/{province_id}/{district_id}/{tambon_id}', [AdminController::class, 'getVillages'])->name('admin.operating-areas.get-villages');
-    Route::post('/operating-areas', [AdminController::class, 'storeOperatingAreaPin'])->name('admin.operating-areas.store');
-    Route::delete('/operating-areas/{id}', [AdminController::class, 'destroyOperatingAreaPin'])->name('admin.operating-areas.destroy');
+    // Operating Area (จัดการพื้นที่ดำเนินงาน) - SuperAdmin only (สคร. ทั่วไปไม่เห็นเมนูและเข้าตรงไม่ได้), under แบบประเมินพชอ.ไต
+    Route::get('/operating-areas', [AdminController::class, 'operatingAreasIndex'])->middleware('super.admin')->name('admin.operating-areas.index');
+    Route::get('/operating-areas/get-districts/{province_id}', [AdminController::class, 'getDistrictsForOperatingArea'])->middleware('super.admin')->name('admin.operating-areas.get-districts');
+    Route::get('/operating-areas/get-tambons/{province_id}/{district_id}', [AdminController::class, 'getTambonsForOperatingArea'])->middleware('super.admin')->name('admin.operating-areas.get-tambons');
+    Route::get('/operating-areas/get-villages/{province_id}/{district_id}/{tambon_id}', [AdminController::class, 'getVillages'])->middleware('super.admin')->name('admin.operating-areas.get-villages');
+    Route::post('/operating-areas', [AdminController::class, 'storeOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.store');
+    Route::delete('/operating-areas/{id}', [AdminController::class, 'destroyOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.destroy');
     Route::post('/operating-areas-delete-filtered', [AdminController::class, 'deleteFilteredOperatingAreaPins'])->middleware('super.admin')->name('admin.operating-areas.delete-filtered');
     Route::put('/operating-areas/{id}', [AdminController::class, 'updateOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.update');
     Route::post('/operating-areas/{id}/release', [AdminController::class, 'releaseOperatingAreaPin'])->middleware('super.admin')->name('admin.operating-areas.release');
@@ -234,5 +235,7 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
         Route::post('/system-management/toggle-rank1-register', [\App\Http\Controllers\SystemManagementController::class, 'toggleRank1Register'])->name('admin.system-management.toggle-rank1-register');
         Route::post('/system-management/reset-page-views', [\App\Http\Controllers\SystemManagementController::class, 'resetPageViews'])->name('admin.system-management.reset-page-views');
         Route::get('/system-management/activity-logs', [\App\Http\Controllers\SystemManagementController::class, 'activityLogs'])->name('admin.system-management.activity-logs');
+        Route::get('/system-management/activity-logs/purge-preview', [\App\Http\Controllers\SystemManagementController::class, 'purgeActivityLogsPreview'])->name('admin.system-management.activity-logs.purge-preview');
+        Route::post('/system-management/activity-logs/purge', [\App\Http\Controllers\SystemManagementController::class, 'purgeActivityLogs'])->name('admin.system-management.activity-logs.purge');
     });
 });

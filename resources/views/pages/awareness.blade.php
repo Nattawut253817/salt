@@ -353,7 +353,8 @@
             align-items: center;
             justify-content: center;
             gap: 14px;
-            height: 252px;
+            flex: 1 1 auto;
+            min-height: 252px;
             width: 100%;
             padding: 4px 0 2px;
         }
@@ -362,7 +363,8 @@
             position: relative;
             flex: 0 0 46%;
             width: 46%;
-            height: 100%;
+            align-self: stretch;
+            min-height: 220px;
         }
 
         .awr-donut-legend {
@@ -371,7 +373,8 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 6px;
+            align-self: stretch;
+            gap: 8px;
         }
 
         /* แถวจังหวัดในคำอธิบาย: จุดสี + ชื่อ + แถบสัดส่วน | ร้อยละ + จำนวนคน */
@@ -379,6 +382,8 @@
             display: flex;
             align-items: center;
             gap: 9px;
+            flex: 1 1 0;
+            max-height: 68px;
             padding: 6px 10px;
             border-radius: 11px;
             background: #f8fafc;
@@ -395,18 +400,27 @@
         .awr-leg-nums b { display: block; font-size: 13.5px; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
         .awr-leg-nums small { display: block; margin-top: 1px; font-size: 10.5px; font-weight: 600; color: #94a3b8; }
         /* การ์ดสัดส่วนผู้ตอบแยกตามเพศ */
-        .gr-tiles { display: flex; gap: 12px; }
-        .gr-tile { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; padding: 20px 8px 18px; border-radius: 18px;
-            background: linear-gradient(165deg, color-mix(in srgb, var(--gr-c) 16%, #fff), color-mix(in srgb, var(--gr-c) 5%, #fff));
-            border: 1px solid color-mix(in srgb, var(--gr-c) 28%, #fff); }
-        .gr-icon { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;
-            background: linear-gradient(145deg, color-mix(in srgb, var(--gr-c) 80%, #fff), var(--gr-c)); box-shadow: 0 8px 16px -6px var(--gr-c); }
-        .gr-name { margin-top: 10px; font-size: 16px; font-weight: 800; color: #1e293b; line-height: 1.2; }
-        .gr-pct { margin-top: 2px; font-size: clamp(1.9rem, 2.8vw, 2.4rem); font-weight: 800; line-height: 1.1; color: var(--gr-ink); font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
-        .gr-pct em { font-style: normal; font-size: .5em; font-weight: 800; margin-left: 2px; letter-spacing: 0; }
-        .gr-count { margin-top: 4px; font-size: 13.5px; font-weight: 700; color: #475569; font-variant-numeric: tabular-nums; }
-        .gr-bar { display: flex; height: 34px; border-radius: 17px; overflow: hidden; background: #eef2f7; box-shadow: 0 4px 10px rgba(15, 23, 42, .10); }
-        .gr-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12.5px; font-weight: 800; white-space: nowrap; text-shadow: 0 1px 2px rgba(15, 23, 42, .25); }
+        .gr-rows { display: flex; flex-direction: column; gap: 14px; flex: 1 1 auto; justify-content: center; }
+        #genderChart { flex: 1 1 auto; }
+        .gr-row { flex: 1 1 0; max-height: 170px; position: relative; overflow: hidden; display: flex; align-items: center; gap: 16px; min-height: 96px; padding: 16px 20px; border-radius: 16px;
+            background: #f8fafc; border: 1px solid #e8edf3; }
+        .gr-row::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: var(--gr-w); background: var(--gr-c); opacity: .55; border-radius: 0 3px 0 0; }
+        .gr-icon { flex: 0 0 auto; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; color: #fff;
+            background: linear-gradient(145deg, color-mix(in srgb, var(--gr-c) 78%, #fff), var(--gr-c)); box-shadow: 0 8px 16px -6px var(--gr-c); }
+        .gr-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; line-height: 1.15; }
+        .gr-name { font-size: 13.5px; font-weight: 600; color: #64748b; }
+        .gr-pct { margin-top: 3px; font-size: clamp(1.9rem, 2.6vw, 2.35rem); font-weight: 800; line-height: 1.05; color: var(--gr-ink); font-variant-numeric: tabular-nums; letter-spacing: -.5px; }
+        .gr-count { flex: 0 0 auto; text-align: right; font-size: 15px; font-weight: 700; color: #1e293b; font-variant-numeric: tabular-nums; white-space: nowrap; }
+        #genderChart { container-type: inline-size; }
+        @container (max-width: 310px) {
+            .gr-row { gap: 12px; padding: 14px; min-height: 84px; }
+            .gr-icon { width: 46px; height: 46px; font-size: 21px; }
+            .gr-name { font-size: 12.5px; white-space: nowrap; }
+            .gr-pct { font-size: 1.85rem; }
+            .gr-count { font-size: 13px; }
+        }
+        .gr-empty { padding: 48px 0; text-align: center; color: #94a3b8; font-size: 14px; }
+        @media (max-width: 420px) { .gr-row { gap: 12px; padding: 14px; } .gr-icon { width: 46px; height: 46px; font-size: 21px; } .gr-count { font-size: 13.5px; } }
         .gr-ratio-badge { margin-left: auto; flex: 0 0 auto; align-self: center; display: flex; flex-direction: column; align-items: center; padding: 5px 14px 6px; border-radius: 14px; background: #f5f3ff; border: 1px solid #ddd6fe; line-height: 1.15; }
         .gr-ratio-badge small { font-size: 11.5px; font-weight: 700; color: #6d28d9; }
         .gr-ratio-badge b { font-size: 1.2rem; font-weight: 800; color: #4c1d95; font-variant-numeric: tabular-nums; letter-spacing: -.2px; white-space: nowrap; }
@@ -426,6 +440,8 @@
                 width: 100%;
                 height: 220px;
             }
+
+            .awr-leg-item { flex: none; max-height: none; }
 
             .awr-donut-legend {
                 flex: none;
@@ -732,10 +748,14 @@
 
         .pf-name {
             margin-top: 8px;
+            width: 100%;
+            min-width: 0;
             font-weight: 600;
             font-size: .8rem;
             color: #475569;
             line-height: 1.2;
+            /* การ์ดแคบลงเมื่อจัดแถวละ 3 - ให้ชื่อจังหวัดตัดคำขึ้นบรรทัดใหม่ ไม่ล้นไปทับคอลัมน์ข้าง ๆ */
+            overflow-wrap: anywhere;
         }
 
         .pf-n {
@@ -760,14 +780,28 @@
             }
         }
 
+        /* ตารางตัวเลขเปิดเป็นแผงลอยเหนือปุ่ม (ไม่ดันเนื้อหา) -
+           ความสูงการ์ดจึงคงที่ และการ์ดในแถวเดียวกันไม่ขยับเมื่อกด "ดูข้อมูลตัวเลข" */
+        .chart-figure-footer details { position: relative; }
         .figure-table-wrap {
-            margin-top: 10px;
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: calc(100% + 8px);
+            z-index: 30;
+            margin-top: 0;
             overflow-x: auto;
             overflow-y: auto;
-            max-height: 420px;
-            border: 1px solid #f1f5f9;
-            border-radius: 8px;
+            max-height: min(340px, 60vh);
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 18px 38px -14px rgba(15, 23, 42, .35);
         }
+        @media (prefers-reduced-motion: no-preference) {
+            .chart-figure-footer details[open] > .figure-table-wrap { animation: figTablePop .16s ease-out; }
+        }
+        @keyframes figTablePop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
         table.figure-table {
             width: 100%;
@@ -1150,9 +1184,39 @@
         </div>
     </div>
 
-    <!-- Demographic Charts -->
+    <!-- แถว 1: แผนที่ (แคบ) | ผู้ตอบแบบประเมิน (กลาง) | สถานะความตระหนักรู้ (กว้าง) -->
     <div class="row mb-4">
-        <div class="col-lg-4 mb-4">
+        <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+            <div class="chart-card">
+                <div class="chart-header" style="--chart-accent:#ec4899;">
+                    <div class="chart-header-icon"><i class="fas fa-map-location-dot"></i></div>
+                    <div>
+                        <div class="chart-header-title">ร้อยละความตระหนักรู้</div>
+                        <div class="chart-header-subtitle">{{ filled($effectiveFiscalYear ?? null) ? 'ปี ' . $effectiveFiscalYear : 'ทุกปีงบประมาณ' }} &middot; รายจังหวัด</div>
+                    </div>
+                </div>
+                <div style="position: relative; height: 350px; width: 100%;">
+                    <div id="awarenessMap" style="height: 350px; width: 100%;{{ !empty($hasPendingCriteria) ? ' filter: blur(4px); opacity: .6;' : '' }}"></div>
+                    @if (!empty($hasPendingCriteria))
+                        <div
+                            style="position: absolute; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; z-index:10;">
+                            <div
+                                style="text-align:center; padding:20px; background:white; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); border:1px solid #e2e8f0; max-width:80%;">
+                                <i class="fas fa-clock mb-3" style="font-size:2.5rem; color:#f59e0b;"></i>
+                                <h5 style="font-weight:800; color:#1e293b; margin-bottom:5px;">รอเกณฑ์การประเมินปี 2569</h5>
+                                <p style="font-size:0.9rem; color:#64748b; margin:0; line-height:1.4;">ข้อมูลของปีงบประมาณ
+                                    2569 จะยังไม่ถูกคำนวณในส่วนนี้ จนกว่าจะมีการกำหนดเกณฑ์ที่ชัดเจน</p>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+                <div class="chart-figure-footer">
+                    <p class="chart-caption">เกณฑ์ผ่าน: ร้อยละความตระหนักรู้ตั้งแต่ 80% ขึ้นไป</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4 col-xl-4 mb-4">
             <div class="chart-card">
                 <div class="chart-header" style="--chart-accent:#ec4899;">
                     <div class="chart-header-icon"><i class="fas fa-map-location-dot"></i></div>
@@ -1193,59 +1257,8 @@
                 @endif
             </div>
         </div>
-        <div class="col-lg-4 mb-4">
-            <div class="chart-card">
-                <div class="chart-header" style="--chart-accent:#8b5cf6;">
-                    <div class="chart-header-icon"><i class="fas fa-venus-mars"></i></div>
-                    <div>
-                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
-                        <div class="chart-header-subtitle">แยกตามเพศ</div>
-                    </div>
-                    <div id="genderRatioBadge" class="gr-ratio-badge" style="display: none;"></div>
-                </div>
-                <div id="genderChart" style="height: 320px; width: 100%;"></div>
-            </div>
-        </div>
-        <div class="col-lg-4 mb-4">
-            <div class="chart-card">
-                <div class="chart-header" style="--chart-accent:#3b82f6;">
-                    <div class="chart-header-icon"><i class="fas fa-users"></i></div>
-                    <div>
-                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
-                        <div class="chart-header-subtitle">แยกตามกลุ่มอายุ</div>
-                    </div>
-                </div>
-                <div id="ageChart" style="height: 320px; width: 100%;"></div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Dashboard Grid -->
-    <div class="row mb-4">
-
-        {{-- <div></div> --}}
-        <div class="col-lg-6 mb-4">
-            <div class="chart-card">
-                <div class="chart-header" style="--chart-accent:#f59e0b;">
-                    <div class="chart-header-icon"><i class="fas fa-graduation-cap"></i></div>
-                    <div>
-                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
-                        <div class="chart-header-subtitle">แยกตามระดับการศึกษา</div>
-                    </div>
-                </div>
-                <div id="educationChart" style="height: 350px; width: 100%;"></div>
-                <div class="chart-figure-footer">
-                    <details>
-                        <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
-                        <div class="figure-table-wrap">
-                            <div id="educationTable"></div>
-                        </div>
-                    </details>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-6 mb-4">
+        <div class="col-md-12 col-lg-4 col-xl-5 mb-4">
             <div class="chart-card">
                 <div class="chart-header" style="--chart-accent:#14b8a6;">
                     <div class="chart-header-icon"><i class="fas fa-list-check"></i></div>
@@ -1274,6 +1287,63 @@
                         <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
                         <div class="figure-table-wrap">
                             <div id="passFailTable"></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- แถว 2: เพศ (แคบ) | กลุ่มอายุ (กลาง) | ระดับการศึกษา (กว้าง) -->
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+            <div class="chart-card">
+                <div class="chart-header" style="--chart-accent:#8b5cf6;">
+                    <div class="chart-header-icon"><i class="fas fa-venus-mars"></i></div>
+                    <div>
+                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
+                        <div class="chart-header-subtitle">แยกตามเพศ</div>
+                    </div>
+                    <div id="genderRatioBadge" class="gr-ratio-badge" style="display: none;"></div>
+                </div>
+                <div id="genderChart" style="height: 320px; width: 100%;"></div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4 col-xl-4 mb-4">
+            <div class="chart-card">
+                <div class="chart-header" style="--chart-accent:#3b82f6;">
+                    <div class="chart-header-icon"><i class="fas fa-users"></i></div>
+                    <div>
+                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
+                        <div class="chart-header-subtitle">แยกตามกลุ่มอายุ</div>
+                    </div>
+                </div>
+                <div id="ageChart" style="flex: 1 1 0; min-height: 320px; width: 100%;"></div>
+                <div class="chart-figure-footer">
+                    <details>
+                        <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
+                        <div class="figure-table-wrap">
+                            <div id="ageTable"></div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-lg-4 col-xl-5 mb-4">
+            <div class="chart-card">
+                <div class="chart-header" style="--chart-accent:#f59e0b;">
+                    <div class="chart-header-icon"><i class="fas fa-graduation-cap"></i></div>
+                    <div>
+                        <div class="chart-header-title">สัดส่วนผู้ตอบ</div>
+                        <div class="chart-header-subtitle">แยกตามระดับการศึกษา</div>
+                    </div>
+                </div>
+                <div id="educationChart" style="height: 350px; width: 100%;"></div>
+                <div class="chart-figure-footer">
+                    <details>
+                        <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
+                        <div class="figure-table-wrap">
+                            <div id="educationTable"></div>
                         </div>
                     </details>
                 </div>
@@ -1627,61 +1697,48 @@
                 'มุกดาหาร': '#e84393'
             };
 
-            // --- Gender ratio: a segmented ratio bar + stat rows, not a
-            //     pie. A 2-slice pie is a flagged anti-pattern (angle
-            //     judgments are harder to compare than a single bar split
-            //     in two, and a 2-category composition is exactly the case
-            //     a stat-style card reads faster than a chart) - this gives
-            //     the same information as one glanceable bar plus the exact
-            //     counts, using the same validated genderColorMap hues. ---
+            // --- สัดส่วนผู้ตอบแยกตามเพศ: แถวสถิติซ้อนกัน (หญิง → ชาย → อื่น ๆ)
+            //     แต่ละแถว = ไอคอนวงกลม + ชื่อ + ร้อยละตัวใหญ่ + จำนวนคนชิดขวา
+            //     เส้นบางด้านล่างของแถวบอกสัดส่วนเทียบผู้ตอบทั้งหมด
+            //     อัตราส่วนชาย : หญิง อยู่ที่ป้ายมุมขวาบนของหัวการ์ด ---
             const renderGenderRatio = (containerId, data, colorMap, fallback) => {
                 const container = document.getElementById(containerId);
                 if (!container) return;
-                const entries = Object.entries(data);
-                const total = entries.reduce((sum, [, v]) => sum + v, 0);
                 const esc = (t) => String(t).replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
                 const iconFor = (label) => label === 'ชาย' ? 'fa-mars' : (label === 'หญิง' ? 'fa-venus' : 'fa-genderless');
+                const labelFor = (label) => label === 'ชาย' ? 'ชาย (Male)' : (label === 'หญิง' ? 'หญิง (Female)' : label);
+                const order = {'หญิง': 0, 'ชาย': 1};
+                const entries = Object.entries(data || {})
+                    .map(([label, v]) => [label, Number(v) || 0])
+                    .sort((x, y) => (order[x[0]] ?? 9) - (order[y[0]] ?? 9));
+                const total = entries.reduce((sum, [, v]) => sum + v, 0);
+                const badge = document.getElementById('genderRatioBadge');
 
                 container.style.height = 'auto';
-                container.style.minHeight = '320px';
+                container.style.minHeight = '300px';
                 container.style.display = 'flex';
                 container.style.flexDirection = 'column';
-                container.style.justifyContent = 'center';
-                container.style.gap = '16px';
-                container.style.padding = '4px 2px';
 
                 if (total <= 0) {
-                    container.innerHTML = '<div class="text-center text-muted">ยังไม่มีข้อมูล</div>';
+                    if (badge) badge.style.display = 'none';
+                    container.innerHTML = '<div class="gr-empty">ยังไม่มีผู้ตอบในช่วงที่เลือก</div>';
                     return;
                 }
 
-                // การ์ดต่อเพศ: ไอคอน + ชื่อ + ร้อยละตัวใหญ่ + จำนวนคน (ข้อความใช้สีเข้มของเพศนั้นเพื่อให้อ่านชัด)
-                let tiles = '';
+                let rows = '';
                 entries.forEach(([label, value]) => {
                     const pct = (value / total) * 100;
                     const base = colorMap[label] || fallback;
-                    const ink = shadeHexColor(base, -30);
-                    tiles += '<div class="gr-tile" style="--gr-c:' + base + '; --gr-ink:' + ink + ';">' +
-                        '<span class="gr-icon"><i class="fas ' + iconFor(label) + '"></i></span>' +
-                        '<span class="gr-name">' + esc(label) + '</span>' +
-                        '<span class="gr-pct">' + pct.toFixed(1) + '<em>%</em></span>' +
-                        '<span class="gr-count">' + value.toLocaleString() + ' คน</span></div>';
+                    rows += '<div class="gr-row" style="--gr-c:' + base + '; --gr-ink:' + shadeHexColor(base, -22) + '; --gr-w:' + pct.toFixed(2) + '%;">' +
+                        '<span class="gr-icon" aria-hidden="true"><i class="fas ' + iconFor(label) + '"></i></span>' +
+                        '<span class="gr-main"><span class="gr-name">' + esc(labelFor(label)) + '</span>' +
+                        '<span class="gr-pct">' + pct.toFixed(1) + '%</span></span>' +
+                        '<span class="gr-count">' + value.toLocaleString('en-US') + ' คน</span></div>';
                 });
+                container.innerHTML = '<div class="gr-rows">' + rows + '</div>';
 
-                // แถบแบ่งสัดส่วน: ใส่ชื่อ + ร้อยละในแต่ละช่วงเมื่อกว้างพอ
-                let segs = '';
-                entries.forEach(([label, value], i) => {
-                    const pct = (value / total) * 100;
-                    const base = colorMap[label] || fallback;
-                    const txt = pct >= 20 ? esc(label) + ' ' + pct.toFixed(1) + '%' : (pct >= 9 ? pct.toFixed(1) + '%' : '');
-                    segs += '<div class="gr-seg" title="' + esc(label) + ': ' + pct.toFixed(1) + '% (' + value.toLocaleString() + ' คน)" style="width:' + pct + '%; ' +
-                        'background:linear-gradient(180deg,' + shadeHexColor(base, 16) + ',' + shadeHexColor(base, -14) + ');' + (i > 0 ? ' border-left:3px solid #fff;' : '') + '">' + txt + '</div>';
-                });
-
-                // อัตราส่วนชาย : หญิง ไปอยู่มุมขวาบนของการ์ด (หัวการ์ด)
                 const male = Number(data['ชาย']) || 0;
                 const female = Number(data['หญิง']) || 0;
-                const badge = document.getElementById('genderRatioBadge');
                 if (badge) {
                     if (male > 0 && female > 0) {
                         const r = female / male;
@@ -1691,10 +1748,6 @@
                         badge.style.display = 'none';
                     }
                 }
-
-                container.innerHTML =
-                    '<div class="gr-tiles">' + tiles + '</div>' +
-                    '<div class="gr-bar">' + segs + '</div>';
             };
 
             // --- Ordinal pie chart (age bands) - back to a pie per the
@@ -2495,6 +2548,28 @@
                 el.innerHTML = html;
             };
 
+            // กลุ่มอายุ: คงลำดับช่วงอายุตามข้อมูล (ordinal) ไม่เรียงตามจำนวน
+            const renderAgeTable = (containerId, data) => {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                const entries = Object.entries(data);
+                const total = entries.reduce((sum, [, v]) => sum + v, 0);
+                if (entries.length === 0 || total <= 0) {
+                    el.innerHTML = '';
+                    return;
+                }
+                let html =
+                    '<table class="figure-table"><thead><tr><th>กลุ่มอายุ</th><th>จำนวน (คน)</th><th>ร้อยละ (%)</th></tr></thead><tbody>';
+                entries.forEach(([label, value]) => {
+                    const pct = value / total * 100;
+                    html += '<tr' + (pct >= 20 ? ' class="row-highlight"' : '') + '><td>' + escapeHtml(label.trim()) + '</td><td>' +
+                        Number(value).toLocaleString() + '</td><td>' + pct.toFixed(1) + '%</td></tr>';
+                });
+                html += '<tr class="group-start"><td><b>รวม</b></td><td><b>' + total.toLocaleString() + '</b></td><td><b>100.0%</b></td></tr>';
+                html += '</tbody></table>';
+                el.innerHTML = html;
+            };
+
             const renderPassFailTable = (containerId, data) => {
                 const el = document.getElementById(containerId);
                 if (!el) return;
@@ -2553,7 +2628,109 @@
             }
 
             renderEducationTable('educationTable', educationStats);
+            renderAgeTable('ageTable', ageStats);
             renderPassFailTable('passFailTable', passFailByProvince);
+
+            // --- แผนที่: ร้อยละความตระหนักรู้รายจังหวัด (ร้อยละ = ผ่านเกณฑ์ / ผู้ตอบทั้งหมด ของจังหวัดนั้น
+            //     ตัวเลขชุดเดียวกับการ์ด "สถานะความตระหนักรู้" จึงตรงกันเสมอ) ---
+            (function renderAwarenessMap() {
+                const host = document.getElementById('awarenessMap');
+                const thMap = typeof Highcharts !== 'undefined' && Highcharts.maps && Highcharts.maps['countries/th/th-all'];
+                if (!host || !thMap || typeof Highcharts.mapChart !== 'function') return;
+
+                const hcMapKeys = {
+                    'อุบลราชธานี': 'th-ur', 'ศรีสะเกษ': 'th-si', 'ยโสธร': 'th-ys',
+                    'อำนาจเจริญ': 'th-ac', 'มุกดาหาร': 'th-md'
+                };
+                // ขยับป้ายของจังหวัดที่พื้นที่แคบ/ติดกัน ไม่ให้ป้ายทับกัน (พิกเซลจากกึ่งกลางพื้นที่)
+                const labelOffsets = {
+                    'ยโสธร': { x: -26, y: -4 }, 'อำนาจเจริญ': { x: 16, y: 10 },
+                    'อุบลราชธานี': { x: 18, y: 16 }, 'ศรีสะเกษ': { x: -6, y: 10 }
+                };
+                const points = Object.entries(passFailByProvince)
+                    .filter(([name]) => hcMapKeys[name])
+                    .map(([name, v]) => {
+                        const pass = v.pass || 0;
+                        const total = pass + (v.fail || 0);
+                        return {
+                            name,
+                            'hc-key': hcMapKeys[name],
+                            dataLabels: labelOffsets[name] || {},
+                            value: total > 0 ? Math.round(pass / total * 10000) / 100 : 0,
+                            total_people: total,
+                            passed_count: pass
+                        };
+                    });
+
+                const targetKeys = Object.values(hcMapKeys);
+                const regionMap = { ...thMap, features: thMap.features.filter(f => targetKeys.includes(f.properties['hc-key'])) };
+
+                Highcharts.mapChart('awarenessMap', {
+                    chart: { map: regionMap, backgroundColor: 'transparent', spacing: [4, 4, 4, 4] },
+                    title: { text: '' },
+                    credits: { enabled: false },
+                    mapNavigation: { enabled: false },
+                    colorAxis: {
+                        dataClasses: [
+                            { to: 79.99, color: '#eb7a72', name: 'ไม่ผ่านเกณฑ์ ( < 80% )' },
+                            { from: 80, color: '#4dbd98', name: 'ผ่านเกณฑ์ ( ≥ 80% )' }
+                        ]
+                    },
+                    legend: {
+                        enabled: true, layout: 'horizontal', align: 'center', verticalAlign: 'bottom',
+                        itemStyle: { fontWeight: 'normal', fontSize: '12px' }, itemMarginTop: 6
+                    },
+                    tooltip: {
+                        useHTML: true, outside: true, padding: 0, borderWidth: 0, shadow: true,
+                        backgroundColor: 'rgba(255, 255, 255, 0.98)', headerFormat: '',
+                        pointFormatter: function () {
+                            const ok = this.value >= 80;
+                            const color = ok ? '#10b981' : '#ef4444';
+                            const row = (label, val, strong) =>
+                                '<tr><td style="color:#64748b; padding:4px 0;">' + label + '</td>' +
+                                '<td style="text-align:right; font-weight:' + (strong ? 800 : 700) + '; color:#334155;' + (strong ? ' font-size:1.1rem;' : '') + '">' + val + '</td></tr>';
+                            return '<div style="padding:15px; min-width:220px; font-family:\'Sarabun\', sans-serif;">' +
+                                '<div style="font-size:16px; font-weight:800; color:#1e293b; margin-bottom:12px; border-bottom:1px solid #f1f5f9; padding-bottom:8px;">' + this.name + '</div>' +
+                                '<table style="width:100%; border-collapse:collapse;">' +
+                                row('แบบประเมินทั้งหมด:', this.total_people.toLocaleString() + ' <small>คน</small>') +
+                                row('ระดับความตระหนักรู้:', this.passed_count.toLocaleString() + ' <small>คน</small>') +
+                                row('ร้อยละความตระหนักรู้:', this.value.toLocaleString() + '%', true) +
+                                '</table>' +
+                                '<div style="margin-top:12px; padding:8px; border-radius:6px; text-align:center; background:' + (ok ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + color + '20;">' +
+                                '<span style="color:' + color + '; font-weight:800; font-size:12px;">สถานะ: ' + (ok ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์') + ' (เป้าหมาย 80%)</span></div></div>';
+                        }
+                    },
+                    plotOptions: {
+                        map: {
+                            allAreas: false, joinBy: ['hc-key', 'hc-key'], borderColor: '#FFFFFF', borderWidth: 2,
+                            states: { hover: { enabled: true, brightness: 0, borderColor: '#1e293b', borderWidth: 3 } },
+                            dataLabels: {
+                                enabled: true, useHTML: true, allowOverlap: true, crop: false, overflow: 'allow',
+                                formatter: function () {
+                                    const pctColor = (this.point.value || 0) >= 80 ? '#047857' : '#b91c1c';
+                                    return '<div style="text-align:center; line-height:1.15; font-family:\'Sarabun\', sans-serif; pointer-events:none; ' +
+                                        'background:rgba(255,255,255,0.93); border-radius:9px; padding:1px 6px 2px; box-shadow:0 1px 4px rgba(15,23,42,0.25); white-space:nowrap;">' +
+                                        '<div style="font-weight:700; font-size:11px; color:#1e293b;">' + this.point.name + '</div>' +
+                                        '<div style="font-size:14px; font-weight:800; color:' + pctColor + ';">' + (this.point.value || 0) + '%</div></div>';
+                                },
+                                style: { textOutline: 'none', fontFamily: "'Sarabun', sans-serif", pointerEvents: 'none' }
+                            }
+                        }
+                    },
+                    series: [{ data: points, name: 'ร้อยละความตระหนักรู้' }]
+                });
+            })();
+        });
+
+        // ปิดแผงตารางตัวเลขเมื่อคลิกที่อื่นหรือกด Esc
+        document.addEventListener('click', (e) => {
+            document.querySelectorAll('.chart-figure-footer details[open]').forEach((d) => {
+                if (!d.contains(e.target)) d.removeAttribute('open');
+            });
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            document.querySelectorAll('.chart-figure-footer details[open]').forEach((d) => d.removeAttribute('open'));
         });
     </script>
 @endsection
