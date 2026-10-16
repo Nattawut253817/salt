@@ -1612,9 +1612,14 @@
                             $minYear = 2568;
                             $selectedYear = old('fiscal_year', $fiscal_year ?? $currentYear);
                         @endphp
-                        @for($year = $maxYear; $year >= $minYear; $year--)
-                            <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>{{ $year }}</option>
-                        @endfor
+                        @php
+                            // ปีที่เลือกได้ = ปีที่เปิดใช้ใน /admin/fiscal-years (+ปีที่มีข้อมูลจริง)
+                            $mainYearList = !empty($importYears) ? array_map('intval', (array) $importYears) : range($maxYear, $minYear);
+                            if (!in_array((int) $selectedYear, $mainYearList, true)) { $selectedYear = in_array($currentYear, $mainYearList, true) ? $currentYear : $mainYearList[0]; }
+                        @endphp
+                        @foreach($mainYearList as $year)
+                            <option value="{{ $year }}" {{ (int) $selectedYear === (int) $year ? 'selected' : '' }}>{{ $year }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="form-group">
@@ -2015,12 +2020,27 @@
             <div class="import-field-group">
                 <label for="import_fiscal_year"><i class="fas fa-calendar-alt"></i> ปีงบประมาณของรายงานนี้</label>
                 <select id="import_fiscal_year">
-                    @php $importMaxYear = (int) date('Y') + 543; $importMinYear = 2568; @endphp
-                    @for($impYear = $importMaxYear; $impYear >= $importMinYear; $impYear--)
-                        <option value="{{ $impYear }}">{{ $impYear }}</option>
-                    @endfor
+                    {{-- รายการปีมาจากหน้า "จัดการปีงบประมาณ" (module kidney): ปีที่มีข้อมูลจริง + ปีที่เปิดเพิ่ม - ปีที่ซ่อน --}}
+                    @php
+                        $importYearList = !empty($importYears) ? $importYears : range((int) date('Y') + 543, 2568);
+                        $importDefaultYear = in_array((int) date('Y') + 543, $importYearList, true) ? (int) date('Y') + 543 : $importYearList[0];
+                    @endphp
+                    @foreach($importYearList as $impYear)
+                        <option value="{{ $impYear }}"{{ (int) $impYear === $importDefaultYear ? ' selected' : '' }}>{{ $impYear }}</option>
+                    @endforeach
                 </select>
             </div>
+
+            @if(auth()->user()->isSuperAdmin())
+            <div class="import-field-group" id="import_group_area">
+                <label for="import_area_choice"><i class="fas fa-location-dot"></i> พื้นที่ดำเนินงานของรายงานนี้</label>
+                <select id="import_area_choice">
+                    <option value="">ตามพื้นที่เดิมของหน่วยงาน (ค่าเริ่มต้น - เลือกในฟอร์มหลักได้ภายหลัง)</option>
+                    <option value="__new__">+ เพิ่มพื้นที่ดำเนินงานใหม่ (ปักหมุดในฟอร์มหลัก)</option>
+                </select>
+                <small id="import_area_hint" style="display:block; margin-top:4px; color:#64748b; font-size:.78rem;">เลือกหน่วยงานด้านบนก่อน รายการพื้นที่ที่หน่วยงานนี้เคยปักไว้จะแสดงที่นี่</small>
+            </div>
+            @endif
 
             <div class="import-field-group" id="import_group_file">
                 <label for="import_docx_file"><i class="fas fa-paperclip"></i> ไฟล์ Word (.docx)</label>
@@ -3966,7 +3986,35 @@
         //       in the public registration form (pages/staff.blade.php),
         //       reusing that form's own /get-districts, /get-hospitals and
         //       /get-subdistrict-hospitals endpoints. -----
+        // SuperAdmin: รายการพื้นที่ดำเนินงานที่หน่วยงานเป้าหมายมีอยู่ ให้เลือกก่อนนำข้อมูลไปเติม
+        const importAreaChoice = document.getElementById('import_area_choice');
+        const importAreaHint = document.getElementById('import_area_hint');
+        let importAreaLoadedFor = null;
+        async function refreshImportAreaOptions() {
+            if (!importAreaChoice || !resolvedTargetUserId || importAreaLoadedFor === String(resolvedTargetUserId)) return;
+            const forUser = String(resolvedTargetUserId);
+            try {
+                const res = await fetch(`{{ route('admin.kidney-dhb.operating-area-context') }}?target_user_id=${encodeURIComponent(forUser)}`);
+                const ctx = await res.json();
+                if (forUser !== String(resolvedTargetUserId)) return;
+                const pins = (ctx.registered_pins || []).filter(p => !p.view_only);
+                importAreaChoice.innerHTML = '';
+                const optDefault = new Option('ตามพื้นที่เดิมของหน่วยงาน (ค่าเริ่มต้น - เลือกในฟอร์มหลักได้ภายหลัง)', '');
+                importAreaChoice.add(optDefault);
+                pins.forEach(function (p) {
+                    importAreaChoice.add(new Option(p.breadcrumb ? (p.display_name + ' (' + p.breadcrumb + ')') : p.display_name, p.id));
+                });
+                importAreaChoice.add(new Option('+ เพิ่มพื้นที่ดำเนินงานใหม่ (ปักหมุดในฟอร์มหลัก)', '__new__'));
+                importAreaLoadedFor = forUser;
+                if (importAreaHint) importAreaHint.textContent = pins.length ? ('หน่วยงานนี้มีพื้นที่ที่ปักไว้แล้ว ' + pins.length + ' แห่ง') : 'หน่วยงานนี้ยังไม่มีพื้นที่ที่ปักไว้ - เลือก "เพิ่มพื้นที่ดำเนินงานใหม่" ได้';
+            } catch (e) { /* ใช้ค่าเริ่มต้น (ตามพื้นที่เดิม) */ }
+        }
+        if (importAreaChoice) {
+            ['focus', 'mousedown'].forEach(ev => importAreaChoice.addEventListener(ev, refreshImportAreaOptions));
+        }
+
         function setTargetStatus(html, kind) {
+            if (importAreaChoice) setTimeout(refreshImportAreaOptions, 0);
             if (!html) {
                 targetStatus.style.display = 'none';
                 return;
@@ -4548,6 +4596,12 @@
                 source: useAccountInfo ? 'account' : 'import',
             });
 
+            (function () {
+                const mainFy = document.getElementById('fiscal_year');
+                if (mainFy && !Array.from(mainFy.options).some(o => o.value === String(chosenYear))) {
+                    mainFy.add(new Option(chosenYear, chosenYear)); // ปีจากหน้าจัดการปีงบประมาณที่ฟอร์มหลักยังไม่มีในรายการ
+                }
+            })();
             document.getElementById('fiscal_year').value = chosenYear;
             document.getElementById('quarter').value = chosenQuarter;
             document.getElementById('fiscal_year').dataset.prev = chosenYear;
@@ -4578,6 +4632,17 @@
             // placed last so every other field is already filled in and
             // visible the instant the modal does close.
             await oaRescopePromise;
+
+            // SuperAdmin: เลือกพื้นที่ดำเนินงานจากหน้าต่างนำเข้า (ว่าง = ตามพื้นที่เดิม ไม่เปลี่ยนพฤติกรรมเดิม)
+            const areaPick = importAreaChoice ? importAreaChoice.value : '';
+            if (areaPick === '__new__') {
+                // silent: setOaMode('new') แบบปกติจะล้างช่องข้อความทั้งหมด (resetFormFields) ซึ่งจะลบข้อมูลที่เพิ่งเติมจากไฟล์ Word
+                setOaMode('new', { silent: true });
+                await resetOaPickerToBlank('new');
+            } else if (areaPick) {
+                setOaMode('existing', { silent: true });
+                applyRegisteredPinSelection(areaPick, false);
+            }
 
             closeModal();
         });

@@ -30,6 +30,10 @@
         $reporterPosition = $importReporter['position'] ?? ($assessment->user->User_position ?? null);
         $reporterPhoneRaw = $importReporter['phone'] ?? ($assessment->user->phone ?? null);
         $reporterEmail = $importReporter['email'] ?? ($assessment->user->email ?? null);
+        // บัญชีตัวแทนที่ระบบสร้างตอนนำเข้า Word (import-r…@import.invalid) ไม่ใช่อีเมลจริง - ไม่แสดง/ไม่ส่งออก
+        if ($reporterEmail !== null && str_ends_with(strtolower(trim((string) $reporterEmail)), '@import.invalid')) {
+            $reporterEmail = null;
+        }
 
         $phoneDigits = preg_replace('/\D/', '', (string) ($reporterPhoneRaw ?? ''));
         $phoneForPrint = strlen($phoneDigits) === 10
@@ -728,7 +732,7 @@
                 <tr>
                     <td>
                         <div class="content-pre" style="line-height: 1.8;">
-                            {!! nl2br(e(trim($assessment->problems_obstacles ?? '-'))) !!}
+                            {!! nl2br(e(trim((string) ($assessment->problems_obstacles ?? '')) !== '' ? trim((string) $assessment->problems_obstacles) : '-')) !!}
                         </div>
                     </td>
                 </tr>
@@ -741,7 +745,7 @@
                 <tr>
                     <td>
                         <div class="content-pre" style="line-height: 1.8;">
-                            {!! nl2br(e(trim($assessment->recommendations_opportunities ?? '-'))) !!}
+                            {!! nl2br(e(trim((string) ($assessment->recommendations_opportunities ?? '')) !== '' ? trim((string) $assessment->recommendations_opportunities) : '-')) !!}
                         </div>
                     </td>
                 </tr>

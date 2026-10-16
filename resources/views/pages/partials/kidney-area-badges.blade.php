@@ -11,7 +11,7 @@
                         <i class="fas fa-map-marker-alt"></i><span class="area-badge-text">{{ $ar['place'] ?: '-' }}</span>
                     </span>
                     @if(!empty($ar['issue']))
-                        <div class="area-issue-line">ประเด็น: {{ $ar['issue'] }}</div>
+                        <div class="area-issue-line">หน่วยงาน / ประเด็น: {{ $ar['issue'] }}</div>
                     @endif
                 </div>
             @endforeach
@@ -22,6 +22,6 @@
         <i class="fas fa-map-marker-alt"></i>{{ $data['area_place'] ?? $data['operating_area'] }}
     </span>
     @if(!empty($data['area_issue']))
-        <div class="area-issue-line">ประเด็น: {{ $data['area_issue'] }}</div>
+        <div class="area-issue-line">หน่วยงาน / ประเด็น: {{ $data['area_issue'] }}</div>
     @endif
 @endif

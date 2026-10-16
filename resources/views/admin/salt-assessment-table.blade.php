@@ -427,6 +427,37 @@
             transition: transform 0.18s cubic-bezier(.34,1.56,.64,1), box-shadow 0.18s ease, filter 0.18s ease;
         }
 
+        .btn-do-assess.btn-follow {
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            box-shadow: 0 2px 6px rgba(190, 24, 93, 0.35);
+        }
+        .btn-do-assess.btn-follow:hover,
+        .btn-do-assess.btn-follow:focus-visible { box-shadow: 0 5px 14px rgba(190, 24, 93, 0.48); }
+
+        .btn-edit-round {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+            color: #fff;
+            font-size: 0.74rem;
+            text-decoration: none;
+            transition: box-shadow 0.15s ease, filter 0.15s ease;
+        }
+        a.btn-edit-round:hover,
+        a.btn-edit-round:focus-visible {
+            color: #fff;
+            text-decoration: none;
+            filter: brightness(1.08);
+            box-shadow: 0 5px 14px rgba(79, 70, 229, 0.48);
+            outline: none;
+        }
+
         .btn-do-assess.btn-do-assess-lg {
             height: 36px;
             padding: 0 20px 0 16px;
@@ -691,18 +722,34 @@
 
                     <td class="text-center align-middle">
                         <div class="row-actions">
-                            {{-- เปิดแบบฟอร์มทำแบบประเมินของปี/ไตรมาสนี้ พร้อมข้อมูลเดิม เพื่อแก้ไขต่อได้ --}}
-                            <a href="{{ route('admin.report-progress', array_filter([
+                            @php
+                                $saltFormUrl = route('admin.report-progress', array_filter([
                                     'fiscal_year' => $item->fiscal_year,
                                     'quarter' => $item->quarter,
                                     'only' => 1,
                                     'target_user_id' => auth()->user()->User_rank_id == 1 ? $item->user_id : null,
-                                ])) }}"
-                                class="btn-do-assess trigger-loader"
-                                title="{{ auth()->user()->User_rank_id == 1 ? 'ติดตามผลการประเมิน' : 'ทำแบบประเมิน / แก้ไขข้อมูล' }}">
-                                <i class="fas {{ auth()->user()->User_rank_id == 1 ? 'fa-eye' : 'fa-file-signature' }}"></i>
-                                <span>{{ auth()->user()->User_rank_id == 1 ? 'ติดตาม' : 'ทำแบบประเมิน' }}</span>
-                            </a>
+                                ]));
+                                $saltIsSuper = auth()->user()->isSuperAdmin();
+                                $saltIsL1 = auth()->user()->User_rank_id == 1;
+                            @endphp
+                            @if($saltIsL1)
+                                {{-- สคร.: ติดตาม = ดูรายละเอียดอย่างเดียว; SuperAdmin มีปุ่มแก้ไข (ไอคอนดินสอ) เพิ่มอีกปุ่ม --}}
+                                <a href="{{ $saltIsSuper ? route('admin.salt-assessment.show', $item->id) : $saltFormUrl }}"
+                                    class="btn-do-assess btn-follow trigger-loader" title="ติดตามผลการประเมิน">
+                                    <i class="fas fa-magnifying-glass-chart"></i>
+                                    <span>ติดตาม</span>
+                                </a>
+                                @if($saltIsSuper)
+                                <a href="{{ $saltFormUrl }}" class="btn-edit-round trigger-loader" title="แก้ไขข้อมูล (SuperAdmin)" aria-label="แก้ไขข้อมูล">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                                @endif
+                            @else
+                                <a href="{{ $saltFormUrl }}" class="btn-do-assess trigger-loader" title="ทำแบบประเมิน / แก้ไขข้อมูล">
+                                    <i class="fas fa-file-signature"></i>
+                                    <span>ทำแบบประเมิน</span>
+                                </a>
+                            @endif
                             <form action="{{ route('admin.salt-assessment.destroy', $item->id) }}" method="POST"
                                 style="display: inline;" onsubmit="return confirmDelete(event)">
                                 @csrf

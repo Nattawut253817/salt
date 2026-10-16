@@ -138,6 +138,7 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::get('/kidney-dhb/operating-area-context', [AdminController::class, 'getKidneyDhbOperatingAreaContext'])->name('admin.kidney-dhb.operating-area-context');
     Route::get('/kidney-dhb/{id}', [AdminController::class, 'showKidneyDHB'])->name('admin.kidney-dhb.show');
     Route::put('/kidney-dhb/{id}', [AdminController::class, 'updateKidneyDHB'])->name('admin.kidney-dhb.update');
+    Route::post('/kidney-dhb/{id}/change-area', [AdminController::class, 'changeKidneyDhbArea'])->middleware('super.admin')->name('admin.kidney-dhb.change-area');
     Route::post('/kidney-dhb/{id}/confirm', [AdminController::class, 'confirmKidneyDHB'])->name('admin.kidney-dhb.confirm');
     Route::get('/admin/kidney-dhb/{id}/export-pdf', [AdminController::class, 'exportKidneyDHBPdf'])->name('admin.kidney-dhb.export-pdf');
     Route::get('/admin/kidney-dhb/{id}/export-word', [AdminController::class, 'exportKidneyDHBWord'])->name('admin.kidney-dhb.export-word');

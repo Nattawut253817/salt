@@ -411,6 +411,17 @@
         }
 
         /* ปุ่ม "ติดตาม" ของหน่วยงานอื่น (ดูอย่างเดียว) - สีชมพูเข้มต่างจากปุ่ม "รายงานผล" สีฟ้า */
+        .btn-view.btn-edit-row {
+            background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%);
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+        }
+
+        .btn-view.btn-edit-row { font-size: .74rem; width: 28px; min-width: 28px; height: 28px; padding: 0; }
+        .btn-view.btn-edit-row:hover,
+        .btn-view.btn-edit-row:focus-visible {
+            box-shadow: 0 5px 14px rgba(79, 70, 229, 0.48);
+        }
+
         .btn-view.btn-follow {
             background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
             box-shadow: 0 2px 6px rgba(190, 24, 93, 0.35);
@@ -741,7 +752,7 @@
                             @foreach($pa['areas'] as $ar)
                                 <div class="area-row">
                                     <div class="area-place">{{ $ar['place_name'] ?: '-' }}</div>
-                                    @if(!empty($ar['issue']))<div class="area-issue" title="ประเด็น">ประเด็น: {{ $ar['issue'] }}</div>@endif
+                                    @if(!empty($ar['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $ar['issue'] }}</div>@endif
                                 </div>
                             @endforeach
                             </div>
@@ -749,7 +760,7 @@
                         <span class="area-count" title="รายงานนี้มี 1 พื้นที่"><i class="fas fa-location-dot"></i> 1 พื้นที่</span>
                         <div class="area-grid"><div class="area-row">
                         <div class="area-place">{{ ($pa['place_name'] ?? $pa['display_name']) ?: '-' }}</div>
-                        @if(!empty($pa['issue']))<div class="area-issue" title="ประเด็น">ประเด็น: {{ $pa['issue'] }}</div>@endif
+                        @if(!empty($pa['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $pa['issue'] }}</div>@endif
                         </div></div>
                         @endif
                         <div class="pa-note">เลือกไว้แล้ว · ยังไม่มีรายงานผล</div>
@@ -835,7 +846,7 @@
                                 <div class="area-row">
                                     <div class="area-place">{{ $ar['place'] ?: '-' }}</div>
                                     @if(!empty($ar['issue']))
-                                        <div class="area-issue" title="ประเด็น">ประเด็น: {{ $ar['issue'] }}</div>
+                                        <div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $ar['issue'] }}</div>
                                     @endif
                                 </div>
                             @endforeach
@@ -845,7 +856,7 @@
                             <div class="area-grid"><div class="area-row">
                             <div class="area-place">{{ ($item->area_place ?? $item->operating_area) ?: '-' }}</div>
                             @if(!empty($item->area_issue))
-                                <div class="area-issue" title="ประเด็น">ประเด็น: {{ $item->area_issue }}</div>
+                                <div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $item->area_issue }}</div>
                             @endif
                             </div></div>
                         @endif
@@ -894,6 +905,12 @@
                                 <i class="fas {{ $viewOnly ? 'fa-magnifying-glass-chart' : 'fa-file-lines' }}"></i>
                                 <span>{{ $viewOnly ? 'ติดตาม' : 'รายงานผล' }}</span>
                             </a>
+                            @if (auth()->user()->isSuperAdmin())
+                            <a href="{{ route('admin.kidney-dhb.show', $item->id) }}#edit"
+                                class="btn-action btn-view btn-edit-row trigger-loader" title="แก้ไขข้อมูล (SuperAdmin)" aria-label="แก้ไขข้อมูล">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                            @endif
                             @if (!$viewOnly || $isLevel1)
                             <form action="{{ route('admin.kidney-dhb.destroy', $item->id) }}" method="POST"
                                 style="display: inline;" onsubmit="return confirmDelete(event)">
@@ -942,7 +959,7 @@
                             @foreach($pt['areas'] as $ar)
                                 <div class="area-row">
                                     <div class="area-place">{{ $ar['place_name'] ?: '-' }}</div>
-                                    @if(!empty($ar['issue']))<div class="area-issue" title="ประเด็น">ประเด็น: {{ $ar['issue'] }}</div>@endif
+                                    @if(!empty($ar['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $ar['issue'] }}</div>@endif
                                     @if(!empty($ar['breadcrumb']))<div class="pa-note" style="color:#64748b;font-weight:400;">{{ $ar['breadcrumb'] }}</div>@endif
                                 </div>
                             @endforeach
@@ -951,7 +968,7 @@
                         <span class="area-count" title="รายงานนี้มี 1 พื้นที่"><i class="fas fa-location-dot"></i> 1 พื้นที่</span>
                         <div class="area-grid"><div class="area-row">
                         <div class="area-place">{{ ($pt['place_name'] ?? $pt['display_name']) ?: '-' }}</div>
-                        @if(!empty($pt['issue']))<div class="area-issue" title="ประเด็น">ประเด็น: {{ $pt['issue'] }}</div>@endif
+                        @if(!empty($pt['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $pt['issue'] }}</div>@endif
                         @if($pt['breadcrumb'])<div class="pa-note" style="color:#64748b;font-weight:400;">{{ $pt['breadcrumb'] }}</div>@endif
                         </div></div>
                         @endif

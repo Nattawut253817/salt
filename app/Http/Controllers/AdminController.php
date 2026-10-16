@@ -714,6 +714,8 @@ class AdminController extends Controller
             'selectedPinId' => ctype_digit((string) $request->query('pin')) ? (int) $request->query('pin') : null,
             'userOwnLocation' => $userOwnLocation,
             'canImportWord' => $canImportWord,
+            // ปีงบประมาณในช่อง "ปีงบประมาณของรายงานนี้" (นำเข้า Word) - ใช้รายการเดียวกับหน้า "จัดการปีงบประมาณ" ของ พชอ.ไต
+            'importYears' => FiscalYear::selectableYearsFor('kidney', KidneyAssessment::distinct()->pluck('fiscal_year'))->all(),
         ]);
     }
 
@@ -3388,8 +3390,9 @@ class AdminController extends Controller
 
         // สคร. (level 1) มีหน้าที่ดูและยืนยันข้อมูลเท่านั้น: หน้ารายละเอียดนี้เป็นโหมดดูอย่างเดียว
         // (ไม่แสดงปุ่ม "บันทึกข้อมูลไตรมาส" และช่องแก้ไข)
+        // ยกเว้น SuperAdmin: แก้ไขได้ทุกรายการ (รวมรายการที่นำเข้าจากไฟล์ Word) เผื่อต้องเพิ่ม/แก้ข้อมูล
         if (auth()->user()->User_rank_id == 1) {
-            $canEdit = false;
+            $canEdit = auth()->user()->isSuperAdmin();
         }
 
         // ข้อมูล 10 หัวข้อ (ข้อ 1-8.3) "ไหล" สะสมตั้งแต่ไตรมาส 1 ถึงไตรมาสที่เลือก - หลักเดียวกับ
@@ -3488,6 +3491,11 @@ class AdminController extends Controller
         }
 
         $areaGeo = $this->kidneyAssessmentAreaGeo($assessment);
+        // SuperAdmin: รายการพื้นที่ (หมุด) ที่เปลี่ยนให้รายงานนี้ได้ - เฉพาะหมุดรายงานได้ (ไม่รวมหมุดแสดงผล)
+        // (SuperAdmin เห็นหมุดทุกพื้นที่ ไม่จำกัดขอบเขตของบัญชีเจ้าของรายการ)
+        $areaPinOptions = auth()->user()->isSuperAdmin()
+            ? $this->operatingAreaPinsForUser(auth()->user(), false)->filter(fn($p) => empty($p['view_only']))->values()
+            : collect();
 
         // รูปภาพประกอบของรายงานที่กำลังดู (ไม่ไหลข้ามไตรมาส)
         $kimgs = \App\Services\KidneyImageService::groupedFor($assessment->id);
@@ -3518,12 +3526,91 @@ class AdminController extends Controller
             'canEdit',
             'quarterLocked',
             'areaGeo',
+            'areaPinOptions',
             'stepQuarters',
             'stepEarlier',
             'fieldAttr',
             'isNew',
             'anchorId'
         ));
+    }
+
+    /**
+     * SuperAdmin: เปลี่ยนพื้นที่ดำเนินงานของรายงาน พชอ.ไต (เช่น รายการที่นำเข้าจาก Word แล้วเลือกพื้นที่ผิด/ยังไม่ได้เลือก)
+     * เปลี่ยนให้ทุกไตรมาสของหน่วยงาน/ปีงบประมาณ/พื้นที่เดียวกัน เพื่อให้ข้อมูลที่ไหลข้ามไตรมาสยังอยู่ชุดเดียวกัน
+     */
+    public function changeKidneyDhbArea(Request $request, $id)
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+        $anchor = KidneyAssessment::with('user')->findOrFail($id);
+
+        if ($request->boolean('new_pin')) {
+            // ปักหมุดใหม่ (คลิกบนแผนที่) แล้วใช้เป็นพื้นที่ของรายงานนี้ทันที
+            $v = $request->validate([
+                'label' => 'nullable|string|max:255',
+                'province_id' => 'required|integer|exists:province,province_id',
+                'district_id' => 'nullable|integer|exists:district,district_id',
+                'tambon_id' => 'nullable|integer|exists:tambon,tambon_id',
+                'village_id' => 'nullable|integer|exists:village,village_id',
+                'village_name_snapshot' => 'nullable|string|max:255',
+                'latitude' => 'required|numeric|between:-90,90',
+                'longitude' => 'required|numeric|between:-180,180',
+            ]);
+            $v['label'] = trim((string) ($v['label'] ?? '')) ?: null;
+            $v['fiscal_year'] = (int) $anchor->fiscal_year;
+            $v['created_by'] = auth()->id();
+            // เลือกแค่จังหวัด (หรือจังหวัด+อำเภอ) ก็ปักได้ - คอลัมน์ district_id บังคับมีค่า จึงใช้ 0 = ไม่ระบุอำเภอ
+            $v['district_id'] = $v['district_id'] ?? 0;
+            $v['tambon_id'] = $v['tambon_id'] ?? null;
+            $v['village_id'] = $v['village_id'] ?? null;
+            $pin = OperatingAreaPin::create($v);
+            $pin->load(['province', 'district', 'tambon', 'village']);
+        } else {
+            $request->validate(['pin_id' => 'required|integer']);
+            $pin = OperatingAreaPin::with(['province', 'district', 'tambon', 'village'])->findOrFail((int) $request->pin_id);
+        }
+        if (OperatingAreaPin::hasDisplayColumns() && ($pin->display_only ?? false)) {
+            return back()->withErrors(['error' => 'พื้นที่นี้เป็นหมุดแสดงผล เลือกไปรายงานไม่ได้']);
+        }
+
+        $placeName = $pin->village_name_snapshot
+            ?? optional($pin->village)->village_name
+            ?? optional($pin->tambon)->tambon_name
+            ?? optional($pin->district)->district_name
+            ?? optional($pin->province)->province_name;
+        $newName = $pin->label ?: $placeName;
+
+        $series = KidneyAssessment::where('user_id', $anchor->user_id)
+            ->where('fiscal_year', $anchor->fiscal_year)
+            ->where('operating_area', $anchor->operating_area)
+            ->get();
+
+        if ($newName !== $anchor->operating_area) {
+            $clash = KidneyAssessment::where('user_id', $anchor->user_id)
+                ->where('fiscal_year', $anchor->fiscal_year)
+                ->where('operating_area', $newName)
+                ->whereIn('quarter', $series->pluck('quarter')->all())
+                ->exists();
+            if ($clash) {
+                return back()->withErrors(['error' => 'หน่วยงานนี้มีรายงานของพื้นที่ "' . $newName . '" ในไตรมาสเดียวกันของปีงบประมาณนี้อยู่แล้ว จึงเปลี่ยนไม่ได้']);
+            }
+        }
+
+        foreach ($series as $row) {
+            $row->operating_area = $newName;
+            $row->operating_area_pin_id = $pin->id;
+            $row->operating_area_province_id = $pin->province_id;
+            $row->operating_area_district_id = $pin->district_id;
+            $row->operating_area_tambon_id = $pin->tambon_id;
+            $row->operating_area_village_id = $pin->village_id;
+            $row->operating_area_village_name_snapshot = $pin->village_name_snapshot;
+            $row->operating_area_latitude = $pin->latitude;
+            $row->operating_area_longitude = $pin->longitude;
+            $row->save();
+        }
+
+        return redirect()->route('admin.kidney-dhb.show', $anchor->id)
+            ->with('success', 'เปลี่ยนพื้นที่ดำเนินงานเป็น "' . $newName . '" เรียบร้อยแล้ว (' . $series->count() . ' ไตรมาส)');
     }
 
     /**
@@ -3659,6 +3746,8 @@ class AdminController extends Controller
     {
         $anchor = KidneyAssessment::with('user')->findOrFail($id);
         abort_unless($this->canManageKidneyAssessment(auth()->user(), $anchor), 403);
+        // สคร. (level 1) ทั่วไปดูอย่างเดียว - เฉพาะ SuperAdmin เท่านั้นที่บันทึกแก้ไขได้
+        abort_if(auth()->user()->User_rank_id == 1 && !auth()->user()->isSuperAdmin(), 403);
 
         $catFields = ['category_1', 'category_2', 'category_3', 'category_4', 'category_5', 'category_6', 'category_7',
             'category_8_1', 'category_8_2', 'category_8_3'];

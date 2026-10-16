@@ -171,6 +171,16 @@
             text-decoration: none;
         }
 
+        .kd-area-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 0 0 14px; padding: 10px 12px; border: 1px solid #dbe3f7; border-radius: 12px; background: #f6f8ff; }
+        .kd-area-pick label { margin: 0; font-weight: 700; font-size: .82rem; color: #3340a5; white-space: nowrap; }
+        .kd-area-pick select { flex: 1 1 280px; min-width: 0; height: 36px; border: 1px solid #c7d2fe; border-radius: 10px; padding: 0 10px; background: #fff; font-size: .85rem; }
+        .kd-area-pick-btn { height: 36px; padding: 0 16px; border: 0; border-radius: 999px; color: #fff; font-weight: 700; font-size: .8rem; cursor: pointer; background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%); box-shadow: 0 2px 6px rgba(79,70,229,.35); }
+        .kd-np-input { flex: 1 1 200px; min-width: 0; height: 36px; border: 1px solid #c7d2fe; border-radius: 10px; padding: 0 10px; background: #fff; font-size: .85rem; }
+        .kd-newpin select { flex: 1 1 150px; }
+        .kd-area-new-toggle { background: linear-gradient(135deg, #f472b6 0%, #be185d 100%); box-shadow: 0 2px 6px rgba(190,24,93,.35); }
+        .kd-area-pick-btn:disabled { opacity: .5; cursor: not-allowed; filter: none; }
+        .kd-area-pick-btn:hover { filter: brightness(1.08); }
+        .kd-area-pick small { flex-basis: 100%; color: #64748b; font-size: .74rem; }
         /* ===== โหมดแก้ไข + การ์ดพื้นที่การดำเนินงาน (หมุดเดียวของรายการนี้) ===== */
         #kdStepper { margin: 0 0 25px; }
         .kd-filter-grid { grid-template-columns: minmax(130px, 0.55fr) minmax(300px, 1.7fr) auto auto !important; align-items: end; row-gap: 18px; }
@@ -585,6 +595,10 @@
         $reporterPosition = $importReporter['position'] ?? ($assessment->user->User_position ?? null);
         $reporterPhoneRaw = $importReporter['phone'] ?? ($assessment->user->phone ?? null);
         $reporterEmail = $importReporter['email'] ?? ($assessment->user->email ?? null);
+        // บัญชีตัวแทนที่ระบบสร้างตอนนำเข้า Word (import-r…@import.invalid) ไม่ใช่อีเมลจริง - ไม่แสดง/ไม่ส่งออก
+        if ($reporterEmail !== null && str_ends_with(strtolower(trim((string) $reporterEmail)), '@import.invalid')) {
+            $reporterEmail = null;
+        }
 
         $reporterPhoneDigits = preg_replace('/\D/', '', (string) ($reporterPhoneRaw ?? ''));
         $reporterPhone = strlen($reporterPhoneDigits) === 10
@@ -915,6 +929,45 @@
                 </div>
             @endif
 
+            @if(auth()->user()->isSuperAdmin() && !$isNew && isset($areaPinOptions) && $areaPinOptions->isNotEmpty())
+                <form method="POST" action="{{ route('admin.kidney-dhb.change-area', $anchorId) }}" class="kd-area-pick"
+                    onsubmit="return confirm('เปลี่ยนพื้นที่ดำเนินงานของรายงานชุดนี้ (ทุกไตรมาสของปีงบประมาณนี้)?');">
+                    @csrf
+                    <label for="kdAreaPinSelect"><i class="fas fa-location-dot"></i> เปลี่ยนพื้นที่ดำเนินงาน</label>
+                    <select id="kdAreaPinSelect" name="pin_id" required>
+                        <option value="">-- เลือกพื้นที่ --</option>
+                        @foreach($areaPinOptions as $opt)
+                            <option value="{{ $opt['id'] }}" @selected((int) ($areaGeo['pin_id'] ?? 0) === (int) $opt['id'])>{{ $opt['display_name'] }}@if(!empty($opt['breadcrumb'])) ({{ $opt['breadcrumb'] }})@endif</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" class="kd-area-pick-btn"><i class="fas fa-floppy-disk"></i> บันทึกพื้นที่</button>
+                    <button type="button" class="kd-area-pick-btn kd-area-new-toggle" id="kdNewPinToggle"><i class="fas fa-map-pin"></i> ปักหมุดใหม่</button>
+                    <small>เฉพาะ SuperAdmin · เปลี่ยนให้ทุกไตรมาสของปีงบประมาณนี้</small>
+                </form>
+
+                <form method="POST" action="{{ route('admin.kidney-dhb.change-area', $anchorId) }}" class="kd-area-pick kd-newpin" id="kdNewPinForm" style="display:none;"
+                    onsubmit="return confirm('ปักหมุดใหม่นี้และใช้เป็นพื้นที่ของรายงานชุดนี้ (ทุกไตรมาสของปีงบประมาณนี้)?');">
+                    @csrf
+                    <input type="hidden" name="new_pin" value="1">
+                    <input type="hidden" name="latitude" id="kdNpLat">
+                    <input type="hidden" name="longitude" id="kdNpLng">
+                    <input type="hidden" name="village_name_snapshot" id="kdNpVillageName">
+                    <label><i class="fas fa-map-pin"></i> ปักหมุดใหม่</label>
+                    <select name="province_id" id="kdNpProvince" required>
+                        <option value="">-- จังหวัด --</option>
+                        @foreach(\App\Models\Province::orderBy('province_name')->get(['province_id', 'province_name']) as $pv)
+                            <option value="{{ $pv->province_id }}">{{ $pv->province_name }}</option>
+                        @endforeach
+                    </select>
+                    <select name="district_id" id="kdNpDistrict"><option value="">-- อำเภอ (ถ้ามี) --</option></select>
+                    <select name="tambon_id" id="kdNpTambon"><option value="">-- ตำบล (ถ้ามี) --</option></select>
+                    <select name="village_id" id="kdNpVillage"><option value="">-- ชุมชน/หมู่บ้าน (ถ้ามี) --</option></select>
+                    <input type="text" name="label" id="kdNpLabel" maxlength="255" placeholder="ชื่อพื้นที่ (ไม่ใส่ = ใช้ชื่อตามที่เลือก)" class="kd-np-input">
+                    <button type="submit" class="kd-area-pick-btn" id="kdNpSave" disabled><i class="fas fa-floppy-disk"></i> บันทึกหมุดใหม่</button>
+                    <small id="kdNpHint">เลือกจังหวัด (หรือถึงอำเภอ/ตำบล/หมู่บ้าน) แล้วหมุดจะวางกลางพื้นที่ให้ · คลิกบนแผนที่หรือลากหมุดเพื่อปรับตำแหน่งได้</small>
+                </form>
+            @endif
+
             <div class="kd-map-grid">
                 <div>
                     <div class="kd-map-wrap">
@@ -1023,7 +1076,7 @@
                     <div class="section-number"><i class="fas fa-exclamation-triangle" style="font-size: 0.8rem;"></i></div>
                     <label class="section-label">ปัญหา อุปสรรค</label>
                 </div>
-                <div class="report-detail-box">{{ $assessment->problems_obstacles ?? '-' }}</div>
+                <div class="report-detail-box">{{ trim((string) ($assessment->problems_obstacles ?? '')) !== '' ? $assessment->problems_obstacles : '-' }}</div>
                 @if($canEdit)<textarea form="kdEditForm" name="problems_obstacles" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('problems_obstacles', $assessment->problems_obstacles) }}</textarea>@endif
                 @if(!empty($fieldAttr['problems_obstacles']))<div class="kd-attr" data-attr="{{ 'problems_obstacles' }}"><i class="fas fa-user-edit"></i> ผู้บันทึก: {{ $fieldAttr['problems_obstacles']['name'] }}@if(!empty($fieldAttr['problems_obstacles']['time'])) <span class="time-label">({{ $fieldAttr['problems_obstacles']['time'] }})</span>@endif</div>@endif
             </div>
@@ -1034,7 +1087,7 @@
                     <div class="section-number"><i class="fas fa-lightbulb" style="font-size: 0.8rem;"></i></div>
                     <label class="section-label">ข้อเสนอแนะ/โอกาสพัฒนา</label>
                 </div>
-                <div class="report-detail-box">{{ $assessment->recommendations_opportunities ?? '-' }}</div>
+                <div class="report-detail-box">{{ trim((string) ($assessment->recommendations_opportunities ?? '')) !== '' ? $assessment->recommendations_opportunities : '-' }}</div>
                 @if($canEdit)<textarea form="kdEditForm" name="recommendations_opportunities" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('recommendations_opportunities', $assessment->recommendations_opportunities) }}</textarea>@endif
                 @if(!empty($fieldAttr['recommendations_opportunities']))<div class="kd-attr" data-attr="{{ 'recommendations_opportunities' }}"><i class="fas fa-user-edit"></i> ผู้บันทึก: {{ $fieldAttr['recommendations_opportunities']['name'] }}@if(!empty($fieldAttr['recommendations_opportunities']['time'])) <span class="time-label">({{ $fieldAttr['recommendations_opportunities']['time'] }})</span>@endif</div>@endif
             </div>
@@ -1248,6 +1301,52 @@
             legend.appendChild(dot); legend.appendChild(t);
         } else { legend.textContent = 'แสดงเฉพาะหมุดของรายการนี้'; }
 
+        // ---- SuperAdmin: ปักหมุดใหม่ (คลิกแผนที่ + เลือกจังหวัด/อำเภอ/ตำบล/หมู่บ้าน) ----
+        (function () {
+            const toggle = $('kdNewPinToggle'), form = $('kdNewPinForm');
+            if (!toggle || !form) return;
+            const selP = $('kdNpProvince'), selD = $('kdNpDistrict'), selT = $('kdNpTambon'), selV = $('kdNpVillage');
+            const inLat = $('kdNpLat'), inLng = $('kdNpLng'), inVN = $('kdNpVillageName'), save = $('kdNpSave'), hint = $('kdNpHint');
+            const URL_D = @json(url('/admin/operating-areas/get-districts')), URL_T = @json(url('/admin/operating-areas/get-tambons')), URL_V = @json(url('/admin/operating-areas/get-villages'));
+            let newMarker = null, active = false, manual = false;
+            function reset(sel, ph) { sel.innerHTML = ''; sel.add(new Option(ph, '')); }
+            async function load(url, sel, ph, idKey, nameKey) {
+                reset(sel, ph);
+                try { const rows = await (await fetch(url, { headers: { 'Accept': 'application/json' } })).json(); rows.forEach(function (r) { const o = new Option(r[nameKey], r[idKey]); if (r.lat != null) o.dataset.lat = r.lat; if (r.lng != null) o.dataset.lng = r.lng; if (r.latitude != null) { o.dataset.lat = r.latitude; o.dataset.lng = r.longitude; } sel.add(o); }); } catch (e) { /* เลือกไม่ได้ - ยังคลิกแผนที่ได้ */ }
+            }
+            // เลือกพื้นที่แล้ววางหมุดที่จุดกึ่งกลางของพื้นที่ให้อัตโนมัติ (ยังคลิก/ลากเพื่อปรับเองได้) - ถ้าผู้ใช้ปรับเองแล้วจะไม่ย้ายทับ
+            function autoPlace(la, ln, zoom) {
+                if (la == null || ln == null || isNaN(la) || isNaN(ln)) return;
+                if (!manual) { place(+la, +ln, false); }
+                map.flyTo([+la, +ln], zoom, { duration: .6 });
+            }
+            function place(la, ln, fly) {
+                inLat.value = (+la).toFixed(7); inLng.value = (+ln).toFixed(7);
+                if (!newMarker) { newMarker = L.marker([la, ln], { icon: pinIcon('#be185d', '#831843', null), draggable: true }).addTo(map); newMarker.on('dragend', function () { const p = newMarker.getLatLng(); manual = true; place(p.lat, p.lng, false); }); }
+                else { newMarker.setLatLng([la, ln]); }
+                if (fly) map.flyTo([la, ln], Math.max(map.getZoom(), 13), { duration: .6 });
+                hint.textContent = 'พิกัดหมุด ' + (+la).toFixed(6) + ', ' + (+ln).toFixed(6) + ' (ลากหมุดเพื่อปรับตำแหน่งได้)';
+                check();
+            }
+            function check() { save.disabled = !(inLat.value && inLng.value && selP.value); }
+            function flyTo(opt, zoom) { if (opt && opt.dataset && opt.dataset.lat) { autoPlace(+opt.dataset.lat, +opt.dataset.lng, zoom || 12); } }
+            toggle.addEventListener('click', function () {
+                active = !active; form.style.display = active ? '' : 'none';
+                toggle.innerHTML = active ? '<i class="fas fa-xmark"></i> ยกเลิกปักหมุดใหม่' : '<i class="fas fa-map-pin"></i> ปักหมุดใหม่';
+                if (active) { form.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); map.invalidateSize(); }
+                map.getContainer().style.cursor = active ? 'crosshair' : '';
+            });
+            map.on('click', function (e) { if (active) { manual = true; place(e.latlng.lat, e.latlng.lng, false); } });
+            selP.addEventListener('change', async function () { reset(selT, '-- ตำบล (ถ้ามี) --'); reset(selV, '-- ชุมชน/หมู่บ้าน (ถ้ามี) --'); inVN.value = ''; if (!selP.value) { reset(selD, '-- อำเภอ (ถ้ามี) --'); check(); return; } await load(URL_D + '/' + selP.value, selD, '-- อำเภอ (ถ้ามี) --', 'district_id', 'district_name');
+                const pts = Array.from(selD.options).filter(function (o) { return o.dataset.lat; }).map(function (o) { return [+o.dataset.lat, +o.dataset.lng]; });
+                if (pts.length) { autoPlace(pts.reduce(function (a, c) { return a + c[0]; }, 0) / pts.length, pts.reduce(function (a, c) { return a + c[1]; }, 0) / pts.length, 9); }
+                check(); });
+            selD.addEventListener('change', async function () { reset(selV, '-- ชุมชน/หมู่บ้าน (ถ้ามี) --'); inVN.value = ''; if (!selD.value) { reset(selT, '-- ตำบล (ถ้ามี) --'); check(); return; } flyTo(selD.options[selD.selectedIndex], 11); await load(URL_T + '/' + selP.value + '/' + selD.value, selT, '-- ตำบล (ถ้ามี) --', 'tambon_id', 'tambon_name'); check(); });
+            selT.addEventListener('change', async function () { inVN.value = ''; if (!selT.value) { reset(selV, '-- ชุมชน/หมู่บ้าน (ถ้ามี) --'); return; } flyTo(selT.options[selT.selectedIndex], 13); await load(URL_V + '/' + selP.value + '/' + selD.value + '/' + selT.value, selV, '-- ชุมชน/หมู่บ้าน (ถ้ามี) --', 'village_id', 'village_name'); });
+            selV.addEventListener('change', function () { const o = selV.options[selV.selectedIndex]; inVN.value = selV.value ? o.text : ''; if (selV.value) { flyTo(o, 15); } if (selV.value && !$('kdNpLabel').value.trim()) { $('kdNpLabel').value = o.text; } check(); });
+            $('kdNpLabel').addEventListener('input', check);
+        })();
+
         // ---- ความก้าวหน้า 10 หัวข้อ (stepper) ----
         let editing = false, guard = true;
         const STEP_MAP = { '1': 'category_1', '2': 'category_2', '3': 'category_3', '4': 'category_4', '5': 'category_5', '6': 'category_6', '7': 'category_7', '8.1': 'category_8_1', '8.2': 'category_8_2', '8.3': 'category_8_3' };
@@ -1400,6 +1499,7 @@
 
         document.addEventListener('kimg:change', function () { if (editing) updateBar(); });
         $('kdEditBtn').addEventListener('click', enterEdit);
+        if (location.hash === '#edit' && !HAS_ERRORS) { enterEdit(); }
         $('kdCancel').addEventListener('click', cancelEdit);
         textareas.forEach(function (t) { t.addEventListener('input', function () { autosize(t); updateBar(); }); });
         form.addEventListener('submit', function () { guard = false; saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...'; });
