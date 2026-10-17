@@ -897,7 +897,7 @@
             line-height: 1.5;
         }
 
-        .divsum i { color: #b9534d; flex: 0 0 auto; }
+        .divsum i { color: #b8323f; flex: 0 0 auto; }
         .divsum b { font-weight: 800; }
 
         .divrow {
@@ -926,6 +926,87 @@
             line-height: 1.45;
             min-width: 0;
         }
+
+        .scale-info-btn { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; margin-left: auto; padding: 0; border-radius: 50%; border: 1.5px solid #94a3b8; background: #fff; color: #475569; font-size: 0.68rem; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+        .scale-info-btn:hover, .scale-info-btn[aria-expanded="true"] { background: #1d5a96; border-color: #1d5a96; color: #fff; }
+        .scale-info-btn:focus-visible { outline: 2px solid #1d5a96; outline-offset: 2px; }
+        .sim-overlay { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15, 23, 42, .55); backdrop-filter: blur(3px); animation: simFade .18s ease-out; }
+        .sim-overlay.is-closing { opacity: 0; transition: opacity .16s ease; }
+        .sim-dialog { width: min(560px, 100%); max-height: min(86vh, 720px); display: flex; flex-direction: column; background: #fff; border-radius: 18px; box-shadow: 0 24px 60px rgba(15, 23, 42, .35); overflow: hidden; animation: simPop .22s cubic-bezier(.2, .9, .3, 1.2); }
+        .sim-head { position: relative; display: flex; align-items: center; gap: 12px; padding: 16px 16px 16px 18px; color: #fff; background: radial-gradient(120% 160% at 100% 0%, rgba(240, 138, 60, .28) 0%, rgba(240, 138, 60, 0) 45%), linear-gradient(135deg, #123a63 0%, #1d5a96 60%, #2f7fc0 100%); }
+        .sim-head::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: linear-gradient(90deg, #b8323f 0 33.3%, #f4e4b0 33.3% 66.6%, #6fb1d6 66.6% 100%); }
+        .sim-head-ico { flex: 0 0 auto; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 12px; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .28); font-size: 1.05rem; }
+        .sim-head-txt { flex: 1 1 auto; min-width: 0; }
+        .sim-eyebrow { font-size: .76rem; font-weight: 600; color: rgba(255, 255, 255, .78); margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sim-head h3 { margin: 0; font-size: 1.15rem; font-weight: 800; color: #fff; }
+        .sim-close { flex: 0 0 auto; width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .3); border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; cursor: pointer; transition: background .15s; }
+        .sim-close:hover { background: rgba(255, 255, 255, .3); }
+        .sim-body { padding: 16px 18px 20px; overflow-y: auto; font-size: .86rem; line-height: 1.6; color: #334155; scrollbar-width: none; -ms-overflow-style: none; background: #fbfcfe; }
+        .sim-body::-webkit-scrollbar { display: none; }
+        .sim-foot { padding: 12px 18px 16px; border-top: 1px solid #e8edf3; text-align: center; background: #fff; }
+        .sim-ok { min-width: 160px; padding: 9px 26px; border: 0; border-radius: 999px; background: #1d5a96; color: #fff; font-weight: 700; cursor: pointer; }
+        .sim-ok:hover { background: #164a7c; }
+        .sim-ok:focus-visible, .sim-close:focus-visible { outline: 2px solid #1d5a96; outline-offset: 2px; }
+        .sim-sec { margin: 18px 0 10px; font-size: .8rem; font-weight: 800; color: #1d5a96; display: flex; align-items: center; justify-content: center; gap: 10px; text-align: center; }
+        .sim-sec:first-child { margin-top: 0; }
+        .sim-sec::before, .sim-sec::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(29, 90, 150, 0), #c5d5e6); }
+        .sim-sec::after { transform: scaleX(-1); }
+        .sim-mean { display: flex; gap: 14px; align-items: center; padding: 10px 12px; margin-bottom: 8px; border: 1px solid #e8edf3; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        .sim-mean b { display: block; font-size: .92rem; color: #1e293b; }
+        .sim-mean div span { display: block; font-size: .8rem; color: #64748b; text-wrap: balance; }
+        .sim-swatch { flex: 0 0 38px; height: 38px; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .08); }
+        .sim-ex { padding: 12px; border: 1px solid #dbe4ee; border-radius: 12px; background: #f8fafc; }
+        .sim-ex-q { font-weight: 700; color: #1e293b; margin-bottom: 10px; font-size: .84rem; text-align: center; }
+        .sim-ex-calc { display: flex; align-items: stretch; justify-content: center; gap: 6px; flex-wrap: nowrap; }
+        .sim-ex-calc span { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 6px 8px; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; min-width: 0; flex: 1 1 0; }
+        .sim-ex-calc span.is-res { background: #fbeeec; border-color: #f0c9c5; }
+        .sim-ex-calc small { font-size: .66rem; color: #64748b; line-height: 1.25; }
+        .sim-ex-calc b { font-size: .95rem; color: #1e293b; white-space: nowrap; }
+        .sim-ex-calc .is-res b { color: #b8323f; }
+        .sim-ex-calc em { align-self: center; font-style: normal; font-weight: 800; color: #94a3b8; }
+        .sim-ex-note { margin-top: 10px; font-size: .76rem; color: #64748b; text-align: center; text-wrap: balance; }
+        .sim-q { margin-bottom: 10px; padding: 10px; border: 1px solid #e3eaf2; border-radius: 14px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        .sim-qt { margin: 0 2px 8px; font-weight: 800; font-size: .86rem; color: #1e293b; }
+        .sim-grp { display: flex; align-items: center; gap: 10px; padding: 7px 10px; margin-top: 4px; border-radius: 10px; }
+        .sim-grp:first-of-type { margin-top: 0; }
+        .sim-grp.is-risk { background: #fcefee; }
+        .sim-grp.is-mid { background: #fdf6df; }
+        .sim-grp.is-good { background: #e9f1f9; }
+        .sim-grp-name { flex: 0 0 74px; display: flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 800; color: #334155; }
+        .sim-grp-name i { flex: 0 0 10px; width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1px rgba(15, 23, 42, .12); }
+        .sim-chips { flex: 1 1 auto; display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+        .sim-chip { padding: 2px 10px; border-radius: 999px; background: #fff; border: 1px solid rgba(15, 23, 42, .1); font-size: .78rem; color: #334155; box-shadow: 0 1px 1px rgba(15, 23, 42, .04); }
+        .sim-grp-pct { flex: 0 0 auto; min-width: 38px; text-align: right; font-size: .84rem; font-weight: 800; color: #334155; }
+        .sim-grp.is-risk .sim-grp-pct { color: #b8323f; }
+        .sim-grp.is-good .sim-grp-pct { color: #1d5a96; }
+        .sim-tip { display: flex; gap: 10px; align-items: center; margin-top: 14px; padding: 10px 14px; border-radius: 14px; background: #fff8e6; border: 1px solid #f3e0a8; font-size: .78rem; color: #6b5413; text-wrap: balance; }
+        .sim-tip i { flex: 0 0 auto; color: #d19a1a; font-size: 1rem; }
+        /* ปรับข้อความในป๊อปอัปให้เข้มและคมชัดขึ้น */
+        .sim-body { color: #0f172a; }
+        .sim-sec { color: #0f4c81; font-size: .84rem; }
+        .sim-mean b { font-size: 1rem; font-weight: 800; color: #0f172a; }
+        .sim-mean div span { font-size: .85rem; font-weight: 500; color: #1e293b; }
+        .sim-ex-q { font-weight: 800; color: #0f172a; }
+        .sim-ex-calc small { font-weight: 600; color: #334155; }
+        .sim-ex-calc b { color: #0f172a; }
+        .sim-ex-calc .is-res b { color: #a3202d; }
+        .sim-ex-note { font-weight: 500; color: #1e293b; }
+        .sim-qt { font-size: .92rem; font-weight: 800; color: #0f172a; }
+        .sim-grp-name { font-size: .82rem; font-weight: 800; color: #0f172a; }
+        .sim-chip { font-size: .82rem; font-weight: 600; color: #0f172a; border-color: rgba(15, 23, 42, .22); }
+        .sim-grp-pct { font-size: .9rem; font-weight: 800; color: #0f172a; }
+        .sim-grp.is-risk .sim-grp-pct { color: #a3202d; }
+        .sim-grp.is-good .sim-grp-pct { color: #0f4c81; }
+        .sim-tip { font-size: .83rem; font-weight: 500; color: #3f2f05; }
+        .sim-eyebrow { color: rgba(255, 255, 255, .92); }
+        body.sim-open { overflow: hidden; }
+        @keyframes simFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes simPop { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .sim-overlay, .sim-dialog { animation: none; } }
+
+        .divrow-glabs { display: flex; gap: 2px; margin-top: 5px; }
+        .divrow-glab small { display: block; font-size: 0.7rem; font-weight: 500; color: #94a3b8; }
+        .divrow-glab { min-width: 0; text-align: center; font-size: 0.78rem; font-weight: 700; color: #475569; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .divrow-risk {
             flex: 0 0 auto;
@@ -1174,7 +1255,7 @@
             font-style: normal;
             font-weight: 800;
             font-size: 1.05rem;
-            color: #b9534d;
+            color: #b8323f;
         }
 
         .divrow,
@@ -1681,9 +1762,9 @@
                     <div id="riskChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1710,9 +1791,9 @@
                     <div id="seasoningChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1739,9 +1820,9 @@
                     <div id="healthyHabitChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1768,9 +1849,9 @@
                     <div id="mindsetChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -2539,8 +2620,8 @@
                 // the reference palette requested for the dashboard.
                 // สีแบบสองขั้ว ส้ม-แดง (ควรปรับ) <-> ฟ้า-น้ำเงิน (ดี) ผ่านเทากลาง: ส้ม/ฟ้าแยกได้ชัดแม้ตาบอดสีแดง-เขียว
                 // ปลายสองข้างเข้มสุด ตรงกลางอ่อนสุด จึงอ่านระดับความเสี่ยงได้ทันทีจากความเข้ม
-                const rankColors = ['#b9534d', '#f2a65a', '#e2e8f0', '#8cc0dc', '#2b6a9e'];
-                const rankTextColors = ['#ffffff', '#4a2606', '#334155', '#0c3550', '#ffffff'];
+                const rankColors = ['#b8323f', '#f08a3c', '#f4e4b0', '#6fb1d6', '#1d5a96'];
+                const rankTextColors = ['#ffffff', '#3d1d03', '#5a4713', '#08304d', '#ffffff'];
 
                 // Semantic Keyword Mapping (Map ANY label to 0-4 scale: High Freq -> Low Freq)
                 // ระดับคำตอบมาตรฐาน (มาก -> น้อย) ที่พบจริงในแบบสอบถาม: ใช้ตรงตัวก่อน
@@ -2733,6 +2814,36 @@
                 // question, so the riskiest real answer always lands red
                 // and the healthiest always lands green regardless of which
                 // side of the picker the admin ticked it on.
+                // ป๊อปอัปอธิบายวิธีคิดเกณฑ์สี (ใช้ร่วมกันทุกการ์ด)
+                const openScaleInfo = (bodyHtml, title, opener) => {
+                    document.querySelectorAll('.sim-overlay').forEach(el => el.remove());
+                    const ov = document.createElement('div');
+                    ov.className = 'sim-overlay';
+                    ov.innerHTML =
+                        '<div class="sim-dialog" role="dialog" aria-modal="true" aria-labelledby="simTitle">' +
+                        '<div class="sim-head"><div class="sim-head-ico"><i class="fas fa-palette"></i></div>' +
+                        '<div class="sim-head-txt"><div class="sim-eyebrow">' + escapeHtml(title) + '</div>' +
+                        '<h3 id="simTitle">วิธีคิดเกณฑ์สี</h3></div>' +
+                        '<button type="button" class="sim-close" aria-label="ปิด"><i class="fas fa-times"></i></button></div>' +
+                        '<div class="sim-body">' +
+                        bodyHtml + '</div>' +
+                        '<div class="sim-foot"><button type="button" class="sim-ok">เข้าใจแล้ว</button></div></div>';
+                    document.body.appendChild(ov);
+                    document.body.classList.add('sim-open');
+                    const close = () => {
+                        ov.classList.add('is-closing');
+                        document.removeEventListener('keydown', onKey);
+                        setTimeout(() => { ov.remove(); document.body.classList.remove('sim-open'); }, 160);
+                        if (opener) opener.focus();
+                    };
+                    const onKey = e => { if (e.key === 'Escape') close(); };
+                    document.addEventListener('keydown', onKey);
+                    ov.addEventListener('click', e => { if (e.target === ov) close(); });
+                    ov.querySelector('.sim-close').addEventListener('click', close);
+                    ov.querySelector('.sim-ok').addEventListener('click', close);
+                    ov.querySelector('.sim-ok').focus();
+                };
+
                 const renderBars = () => {
                     const rows = [];
                     categories.forEach(c => {
@@ -2763,6 +2874,37 @@
                     // เรียงจากข้อที่ควรปรับมากที่สุด -> อ่านเป็นลำดับความสำคัญได้ทันที
                     rows.sort((a, b) => b.risk - a.risk);
 
+                    // รวม 5 ระดับเป็น 3 กลุ่มอ่านง่าย: ควรปรับ (rank 0-1) / กลาง (2) / ดี (3-4)
+                    // รายละเอียดรายคำตอบดูได้จาก tooltip และปุ่ม "ดูข้อมูลตัวเลข"
+                    const GROUPS = [
+                        { key: 'risk', name: 'ควรปรับ', ranks: [0, 1], color: rankColors[0], text: rankTextColors[0] },
+                        { key: 'mid', name: 'กลาง', ranks: [2], color: rankColors[2], text: rankTextColors[2] },
+                        { key: 'good', name: 'ดี', ranks: [3, 4], color: rankColors[4], text: rankTextColors[4] }
+                    ];
+
+                    const buildGroups = r => {
+                        const groups = GROUPS.map(g => {
+                            const items = r.segments.filter(s => g.ranks.indexOf(s.rank) !== -1);
+                            return {
+                                g: g,
+                                items: items,
+                                pct: items.reduce((a, s) => a + s.pct, 0),
+                                count: items.reduce((a, s) => a + s.count, 0)
+                            };
+                        }).filter(x => x.pct > 0);
+
+                        // ปัดเศษแบบ largest remainder: ผลรวมของ 3 กลุ่มต้องได้ 100% พอดี
+                        const sumPct = groups.reduce((a, x) => a + x.pct, 0) || 1;
+                        groups.forEach(x => { x.exact = x.pct * 100 / sumPct; x.rnd = Math.floor(x.exact); });
+                        let left = 100 - groups.reduce((a, x) => a + x.rnd, 0);
+                        groups.slice().sort((a, b) => (b.exact - b.rnd) - (a.exact - a.rnd))
+                            .forEach(x => { if (left > 0) { x.rnd++; left--; } });
+                        const riskGroup = groups.find(x => x.g.key === 'risk');
+                        r.riskRnd = riskGroup ? riskGroup.rnd : 0;
+                        return groups;
+                    };
+                    rows.forEach(r => { r.groups = buildGroups(r); });
+
                     let html = '';
                     // สรุป "ควรปรับมากที่สุด" ไปอยู่แถวเดียวกับหัวข้อการ์ด (ชิดขวา)
                     const headerEl = container.closest('.chart-card')
@@ -2772,7 +2914,7 @@
                     }
                     if (rows.length > 1 && rows[0].risk > 0) {
                         const sumHtml = '<div class="divsum"><i class="fas fa-lightbulb"></i><span class="divsum-text"><small>ควรปรับมากที่สุด</small><b>' +
-                            escapeHtml(rows[0].c) + '</b></span><em class="divsum-pct">' + Math.round(rows[0].risk) + '%</em></div>';
+                            escapeHtml(rows[0].c) + '</b></span><em class="divsum-pct">' + rows[0].riskRnd + '%</em></div>';
                         if (headerEl) {
                             headerEl.insertAdjacentHTML('beforeend', sumHtml);
                         } else {
@@ -2781,31 +2923,89 @@
                     }
 
                     rows.forEach(r => {
-                        const segHtml = r.segments.map(s => {
-                            // ชื่อคำตอบแสดงในแถบเมื่อกว้างพอ, ตัวเลข % เมื่อกว้างพอ, ที่เหลืออยู่ใน tooltip และบรรทัด "อื่น ๆ"
-                            const showName = s.pct >= 15;
-                            const showPct = s.pct >= 7;
-                            return '<div class="divrow-seg" style="flex:' + s.pct.toFixed(3) + ' 1 0%;background:' +
-                                rankColors[s.rank] + ';color:' + rankTextColors[s.rank] + '" title="' +
-                                escapeHtml(s.title) + ': ' + s.pct.toFixed(1) + '% (' + s.count.toLocaleString() + ' คน)">' +
-                                (showPct ? '<b>' + Math.round(s.pct) + '%</b>' : '') +
-                                (showName ? '<small>' + escapeHtml(s.title) + '</small>' : '') + '</div>';
-                        }).join('');
+                        const groups = r.groups;
 
-                        const hidden = r.segments.filter(s => s.pct < 15);
-                        const othersHtml = hidden.length ? '<div class="divrow-others">' + hidden.map(s =>
-                            '<span class="divrow-legend-item"><span class="divrow-legend-dot" style="background:' +
-                            rankColors[s.rank] + '"></span>' + escapeHtml(s.title) + ' ' + s.pct.toFixed(1) + '%</span>'
-                        ).join('') + '</div>' : '<div></div>';
+                        const tip = x => x.g.name + ' ' + x.pct.toFixed(1) + '% (' + x.count.toLocaleString() + ' คน): ' +
+                            x.items.map(s => s.title + ' ' + s.pct.toFixed(1) + '%').join(', ');
+
+                        const segHtml = groups.map(x =>
+                            '<div class="divrow-seg" style="flex:' + x.pct.toFixed(3) + ' 1 0%;background:' + x.g.color +
+                            ';color:' + x.g.text + '" title="' + escapeHtml(tip(x)) + '">' +
+                            (x.pct >= 6 ? '<b>' + x.rnd + '%</b>' : '') + '</div>'
+                        ).join('');
+
+                        const labHtml = groups.map(x =>
+                            '<span class="divrow-glab" style="flex:' + x.pct.toFixed(3) + ' 1 0%" title="' + escapeHtml(tip(x)) + '">' +
+                            x.g.name + (x.pct < 6 ? ' ' + x.rnd + '%' : '') +
+                            '<small>' + x.count.toLocaleString() + ' คน</small></span>'
+                        ).join('');
 
                         html += '<div class="divrow"><div class="divrow-head"><div class="divrow-label">' + escapeHtml(r.c) +
                             '</div><span class="divrow-risk' + (r.risk < 10 ? ' is-low' : '') + '" title="ผู้ตอบที่อยู่ในกลุ่มคำตอบที่ควรปรับ">ควรปรับ ' +
-                            Math.round(r.risk) + '%</span></div>' +
+                            r.riskRnd + '%</span></div>' +
                             '<div class="divrow-bar">' + segHtml + '</div>' +
-                            (hidden.length ? '<div class="divrow-foot">' + othersHtml + '</div>' : '') + '</div>';
+                            '<div class="divrow-glabs">' + labHtml + '</div></div>';
                     });
 
                     container.innerHTML = html;
+
+                    // ไอคอน (i) ข้างคำอธิบายสี: คลิกเพื่อดูวิธีคิดเกณฑ์สีของการ์ดนี้
+                    const cardEl = container.closest('.chart-card');
+                    const legendEl = cardEl ? cardEl.querySelector('.scale-legend') : null;
+                    if (legendEl) {
+                        legendEl.querySelectorAll('.scale-info-btn').forEach(el => el.remove());
+
+                        const cardTitle = (cardEl.querySelector('.chart-header-title') || {}).textContent || '';
+                        const GDESC = {
+                            risk: 'คำตอบที่เสี่ยงต่อสุขภาพที่สุด 2 ระดับ ควรช่วยกันปรับพฤติกรรม',
+                            mid: 'คำตอบระดับกลาง ยังปรับให้ดีขึ้นได้',
+                            good: 'คำตอบที่ดีต่อสุขภาพที่สุด 2 ระดับ'
+                        };
+                        const fmt = n => n.toLocaleString();
+
+                        const meaning = GROUPS.map(g =>
+                            '<div class="sim-mean"><span class="sim-swatch" style="background:' + g.color + '"></span>' +
+                            '<div><b>' + g.name + '</b><span>' + GDESC[g.key] + '</span></div></div>'
+                        ).join('');
+
+                        // ตัวอย่างคำนวณจากข้อแรกของการ์ด (ข้อที่ควรปรับมากที่สุด) ด้วยตัวเลขจริง
+                        const ex = rows[0];
+                        const exRisk = ex ? ex.groups.find(x => x.g.key === 'risk') : null;
+                        const exHtml = (ex && exRisk) ?
+                            '<div class="sim-ex"><div class="sim-ex-q">' + escapeHtml(ex.c) + '</div>' +
+                            '<div class="sim-ex-calc"><span><small>ผู้ตอบกลุ่มควรปรับ</small><b>' + fmt(exRisk.count) + ' คน</b></span>' +
+                            '<em>÷</em><span><small>ผู้ตอบทั้งหมด</small><b>' + fmt(ex.total) + ' คน</b></span>' +
+                            '<em>=</em><span class="is-res"><small>สัดส่วน</small><b>' + exRisk.exact.toFixed(1) + '%</b></span></div>' +
+                            '<div class="sim-ex-note">แสดงในแถบเป็น ' + exRisk.rnd + '% (ปัดเศษให้ทั้ง 3 กลุ่มรวมกันได้ 100%)</div></div>' : '';
+
+                        const qRows = rows.map(r => {
+                            const lines = r.groups.map(x =>
+                                '<div class="sim-grp is-' + x.g.key + '">' +
+                                '<span class="sim-grp-name"><i style="background:' + x.g.color + '"></i>' + x.g.name + '</span>' +
+                                '<span class="sim-chips">' + x.items.map(i => '<span class="sim-chip">' + escapeHtml(i.title) + '</span>').join('') + '</span>' +
+                                '<span class="sim-grp-pct">' + x.rnd + '%</span></div>'
+                            ).join('');
+                            return '<div class="sim-q"><div class="sim-qt">' + escapeHtml(r.c) + '</div>' + lines + '</div>';
+                        }).join('');
+
+                        const infoHtml =
+                            '<div class="sim-sec">สีแต่ละสีหมายถึงอะไร</div>' + meaning +
+                            '<div class="sim-sec">ตัวอย่างการคำนวณ</div>' + exHtml +
+                            '<div class="sim-sec">คำตอบในแต่ละกลุ่ม แยกตามข้อ</div>' + qRows +
+                            '<div class="sim-tip"><i class="fas fa-lightbulb"></i><span>บางข้อถามสิ่งที่ <b>ควรทำ</b> หรือถามความเห็น เช่น "เห็นด้วย" สีจะกลับด้าน คือคำตอบที่เห็นด้วยจะเป็นสีน้ำเงิน (ดี) ตั้งค่าได้ที่ "ตั้งค่าแดชบอร์ด"</span></div>';
+
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'scale-info-btn';
+                        btn.setAttribute('aria-expanded', 'false');
+                        btn.setAttribute('aria-label', 'วิธีคิดเกณฑ์สี');
+                        btn.title = 'วิธีคิดเกณฑ์สี';
+                        btn.innerHTML = '<i class="fas fa-info"></i>';
+                        btn.setAttribute('aria-haspopup', 'dialog');
+                        btn.addEventListener('click', () => openScaleInfo(infoHtml, cardTitle, btn));
+                        const noteEl = legendEl.querySelector('.scale-legend-note');
+                        legendEl.insertBefore(btn, noteEl);
+                    }
                 };
 
                 renderBars();
