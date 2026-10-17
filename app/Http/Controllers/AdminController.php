@@ -3685,6 +3685,8 @@ class AdminController extends Controller
 
         return [
             'name' => $a->operating_area,
+            // ชื่อพื้นที่จริง (หมู่บ้าน > ตำบล > อำเภอ > จังหวัด) - ชื่อ "ประเด็น" ที่ตั้งตอนปักหมุดแยกแสดงต่างหาก
+            'place_name' => $villageName ?: ($tambonName ?: ($districtName ?: $provinceName)),
             'pin_id' => $a->operating_area_pin_id,
             'province_id' => $provinceId,
             'district_id' => $districtId,

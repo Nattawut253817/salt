@@ -27,12 +27,8 @@
         <div class="toolbar-head">
             <div class="toolbar-title"><i class="fas fa-filter"></i> ตัวกรองข้อมูล</div>
             <div class="toolbar-actions">
-                {{-- Word-import entry point: same Level 1 gate as the button/modal
-                     on admin.report-progress itself (AdminController::saltAssessmentList()'s
-                     $canImportWord) - this just links there, the actual feature
-                     (and its own access checks) live on that page. Mirrors
-                     resources/views/admin/kidney-dhb-list.blade.php's same button. --}}
-                @if($canImportWord ?? false)
+                {{-- ปุ่ม "นำเข้าไฟล์ Word": แสดงเฉพาะ SuperAdmin (ระดับ 1 ทั่วไปไม่เห็น) - ลิงก์ไปหน้าฟอร์มที่มีตัวนำเข้าอยู่ --}}
+                @if(auth()->user()->isSuperAdmin())
                 <a href="{{ route('admin.report-progress') }}" id="btnGoImportWord" class="btn-pill btn-import">
                     <i class="fas fa-file-word"></i> นำเข้าไฟล์ Word
                 </a>
@@ -570,7 +566,7 @@
                 districtSelect.html('<option value="">กำลังโหลด...</option>');
                 if (provinceId) {
                     $.ajax({
-                        url: '/get-districts/' + provinceId,
+                        url: APP_BASE + '/get-districts/' + provinceId,
                         type: 'GET',
                         success: function (data) {
                             districtSelect.html('<option value="">ทั้งหมด</option>');

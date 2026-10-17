@@ -77,11 +77,11 @@ Route::get('/staff', [MainController::class, 'staff'])->name('staff');
 Route::get('/login', [MainController::class, 'staff'])->name('login');
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1')->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/login/otp', [AuthController::class, 'showLoginOtpForm'])->name('login.otp.form');
-Route::post('/login/otp', [AuthController::class, 'verifyLoginOtp'])->name('login.otp.verify');
-Route::post('/login/otp/resend', [AuthController::class, 'resendLoginOtp'])->name('login.otp.resend');
+Route::post('/login/otp', [AuthController::class, 'verifyLoginOtp'])->middleware('throttle:20,1')->name('login.otp.verify');
+Route::post('/login/otp/resend', [AuthController::class, 'resendLoginOtp'])->middleware('throttle:5,1')->name('login.otp.resend');
 Route::get('/get-districts/{province_id}', [AuthController::class, 'getDistricts'])->name('get-districts');
 Route::get('/get-hospitals/{province_id}/{district_id}', [AuthController::class, 'getHospitals'])->name('get-hospitals');
 Route::get('/get-subdistricts/{province_id}/{district_id}', [AuthController::class, 'getSubdistricts'])->name('get-subdistricts');

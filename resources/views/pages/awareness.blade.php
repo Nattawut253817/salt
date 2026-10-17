@@ -1061,7 +1061,281 @@
             border-radius: 50%;
             flex-shrink: 0;
         }
-    </style>
+    
+        /* ===== ปรับโฉมการ์ดกราฟแถบ (ทันสมัย อ่านง่าย) ===== */
+        .chart-card {
+            counter-reset: divrank;
+            padding: 22px 22px 18px !important;
+            border-radius: 24px !important;
+            border: 1px solid #edf1f6;
+            box-shadow: 0 14px 34px -18px rgba(30, 41, 59, .22), 0 2px 6px rgba(30, 41, 59, .04) !important;
+        }
+
+        .chart-header {
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+            padding-bottom: 16px;
+        }
+
+        .chart-header-icon {
+            width: 46px;
+            height: 46px;
+            min-width: 46px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, var(--chart-accent, #ec4899), color-mix(in srgb, var(--chart-accent, #ec4899) 70%, #000));
+            font-size: 1.1rem;
+        }
+
+        .chart-header-title { font-size: 1.12rem; letter-spacing: -.005em; }
+        .chart-header-subtitle {
+            display: inline-block;
+            margin-top: 4px;
+            padding: 1px 10px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            color: #64748b;
+            font-size: .76rem;
+        }
+
+        .divsum {
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+            padding: 13px 16px;
+            border-radius: 18px;
+            background: linear-gradient(100deg, #fdf0ed 0%, #fff7f4 100%);
+            border: 1px solid #f7dcd6;
+            color: #7a2e29;
+        }
+
+        .divsum i {
+            display: inline-block !important;
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            margin: 0;
+            line-height: 28px !important;
+            text-align: center;
+            border-radius: 50%;
+            background: #fff;
+            color: #c0584f;
+            box-shadow: 0 2px 6px rgba(185, 83, 77, .2);
+            font-size: .8rem;
+        }
+
+        .divsum span { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* อยู่แถวเดียวกับหัวข้อการ์ด ชิดขวา */
+        .chart-header { flex-wrap: nowrap; }
+        .chart-header > div:not(.chart-header-icon):not(.divsum) { flex: 1 1 auto; min-width: 0; }
+        .chart-header .divsum {
+            flex: 0 1 auto;
+            margin: 0 0 0 auto;
+            padding: 7px 14px;
+            max-width: 52%;
+            border-radius: 16px;
+        }
+
+        .divsum .divsum-text {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            white-space: normal;
+            overflow: visible;
+            line-height: 1.25;
+        }
+
+        .divsum .divsum-text small {
+            font-size: .68rem;
+            font-weight: 700;
+            color: #a6685f;
+        }
+
+        .divsum .divsum-text b {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: .8rem;
+            font-weight: 800;
+        }
+
+        .chart-header .divsum .divsum-pct { font-size: 1rem; }
+
+        @media (max-width: 767.98px) {
+            .chart-header { flex-wrap: wrap; }
+            .chart-header .divsum { flex: 1 1 100%; max-width: 100%; margin: 4px 0 0; }
+        }
+
+        .divsum-pct {
+            flex: 0 0 auto;
+            font-style: normal;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #b9534d;
+        }
+
+        .divrow,
+        .divsum + .divrow,
+        .divrow:first-child {
+            margin-bottom: 12px;
+            padding: 14px 16px 16px;
+            border: 1px solid #eef2f6;
+            border-radius: 20px;
+            background: #fafcfd;
+        }
+
+        .divrow-head { align-items: center; margin-bottom: 11px; }
+
+        .divrow-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: .95rem;
+        }
+
+        .divrow-label::before {
+            counter-increment: divrank;
+            content: counter(divrank);
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e9eef3;
+            color: #475569;
+            font-size: .75rem;
+            font-weight: 800;
+        }
+
+        .divsum + .divrow .divrow-label::before,
+        .divrow:first-child .divrow-label::before { background: #f3c9c4; color: #8a2f29; }
+
+        .divrow-risk {
+            padding: 4px 12px;
+            background: #fde8e5;
+            color: #a6443e;
+            font-size: .8rem;
+        }
+
+        .divrow-bar {
+            height: 46px;
+            gap: 0;
+            padding: 0;
+            border-radius: 14px;
+            overflow: hidden;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        /* ช่วงสีต่อเนื่องเป็นแถบเดียว คั่นด้วยเส้นขาวบาง ไม่เป็นก้อนแยก */
+        .divrow-seg { border-radius: 0; transition: filter .15s ease; }
+        .divrow-seg + .divrow-seg { box-shadow: -2px 0 0 rgba(255, 255, 255, .85); }
+        .divrow-seg:hover { filter: brightness(.96); transform: none; }
+        .divrow-seg b { font-size: 13.5px; }
+
+        .divrow-foot { margin-top: 10px; }
+        .divrow-legend-item {
+            padding: 2px 10px 2px 8px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid #edf1f6;
+        }
+
+        .scale-legend {
+            margin-top: 6px;
+            padding: 10px 14px;
+            border-radius: 14px;
+            background: #f8fafc;
+            gap: 6px 16px;
+        }
+
+        .scale-legend-swatch { height: 8px; width: 28px; border-radius: 999px; }
+        .scale-legend-note { flex: 1 1 100%; margin-top: 2px; }
+
+        .chart-table-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px !important;
+            border: 1px solid #e3eaf1;
+            border-radius: 999px !important;
+            background: #fff;
+            color: #475569 !important;
+            font-weight: 700;
+            transition: background .15s ease, border-color .15s ease;
+        }
+
+        .chart-table-toggle:hover { background: #f1f5f9; border-color: #cfd9e3; }
+
+        /* ตารางตัวเลข: แสดงเต็มพื้นที่การ์ด ใต้หัวข้อ (ไม่บังหัวข้อ) และเหนือปุ่ม */
+        .chart-card { position: relative; }
+        .chart-figure-footer details { position: static; }
+        .chart-figure-footer .figure-table-wrap {
+            left: 22px;
+            right: 22px;
+            top: 92px;
+            bottom: 64px;
+            max-height: none;
+            border-radius: 18px;
+            border: 1px solid #e3eaf1;
+            box-shadow: 0 22px 44px -18px rgba(30, 41, 59, .38);
+        }
+        .chart-figure-footer .figure-table-wrap table.figure-table { font-size: .88rem; }
+
+        /* ===== กระชับความสูงการ์ดกราฟแถบ ===== */
+        .chart-card { padding: 16px 18px 12px !important; }
+        .chart-header { margin-bottom: 10px; padding-bottom: 10px; gap: 12px; }
+        .chart-header-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 14px; font-size: 1rem; }
+        .chart-header-title { font-size: 1.04rem; }
+        .chart-header-subtitle { margin-top: 2px; font-size: .72rem; padding: 0 9px; }
+        .chart-header .divsum { padding: 5px 12px; }
+
+        .divrow,
+        .divsum + .divrow,
+        .divrow:first-child { margin-bottom: 8px; padding: 9px 12px 10px; border-radius: 16px; }
+        .divrow-head { margin-bottom: 7px; }
+        .divrow-label { font-size: .9rem; }
+        .divrow-label::before { width: 22px; height: 22px; font-size: .7rem; }
+        .divrow-risk { padding: 2px 10px; font-size: .76rem; }
+        .divrow-bar { height: 38px; border-radius: 12px; }
+        .divrow-seg b { font-size: 12.5px; }
+        .divrow-seg small { font-size: 10px; }
+        .divrow-foot { margin-top: 6px; }
+        .divrow-legend-item { padding: 0 9px 0 7px; font-size: 11px; }
+
+        .chart-figure-footer { margin-top: 4px; padding-top: 6px; }
+        .scale-legend { margin: 0 0 6px; padding: 6px 12px; gap: 3px 14px; border-radius: 12px; }
+        .scale-legend-note { margin-top: 0; font-size: .72rem; }
+        .chart-table-toggle { padding: 5px 14px !important; font-size: .78rem; }
+
+        /* การ์ดร้อยละผู้ตอบแบบประเมิน แยกรายจังหวัด: อ่านง่าย สบายตา (คงตำแหน่งข้อมูลเดิม) */
+        .awr-pf-pills > span { font-size: 13px !important; padding: 7px 12px !important; box-shadow: 0 2px 8px -5px rgba(15, 23, 42, .25); }
+        .awr-donut-row { min-height: 300px; gap: 18px; }
+        .awr-donut-legend { gap: 7px; }
+        .awr-leg-item { max-height: 58px; padding: 7px 12px; gap: 11px; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
+        .awr-leg-item:hover { background: color-mix(in srgb, var(--leg-c) 5%, #fff); }
+        .awr-leg-dot { width: 12px; height: 12px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--leg-c) 18%, #fff); }
+        .awr-leg-main { gap: 6px; }
+        .awr-leg-name { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .awr-leg-bar { height: 6px; background: color-mix(in srgb, var(--leg-c) 12%, #eef1f6); }
+        .awr-leg-bar > span { background: linear-gradient(90deg, color-mix(in srgb, var(--leg-c) 70%, #fff), var(--leg-c)); min-width: 4px; }
+        .awr-leg-nums b { font-size: 16px; }
+        .awr-leg-nums small { font-size: 11.5px; color: #64748b; }
+
+        /* ตารางตัวเลขในการ์ด: ให้พอดีความกว้าง ไม่มีแถบเลื่อนแนวนอน */
+        .figure-table-wrap { overflow-x: hidden; }
+        table.figure-table { table-layout: auto; font-size: .8rem; }
+        table.figure-table thead th { padding: 9px 7px; white-space: normal; line-height: 1.25; vertical-align: bottom; }
+        table.figure-table td { padding: 7px 7px; }
+        table.figure-table th:not(:first-child), table.figure-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+        table.figure-table td:first-child, table.figure-table th:first-child { padding-left: 12px; }
+        table.figure-table td:last-child, table.figure-table th:last-child { padding-right: 12px; }
+</style>
 @endsection
 
 @section('content')
@@ -1250,11 +1524,17 @@
                         <!-- Custom Legend -->
                     </div>
                 </div>
-                @if ($hasPendingCriteria)
-                    <div class="chart-figure-footer" style="padding-top: 0;">
+                <div class="chart-figure-footer" style="margin-top: auto;">
+                    @if ($hasPendingCriteria)
                         <p class="chart-caption">* ไม่รวมปีงบประมาณที่ยังไม่ได้ตั้งค่าเกณฑ์ความตระหนักรู้</p>
-                    </div>
-                @endif
+                    @endif
+                    <details>
+                        <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
+                        <div class="figure-table-wrap">
+                            <div id="respondentsTable"></div>
+                        </div>
+                    </details>
+                </div>
             </div>
         </div>
 
@@ -1385,9 +1665,9 @@
                     <div id="riskChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1414,9 +1694,9 @@
                     <div id="seasoningChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1443,9 +1723,9 @@
                     <div id="healthyHabitChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1472,9 +1752,9 @@
                     <div id="mindsetChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#eeb48a)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e6eaee"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8fc9c4,#2f808a)"></span>ดี</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b9534d,#f2a65a)"></span>ควรปรับ</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#e2e8f0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#8cc0dc,#2b6a9e)"></span>ดี</span>
                             <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
                         </div>
                         <details>
@@ -1489,6 +1769,7 @@
         </div>
 
     <!-- Data Table Card -->
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')
@@ -1774,7 +2055,16 @@
                 const chartData = labels.map(label => ({
                     name: label.trim(),
                     y: data[label],
-                    color: colorMap[label] || fallback
+                    baseColor: colorMap[label] || fallback,
+                    // ไล่เฉดแบบทรงกลม: สว่างบน-เข้มล่าง ให้ชิ้นพายดูมีมิติ
+                    color: {
+                        radialGradient: { cx: 0.35, cy: 0.25, r: 1.0 },
+                        stops: [
+                            [0, shadeHexColor(colorMap[label] || fallback, 22)],
+                            [0.55, colorMap[label] || fallback],
+                            [1, shadeHexColor(colorMap[label] || fallback, -14)]
+                        ]
+                    }
                 }));
 
                 Highcharts.chart(containerId, {
@@ -1803,11 +2093,12 @@
                             borderWidth: 2,
                             borderColor: '#fff',
                             shadow: {
-                                color: 'rgba(15, 23, 42, 0.18)',
+                                color: 'rgba(15, 23, 42, 0.28)',
                                 offsetX: 0,
-                                offsetY: 4,
-                                width: 6
+                                offsetY: 7,
+                                width: 12
                             },
+                            slicedOffset: 8,
                             states: {
                                 hover: {
                                     brightness: 0.06
@@ -1826,16 +2117,16 @@
                                 // ป้ายร้อยละเป็นแคปซูลสีของส่วนนั้น (ตัวหนังสือขาว/เข้มเลือกตามความสว่างของสี)
                                 // ตามด้วยชื่อกลุ่มอายุตัวหนาเข้ม และจำนวนคนตัวรอง
                                 formatter: function () {
-                                    const hex = String(this.point.color || '#64748b').replace('#', '');
+                                    const hex = String(this.point.options.baseColor || '#64748b').replace('#', '');
                                     const full = hex.length === 3 ? hex.split('').map(ch => ch + ch).join('') : hex;
                                     const r = parseInt(full.substr(0, 2), 16), g = parseInt(full.substr(2, 2), 16), bl = parseInt(full.substr(4, 2), 16);
                                     const light = (0.299 * r + 0.587 * g + 0.114 * bl) > 150;
                                     const ink = light ? '#422006' : '#ffffff';
                                     const glow = light ? 'none' : '0 1px 2px rgba(15,23,42,0.35)';
                                     return '<div style="text-align:center; line-height:1.3;">' +
-                                        '<span style="display:inline-block; background:' + this.point.color + '; color:' + ink + '; font-weight:800; font-size:14.5px; letter-spacing:-.2px; padding:2px 11px 3px; border-radius:999px; white-space:nowrap; text-shadow:' + glow + '; box-shadow:0 4px 10px -4px ' + this.point.color + ';">' + Highcharts.numberFormat(this.percentage, 1) + '%</span>' +
-                                        '<br/><span style="display:inline-block; margin-top:3px; color:#1e293b; font-weight:700; font-size:12.5px; white-space:nowrap;">' + this.point.name + '</span>' +
-                                        '<br/><span style="color:#64748b; font-weight:700; font-size:11.5px; white-space:nowrap;">' + Highcharts.numberFormat(this.y, 0) + ' คน</span>' +
+                                        '<span style="display:inline-block; background:' + this.point.options.baseColor + '; color:' + ink + '; font-weight:800; font-size:15px; letter-spacing:-.2px; padding:2px 11px 3px; border-radius:999px; white-space:nowrap; text-shadow:' + glow + '; box-shadow:0 4px 10px -4px ' + this.point.options.baseColor + ';">' + Highcharts.numberFormat(this.percentage, 1) + '%</span>' +
+                                        '<br/><span style="display:inline-block; margin-top:3px; color:#0f172a; font-weight:800; font-size:13.5px; white-space:nowrap;">' + this.point.name + '</span>' +
+                                        '<br/><span style="color:#334155; font-weight:700; font-size:12px; white-space:nowrap;">' + Highcharts.numberFormat(this.y, 0) + ' คน</span>' +
                                         '</div>';
                                 },
                                 connectorColor: '#cbd5e1',
@@ -2230,11 +2521,10 @@
                 // Traffic-light ramp: red (risky) -> orange -> yellow
                 // (neutral) -> light green -> dark green (healthy), matching
                 // the reference palette requested for the dashboard.
-                // (สีตามความหมาย: แดงดินเผา = ควรปรับมาก, ส้มอ่อน = ควรปรับ, เทา = กลาง,
-                // ฟ้าอมเขียว = ดี, น้ำเงินเขียวเข้ม = ดีมาก - เปลี่ยนทั้งสีและความเข้ม
-                // จึงอ่านออกแม้ตาบอดสีแดง-เขียว)
-                const rankColors = ['#b9534d', '#eeb48a', '#e6eaee', '#8fc9c4', '#2f808a'];
-                const rankTextColors = ['#ffffff', '#4a2a0a', '#334155', '#0f3b3a', '#ffffff'];
+                // สีแบบสองขั้ว ส้ม-แดง (ควรปรับ) <-> ฟ้า-น้ำเงิน (ดี) ผ่านเทากลาง: ส้ม/ฟ้าแยกได้ชัดแม้ตาบอดสีแดง-เขียว
+                // ปลายสองข้างเข้มสุด ตรงกลางอ่อนสุด จึงอ่านระดับความเสี่ยงได้ทันทีจากความเข้ม
+                const rankColors = ['#b9534d', '#f2a65a', '#e2e8f0', '#8cc0dc', '#2b6a9e'];
+                const rankTextColors = ['#ffffff', '#4a2606', '#334155', '#0c3550', '#ffffff'];
 
                 // Semantic Keyword Mapping (Map ANY label to 0-4 scale: High Freq -> Low Freq)
                 // ระดับคำตอบมาตรฐาน (มาก -> น้อย) ที่พบจริงในแบบสอบถาม: ใช้ตรงตัวก่อน
@@ -2458,9 +2748,20 @@
                     rows.sort((a, b) => b.risk - a.risk);
 
                     let html = '';
+                    // สรุป "ควรปรับมากที่สุด" ไปอยู่แถวเดียวกับหัวข้อการ์ด (ชิดขวา)
+                    const headerEl = container.closest('.chart-card')
+                        ? container.closest('.chart-card').querySelector('.chart-header') : null;
+                    if (headerEl) {
+                        headerEl.querySelectorAll('.divsum').forEach(function (el) { el.remove(); });
+                    }
                     if (rows.length > 1 && rows[0].risk > 0) {
-                        html += '<div class="divsum"><i class="fas fa-lightbulb"></i><span>ควรปรับมากที่สุด: <b>' +
-                            escapeHtml(rows[0].c) + '</b> (' + Math.round(rows[0].risk) + '%)</span></div>';
+                        const sumHtml = '<div class="divsum"><i class="fas fa-lightbulb"></i><span class="divsum-text"><small>ควรปรับมากที่สุด</small><b>' +
+                            escapeHtml(rows[0].c) + '</b></span><em class="divsum-pct">' + Math.round(rows[0].risk) + '%</em></div>';
+                        if (headerEl) {
+                            headerEl.insertAdjacentHTML('beforeend', sumHtml);
+                        } else {
+                            html += sumHtml;
+                        }
                     }
 
                     rows.forEach(r => {
@@ -2570,6 +2871,29 @@
                 el.innerHTML = html;
             };
 
+            // ร้อยละผู้ตอบแบบประเมิน แยกรายจังหวัด (ตารางคู่กับกราฟโดนัท)
+            const renderRespondentsTable = (containerId, labels, values) => {
+                const el = document.getElementById(containerId);
+                if (!el) return;
+                const total = values.reduce((sum, v) => sum + (Number(v) || 0), 0);
+                if (labels.length === 0 || total <= 0) {
+                    el.innerHTML = '';
+                    return;
+                }
+                const rows = labels.map((l, i) => ({ label: l, value: Number(values[i]) || 0 }))
+                    .sort((a, b) => b.value - a.value);
+                let html =
+                    '<table class="figure-table"><thead><tr><th>จังหวัด</th><th>จำนวนผู้ตอบ (คน)</th><th>ร้อยละ (%)</th></tr></thead><tbody>';
+                rows.forEach(r => {
+                    const pct = r.value / total * 100;
+                    html += '<tr' + (pct >= 20 ? ' class="row-highlight"' : '') + '><td>' + escapeHtml(String(r.label)) +
+                        '</td><td>' + r.value.toLocaleString() + '</td><td>' + pct.toFixed(1) + '%</td></tr>';
+                });
+                html += '<tr class="group-start"><td><b>รวม</b></td><td><b>' + total.toLocaleString() +
+                    '</b></td><td><b>100.0%</b></td></tr></tbody></table>';
+                el.innerHTML = html;
+            };
+
             const renderPassFailTable = (containerId, data) => {
                 const el = document.getElementById(containerId);
                 if (!el) return;
@@ -2579,16 +2903,23 @@
                     return;
                 }
                 let html =
-                    '<table class="figure-table"><thead><tr><th>จังหวัด</th><th>ตระหนักรู้ (คน)</th><th>ไม่ตระหนัก (คน)</th><th>ร้อยละตระหนักรู้ (%)</th></tr></thead><tbody>';
+                    '<table class="figure-table"><thead><tr><th>จังหวัด</th><th>แบบประเมินทั้งหมด</th><th>ตระหนักรู้ (คน)</th><th>ไม่ตระหนัก (คน)</th><th>ร้อยละตระหนักรู้ (%)</th></tr></thead><tbody>';
+                let sumPass = 0, sumFail = 0;
                 provinces.forEach((p) => {
                     const pass = data[p].pass || 0;
                     const fail = data[p].fail || 0;
                     const total = pass + fail;
                     const pct = total > 0 ? (pass / total * 100) : 0;
-                    html += '<tr><td>' + escapeHtml(p) + '</td><td>' + pass.toLocaleString() +
+                    sumPass += pass; sumFail += fail;
+                    html += '<tr><td>' + escapeHtml(p) + '</td><td>' + total.toLocaleString() +
+                        '</td><td>' + pass.toLocaleString() +
                         '</td><td>' + fail.toLocaleString() + '</td><td>' + pct.toFixed(1) +
                         '%</td></tr>';
                 });
+                const sumAll = sumPass + sumFail;
+                html += '<tr class="group-start"><td><b>รวม</b></td><td><b>' + sumAll.toLocaleString() +
+                    '</b></td><td><b>' + sumPass.toLocaleString() + '</b></td><td><b>' + sumFail.toLocaleString() +
+                    '</b></td><td><b>' + (sumAll > 0 ? (sumPass / sumAll * 100).toFixed(1) : '0.0') + '%</b></td></tr>';
                 html += '</tbody></table>';
                 el.innerHTML = html;
             };
@@ -2629,6 +2960,7 @@
 
             renderEducationTable('educationTable', educationStats);
             renderAgeTable('ageTable', ageStats);
+            renderRespondentsTable('respondentsTable', provLabels, provValues);
             renderPassFailTable('passFailTable', passFailByProvince);
 
             // --- แผนที่: ร้อยละความตระหนักรู้รายจังหวัด (ร้อยละ = ผ่านเกณฑ์ / ผู้ตอบทั้งหมด ของจังหวัดนั้น
@@ -2732,5 +3064,29 @@
             if (e.key !== 'Escape') return;
             document.querySelectorAll('.chart-figure-footer details[open]').forEach((d) => d.removeAttribute('open'));
         });
+    </script>
+
+    <script>
+        // วางตารางตัวเลขให้เต็มการ์ด: เริ่มใต้หัวข้อ จบเหนือปุ่ม "ดูข้อมูลตัวเลข"
+        (function () {
+            function place(details) {
+                var wrap = details.querySelector('.figure-table-wrap');
+                var card = details.closest('.chart-card');
+                if (!wrap || !card) return;
+                var head = card.querySelector('.chart-header');
+                var cardRect = card.getBoundingClientRect();
+                var top = head ? head.getBoundingClientRect().bottom - cardRect.top + 10 : 92;
+                var bottom = cardRect.bottom - details.getBoundingClientRect().top + 8;
+                wrap.style.top = top + 'px';
+                wrap.style.bottom = bottom + 'px';
+            }
+            document.addEventListener('toggle', function (e) {
+                var d = e.target;
+                if (d && d.tagName === 'DETAILS' && d.open && d.closest('.chart-figure-footer')) place(d);
+            }, true);
+            window.addEventListener('resize', function () {
+                document.querySelectorAll('.chart-figure-footer details[open]').forEach(place);
+            });
+        })();
     </script>
 @endsection

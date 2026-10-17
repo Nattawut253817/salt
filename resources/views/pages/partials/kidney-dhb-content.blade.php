@@ -348,6 +348,18 @@
 
     .year-quarter-section .form-group { min-width: 0; }
 
+    /* Locked operating area (Level 2-5): read-only card instead of a dropdown. */
+    .oa-locked-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        background: #fff;
+        padding: 4px 18px;
+    }
+    .oa-locked-card .olc-row { padding: 11px 0; border-bottom: 1px solid #eef2f7; }
+    .oa-locked-card .olc-row:last-child { border-bottom: 0; }
+    .oa-locked-card .olc-label { display: block; font-size: .76rem; font-weight: 600; color: #94a3b8; margin-bottom: 2px; }
+    .oa-locked-card .olc-value { display: block; font-size: 1rem; font-weight: 700; color: #0f172a; line-height: 1.4; word-break: break-word; }
+
     .year-quarter-section .form-group label {
         display: flex;
         align-items: center;
@@ -1632,8 +1644,21 @@
                         <option value="4" {{ $selectedQuarter == 4 ? 'selected' : '' }}>ไตรมาส 4 (เดือน 12)</option>
                     </select>
                 </div>
-                <div class="form-group">
+                @php
+                    // Level 2-5 arriving from "เลือกพื้นที่ดำเนินงาน" with a saved area: the area is
+                    // fixed for this report - shown as a read-only card, no dropdown, no map picking.
+                    $oaLockedPin = null;
+                    if (in_array((int) optional(auth()->user())->User_rank_id, [2, 3, 4, 5], true) && !empty($selectedPinId ?? null)) {
+                        $oaLockedPin = collect($registeredPins ?? [])->first(fn($p) => (string) $p['id'] === (string) $selectedPinId && empty($p['view_only']));
+                    }
+                @endphp
+                <div class="form-group{{ $oaLockedPin ? ' oa-locked-group' : '' }}">
                     <label for="oaTopAreaSelect"><i class="fas fa-map-location-dot"></i> พื้นที่ดำเนินงาน</label>
+                    @if($oaLockedPin)
+                        <div class="oa-locked-card" id="oaLockedCard" aria-live="polite">
+                            <div class="olc-row"><span class="olc-value" id="olcPlace">{{ $oaLockedPin['place_name'] ?? $oaLockedPin['display_name'] }}</span></div>
+                        </div>
+                    @endif
                     {{-- Quick-jump to view/edit an already-registered pin's
                          data without scrolling down to "พื้นที่การดำเนินงาน" -
                          a second face on that SAME oaRegisteredSelect
@@ -1659,7 +1684,7 @@
                     @php
                         $hasUsedAreas = isset($usedOperatingAreas) && $usedOperatingAreas->isNotEmpty();
                     @endphp
-                    <select id="oaTopAreaSelect" {{ ((isset($registeredPins) && $registeredPins->isNotEmpty()) || $hasUsedAreas) ? '' : 'disabled' }}>
+                    <select id="oaTopAreaSelect" @if($oaLockedPin) style="display:none" tabindex="-1" aria-hidden="true" @endif {{ ((isset($registeredPins) && $registeredPins->isNotEmpty()) || $hasUsedAreas) ? '' : 'disabled' }}>
                         <option value="">-- เลือกพื้นที่ --</option>
                         @foreach(($registeredPins ?? []) as $pin)
                             <option value="{{ $pin['id'] }}" @if(!empty($pin['view_only'])) disabled @endif>{{ $pin['display_name'] }}@if($pin['breadcrumb']) ({{ $pin['breadcrumb'] }})@endif @if(!empty($pin['view_only'])) · ดำเนินงานโดย {{ $pin['agency_label'] ?: 'หน่วยงานอื่น' }} · ดูอย่างเดียว @endif</option>
@@ -1669,9 +1694,11 @@
                         @endforeach
                     </select>
                     <small id="oaTakenHint" style="display:none; margin-top:4px; color:#64748b; font-size:.78rem;"></small>
+                    @unless($oaLockedPin)
                     <small class="oa-areas-link">
                         ยังไม่มีพื้นที่ที่ต้องการ? <a href="{{ route('admin.kidney-dhb.areas') }}">เลือกพื้นที่ดำเนินงาน</a>
                     </small>
+                    @endunless
                 </div>
             </div>
 
@@ -1796,7 +1823,7 @@
                 </div>
                 <aside class="oa-info" aria-live="polite">
                     <div class="oa-info-row">
-                        <div class="oa-info-label">ชื่อพื้นที่</div>
+                        <div class="oa-info-label">พื้นที่ดำเนินงาน</div>
                         <div class="oa-info-value is-empty" id="oaInfoName">ยังไม่ได้เลือกพื้นที่</div>
                     </div>
                     <div class="oa-info-row" id="oaInfoExtraRow" style="display:none;">
@@ -1810,6 +1837,10 @@
                     <div class="oa-info-row">
                         <div class="oa-info-label">พิกัด (ละติจูด, ลองจิจูด)</div>
                         <div class="oa-info-value is-empty" id="oaInfoCoords">-</div>
+                    </div>
+                    <div class="oa-info-row" id="oaInfoIssueRow" style="display:none;">
+                        <div class="oa-info-label">ประเด็น</div>
+                        <div class="oa-info-value" id="oaInfoIssue">-</div>
                     </div>
                 </aside>
                 </div>
@@ -2179,6 +2210,8 @@
     let oaGeoToken = 0;
     // Pin id arriving from "เลือกพื้นที่ดำเนินงาน" (?pin=) - kept selected through the first load.
     let oaPreselectedPin = null;
+    // Level 2-5 with a fixed area: pins on the map must not switch the area.
+    const OA_LOCKED = @json((bool) $oaLockedPin);
     let oaNameManuallyEdited = false;
 
     function getCurrentOperatingArea() {
@@ -2276,10 +2309,45 @@
             el.textContent = text;
             el.classList.toggle('is-empty', !filled);
         }
-        set(nameEl, hasPick ? (name || '-') : 'ยังไม่ได้เลือกพื้นที่', hasPick && !!name);
+        // Registered pin: "พื้นที่ดำเนินงาน" is the place itself (e.g. สวาย) and the pin's label is the ประเด็น.
+        const placeName = pin ? (pin.place_name || name) : name;
+        // ทุกพื้นที่ของรายงานนี้ (หลัก + ที่ปักพร้อมกัน 2, 3, 4 ... พื้นที่) เป็น "พื้นที่ดำเนินงาน" เหมือนกัน - แสดงรวมในแถวเดียว
+        const areaNames = [];
+        if (hasPick && placeName) areaNames.push(placeName);
+        if (hasPick && typeof oaExtraPins !== 'undefined') {
+            oaExtraPins.forEach(function (p) {
+                const n = p.place_name || p.display_name || '';
+                if (n && areaNames.indexOf(n) === -1) areaNames.push(n);
+            });
+        }
+        // การ์ดล็อกพื้นที่ด้านบน (level 2-5): แสดงทุกพื้นที่ดำเนินงานของรายงานนี้
+        const lockedEl = document.getElementById('olcPlace');
+        if (lockedEl && areaNames.length) {
+            // เรียงแนวนอนคั่นด้วย ", " (ขึ้นบรรทัดใหม่เองเมื่อยาวเกินความกว้าง)
+            lockedEl.textContent = areaNames.join(', ');
+        }
+        if (areaNames.length > 1) {
+            nameEl.innerHTML = '';
+            areaNames.forEach(function (n) {
+                const d = document.createElement('div');
+                d.textContent = n;
+                nameEl.appendChild(d);
+            });
+            nameEl.classList.remove('is-empty');
+        } else {
+            set(nameEl, hasPick ? (placeName || '-') : 'ยังไม่ได้เลือกพื้นที่', hasPick && !!placeName);
+        }
+        const issueRow = document.getElementById('oaInfoIssueRow');
+        const issueEl = document.getElementById('oaInfoIssue');
+        if (issueRow && issueEl) {
+            const issue = pin ? (pin.issue || '') : '';
+            issueEl.textContent = issue;
+            issueRow.style.display = issue ? '' : 'none';
+        }
         set(placeEl, place || '-', !!place);
         set(coordEl, (lat && lng) ? (parseFloat(lat).toFixed(6) + ', ' + parseFloat(lng).toFixed(6)) : '-', !!(lat && lng));
     }
+    // (card for the locked area is rendered server-side from the pin and never changes)
 
 
     function setOaMarker(lat, lng, draggable, zoom) {
@@ -2350,6 +2418,7 @@
             }
             marker.bindTooltip(label, { direction: 'top', offset: [0, -40] });
             marker.on('click', function () {
+                if (OA_LOCKED) return;
                 // The overview now also shows on the "ปักหน่วยงานพื้นที่ใหม่" tab
                 // (see syncOaOverview()) - switch back to "เลือกจากพื้นที่ที่
                 // มีอยู่" first so the visible panel matches what this click
@@ -2676,7 +2745,7 @@
 
     // พื้นที่อื่นที่รายงานนี้ครอบคลุม = ที่บันทึกไว้แล้ว + พื้นที่ที่ปักพร้อมกันในชุดเดียวกับพื้นที่หลัก
     // (ตัดพื้นที่ที่อยู่ในรายงานอื่นของไตรมาสนี้แล้วออก) - ไม่มีช่องให้ติ๊ก ใส่เป็น hidden input ให้เอง
-    let oaExtraPins = [];
+    var oaExtraPins = [];
     let oaExtraMarkers = [];
 
     function clearOaExtraMarkers() {
@@ -2720,8 +2789,10 @@
                 d.textContent = p.display_name || '';
                 infoEl.appendChild(d);
             });
-            infoRow.style.display = oaExtraPins.length ? '' : 'none';
+            // แสดงรวมกับ "พื้นที่ดำเนินงาน" ในการ์ดหลักแล้ว (updateOaInfo) จึงไม่ต้องมีแถว "พื้นที่อื่น" แยก
+            infoRow.style.display = 'none';
         }
+        updateOaInfo();
 
         // แผนที่: แสดงทุกพื้นที่ของรายงานนี้ (พื้นที่หลัก + พื้นที่อื่น) พร้อมชื่อกำกับ
         clearOaExtraMarkers();
@@ -3031,7 +3102,7 @@
 
         oaFlyToOptionCoords(this.options[this.selectedIndex], 8);
 
-        fetch(`/admin/operating-areas/get-districts/${this.value}`)
+        fetch(`${APP_BASE}/admin/operating-areas/get-districts/${this.value}`)
             .then(r => r.json())
             .then(districts => {
                 oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
@@ -3062,7 +3133,7 @@
         oaFlyToOptionCoords(this.options[this.selectedIndex], 10);
 
         const provinceId = oaNewProvince.value;
-        fetch(`/admin/operating-areas/get-tambons/${provinceId}/${this.value}`)
+        fetch(`${APP_BASE}/admin/operating-areas/get-tambons/${provinceId}/${this.value}`)
             .then(r => r.json())
             .then(tambons => {
                 oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
@@ -3092,7 +3163,7 @@
 
         const provinceId = oaNewProvince.value;
         const districtId = oaNewDistrict.value;
-        fetch(`/admin/operating-areas/get-villages/${provinceId}/${districtId}/${this.value}`)
+        fetch(`${APP_BASE}/admin/operating-areas/get-villages/${provinceId}/${districtId}/${this.value}`)
             .then(r => r.json())
             .then(villages => {
                 oaNewVillage.innerHTML = '<option value="">-- เลือกชุมชน/หมู่บ้าน --</option>';
@@ -3129,7 +3200,7 @@
         if (provinceId) {
             try {
                 if (districtId) {
-                    const districts = await fetch(`/admin/operating-areas/get-districts/${provinceId}`).then(r => r.json());
+                    const districts = await fetch(`${APP_BASE}/admin/operating-areas/get-districts/${provinceId}`).then(r => r.json());
                     oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
                     districts.forEach(d => {
                         const opt = document.createElement('option');
@@ -3143,7 +3214,7 @@
                     oaNewDistrict.value = districtId;
                 }
                 if (tambonId && districtId) {
-                    const tambons = await fetch(`/admin/operating-areas/get-tambons/${provinceId}/${districtId}`).then(r => r.json());
+                    const tambons = await fetch(`${APP_BASE}/admin/operating-areas/get-tambons/${provinceId}/${districtId}`).then(r => r.json());
                     oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
                     tambons.forEach(t => {
                         const opt = document.createElement('option');
@@ -3157,7 +3228,7 @@
                     oaNewTambon.value = tambonId;
                 }
                 if (villageId && districtId && tambonId) {
-                    const villages = await fetch(`/admin/operating-areas/get-villages/${provinceId}/${districtId}/${tambonId}`).then(r => r.json());
+                    const villages = await fetch(`${APP_BASE}/admin/operating-areas/get-villages/${provinceId}/${districtId}/${tambonId}`).then(r => r.json());
                     oaNewVillage.innerHTML = '<option value="">-- เลือกชุมชน/หมู่บ้าน --</option>';
                     villages.forEach(v => {
                         const opt = document.createElement('option');
@@ -3200,7 +3271,7 @@
         let centerLng = (provinceOpt && provinceOpt.dataset.lng) ? parseFloat(provinceOpt.dataset.lng) : null;
 
         try {
-            const districts = await fetch(`/admin/operating-areas/get-districts/${loc.province_id}`).then(r => r.json());
+            const districts = await fetch(`${APP_BASE}/admin/operating-areas/get-districts/${loc.province_id}`).then(r => r.json());
             oaNewDistrict.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
             districts.forEach(d => {
                 const opt = document.createElement('option');
@@ -3222,7 +3293,7 @@
                         centerLng = parseFloat(dOpt.dataset.lng);
                     }
 
-                    const tambons = await fetch(`/admin/operating-areas/get-tambons/${loc.province_id}/${loc.district_id}`).then(r => r.json());
+                    const tambons = await fetch(`${APP_BASE}/admin/operating-areas/get-tambons/${loc.province_id}/${loc.district_id}`).then(r => r.json());
                     oaNewTambon.innerHTML = '<option value="">-- เลือกตำบล --</option>';
                     tambons.forEach(t => {
                         const opt = document.createElement('option');
@@ -4182,13 +4253,13 @@
                 return;
             }
             if (rank === '5') {
-                fetch(`/get-hospitals/${provinceId}/${districtId}`)
+                fetch(`${APP_BASE}/get-hospitals/${provinceId}/${districtId}`)
                     .then(r => r.json())
                     .then(hospitals => {
                         populateSelect(hospitalSelect, hospitals, 'hos_id', 'hos_name', '-- เลือกโรงพยาบาล --');
                     });
             } else if (rank === '4') {
-                fetch(`/get-subdistrict-hospitals/${provinceId}/${districtId}`)
+                fetch(`${APP_BASE}/get-subdistrict-hospitals/${provinceId}/${districtId}`)
                     .then(r => r.json())
                     .then(list => {
                         populateSelect(subdistrictHospitalSelect, list, 'sh_id', 'sh_name', '-- เลือกหน่วยงาน --');
@@ -4277,12 +4348,12 @@
                 if (rank === '3') { tryResolveTarget(); return; }
 
                 if (rank === '5') {
-                    const hospitals = await fetch('/get-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
+                    const hospitals = await fetch(APP_BASE + '/get-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
                     populateSelect(hospitalSelect, hospitals, 'hos_id', 'hos_name', '-- เลือกโรงพยาบาล --');
                     const hv = findOptionValue(hospitalSelect, result.reporter_agency);
                     if (hv) { hospitalSelect.value = hv; tryResolveTarget(); }
                 } else {
-                    const list = await fetch('/get-subdistrict-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
+                    const list = await fetch(APP_BASE + '/get-subdistrict-hospitals/' + provinceValue + '/' + districtValue).then(r => r.json());
                     populateSelect(subdistrictHospitalSelect, list, 'sh_id', 'sh_name', '-- เลือกหน่วยงาน --');
                     const sv = findOptionValue(subdistrictHospitalSelect, result.reporter_agency);
                     if (sv) { subdistrictHospitalSelect.value = sv; tryResolveTarget(); }

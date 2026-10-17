@@ -2,6 +2,7 @@
 <html lang="th">
 
 <head>
+    <script>window.APP_BASE = @json(rtrim(url('/'), '/')); // ฐาน URL ของแอป (รองรับติดตั้งในโฟลเดอร์ย่อย/โดเมนต่างๆ ตอนขึ้น server)</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -50,6 +51,32 @@
             --pink-gradient: linear-gradient(145deg, #f0527f 0%, #d81e4a 100%);
             --admin-banner-height: 76px;
         }
+
+        /* Welcome pop up - first sign-in only */
+        .wlc-backdrop { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(76, 5, 25, .55); backdrop-filter: blur(3px); animation: wlcFade .3s ease both; }
+        .wlc-card { width: 100%; max-width: 480px; max-height: calc(100vh - 40px); overflow: auto; background: #fff; border-radius: 24px; box-shadow: 0 30px 70px -12px rgba(76, 5, 25, .55); animation: wlcRise .45s cubic-bezier(.2, .9, .25, 1.1) both; }
+        .wlc-head { position: relative; padding: 34px 30px 28px; color: #fff; background: linear-gradient(145deg, #f0527f 0%, #d81e4a 100%); overflow: hidden; }
+        .wlc-head::after { content: ""; position: absolute; right: -50px; top: -60px; width: 190px; height: 190px; border-radius: 50%; background: rgba(255, 255, 255, .14); }
+        .wlc-head::before { content: ""; position: absolute; right: 40px; bottom: -70px; width: 130px; height: 130px; border-radius: 50%; background: rgba(255, 255, 255, .1); }
+        .wlc-icon { position: relative; z-index: 1; width: 54px; height: 54px; border-radius: 16px; background: rgba(255, 255, 255, .22); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 16px; }
+        .wlc-head h2 { position: relative; z-index: 1; margin: 0 0 6px; font-size: 1.45rem; font-weight: 800; line-height: 1.3; }
+        .wlc-head p { position: relative; z-index: 1; margin: 0; font-size: .95rem; opacity: .95; }
+        .wlc-body { padding: 24px 30px 8px; color: #334155; }
+        .wlc-body > p { margin: 0 0 16px; font-size: .95rem; line-height: 1.7; }
+        .wlc-points { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 10px; }
+        .wlc-points li { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 14px; background: #fff1f4; color: #881337; font-weight: 700; font-size: .92rem; }
+        .wlc-points i { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 10px; background: #fff; color: #d81e4a; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(216, 30, 74, .15); }
+        .wlc-note { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: #fffbeb; border: 1px solid #fde68a; color: #92400e; font-size: .85rem; line-height: 1.55; font-weight: 600; }
+        .wlc-note i { margin-top: 3px; color: #d97706; }
+        .wlc-foot { padding: 18px 30px 28px; }
+        .wlc-btn { width: 100%; border: 0; border-radius: 14px; padding: 14px; font-family: inherit; font-size: 1rem; font-weight: 800; color: #fff; cursor: pointer; background: linear-gradient(135deg, #f0527f, #d81e4a); box-shadow: 0 10px 24px -6px rgba(216, 30, 74, .6); transition: transform .15s ease, box-shadow .15s ease; }
+        .wlc-btn:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -6px rgba(216, 30, 74, .7); }
+        .wlc-btn:focus-visible { outline: 3px solid #fda4af; outline-offset: 2px; }
+        .wlc-backdrop.is-closing { animation: wlcFadeOut .2s ease both; }
+        @keyframes wlcFade { from { opacity: 0; } }
+        @keyframes wlcFadeOut { to { opacity: 0; } }
+        @keyframes wlcRise { from { opacity: 0; transform: translateY(24px) scale(.96); } }
+        @media (prefers-reduced-motion: reduce) { .wlc-backdrop, .wlc-card { animation: none; } .wlc-btn { transition: none; } }
 
         html {
             overflow-x: hidden;
@@ -1767,6 +1794,51 @@
             @endif
         })();
     </script>
+
+    @if (session()->pull('show_welcome') && auth()->check())
+        @php $wlcName = trim((string) (auth()->user()->User_firstname ?: auth()->user()->name)); @endphp
+        <div class="wlc-backdrop" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="wlcTitle">
+            <div class="wlc-card">
+                <div class="wlc-head">
+                    <div class="wlc-icon"><i class="fas fa-hand-sparkles" aria-hidden="true"></i></div>
+                    <h2 id="wlcTitle">ยินดีต้อนรับสู่ระบบ{{ $wlcName !== '' ? ' คุณ' . $wlcName : '' }}</h2>
+                    <p>Smart Salt &amp; Sodium Monitor · สคร.10 อุบลราชธานี</p>
+                </div>
+                <div class="wlc-body">
+                    <p>ขอบคุณที่เข้าใช้งานระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10 ท่านสามารถเริ่มต้นใช้งานได้ทันทีจากเมนูด้านข้าง</p>
+                    <ul class="wlc-points">
+                        <li><i class="fas fa-clipboard-list" aria-hidden="true"></i> บันทึกข้อมูลการดำเนินงาน</li>
+                        <li><i class="fas fa-chart-line" aria-hidden="true"></i> ติดตามผลการดำเนินงาน</li>
+                        <li><i class="fas fa-users" aria-hidden="true"></i> เฝ้าระวังร่วมกัน</li>
+                    </ul>
+                    <div class="wlc-note">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <span>ข้อความต้อนรับนี้แสดงเฉพาะครั้งแรกที่เข้าใช้งานระบบเท่านั้น จะไม่แสดงอีกในการเข้าสู่ระบบครั้งต่อไป</span>
+                    </div>
+                </div>
+                <div class="wlc-foot">
+                    <button type="button" class="wlc-btn" id="wlcClose">เริ่มใช้งาน</button>
+                </div>
+            </div>
+        </div>
+        <script>
+            (function () {
+                var m = document.getElementById('welcomeModal');
+                var b = document.getElementById('wlcClose');
+                if (!m || !b) return;
+                function close() {
+                    m.classList.add('is-closing');
+                    document.removeEventListener('keydown', onKey);
+                    setTimeout(function () { m.remove(); }, 200);
+                }
+                function onKey(e) { if (e.key === 'Escape') close(); }
+                b.addEventListener('click', close);
+                m.addEventListener('click', function (e) { if (e.target === m) close(); });
+                document.addEventListener('keydown', onKey);
+                b.focus();
+            })();
+        </script>
+    @endif
 
     @yield('extra_js')
     <script>

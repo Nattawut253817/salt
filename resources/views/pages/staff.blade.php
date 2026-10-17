@@ -624,6 +624,36 @@
             color: var(--primary-color);
         }
 
+        /* Register button: same white-wipe + spinner loading state as sign-in */
+        .btn-auth #register-btn-text,
+        .btn-auth #register-btn-icon {
+            position: relative;
+            transition: color 0.35s ease 0.15s;
+        }
+
+        .btn-auth.is-loading #register-btn-text,
+        .btn-auth.is-loading #register-btn-icon {
+            color: var(--primary-color);
+        }
+
+        .btn-auth #register-btn-icon.is-spinner {
+            display: inline-block;
+            flex: 0 0 auto;
+            width: 1.15em;
+            height: 1.15em;
+            box-sizing: border-box;
+            border: 2.5px solid color-mix(in srgb, currentColor 22%, transparent);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: loginSpin 0.75s linear infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .btn-auth #register-btn-icon.is-spinner,
+            .btn-auth #login-btn-arrow.is-spinner { animation-duration: 1.8s; }
+            .btn-fill { transition-duration: 0.01s; }
+        }
+
         /* ตัวหมุนระหว่างตรวจสอบ: วงกลมจางๆ ที่มีส่วนโค้งทึบหมุนรอบ (ไม่ใช้ไอคอนลูกศรหมุน) */
         .btn-auth #login-btn-arrow.is-spinner {
             display: inline-block;
@@ -1549,9 +1579,9 @@
                         </div>
 
                         <button type="submit" class="btn-auth" id="register-btn">
-                            <span class="btn-spark"></span>
-                            <i class="fas fa-user-plus"></i>
-                            ยืนยันการสมัครสมาชิก
+                            <span class="btn-fill"></span>
+                            <i class="fas fa-user-plus" id="register-btn-icon"></i>
+                            <span id="register-btn-text">ยืนยันการสมัครสมาชิก</span>
                         </button>
                     </form>
                     <div class="form-footer">
@@ -1799,7 +1829,7 @@
             tambonSelect.innerHTML = '<option value="" disabled selected>กำลังโหลด...</option>';
 
             try {
-                const response = await fetch(`/get-subdistricts/${provinceId}/${districtId}`);
+                const response = await fetch(`${APP_BASE}/get-subdistricts/${provinceId}/${districtId}`);
                 const tambons = await response.json();
 
                 tambonSelect.innerHTML = '<option value="" disabled selected>เลือกตำบล</option>';
@@ -1831,7 +1861,7 @@
             hospitalSelect.innerHTML = '<option value="" disabled selected>กำลังโหลด...</option>';
 
             try {
-                const response = await fetch(`/get-hospitals/${provinceId}/${districtId}`);
+                const response = await fetch(`${APP_BASE}/get-hospitals/${provinceId}/${districtId}`);
                 const hospitals = await response.json();
 
                 hospitalSelect.innerHTML = '<option value="" disabled selected>เลือกโรงพยาบาล</option>';
@@ -1918,7 +1948,7 @@
             affInput.value = '';
 
             try {
-                let url = `/get-subdistrict-hospitals/${provinceId}/${districtId}`;
+                let url = `${APP_BASE}/get-subdistrict-hospitals/${provinceId}/${districtId}`;
 
                 const response = await fetch(url);
                 currentHospitals = await response.json();
@@ -2065,9 +2095,16 @@
 
             const btn = document.getElementById('register-btn');
             const form = document.getElementById('register-form');
+            const textEl = document.getElementById('register-btn-text');
+            const iconEl = document.getElementById('register-btn-icon');
 
+            // White panel wipes across, label -> "กำลังสมัครสมาชิก..." and the
+            // user icon -> circular spinner (a failed submit reloads the page,
+            // which resets this markup to its Blade default).
             btn.classList.add('is-loading');
             btn.disabled = true;
+            if (textEl) textEl.textContent = 'กำลังสมัครสมาชิก...';
+            if (iconEl) iconEl.className = 'is-spinner';
 
             requestAnimationFrame(() => requestAnimationFrame(() => form.submit()));
         }

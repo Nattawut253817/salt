@@ -26,6 +26,17 @@ class AppServiceProvider extends ServiceProvider
         // บันทึกการใช้งานระบบ: เข้า/ออกจากระบบ (ครอบคลุมทุกทางที่เรียก Auth::login / Auth::logout)
         Event::listen(Login::class, function (Login $event) {
             \App\Support\ActivityLog::record('login_success', 'เข้าสู่ระบบสำเร็จ', $event->user, ['remember' => (bool) $event->remember]);
+
+            // เข้าสู่ระบบครั้งแรก (มีบันทึก login_success ของผู้ใช้นี้เพียง 1 รายการ = ครั้งที่เพิ่งบันทึก)
+            // -> ตั้งธงให้หน้าแอดมินแสดง pop up ต้อนรับครั้งเดียว (layouts.admin ดึงธงนี้ออกทันทีที่แสดง)
+            try {
+                if (\Illuminate\Support\Facades\DB::table('activity_logs')
+                    ->where('user_id', $event->user->id)->where('event', 'login_success')->count() === 1) {
+                    session(['show_welcome' => true]);
+                }
+            } catch (\Throwable $e) {
+                report($e);
+            }
         });
         Event::listen(Logout::class, function (Logout $event) {
             if ($event->user) {

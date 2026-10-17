@@ -411,12 +411,67 @@
         .kd-bar-actions { display: flex; align-items: center; gap: 8px; padding-left: 18px; border-left: 1px solid rgba(148,163,184,.2); }
         .kd-bar button { border: none; border-radius: 12px; padding: 10px 18px; font-family: inherit; font-size: 0.85rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background .15s ease, transform .15s ease, box-shadow .15s ease; }
         .kd-bar button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
-        .kd-bar .kd-cancel { background: transparent; color: #cbd5e1; box-shadow: inset 0 0 0 1px rgba(148,163,184,.35); }
-        .kd-bar .kd-cancel:hover { background: rgba(148,163,184,.14); color: #fff; }
-        .kd-bar .kd-save { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; box-shadow: 0 6px 16px -4px rgba(37,99,235,.7); }
-        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #60a5fa, #2563eb); transform: translateY(-1px); }
+        .kd-bar button { padding: 11px 20px; }
+        /* ยกเลิก: โทนแดงกุหลาบ เห็นชัดว่าเป็นการออกโดยไม่บันทึก */
+        .kd-bar .kd-cancel { background: rgba(244,63,94,.14); color: #fda4af; box-shadow: inset 0 0 0 1.5px rgba(251,113,133,.55); }
+        .kd-bar .kd-cancel:hover { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; box-shadow: 0 8px 18px -6px rgba(225,29,72,.7); transform: translateY(-1px); }
+        .kd-bar .kd-cancel:active { transform: translateY(0); }
+        /* บันทึก: เขียวมรกต เด่นเสมอ - ยังไม่มีการแก้ไขจะจางลง, มีการแก้ไขแล้วสว่างและเรืองแสง */
+        .kd-bar .kd-save { background: linear-gradient(135deg, #34d399 0%, #10b981 45%, #059669 100%); color: #fff; box-shadow: 0 8px 20px -4px rgba(16,185,129,.75), inset 0 1px 0 rgba(255,255,255,.35); text-shadow: 0 1px 1px rgba(4,120,87,.45); }
+        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #6ee7b7 0%, #34d399 45%, #10b981 100%); transform: translateY(-2px); box-shadow: 0 12px 26px -4px rgba(16,185,129,.9), inset 0 1px 0 rgba(255,255,255,.4); }
         .kd-bar .kd-save:active:not(:disabled) { transform: translateY(0); }
-        .kd-bar .kd-save:disabled { background: rgba(148,163,184,.16); color: #64748b; box-shadow: none; cursor: not-allowed; }
+        .kd-bar .kd-save:disabled { background: rgba(16,185,129,.16); color: rgba(110,231,183,.6); box-shadow: inset 0 0 0 1.5px rgba(52,211,153,.3); text-shadow: none; cursor: not-allowed; }
+        .kd-bar.is-dirty { border-color: rgba(52,211,153,.55); box-shadow: 0 18px 40px -8px rgba(15,23,42,.45), 0 0 0 1px rgba(52,211,153,.25), 0 0 28px -6px rgba(16,185,129,.55); }
+        .kd-bar.is-dirty .kd-save:not(:disabled) { animation: kdSaveGlow 2.2s ease-in-out infinite; }
+        @keyframes kdSaveGlow { 50% { box-shadow: 0 8px 26px -2px rgba(16,185,129,1), inset 0 1px 0 rgba(255,255,255,.4); } }
+        .kd-bar-title i { color: #fbbf24; }
+        /* พื้นหลังสดใส: ไล่สีมิ้นต์-ขาว-ชมพูอ่อน ให้เข้ากับปุ่มเขียวมรกต/แดงกุหลาบ */
+        .kd-bar {
+            background: linear-gradient(110deg, #d1fae5 0%, #f0fdf9 38%, #ffffff 62%, #ffe4ea 100%);
+            color: #334155; border: 1.5px solid rgba(16,185,129,.35);
+            box-shadow: 0 18px 40px -10px rgba(16,185,129,.35), 0 6px 16px -6px rgba(244,63,94,.22), inset 0 1px 0 rgba(255,255,255,.9);
+        }
+        .kd-bar-title { color: #064e3b; }
+        .kd-bar-title i { color: #f59e0b; }
+        .kd-bar .kd-count { color: #64748b; }
+        .kd-bar .kd-count::before { background: #94a3b8; }
+        .kd-bar.is-dirty .kd-count { color: #b45309; }
+        .kd-bar.is-dirty .kd-count::before { background: #f59e0b; }
+        .kd-bar-actions { border-left-color: rgba(16,185,129,.35); }
+        .kd-bar button:focus-visible { outline-color: #059669; }
+        .kd-bar .kd-cancel { background: #fff; color: #e11d48; box-shadow: inset 0 0 0 1.5px rgba(244,63,94,.6); }
+        .kd-bar .kd-cancel:hover { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; box-shadow: 0 8px 18px -6px rgba(225,29,72,.6); }
+        .kd-bar .kd-save:disabled { background: rgba(16,185,129,.14); color: #047857; opacity: .75; box-shadow: inset 0 0 0 1.5px rgba(16,185,129,.4); }
+        .kd-bar.is-dirty { border-color: #10b981; box-shadow: 0 18px 40px -10px rgba(16,185,129,.5), 0 0 0 3px rgba(16,185,129,.18), inset 0 1px 0 rgba(255,255,255,.9); }
+        /* เข้มขึ้นให้เห็นชัด: มิ้นต์เข้ม -> เขียวอ่อน -> ชมพูกุหลาบ */
+        .kd-bar {
+            background: linear-gradient(110deg, #6ee7b7 0%, #a7f3d0 34%, #ecfdf5 62%, #fda4af 100%);
+            border: 2px solid #059669;
+            box-shadow: 0 18px 40px -8px rgba(5,150,105,.55), 0 6px 16px -6px rgba(225,29,72,.35), inset 0 1px 0 rgba(255,255,255,.8);
+        }
+        .kd-bar-title { color: #022c22; }
+        .kd-bar-title i { color: #d97706; }
+        .kd-bar .kd-count { color: #115e59; }
+        .kd-bar .kd-count::before { background: #0f766e; }
+        .kd-bar.is-dirty .kd-count { color: #92400e; }
+        .kd-bar-actions { border-left-color: rgba(4,120,87,.55); }
+        .kd-bar .kd-cancel { background: #fff; color: #be123c; box-shadow: inset 0 0 0 2px #e11d48; }
+        .kd-bar .kd-save:disabled { background: #34d399; color: #022c22; opacity: .85; box-shadow: inset 0 0 0 2px #059669; }
+        .kd-bar.is-dirty { border-color: #047857; }
+        /* สีเดียว: เขียวมิ้นต์ล้วน - ปุ่มบันทึกใช้เขียวเข้มกว่าพื้นให้เด่น, ยกเลิกเป็นปุ่มขาว */
+        .kd-bar {
+            background: #a7f3d0;
+            border: 2px solid #059669;
+            box-shadow: 0 18px 40px -8px rgba(5,150,105,.5), inset 0 1px 0 rgba(255,255,255,.6);
+        }
+        .kd-bar-actions { border-left-color: rgba(4,120,87,.5); }
+        .kd-bar .kd-cancel { background: #fff; color: #be123c; box-shadow: inset 0 0 0 2px #e11d48; }
+        .kd-bar .kd-cancel:hover { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; box-shadow: 0 8px 18px -6px rgba(225,29,72,.6); transform: translateY(-1px); }
+        .kd-bar .kd-save { background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 8px 18px -4px rgba(4,120,87,.7), inset 0 1px 0 rgba(255,255,255,.25); }
+        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #10b981, #047857); box-shadow: 0 12px 24px -4px rgba(4,120,87,.8), inset 0 1px 0 rgba(255,255,255,.3); }
+        .kd-bar .kd-save:disabled { background: #6ee7b7; color: #065f46; opacity: 1; box-shadow: inset 0 0 0 2px #34d399; }
+        .kd-bar.is-dirty { border-color: #047857; box-shadow: 0 18px 40px -8px rgba(5,150,105,.55), 0 0 0 3px rgba(5,150,105,.2), inset 0 1px 0 rgba(255,255,255,.6); }
+        @keyframes kdSaveGlow { 50% { box-shadow: 0 8px 24px -2px rgba(4,120,87,.95), inset 0 1px 0 rgba(255,255,255,.3); } }
         @media (max-width: 640px) {
             .kd-bar { left: 12px; right: 12px; bottom: 12px; flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; max-width: none; }
             .kd-bar-info { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
@@ -425,7 +480,7 @@
             .kd-bar-actions .kd-save { flex: 1.6; }
             #kdRoot.is-editing { padding-bottom: 150px; }
         }
-        @media (prefers-reduced-motion: reduce) { .kd-bar { transition: none; } .kd-edit-btn { transition: none; } }
+        @media (prefers-reduced-motion: reduce) { .kd-bar { transition: none; } .kd-edit-btn { transition: none; } .kd-bar.is-dirty .kd-save:not(:disabled) { animation: none; } }
     /* Progress Stepper Styles */
     .progress-stepper {
         margin: 10px 0 30px;
@@ -983,7 +1038,7 @@
                 <div>
                     <ol class="kd-info-multi" id="kdInfoMulti" style="display:none;"></ol>
                     <dl class="kd-info" id="kdInfoSingle">
-                        <div><dt>ชื่อพื้นที่</dt><dd id="kdInfoName">-</dd></div>
+                        <div><dt>พื้นที่ดำเนินงาน</dt><dd id="kdInfoName">-</dd></div>
                         <div><dt>ที่ตั้ง</dt><dd id="kdInfoCrumb">-</dd></div>
                         <div><dt>พิกัด (ละติจูด, ลองจิจูด)</dt><dd id="kdInfoCoord" class="mono">-</dd></div>
                         @if(count($assessment->area_list ?? []) <= 1 && !empty($assessment->area_issue))
@@ -1249,11 +1304,11 @@
 
         // ---- ข้อมูลข้างแผนที่ ----
         function setInfo(id, text, fallback) { const n = $(id); n.textContent = text || fallback; n.classList.toggle('muted', !text); }
-        setInfo('kdInfoName', AREA.name, 'ไม่ระบุชื่อพื้นที่');
+        setInfo('kdInfoName', AREA.place_name || AREA.name, 'ไม่ระบุชื่อพื้นที่');
         setInfo('kdInfoCrumb', AREA.breadcrumb, 'ไม่ระบุที่ตั้ง');
         setInfo('kdInfoCoord', hasPin ? lat.toFixed(6) + ', ' + lng.toFixed(6) : '', 'ยังไม่ได้ปักหมุด');
         if (MULTI) {
-            const rows = [{ name: AREA.name, crumb: AREA.breadcrumb, lat: lat, lng: lng, issue: null, prov: provinceName }].concat(EXTRAS.map(function (x) { return { name: x.name, crumb: x.breadcrumb, lat: num(x.latitude), lng: num(x.longitude), issue: x.issue, prov: x.province_name }; }));
+            const rows = [{ name: AREA.place_name || AREA.name, crumb: AREA.breadcrumb, lat: lat, lng: lng, issue: null, prov: provinceName }].concat(EXTRAS.map(function (x) { return { name: x.name, crumb: x.breadcrumb, lat: num(x.latitude), lng: num(x.longitude), issue: x.issue, prov: x.province_name }; }));
             const ol = $('kdInfoMulti');
             const items = [];
             function activate(i, fly) {

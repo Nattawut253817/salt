@@ -3257,13 +3257,13 @@
                 return;
             }
             if (rank === '5') {
-                fetch(`/get-hospitals/${provinceId}/${districtId}`)
+                fetch(`${APP_BASE}/get-hospitals/${provinceId}/${districtId}`)
                     .then(r => r.json())
                     .then(hospitals => {
                         populateSelect(hospitalSelect, hospitals, 'hos_id', 'hos_name', '-- เลือกโรงพยาบาล --');
                     });
             } else if (rank === '4') {
-                fetch(`/get-subdistrict-hospitals/${provinceId}/${districtId}`)
+                fetch(`${APP_BASE}/get-subdistrict-hospitals/${provinceId}/${districtId}`)
                     .then(r => r.json())
                     .then(list => {
                         populateSelect(subdistrictHospitalSelect, list, 'sh_id', 'sh_name', '-- เลือกหน่วยงาน --');

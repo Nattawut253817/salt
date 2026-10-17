@@ -1600,7 +1600,7 @@
                 flyToOptionCoords(this.options[this.selectedIndex], 8);
                 updateSaveButtonState();
 
-                fetch(`/admin/operating-areas/get-districts/${this.value}`)
+                fetch(`${APP_BASE}/admin/operating-areas/get-districts/${this.value}`)
                     .then(r => r.json())
                     .then(districts => {
                         districtSelect.innerHTML = '<option value="">-- เลือกอำเภอ --</option>';
@@ -1633,7 +1633,7 @@
                 updateSaveButtonState();
 
                 const provinceId = provinceSelect.value;
-                fetch(`/admin/operating-areas/get-tambons/${provinceId}/${this.value}`)
+                fetch(`${APP_BASE}/admin/operating-areas/get-tambons/${provinceId}/${this.value}`)
                     .then(r => r.json())
                     .then(tambons => {
                         tambonSelect.innerHTML = '<option value="">-- เลือกตำบล --</option>';
@@ -1665,7 +1665,7 @@
 
                 const provinceId = provinceSelect.value;
                 const districtId = districtSelect.value;
-                fetch(`/admin/operating-areas/get-villages/${provinceId}/${districtId}/${this.value}`)
+                fetch(`${APP_BASE}/admin/operating-areas/get-villages/${provinceId}/${districtId}/${this.value}`)
                     .then(r => r.json())
                     .then(villages => {
                         villageSelect.innerHTML = '<option value="">-- เลือกชุมชน/หมู่บ้าน --</option>';

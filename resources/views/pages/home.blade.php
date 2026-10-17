@@ -358,6 +358,97 @@
             color: #fff;
         }
 
+        /* รายการตัวเลือกในตัวกรอง (ปี/จังหวัด): เว้นระยะจากขอบซ้าย อ่านง่าย */
+        .awareness-filter-select option {
+            padding: 12px 18px 12px 22px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.6;
+            color: #1e293b;
+            background: #ffffff;
+        }
+
+        .awareness-filter-select option:checked,
+        .awareness-filter-select option:hover {
+            background: #55707a linear-gradient(#55707a, #55707a);
+            color: #ffffff;
+        }
+
+        /* เมนูเลือกแบบกำหนดเอง (ครอบ select เดิม) */
+        .home-filter-item { position: relative; }
+        .home-filter-item.hf-enhanced .awareness-filter-select { display: none; }
+
+        .hf-trigger {
+            flex: 1 1 0;
+            min-width: 0;
+            display: block;
+            padding: 0;
+            border: none;
+            background: transparent;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 700;
+            font-size: .85rem;
+            color: #1a202c;
+            text-align: left;
+            cursor: pointer;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            outline: none;
+        }
+
+        .hf-menu {
+            position: absolute;
+            left: 0;
+            top: calc(100% + 8px);
+            z-index: 1050;
+            min-width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 0;
+            padding: 8px;
+            list-style: none;
+            background: #ffffff;
+            border: 1px solid #e3eaf1;
+            border-radius: 18px;
+            box-shadow: 0 18px 40px -16px rgba(51, 85, 105, .4), 0 4px 10px rgba(51, 85, 105, .08);
+            opacity: 0;
+            transform: translateY(-6px);
+            visibility: hidden;
+            transition: opacity .16s ease, transform .16s ease, visibility .16s;
+        }
+
+        .hf-menu.is-open { opacity: 1; transform: none; visibility: visible; }
+
+        .hf-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 11px 16px 11px 20px;
+            border-radius: 12px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: .92rem;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .hf-option + .hf-option { margin-top: 2px; }
+        .hf-option:hover, .hf-option.is-active { background: #eaf1f6; color: #1e293b; }
+        .hf-option[aria-selected="true"] { background: #55707a; color: #ffffff; }
+        .hf-option[aria-selected="true"]::after {
+            content: "\f00c";
+            font-family: "Font Awesome 5 Free", "Font Awesome 6 Free", FontAwesome;
+            font-weight: 900;
+            font-size: .7rem;
+        }
+
+        .home-filter-item.is-open .home-filter-chevron { transform: rotate(180deg); }
+        .home-filter-chevron { transition: transform .2s ease; }
+
         /* Dashboard card redesign: separated header + soft accent tint,
            one per card, so each section reads as its own topic at a
            glance instead of blending into one big white surface. */
@@ -1224,6 +1315,40 @@
             .hm-band { grid-template-columns: 1fr; }
             .hm-more { margin-left: 0; }
         }
+
+        /* กราฟก่อน-หลังปรับสูตร รายจังหวัด (หน้าแรก): รูปแบบเดียวกับหน้า reduced-sodium-menu - แท่งมนอ่านง่าย รางพื้นหลัง ตัวเลขชัด */
+        .hm-fly-card .hm-fly-row { grid-template-columns: 122px minmax(0, 1fr) 46px minmax(0, 1fr) 70px; gap: 12px; padding: 5px 6px; border-bottom: 1px solid #eef2f7; border-radius: 10px; transition: background-color .15s ease; }
+        .hm-fly-card .hm-fly-row:not(.hm-fly-total):hover { background: #f8fafd; }
+        .hm-fly-card .hm-fly-row:last-child { border-bottom: none; }
+        .hm-fly-card .hm-fly-prov { display: flex; align-items: center; gap: 7px; }
+        .hm-fly-card .hm-fly-side { position: relative; gap: 8px; height: 24px; }
+        .hm-fly-card .hm-fly-side::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 16px; transform: translateY(-50%); border-radius: 99px; background: #f1f5f9; box-shadow: inset 0 1px 1px rgba(15, 23, 42, .05); pointer-events: none; }
+        .hm-fly-card .hm-fly-side > * { position: relative; z-index: 1; }
+        .hm-fly-card .hm-fly-val { min-width: 38px; color: #334155; }
+        .hm-fly-card .hm-fly-left .hm-fly-val { text-align: right; }
+        .hm-fly-card .hm-fly-right .hm-fly-val { text-align: left; }
+        .hm-fly-card .hm-fly-bar { height: 12px; border-radius: 99px !important; }
+        .hm-fly-card .hm-fly-before { margin-right: 2px; transform-origin: right center; background: linear-gradient(180deg, #fb8da0 0%, #f0476a 55%, #dc2650 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(225, 29, 72, .45); animation: hmFlyGrowH .7s cubic-bezier(.2,.8,.2,1) both; }
+        .hm-fly-card .hm-fly-after { margin-left: 2px; transform-origin: left center; background: linear-gradient(180deg, #7de3a5 0%, #2fc16a 55%, #1a9a4f 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(21, 128, 61, .45); animation: hmFlyGrowH .7s cubic-bezier(.2,.8,.2,1) both; }
+        .hm-fly-card .hm-fly-bar::after { left: 8px; right: 8px; top: 2px; height: 3px; opacity: .7; }
+        @keyframes hmFlyGrowH { from { transform: scaleX(.05); opacity: .4; } to { transform: scaleX(1); opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .hm-fly-card .hm-fly-bar { animation: none !important; } }
+        .hm-fly-card .hm-fly-core { width: 40px; height: 40px; box-shadow: 0 -2px 3px rgba(10, 18, 60, .3) inset, 0 4px 8px -4px rgba(23, 37, 84, .6), 0 0 0 2px #fff, 0 0 0 3px #dbe4f5; }
+        .hm-fly-card .hm-fly-core b { font-size: .8rem; }
+        .hm-fly-card .hm-fly-core span { font-size: .5rem; }
+        .hm-fly-card .hm-fly-pct .hm-chip { font-size: .76rem; font-weight: 800; padding: 3px 9px; }
+        .hm-fly-card .hm-fly-none { color: #94a3b8; }
+        .hm-fly-card .hm-fly-total { margin-top: 6px; padding: 10px 6px 6px; border-top: 2px solid #0f766e; border-bottom: none; background: linear-gradient(180deg, #f2fbf9, #fff); border-radius: 0 0 12px 12px; }
+
+        /* การ์ดแผนที่ร้อยละความตระหนักรู้: ให้แผนที่ขยายเต็มพื้นที่การ์ดตามความสูงของการ์ดข้างเคียง */
+        .hm-aw-main .home-row-top .dash-card.accent-pink { display: flex; flex-direction: column; }
+        /* แผนที่วางแบบ absolute ในกรอบ จึงไม่ดันความสูงการ์ด (กันขนาดขยายวนไม่รู้จบ) */
+        .hm-aw-main .hm-awmap-wrap { flex: 1 1 auto; position: relative; min-height: 330px; }
+        .hm-aw-main .hm-awmap-wrap #map-container { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100% !important; height: 100% !important; }
+
+        /* กราฟรายจังหวัดในการ์ดพฤติกรรม: ขยายเต็มพื้นที่การ์ด (กราฟลอยอยู่ในกรอบ ไม่ดันความสูงการ์ด) */
+        .aw-beh-card #inlineChartContainer { flex-direction: column; }
+        .aw-beh-card .aw-beh-chartbox { flex: 1 1 auto; min-height: 220px; }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -1346,13 +1471,15 @@
         <a class="hm-tile" href="#sec-kidney" style="--c: #0a8bbe;">
             <div class="hm-tile-name">พชอ.ไต - ผลการดำเนินงานพื้นที่</div>
             @if ($hmKd['pin_total'] > 0)
-                <div class="hm-tile-big">{{ $hmKd['districts_covered'] }} / {{ $hmKd['districts_total'] }}<small> หน่วยงานที่ดำเนินงาน</small></div>
-                <div class="hm-tile-sub">ปักหมุดทั้งหมด {{ number_format($hmKd['pin_all'] ?? $hmKd['pin_total']) }} หมุด (หน่วยงานรายงาน {{ number_format($hmKd['pin_total']) }}@if (($hmKd['display_pin_count'] ?? 0) > 0) + หมุดแสดงผล {{ number_format($hmKd['display_pin_count']) }}@endif) · มีหน่วยงานทำแล้ว {{ 8 - $hmKd['items_pending']->count() }} จาก 8 ข้อ</div>
+                @php $hmKdPinPct = $hmKd['pin_total'] > 0 ? round($hmKd['answered_pins'] / $hmKd['pin_total'] * 100) : 0; @endphp
+                <div class="hm-tile-big">{{ number_format($hmKd['answered_pins']) }} / {{ number_format($hmKd['pin_total']) }}<small> หน่วยงานที่ดำเนินงาน</small></div>
+                <div class="hm-tile-sub">พื้นที่ที่ดำเนินงาน · ครบทั้ง 8 ข้อ {{ number_format($hmKd['complete_pins']) }} หน่วยงาน</div>
+                <div class="hm-tile-sub"><i class="fas fa-location-dot" style="color:#0a8bbe;"></i> ปักหมุดทั้งหมด <b>{{ number_format($hmKd['pin_all'] ?? $hmKd['pin_total']) }}</b> หมุด@if (($hmKd['display_pin_count'] ?? 0) > 0) (รวมหมุดแสดงผล {{ number_format($hmKd['display_pin_count']) }})@endif</div>
                 <div class="hm-tile-st">
-                    @if ($hmKdPct >= 80)
-                        <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ครอบคลุม {{ $hmKdPct }}%</span>
-                    @elseif ($hmKdPct > 0)
-                        <span class="hm-chip warn"><i class="fas fa-circle-half-stroke"></i> ครอบคลุม {{ $hmKdPct }}%</span>
+                    @if ($hmKdPinPct >= 80)
+                        <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ดำเนินงานแล้ว {{ $hmKdPinPct }}%</span>
+                    @elseif ($hmKdPinPct > 0)
+                        <span class="hm-chip warn"><i class="fas fa-circle-half-stroke"></i> ดำเนินงานแล้ว {{ $hmKdPinPct }}%</span>
                     @else
                         <span class="hm-chip none"><i class="fas fa-circle-minus"></i> ยังไม่รายงาน</span>
                     @endif
@@ -1482,7 +1609,7 @@
                     </div>
                 </div>
                 <!-- Always render map for all years -->
-                <div style="position: relative; min-height: 330px;">
+                <div class="hm-awmap-wrap" style="position: relative; min-height: 330px;">
                     <div id="map-container"
                         style="height: 330px; width: 100%; {{ ($awarenessCriteriaPending ?? false) ? 'filter: blur(4px); opacity: 0.6;' : '' }}">
                     </div>
@@ -1530,7 +1657,7 @@
                 </div>
                 <!-- Legend Below Chart -->
                 <div id="donutLegend"
-                    style="width: 100%; max-width: 320px; margin-top: 14px; display: flex; flex-direction: column; gap: 6px;">
+                    style="width: 100%; max-width: none; margin-top: 18px; display: flex; flex-direction: column; gap: 6px;">
                     <!-- generated by JS -->
                 </div>
             </div>
@@ -1692,8 +1819,10 @@
                                 <i class="fas fa-times" style="font-size: 0.7rem;"></i>
                             </button>
                         </div>
-                        <div style="height: 180px; position: relative;">
-                            <canvas id="behaviorInlineChart"></canvas>
+                        <div class="aw-beh-chartbox" style="position: relative;">
+                            <div style="position: absolute; top: 0; right: 0; bottom: 0; left: 0;">
+                                <canvas id="behaviorInlineChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2148,7 +2277,7 @@
                                     @if ($hmHt['rate'] !== null)
                                         {{-- แถบความก้าวหน้าของอัตรารวม: สเกลเดียวกับแถบรายจังหวัด (เทียบกับจังหวัดสูงสุด) สีเข้มเพื่อแยกว่าเป็นค่ารวม --}}
                                         <div class="hm-bar">
-                                            <div class="hm-bar-tr"><div class="hm-bar-fl" style="width: {{ min(100, round($hmHt['rate'] / $htMaxRate * 100, 1)) }}%; background: linear-gradient(90deg, #475569, #1e293b);"></div></div>
+                                            <div class="hm-bar-tr"><div class="hm-bar-fl" style="width: {{ min(100, round($hmHt['rate'] / $htMaxRate * 100, 1)) }}%; background: linear-gradient(90deg, #60a5fa, #2563eb);"></div></div>
                                             <span class="hm-bar-pc" style="min-width: 64px;"><b>{{ number_format($hmHt['rate'], 2) }}</b>
                                             @if ($hmHt['unrated_provinces']->count() > 0)
                                                 <i class="hm-flag" title="อัตรารวมคิดจากจังหวัดที่มีเป้าหมายประชากรเท่านั้น (ไม่รวม {{ $hmHt['unrated_provinces']->implode(', ') }})">!</i>
@@ -2678,7 +2807,7 @@
                 };
 
                 if (document.getElementById('map-container')) {
-                    Highcharts.mapChart('map-container', {
+                    const awMapChart = Highcharts.mapChart('map-container', {
                         chart: {
                             map: filteredMapData,
                             backgroundColor: 'transparent',
@@ -2830,6 +2959,9 @@
                             }
                         }]
                     });
+                    // ปรับขนาดแผนที่ให้พอดีการ์ดหลังเลย์เอาต์นิ่ง
+                    setTimeout(function () { awMapChart.reflow(); }, 150);
+                    window.addEventListener('load', function () { awMapChart.reflow(); });
                 }
 
                 // --- Product Count Chart ---
@@ -3047,24 +3179,24 @@
 
                         const item = document.createElement('div');
                         item.style.cssText =
-                            'display:flex; align-items:center; justify-content:space-between; width:100%; padding:3px 0; border-bottom:1px dashed #f1f5f9; overflow:hidden;';
+                            'display:flex; align-items:center; justify-content:space-between; width:100%; padding:9px 4px; border-bottom:1px dashed #e8edf3; overflow:hidden;';
 
                         // Left: dot + name
                         const left = document.createElement('div');
                         left.style.cssText =
-                            'display:flex; align-items:center; gap:6px; flex:1; min-width:0; margin-right:8px;';
+                            'display:flex; align-items:center; gap:10px; flex:1; min-width:0; margin-right:10px;';
                         left.innerHTML = `
-                            <span style="width:10px;height:10px;border-radius:50%;background:${donutColors[i]};flex-shrink:0;display:inline-block;"></span>
-                            <span style="color:#475569;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</span>
+                            <span style="width:13px;height:13px;border-radius:50%;background:${donutColors[i]};flex-shrink:0;display:inline-block;"></span>
+                            <span style="color:#334155;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</span>
                         `;
 
                         // Right: count + percent
                         const right = document.createElement('div');
                         right.style.cssText =
-                            'display:flex; align-items:center; gap:6px; flex-shrink:0; white-space:nowrap;';
+                            'display:flex; align-items:center; gap:12px; flex-shrink:0; white-space:nowrap;';
                         right.innerHTML = `
-                            <span style="color:#64748b;font-size:11px;font-weight:500;">${val.toLocaleString()}</span>
-                            <span style="color:#1e293b;font-weight:800;font-size:12px;min-width:30px;text-align:right;">${perc}%</span>
+                            <span style="color:#64748b;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;">${val.toLocaleString()}</span>
+                            <span style="color:#0f172a;font-weight:800;font-size:17px;min-width:46px;text-align:right;">${perc}%</span>
                         `;
 
                         item.appendChild(left);
@@ -3094,7 +3226,7 @@
 
                 // Switch Views
                 listView.style.display = 'none';
-                container.style.display = 'block';
+                container.style.display = 'flex';
                 // Trigger animation
                 container.classList.remove('view-fade-in');
                 void container.offsetWidth; // force reflow
@@ -3242,5 +3374,111 @@
                 url.searchParams.set('province', province);
                 window.location.href = url.toString();
             }
+
+            // เมนูตัวกรองแบบกำหนดเอง: ครอบ <select> เดิม (ค่าและ onchange ยังทำงานตามเดิม)
+            (function () {
+                var closeAll = function (except) {
+                    document.querySelectorAll('.hf-menu.is-open').forEach(function (m) {
+                        if (m !== except) {
+                            m.classList.remove('is-open');
+                            m.parentNode.classList.remove('is-open');
+                            m._btn.setAttribute('aria-expanded', 'false');
+                        }
+                    });
+                };
+
+                document.querySelectorAll('.home-filter-item .awareness-filter-select').forEach(function (sel) {
+                    var chip = sel.closest('.home-filter-item');
+                    var btn = document.createElement('button');
+                    var menu = document.createElement('ul');
+                    btn.type = 'button';
+                    btn.className = 'hf-trigger';
+                    btn.setAttribute('aria-haspopup', 'listbox');
+                    btn.setAttribute('aria-expanded', 'false');
+                    menu.className = 'hf-menu';
+                    menu.setAttribute('role', 'listbox');
+                    menu.tabIndex = -1;
+                    menu._btn = btn;
+                    menu.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); });
+
+                    var opts = [];
+                    Array.prototype.forEach.call(sel.options, function (o, i) {
+                        var li = document.createElement('li');
+                        li.className = 'hf-option';
+                        li.setAttribute('role', 'option');
+                        li.textContent = o.textContent.trim();
+                        li.dataset.value = o.value;
+                        li.setAttribute('aria-selected', o.selected ? 'true' : 'false');
+                        li.addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            choose(i);
+                        });
+                        menu.appendChild(li);
+                        opts.push(li);
+                    });
+
+                    var active = sel.selectedIndex;
+                    function paint() {
+                        btn.textContent = opts[sel.selectedIndex] ? opts[sel.selectedIndex].textContent : '';
+                        opts.forEach(function (li, i) {
+                            li.setAttribute('aria-selected', i === sel.selectedIndex ? 'true' : 'false');
+                            li.classList.toggle('is-active', i === active);
+                        });
+                    }
+                    function open() {
+                        closeAll(menu);
+                        active = sel.selectedIndex;
+                        paint();
+                        menu.classList.add('is-open');
+                        chip.classList.add('is-open');
+                        btn.setAttribute('aria-expanded', 'true');
+                        var cur = opts[active];
+                        if (cur) menu.scrollTop = Math.max(0, cur.offsetTop - 60);
+                    }
+                    function close() {
+                        menu.classList.remove('is-open');
+                        chip.classList.remove('is-open');
+                        btn.setAttribute('aria-expanded', 'false');
+                    }
+                    function choose(i) {
+                        close();
+                        if (i !== sel.selectedIndex) {
+                            sel.selectedIndex = i;
+                            paint();
+                            sel.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                        btn.focus();
+                    }
+
+                    btn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        menu.classList.contains('is-open') ? close() : open();
+                    });
+                    btn.addEventListener('keydown', function (e) {
+                        var isOpen = menu.classList.contains('is-open');
+                        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            if (!isOpen) { open(); return; }
+                            active = Math.min(opts.length - 1, Math.max(0, active + (e.key === 'ArrowDown' ? 1 : -1)));
+                            paint();
+                            opts[active].scrollIntoView({ block: 'nearest' });
+                        } else if ((e.key === 'Enter' || e.key === ' ') && isOpen) {
+                            e.preventDefault();
+                            choose(active);
+                        } else if (e.key === 'Escape' && isOpen) {
+                            e.preventDefault();
+                            close();
+                        }
+                    });
+
+                    chip.classList.add('hf-enhanced');
+                    sel.parentNode.insertBefore(btn, sel);
+                    chip.appendChild(menu);
+                    paint();
+                });
+
+                document.addEventListener('click', function () { closeAll(null); });
+            })();
         </script>
     @endsection

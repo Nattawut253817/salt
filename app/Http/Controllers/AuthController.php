@@ -20,6 +20,10 @@ class AuthController extends Controller
     private const OTP_MAX_ATTEMPTS = 5;
     private const LOGIN_MAX_ATTEMPTS = 5;
     private const LOGIN_LOCK_SECONDS = 300;
+    /** Per-IP cap (any email) so one address cannot spray many accounts. */
+    private const LOGIN_IP_MAX_ATTEMPTS = 20;
+    /** Valid-format bcrypt hash that matches nothing; burns the same time as a real check. */
+    private const DUMMY_HASH = '$2y$12$voH8blGXAmxevKbHhgE3PMBG41Qr7zN3rKouaQFupT1gtMQz7OYMQ';
     private const LOGIN_OTP_TTL_SECONDS = 300;
 
     /** Cache key holding the wrong-guess counter for a forgot-password OTP. */
@@ -408,8 +412,12 @@ class AuthController extends Controller
 
         // Throttle: max 5 failed sign-ins per email + IP, then locked for 5 minutes.
         $throttleKey = 'login|' . strtolower($request->email) . '|' . $request->ip();
-        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)) {
-            $minutes = (int) ceil(\Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey) / 60);
+        $ipKey = 'login-ip|' . $request->ip();
+        $locked = \Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, self::LOGIN_MAX_ATTEMPTS)
+            ? $throttleKey
+            : (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($ipKey, self::LOGIN_IP_MAX_ATTEMPTS) ? $ipKey : null);
+        if ($locked !== null) {
+            $minutes = (int) ceil(\Illuminate\Support\Facades\RateLimiter::availableIn($locked) / 60);
             \App\Support\ActivityLog::record('login_failed', 'ถูกล็อกชั่วคราว: กรอกรหัสผ่านผิดเกินกำหนด', null, ['reason' => 'locked'], $request, strtolower($request->email));
             return back()->with('error', 'กรอกรหัสผ่านผิดเกินจำนวนครั้งที่กำหนด กรุณาลองใหม่อีกครั้งใน ' . max(1, $minutes) . ' นาที')->withInput();
         }
@@ -417,16 +425,24 @@ class AuthController extends Controller
         // Single lookup, reused for both the existence check and the password
         // check (avoids Auth::attempt() re-querying the same row a second time).
         $user = User::where('email', $request->email)->first();
-        if (!$user) {
+
+        // One generic message + one bcrypt check for both "unknown email" and
+        // "wrong password": no email enumeration, no timing difference.
+        $passwordOk = Hash::check($request->password, $user ? $user->password : self::DUMMY_HASH);
+        if (!$user || !$passwordOk) {
             \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
-            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: ไม่พบอีเมลนี้ในระบบ', null, ['reason' => 'unknown_email'], $request, strtolower($request->email));
-            return back()->with('error', 'ไม่มีอีเมลนี้ในฐานข้อมูล')->withInput();
+            \Illuminate\Support\Facades\RateLimiter::hit($ipKey, self::LOGIN_LOCK_SECONDS);
+            if (!$user) {
+                \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: ไม่พบอีเมลนี้ในระบบ', null, ['reason' => 'unknown_email'], $request, strtolower($request->email));
+            } else {
+                \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
+            }
+            return back()->with('error', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง')->withInput($request->only('email'));
         }
 
-        if (!Hash::check($request->password, $user->password)) {
-            \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
-            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
-            return back()->with('error', 'รหัสผ่านไม่ถูกต้อง')->withInput();
+        // Upgrade the stored hash when the configured cost has changed.
+        if (Hash::needsRehash($user->password)) {
+            $user->forceFill(['password' => Hash::make($request->password)])->save();
         }
         \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
 

@@ -235,6 +235,31 @@
             box-shadow: 0 15px 35px rgba(225, 29, 72, 0.4);
         }
 
+    /* Submit loading state (same look as the sign-in button): a white panel
+       wipes across, the icon becomes a spinner, the label switches. */
+    .btn-auth { position: relative; overflow: hidden; }
+    .btn-auth .btn-fill {
+        position: absolute; inset: 0; background: #ffffff;
+        transform: scaleX(0); transform-origin: left center;
+        transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+        pointer-events: none;
+    }
+    .btn-auth .btn-icon, .btn-auth .btn-label { position: relative; transition: color 0.35s ease 0.15s; }
+    .btn-auth.is-loading { cursor: wait; transform: none; pointer-events: none; box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3); }
+    .btn-auth.is-loading .btn-fill { transform: scaleX(1); }
+    .btn-auth.is-loading .btn-icon, .btn-auth.is-loading .btn-label { color: #e11d48; }
+    .btn-auth .btn-icon.is-spinner {
+        display: inline-block; flex: 0 0 auto; width: 1.1em; height: 1.1em; box-sizing: border-box;
+        border: 2.5px solid rgba(225, 29, 72, 0.22); border-top-color: #e11d48; border-radius: 50%;
+        animation: btnSpin 0.75s linear infinite;
+    }
+    .btn-auth .btn-icon.is-spinner::before { content: none; }
+    @keyframes btnSpin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+        .btn-auth .btn-fill { transition: none; }
+        .btn-auth .btn-icon.is-spinner { animation-duration: 1.8s; }
+    }
+
         .modern-alert {
             padding: 12px 18px;
             border-radius: 16px;
@@ -502,8 +527,9 @@
                     </div>
 
                     <button type="submit" class="btn-auth">
-                        <i class="fas fa-check-circle"></i>
-                        ยืนยันการเปลี่ยนรหัสผ่าน
+                        <span class="btn-fill"></span>
+                        <i class="fas fa-check-circle btn-icon"></i>
+                        <span class="btn-label">ยืนยันการเปลี่ยนรหัสผ่าน</span>
                     </button>
                 </form>
             </div>
@@ -587,5 +613,29 @@
         }
 
         window.addEventListener('DOMContentLoaded', updatePasswordChecklist);
+    </script>
+    <script>
+        // Loading state on submit: white wipe + spinner. Restored if the page is
+        // shown again from the back/forward cache.
+        (function () {
+            const form = document.querySelector('form[action="{{ route('password.update') }}"]');
+            const btn = document.querySelector('form[action="{{ route('password.update') }}"] .btn-auth');
+            if (!form || !btn) return;
+            const icon = btn.querySelector('.btn-icon');
+            const label = btn.querySelector('.btn-label');
+            const iconClass = icon ? icon.className : '';
+            const labelText = label ? label.textContent : '';
+            form.addEventListener('submit', function () {
+                btn.classList.add('is-loading');
+                if (label) label.textContent = 'กำลังบันทึกรหัสผ่านใหม่...';
+                if (icon) icon.className = 'btn-icon is-spinner';
+            });
+            window.addEventListener('pageshow', function (e) {
+                if (!e.persisted) return;
+                btn.classList.remove('is-loading');
+                if (label) label.textContent = labelText;
+                if (icon) icon.className = iconClass;
+            });
+        })();
     </script>
 @endsection

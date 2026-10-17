@@ -860,6 +860,20 @@
                 padding: 10px 16px;
             }
         }
+
+        /* ตกแต่งตารางรายการผลิตภัณฑ์: กรอบมน หัวตารางนุ่ม เส้นแนวนอนบาง แถวสลับสี แถบเน้นตอนชี้ */
+        .product-table-container { border: 1px solid #e6eaf3; border-radius: 18px; box-shadow: 0 10px 30px -14px rgba(49, 46, 129, .22); }
+        .product-table th { background: linear-gradient(180deg, #f3f5ff, #eaeeff); color: #3730a3; border: none; border-bottom: 1px solid #d9e0fb; box-shadow: inset 1px 0 0 rgba(99, 102, 241, .07); padding: 14px 10px; }
+        .product-table th:first-child { box-shadow: none; }
+        .product-table td { border: none; border-bottom: 1px solid #eef1f8; padding: 12px 10px; }
+        .product-table tbody tr:last-child td { border-bottom: none; }
+        .product-table tbody tr { transition: background-color .15s ease, box-shadow .15s ease; }
+        .product-table tbody tr:nth-child(even) { background-color: #fafbff; }
+        .product-table tbody tr:hover, .product-table .clickable-row:hover { background-color: #f1f4ff !important; box-shadow: inset 4px 0 0 #6366f1; }
+        .product-table td:nth-child(2) { font-weight: 800; color: #1e293b; }
+        .product-table .product-img { border-radius: 12px; box-shadow: 0 6px 14px -8px rgba(15, 23, 42, .35); }
+        .product-table .badge { box-shadow: 0 2px 6px -3px rgba(15, 23, 42, .2); }
+        .product-table td .sodium-pill, .product-table td .reduced-badge { box-shadow: 0 2px 8px -4px rgba(49, 46, 129, .25); }
     </style>
 @endsection
 
@@ -1287,6 +1301,7 @@
             </div>
         </div>
     </div>
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')

@@ -716,9 +716,9 @@
             });
             s.disabled = false;
         }
-        const loadDistricts = pid => getJson('/admin/operating-areas/get-districts/' + pid).then(r => fillOptions(sel.d, r, 'district_id', 'district_name', '-- เลือกอำเภอ --', 'lat', 'lng'));
-        const loadTambons = (pid, did) => getJson('/admin/operating-areas/get-tambons/' + pid + '/' + did).then(r => fillOptions(sel.t, r, 'tambon_id', 'tambon_name', '-- เลือกตำบล --', 'lat', 'lng'));
-        const loadVillages = (pid, did, tid) => getJson('/admin/operating-areas/get-villages/' + pid + '/' + did + '/' + tid).then(r => fillOptions(sel.v, r, 'village_id', 'village_name', '-- เลือกชุมชน/หมู่บ้าน --', 'latitude', 'longitude'));
+        const loadDistricts = pid => getJson(APP_BASE + '/admin/operating-areas/get-districts/' + pid).then(r => fillOptions(sel.d, r, 'district_id', 'district_name', '-- เลือกอำเภอ --', 'lat', 'lng'));
+        const loadTambons = (pid, did) => getJson(APP_BASE + '/admin/operating-areas/get-tambons/' + pid + '/' + did).then(r => fillOptions(sel.t, r, 'tambon_id', 'tambon_name', '-- เลือกตำบล --', 'lat', 'lng'));
+        const loadVillages = (pid, did, tid) => getJson(APP_BASE + '/admin/operating-areas/get-villages/' + pid + '/' + did + '/' + tid).then(r => fillOptions(sel.v, r, 'village_id', 'village_name', '-- เลือกชุมชน/หมู่บ้าน --', 'latitude', 'longitude'));
 
         sel.p.addEventListener('change', function () {
             prefillToken++;

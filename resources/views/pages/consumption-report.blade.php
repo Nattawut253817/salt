@@ -1388,6 +1388,7 @@
         </div>
 
     </div>
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')

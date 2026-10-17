@@ -2165,6 +2165,84 @@
                 align-self: flex-end;
             }
         }
+
+        /* ปรับลักษณะกราฟก่อน-หลัง: แท่งทรงกระบอกมีมิติ + รางพื้นหลัง (ไม่เปลี่ยนสี/รูปแบบ) */
+        .hm-fly-side { position: relative; }
+        .hm-fly-side::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 18px; transform: translateY(-50%); border-radius: 99px; background: linear-gradient(180deg, #eef2f7, #f6f8fb); box-shadow: inset 0 1px 2px rgba(15, 23, 42, .08); pointer-events: none; }
+        .hm-fly-side > * { position: relative; z-index: 1; }
+        .hm-fly-bar { height: 14px; border-radius: 99px !important; }
+        .hm-fly-before { margin-right: 2px; transform-origin: right center; background: linear-gradient(180deg, #ff9fb0 0%, #fb526b 38%, #e11d48 72%, #be123c 100%); box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 -2px 3px rgba(136, 19, 55, .28) inset, 0 4px 8px -3px rgba(225, 29, 72, .5); animation: hmFlyGrow .7s cubic-bezier(.2,.8,.2,1) both; }
+        .hm-fly-after { margin-left: 2px; transform-origin: left center; background: linear-gradient(180deg, #8ff0b0 0%, #22c55e 38%, #16a34a 72%, #15803d 100%); box-shadow: 0 1px 0 rgba(255,255,255,.6) inset, 0 -2px 3px rgba(5, 80, 40, .28) inset, 0 4px 8px -3px rgba(21, 128, 61, .5); animation: hmFlyGrow .7s cubic-bezier(.2,.8,.2,1) both; }
+        .hm-fly-bar::after { left: 8px; right: 8px; top: 2px; height: 4px; background: linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.08)); }
+        @keyframes hmFlyGrow { from { transform: scaleX(.05); opacity: .4; } to { transform: scaleX(1); opacity: 1; } }
+        .hm-fly-core { background: radial-gradient(circle at 32% 22%, #4a6cbd 0%, #1e3a8a 55%, #101c4a 100%); box-shadow: 0 1px 0 rgba(255,255,255,.3) inset, 0 -3px 4px rgba(10, 18, 60, .35) inset, 0 6px 12px -5px rgba(23, 37, 84, .8), 0 0 0 3px #fff, 0 0 0 4px #cfdaf0; }
+        .hm-fly-row { transition: background-color .15s ease; border-radius: 10px; }
+        .hm-fly-row:not(.hm-fly-total):hover { background: #f8fafd; }
+        .hm-fly-val { letter-spacing: .01em; }
+        @media (prefers-reduced-motion: reduce) { .hm-fly-bar { animation: none !important; } }
+
+        /* ปรับการแสดงผลสัดส่วนสถานที่จำหน่าย: จำนวนเมนูตัวใหญ่ชัด + แถบสัดส่วนใต้ชื่อ + ป้ายร้อยละ */
+        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 16%, #fff) var(--tp-w), #fff var(--tp-w)); border-left: 1px solid #eef1f6; padding: 10px 14px; gap: 12px; }
+        .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 24%, #fff) var(--tp-w), #fff var(--tp-w)); }
+        .tp-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+        .tp-name { flex: none; font-size: .9rem; }
+        .tp-track { display: block; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 10%, #eef1f6); overflow: hidden; }
+        .tp-track i { display: block; width: var(--tp-w); height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 70%, #fff), var(--tp-c)); }
+        .tp-val { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
+        .tp-val .tp-cnt { min-width: 74px; text-align: right; white-space: nowrap; }
+        .tp-val .tp-pct { min-width: 56px; text-align: center; }
+        .tp-cnt { margin: 0; font-size: .78rem; font-weight: 700; color: #475569; }
+        .tp-cnt b { font-size: 1.15rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .tp-pct { display: inline-block; padding: 1px 9px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 12%, #fff); color: color-mix(in srgb, var(--tp-c) 80%, #0f172a); font-size: .76rem; font-weight: 800; }
+
+        /* คำอธิบายสี ก่อน/หลัง อยู่แถวเดียวกับหัวข้อ มุมขวา */
+        .mnu-cmp-card .chart-card-head .hm-fly-legend { margin: 2px 0 0; flex: 0 0 auto; align-self: flex-start; white-space: nowrap; }
+        @media (max-width: 575px) { .mnu-cmp-card .chart-card-head { flex-wrap: wrap; } .mnu-cmp-card .chart-card-head .hm-fly-legend { width: 100%; margin-top: 4px; } }
+
+        /* ปรับให้อ่านง่าย สบายตา (คงรูปแบบกราฟเดิม): เว้นระยะ ลดความเงา ตัวเลขชัด แยกแถวชัดขึ้น */
+        .mnu-cmp-card .hm-fly-row { grid-template-columns: 122px minmax(0, 1fr) 46px minmax(0, 1fr) 70px; gap: 12px; padding: 5px 6px; border-bottom: 1px solid #eef2f7; }
+        .mnu-cmp-card .hm-fly-prov { font-size: .84rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 7px; }
+        .mnu-cmp-card .hm-fly-side { gap: 8px; height: 24px; }
+        .mnu-cmp-card .hm-fly-side::before { height: 16px; background: #f1f5f9; box-shadow: inset 0 1px 1px rgba(15, 23, 42, .05); }
+        .mnu-cmp-card .hm-fly-val { min-width: 38px; font-size: .8rem; font-weight: 800; color: #334155; }
+        .mnu-cmp-card .hm-fly-left .hm-fly-val { text-align: right; }
+        .mnu-cmp-card .hm-fly-right .hm-fly-val { text-align: left; }
+        .mnu-cmp-card .hm-fly-bar { height: 12px; }
+        .mnu-cmp-card .hm-fly-before { background: linear-gradient(180deg, #fb8da0 0%, #f0476a 55%, #dc2650 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(225, 29, 72, .45); }
+        .mnu-cmp-card .hm-fly-after { background: linear-gradient(180deg, #7de3a5 0%, #2fc16a 55%, #1a9a4f 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(21, 128, 61, .45); }
+        .mnu-cmp-card .hm-fly-bar::after { top: 2px; height: 3px; opacity: .7; }
+        .mnu-cmp-card .hm-fly-core { width: 40px; height: 40px; box-shadow: 0 -2px 3px rgba(10, 18, 60, .3) inset, 0 4px 8px -4px rgba(23, 37, 84, .6), 0 0 0 2px #fff, 0 0 0 3px #dbe4f5; }
+        .mnu-cmp-card .hm-fly-core b { font-size: .8rem; }
+        .mnu-cmp-card .hm-fly-core span { font-size: .5rem; }
+        .mnu-cmp-card .hm-fly-pct .hm-chip { font-size: .76rem; font-weight: 800; padding: 3px 9px; }
+        .mnu-cmp-card .hm-fly-none { font-size: .76rem; color: #94a3b8; }
+        .mnu-cmp-card .hm-fly-total { margin-top: 6px; padding: 10px 6px 6px; border-top: 2px solid #0f766e; border-bottom: none; background: linear-gradient(180deg, #f2fbf9, #fff); border-radius: 0 0 12px 12px; }
+        .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0f766e; font-weight: 800; }
+        .mnu-cmp-card .hm-fly-row:last-child { border-bottom: none; }
+
+        /* ตกแต่งตารางรายการเมนู: กรอบมนมีเส้นขอบ หัวตารางนุ่ม แถวสลับสี แถบเน้นตอนชี้ รูปและป้ายอ่อนลง */
+        .menu-table-container { border: 1px solid #e6eaf3; border-radius: 18px; box-shadow: 0 10px 30px -14px rgba(49, 46, 129, .22); }
+        .menu-table th { background: linear-gradient(180deg, #f3f5ff, #eaeeff); color: #3730a3; border-bottom: 1px solid #d9e0fb; letter-spacing: .01em; }
+        .menu-table th + th { box-shadow: inset 1px 0 0 rgba(99, 102, 241, .08); }
+        .menu-table tbody tr { transition: background-color .15s ease, box-shadow .15s ease; }
+        .menu-table tbody tr:nth-child(even) { background-color: #fafbff; }
+        .menu-table tbody tr:hover, .menu-table .clickable-row:hover { background-color: #f1f4ff !important; box-shadow: inset 4px 0 0 #6366f1; }
+        .menu-table td { border-bottom: 1px solid #eef1f8; }
+        .menu-table .menu-name-cell { font-weight: 800; color: #1e293b; }
+        .menu-table .food-img { border-radius: 12px; box-shadow: 0 6px 14px -8px rgba(15, 23, 42, .35); border-color: #fff; }
+        .menu-table .sodium-pill { box-shadow: 0 2px 6px -3px rgba(15, 23, 42, .18); font-variant-numeric: tabular-nums; }
+        .menu-table .reduced-badge, .menu-table .agency-tag { box-shadow: 0 2px 8px -4px rgba(49, 46, 129, .25); }
+        .menu-table .eval-badge { box-shadow: 0 2px 8px -4px rgba(5, 150, 105, .35); }
+        .menu-table .meal-calc-add-btn { transition: transform .15s ease, background-color .15s ease, box-shadow .15s ease; }
+        .menu-table .meal-calc-add-btn:hover { transform: scale(1.08); box-shadow: 0 6px 12px -6px rgba(234, 88, 12, .5); }
+
+        /* ให้รายการสถานที่จำหน่ายขยายเต็มความสูงการ์ด: แต่ละแถวแบ่งพื้นที่เท่าๆ กัน */
+        .tp-card { display: flex; flex-direction: column; }
+        .tp-card .tp-body { flex: 1 1 auto; justify-content: stretch; min-height: 0; }
+        .tp-card .tp-list { flex: 1 1 auto; justify-content: stretch; gap: 8px; }
+        .tp-card .tp-item { flex: 1 1 0; min-height: 58px; }
+        .tp-card .tp-mid { gap: 8px; }
+        .tp-card .tp-track { height: 9px; }
     </style>
 @endsection
 
@@ -2265,8 +2343,6 @@
         @php
             $kpiTotalMenus = $menus->total();
             $kpiTopCategory = collect($pieChartData)->sortDesc()->keys()->first();
-            $kpiProvinceCoverage = collect($mapData)->count();
-            $kpiProvinceTotal = collect($provinces)->count();
         @endphp
 
         <div class="awr-kpi-strip">
@@ -2282,13 +2358,6 @@
                 <div class="awr-kpi-text">
                     <div class="awr-kpi-value">{{ $kpiTopCategory ?: '-' }}</div>
                     <div class="awr-kpi-label">สถานที่จำหน่ายยอดนิยม</div>
-                </div>
-            </div>
-            <div class="awr-kpi-item" style="--kpi-accent:#06b6d4;">
-                <div class="awr-kpi-icon"><i class="fas fa-map-location-dot"></i></div>
-                <div class="awr-kpi-text">
-                    <div class="awr-kpi-value">{{ $kpiProvinceCoverage }}/{{ $kpiProvinceTotal }}</div>
-                    <div class="awr-kpi-label">ความครอบคลุมพื้นที่ (จังหวัด)</div>
                 </div>
             </div>
             <div class="awr-kpi-item" style="--kpi-accent:#2f855a;">
@@ -2358,14 +2427,14 @@
             <div class="chart-card accent-teal mnu-cmp-card">
                 <div class="chart-card-head">
                     <div class="chart-card-icon"><i class="fas fa-scale-balanced"></i></div>
-                    <div>
+                    <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ค่าเฉลี่ยโซเดียมก่อน-หลังปรับสูตร รายจังหวัด</div>
                         <div class="chart-card-subtitle">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมดของจังหวัด</div>
                     </div>
-                </div>
-                <div class="hm-fly-legend">
-                    <span><i style="background: linear-gradient(180deg, #fc8296, #e11d48);"></i>ก่อนปรับสูตร</span>
-                    <span><i style="background: linear-gradient(180deg, #6ee7ac, #15803d);"></i>หลังปรับสูตร</span>
+                    <div class="hm-fly-legend">
+                        <span><i style="background: linear-gradient(180deg, #fc8296, #e11d48);"></i>ก่อนปรับสูตร</span>
+                        <span><i style="background: linear-gradient(180deg, #6ee7ac, #15803d);"></i>หลังปรับสูตร</span>
+                    </div>
                 </div>
                 <div class="hm-fly">
                     @foreach ($flyRows as $row)
@@ -2886,6 +2955,7 @@
             </div>
         </div>
     </div>
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')
@@ -3031,11 +3101,12 @@
             if (pieListEl) {
                 pieListEl.innerHTML = pieData.map(d => {
                     const pct = pieTotal > 0 ? d.y / pieTotal * 100 : 0;
-                    return '<div class="tp-item" style="--tp-c:' + d.color + '; --tp-w:' + pct.toFixed(1) + '%;">'
+                    return '<div class="tp-item" style="--tp-c:' + d.color + '; --tp-w:' + Math.max(pct, 2.5).toFixed(1) + '%;">'
                         + '<span class="tp-dot"></span>'
-                        + '<span class="tp-name">' + escPie(d.name) + '</span>'
-                        + '<span class="tp-val"><span class="tp-pct">' + Highcharts.numberFormat(pct, 1) + '%</span>'
-                        + '<span class="tp-cnt">' + Highcharts.numberFormat(d.y, 0) + ' เมนู</span></span>'
+                        + '<span class="tp-mid"><span class="tp-name">' + escPie(d.name) + '</span>'
+                        + '<span class="tp-track"><i></i></span></span>'
+                        + '<span class="tp-val"><span class="tp-cnt"><b>' + Highcharts.numberFormat(d.y, 0) + '</b> เมนู</span>'
+                        + '<span class="tp-pct">' + Highcharts.numberFormat(pct, 1) + '%</span></span>'
                         + '</div>';
                 }).join('');
             }

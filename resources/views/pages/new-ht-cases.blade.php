@@ -764,6 +764,11 @@
         .mt-main { display: flex; flex-direction: column; min-width: 0; }
         .mt-main #trendChart { flex: 1 1 420px; min-height: 0; width: 100%; }
         .mt-card .hm-tr-in[hidden] { display: none; }
+        .mt-note { display: block; margin-top: 6px; padding: 6px 9px; border-radius: 8px; background: #f4f7fb; color: #64748b; font-size: .72rem; line-height: 1.5; }
+        .mt-ins { display: flex; flex-direction: column; min-height: 0; }
+        .mt-ins .hm-tr-list { overflow: visible; max-height: none; }
+        .mt-scope { display: block; width: fit-content; max-width: 100%; margin-top: 6px; padding: 4px 11px; border: 1px solid #fecdd3; border-radius: 8px; background: #fff1f2; color: #be123c; font-size: .74rem; font-weight: 600; line-height: 1.5; }
+        .mt-ins-sub { margin: -2px 0 10px; font-size: .78rem; line-height: 1.5; color: #64748b; }
         .mt-card[data-mode="m"] .col-c, .mt-card[data-mode="c"] .col-m { display: none; }
         .mt-card[data-mode="c"] .data-table tbody tr.row-max, .mt-card[data-mode="c"] .data-table tbody tr.row-min { background: transparent; }
         .data-table.mt-table th:nth-child(n) { width: auto; }
@@ -1173,7 +1178,7 @@
                                 <span class="legend-chip"><span class="legend-dot"
                                         style="background: {{ $provColor }};"></span>อัตราป่วยรายจังหวัด</span>
                                 <span class="legend-chip"><span class="legend-dot"
-                                        style="background: #334155;"></span>ภาพรวม = อัตราป่วยรวมทั้งเขต (ต่อแสนประชากร)</span>
+                                        style="background: #2563eb;"></span>ภาพรวม = อัตราป่วยรวมทั้งเขต (ต่อแสนประชากร)</span>
                             </div>
                             <div id="provinceChart" class="prov-rate-chart"></div>
                         @else
@@ -1441,6 +1446,7 @@
                     </div>
                     <aside class="hm-tr-ins mt-ins" aria-label="การวิเคราะห์">
                         <h5>การวิเคราะห์จากข้อมูลจริง</h5>
+                        <p class="mt-ins-sub">วิเคราะห์จากข้อมูล 3 ปีงบประมาณล่าสุด · ปีเต็ม คือปีที่มีข้อมูลครบ 12 เดือน · ปีที่ยังไม่ครบเทียบเฉพาะเดือนเดียวกัน · เอาเมาส์ชี้การ์ดเพื่อดูวิธีอ่านค่า</p>
                         <ul class="hm-tr-list" id="mtInsList" aria-live="polite">
                             @foreach ($mc['insights'] as $in)
                                 <li class="hm-tr-in {{ $in['tone'] }}" data-mode="{{ $in['mode'] }}"{{ $in['mode'] === 'c' ? ' hidden' : '' }}>
@@ -1531,6 +1537,7 @@
             </div>
         </div>
     </div>
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')
@@ -1887,59 +1894,194 @@
                 }
                 return all;
             }
+            // ================= วิเคราะห์หลายปี: ใช้ข้อมูลรายเดือนของ "ทุกปี" ที่มีใน DB (ตามตัวกรองจังหวัด/อำเภอ) =================
+            const mtHist = @json($monthlyCompare['history'] ?? []);
+            const mtMean = (a) => a.reduce(function (s, v) { return s + v; }, 0) / (a.length || 1);
+            const mtSd = (a) => { if (a.length < 2) { return 0; } const m = mtMean(a); return Math.sqrt(a.reduce(function (s, v) { return s + (v - m) * (v - m); }, 0) / (a.length - 1)); };
+            const mtYr = (y) => 'ปีงบ ' + y;
+            let mtScope = '';   // ปีที่ใช้วิเคราะห์จริงเมื่อมีการซ่อนเส้นปีในกราฟ
+            function mtUpdateSub() {
+                const el = document.getElementById('mtSub');
+                if (!el) { return; }
+                const base = 'ตามปีงบประมาณที่เลือก แสดง' + (mtMode === 'm' ? 'จำนวนรายเดือน' : 'ยอดสะสม') + (mtPrev.length ? ' เทียบปีก่อน' : '');
+                el.textContent = base;
+                if (mtScope) {
+                    const tag = document.createElement('span');
+                    tag.className = 'mt-scope';
+                    tag.textContent = 'การวิเคราะห์ข้างกราฟใช้เฉพาะ ' + mtScope + ' ตามเส้นปีที่เปิดแสดง (คลิกชื่อปีเพื่อเพิ่ม/ซ่อน)';
+                    el.appendChild(tag);
+                }
+            }
             function mtComputeInsights() {
-                const V = mtAllSeries().filter(function (o) { return !mtHidden[o.name]; });
-                if (!V.length) { return [{ tone: 'info', mode: 'both', title: 'ยังไม่ได้เลือกปี', text: 'คลิกชื่อปีใต้หัวกราฟเพื่อเปิดแสดงข้อมูล ข้อความวิเคราะห์จะคำนวณใหม่ตามปีที่เลือก' }]; }
-                const cur = V[V.length - 1], prev = V.length > 1 ? V[V.length - 2] : null;
-                const L = trendLabels, last = cur.last, k = last + 1, Y = 'ปีงบ ' + cur.year, out = [];
-                const ytd = mtSum(cur.values, k);
-                if (prev && prev.last >= last) {
-                    const ytdP = mtSum(prev.values, k), p = mtPct(ytd, ytdP);
-                    if (p !== null) {
-                        out.push({ tone: mtTone(p), mode: 'both', title: 'เทียบช่วงเดียวกัน',
-                            text: Y + ' ' + (last === 11 ? 'ตลอดปี' : 'สะสมถึงเดือน' + L[last]) + ' มีผู้ป่วยใหม่ ' + mtNum(ytd) + ' คน เทียบช่วงเดียวกันของปีงบ ' + prev.year + ' (' + mtNum(ytdP) + ' คน) ' + mtVerb(p) + ' (' + mtSgn(p) + ')' });
+                // ใช้ประวัติทุกปีจากเซิร์ฟเวอร์ ถ้าไม่มีให้ประกอบจากปีก่อนในกราฟ + ปีที่เลือก (ไม่ขึ้นกับปีที่ถูกซ่อนในคำอธิบายกราฟ)
+                let src = mtHist.slice();
+                if (!src.length) {
+                    src = mtPrev.map(function (p) { return { year: p.year, values: p.values, last_idx: p.last_idx, complete: p.complete, total: p.total }; });
+                    if (mtYear && mtLast !== null) {
+                        const cv = trendValues.map(function (v, i) { return i <= mtLast ? v : null; });
+                        src.push({ year: mtYear, values: cv, last_idx: mtLast, complete: mtLast === 11, total: mtSum(cv, 12) });
                     }
                 }
-                if (prev && prev.complete && prev.total > 0) {
-                    out.push({ tone: 'info', mode: 'c', title: 'ยอดสะสมเทียบทั้งปีก่อน',
-                        text: Y + ' สะสมถึงเดือน' + L[last] + ' แล้ว ' + mtNum(ytd) + ' คน คิดเป็น ' + Highcharts.numberFormat(ytd / prev.total * 100, 1) + '% ของยอดรวมทั้งปีงบ ' + prev.year + ' (' + mtNum(prev.total) + ' คน)' });
-                } else if (!prev) {
-                    out.push({ tone: 'info', mode: 'c', title: 'ยอดสะสม', text: Y + ' สะสมถึงเดือน' + L[last] + ' แล้ว ' + mtNum(ytd) + ' คน (เฉลี่ย ' + mtNum(ytd / k) + ' คนต่อเดือน)' });
+                // วิเคราะห์จาก 3 ปีงบล่าสุดที่มีข้อมูล
+                const H = src.map(function (o) { return { year: +o.year, values: o.values, last: o.last_idx, complete: o.complete, total: o.total }; }).sort(function (a, b) { return a.year - b.year; })
+                    .filter(function (o) { return !mtYear || o.year <= +mtYear; }).slice(-3); // ตามปีงบที่เลือก: 3 ปีที่สิ้นสุดที่ปีนั้น
+                // ตามเส้นปีที่เปิดแสดงในกราฟ: ปีที่ถูกปิดไม่นำมาวิเคราะห์ (ถ้าปิดทุกปี ใช้ครบทั้ง 3 ปีแทน เพื่อให้ยังมีข้อมูลเสมอ)
+                const visible = H.filter(function (o) { return !mtHidden['ปี ' + o.year]; });
+                const hiddenCount = H.length - visible.length;
+                if (visible.length && hiddenCount) { H.length = 0; visible.forEach(function (o) { H.push(o); }); }
+                if (!H.length) { return [{ tone: 'info', mode: 'both', title: 'ยังไม่มีข้อมูล', text: 'ตัวกรองที่เลือกยังไม่มีข้อมูลผู้ป่วยรายใหม่รายเดือน' }]; }
+                const L = trendLabels, out = [];
+                const full = H.filter(function (o) { return o.complete; });
+                const cur = (mtYear && H.filter(function (o) { return o.year === +mtYear; })[0]) || H[H.length - 1];
+                const k = cur.last + 1, Y = mtYr(cur.year);
+                const sumK = function (o) { return mtSum(o.values, k); };
+                const ytd = sumK(cur);
+
+                // 1) ภาพรวมทุกปี
+                const allTotal = H.reduce(function (s, o) { return s + (o.total || 0); }, 0);
+                let ov = 'ข้อมูลครอบคลุมปีงบ ' + H[0].year + ' ถึง ปีงบ ' + H[H.length - 1].year + ' รวม ' + H.length + ' ปี (' + full.length + ' ปีเต็ม) สะสมทั้งหมด ' + mtNum(allTotal) + ' คน';
+                if (full.length) {
+                    const ft = full.map(function (o) { return o.total; });
+                    ov += ' เฉลี่ย ' + mtNum(mtMean(ft)) + ' คนต่อปีเต็ม (ต่ำสุด ' + mtNum(Math.min.apply(null, ft)) + ' ถึงสูงสุด ' + mtNum(Math.max.apply(null, ft)) + ' คน)';
                 }
-                const rep = cur.values.slice(0, k);
-                if (rep.length >= 2 && Math.max.apply(null, rep) > 0) {
-                    const mx = Math.max.apply(null, rep);
-                    out.push({ tone: 'info', mode: 'm', title: 'เดือนที่พบมากสุด', text: Y + ' พบผู้ป่วยใหม่สูงสุดในเดือน' + L[rep.indexOf(mx)] + ' ' + mtNum(mx) + ' คน (เฉลี่ย ' + mtNum(rep.reduce(function (a, b) { return a + b; }, 0) / rep.length) + ' คนต่อเดือน)' });
-                }
-                if (rep.length >= 3) {
-                    let up = null, down = null;
-                    for (let i = 1; i < rep.length; i++) {
-                        const d = rep[i] - rep[i - 1];
-                        if (d > 0 && (up === null || d > up.d)) { up = { i: i, d: d }; }
-                        if (d < 0 && (down === null || d < down.d)) { down = { i: i, d: d }; }
+                out.push({ tone: 'info', mode: 'both', title: 'ภาพรวมทุกปีที่มีข้อมูล', text: ov });
+
+                // 2) แนวโน้มรายปี (เฉพาะปีเต็ม) + CAGR + แนวโน้มเชิงเส้น
+                if (full.length >= 2) {
+                    const yoy = [];
+                    for (let i = 1; i < full.length; i++) {
+                        if (full[i].year - full[i - 1].year === 1) {
+                            const p = mtPct(full[i].total, full[i - 1].total);
+                            if (p !== null) { yoy.push(mtYr(full[i].year) + ' ' + mtSgn(p)); }
+                        }
                     }
-                    [[up, 'up', 'เดือนที่เพิ่มขึ้นมากสุด', 'เพิ่มขึ้น'], [down, 'down', 'เดือนที่ลดลงมากสุด', 'ลดลง']].forEach(function (c) {
-                        if (!c[0]) { return; }
-                        const pp = mtPct(rep[c[0].i], rep[c[0].i - 1]);
-                        out.push({ tone: c[1], mode: 'm', title: c[2], text: Y + ' เดือน' + L[c[0].i] + ' ' + c[3] + ' ' + mtNum(Math.abs(c[0].d)) + ' คน เทียบกับก่อนหน้า' + (pp !== null ? ' (' + mtSgn(pp) + ')' : '') });
+                    const a = full[0], b = full[full.length - 1], span = b.year - a.year;
+                    const cagr = (a.total > 0 && span > 0) ? (Math.pow(b.total / a.total, 1 / span) - 1) * 100 : null;
+                    let tx = 'ยอดรายปีเต็มเทียบปีก่อน: ' + (yoy.length ? yoy.slice(-4).join(', ') : 'ไม่มีปีเต็มที่ติดกัน');
+                    if (cagr !== null) { tx += ' ภาพรวมปีงบ ' + a.year + ' ถึง ปีงบ ' + b.year + ' ' + mtVerb(cagr) + ' เฉลี่ย ' + mtSgn(cagr) + ' ต่อปี (CAGR)'; }
+                    if (full.length >= 3) {
+                        const xs = full.map(function (o) { return o.year; }), ys = full.map(function (o) { return o.total; });
+                        const mx = mtMean(xs), my = mtMean(ys);
+                        let sxy = 0, sxx = 0, syy = 0;
+                        xs.forEach(function (x, i) { sxy += (x - mx) * (ys[i] - my); sxx += (x - mx) * (x - mx); syy += (ys[i] - my) * (ys[i] - my); });
+                        const slope = sxx ? sxy / sxx : 0, r2 = (sxx && syy) ? (sxy * sxy) / (sxx * syy) : 0;
+                        tx += ' แนวโน้มเชิงเส้น ' + (slope >= 0 ? '+' : '-') + mtNum(Math.abs(slope)) + ' คนต่อปี (R² ' + r2.toFixed(2) + ')';
+                    }
+                    out.push({ tone: mtTone(cagr), mode: 'both', title: 'แนวโน้มรายปี', text: tx });
+                }
+
+                // 3) เทียบช่วงเดียวกันกับทุกปีอื่น + อันดับ
+                const peers = H.filter(function (o) { return o.year !== cur.year && o.last >= cur.last; });
+                if (peers.length) {
+                    const pv = peers.map(sumK), avgP = mtMean(pv), p = mtPct(ytd, avgP);
+                    const near = peers.slice().sort(function (a, b) { return Math.abs(a.year - cur.year) - Math.abs(b.year - cur.year); }).slice(0, 3).sort(function (a, b) { return b.year - a.year; })
+                        .map(function (o) { const q = mtPct(ytd, sumK(o)); return mtYr(o.year) + ' (' + mtNum(sumK(o)) + ' คน' + (q !== null ? ' ' + mtSgn(q) : '') + ')'; });
+                    const rank = pv.filter(function (v) { return v > ytd; }).length + 1;
+                    const span = cur.last === 11 ? 'ตลอดปี' : 'สะสมถึงเดือน' + L[cur.last];
+                    out.push({ tone: mtTone(p), mode: 'both', title: 'เทียบช่วงเดียวกันทุกปี',
+                        text: Y + ' ' + span + ' ' + mtNum(ytd) + ' คน เทียบ ' + near.join(', ') + ' ค่าเฉลี่ยปีอื่น ' + mtNum(avgP) + ' คน ' + (p !== null ? mtVerb(p) + ' (' + mtSgn(p) + ')' : '') + ' อยู่อันดับ ' + rank + ' จาก ' + (peers.length + 1) + ' ปี' });
+                }
+
+                // 4) ประมาณการทั้งปี (เฉพาะปีที่ยังไม่ครบ) จากสัดส่วนสะสมของปีเต็มก่อนหน้า
+                if (cur.last < 11 && k >= 3) {
+                    const sh = full.filter(function (o) { return o.year !== cur.year && o.total > 0; }).map(function (o) { return sumK(o) / o.total; }).filter(function (v) { return v > 0; });
+                    if (sh.length >= 2 && ytd > 0) {
+                        const ms = mtMean(sh), est = ytd / ms, lo = ytd / Math.max.apply(null, sh), hi = ytd / Math.min.apply(null, sh);
+                        const lastFull = full.filter(function (o) { return o.year < cur.year; }).slice(-1)[0];
+                        const q = lastFull ? mtPct(est, lastFull.total) : null;
+                        out.push({ tone: 'info', mode: 'both', title: 'ประมาณการทั้งปี',
+                            text: Y + ' คาดว่าทั้งปีราว ' + mtNum(est) + ' คน (ช่วง ' + mtNum(lo) + ' ถึง ' + mtNum(hi) + ' คน) จากสัดส่วนยอดสะสมถึงเดือน' + L[cur.last] + ' เฉลี่ย ' + Highcharts.numberFormat(ms * 100, 1) + '% ของยอดรวมทั้งปีใน ' + sh.length + ' ปีเต็ม' + (q !== null ? ' เทียบปีเต็มล่าสุด ' + mtSgn(q) : '') + ' (ค่าประมาณ ไม่ใช่ตัวเลขจริง)' });
+                    }
+                }
+
+                // 5) ฤดูกาล (ดัชนีฤดูกาลเฉลี่ยจากปีเต็ม; 100 = ค่าเฉลี่ยรายเดือนของปีนั้น)
+                if (full.length >= 2) {
+                    const idx = L.map(function (_, m) { return mtMean(full.map(function (o) { return o.total > 0 ? o.values[m] / (o.total / 12) * 100 : 0; })); });
+                    const pk = idx.indexOf(Math.max.apply(null, idx)), lw = idx.indexOf(Math.min.apply(null, idx));
+                    const pkYears = full.filter(function (o) { return o.values.indexOf(Math.max.apply(null, o.values)) === pk; }).length;
+                    out.push({ tone: 'info', mode: 'm', title: 'ฤดูกาลของการพบผู้ป่วยใหม่',
+                        text: 'จาก ' + full.length + ' ปีเต็ม เดือน' + L[pk] + ' สูงสุดเฉลี่ย ' + idx[pk].toFixed(1) + ' (100 = ค่าเฉลี่ยรายเดือน) และเป็นเดือนสูงสุดของปีใน ' + pkYears + ' จาก ' + full.length + ' ปี ส่วนเดือน' + L[lw] + ' ต่ำสุด ' + idx[lw].toFixed(1) });
+                }
+
+                // 6) เดือนที่พบมากสุดตลอดช่วง + ความผันผวน (CV) + เดือนผิดปกติ (เกิน 2 SD ภายในปีเดียวกัน)
+                const flat = [];
+                H.forEach(function (o) { o.values.forEach(function (v, m) { if (v !== null && v !== undefined && m <= o.last) { flat.push({ y: o.year, m: m, v: v }); } }); });
+                if (flat.length >= 3) {
+                    const top = flat.reduce(function (a, b) { return b.v > a.v ? b : a; });
+                    const cvs = H.filter(function (o) { return o.last >= 5; }).map(function (o) { const vs = o.values.slice(0, o.last + 1); const mu = mtMean(vs); return mu > 0 ? mtSd(vs) / mu * 100 : null; }).filter(function (v) { return v !== null; });
+                    const outl = [];
+                    H.forEach(function (o) {
+                        if (o.last < 5) { return; }
+                        const vs = o.values.slice(0, o.last + 1), mu = mtMean(vs), sd = mtSd(vs);
+                        if (!sd) { return; }
+                        vs.forEach(function (v, m) { const z = (v - mu) / sd; if (Math.abs(z) > 2) { outl.push({ y: o.year, m: m, v: v, z: z, dev: mu > 0 ? (v - mu) / mu * 100 : null }); } });
                     });
+                    outl.sort(function (a, b) { return Math.abs(b.z) - Math.abs(a.z); });
+                    let tx = 'เดือนที่พบมากสุดตลอดช่วงคือเดือน' + L[top.m] + ' ' + mtYr(top.y) + ' ' + mtNum(top.v) + ' คน';
+                    if (cvs.length) { tx += ' ความผันผวนรายเดือนเฉลี่ย (CV) ' + mtMean(cvs).toFixed(1) + '% ของค่าเฉลี่ยในแต่ละปี'; }
+                    tx += outl.length ? ' เดือนที่ผิดปกติเกิน 2 SD: ' + outl.slice(0, 2).map(function (x) { return 'เดือน' + L[x.m] + ' ' + mtYr(x.y) + ' (' + mtNum(x.v) + ' คน' + (x.dev !== null ? ' ' + mtSgn(x.dev) + ' จากค่าเฉลี่ยปีนั้น' : '') + ')'; }).join(', ') : ' ไม่พบเดือนที่ผิดปกติชัดเจน (เกิน 2 SD)';
+                    out.push({ tone: 'info', mode: 'm', title: 'เดือนสูงสุดและความผันผวน', text: tx });
                 }
-                if (last < 11) {
-                    out.push({ tone: 'info', mode: 'both', title: 'ข้อควรระวัง', text: Y + ' มีข้อมูลถึงเดือน' + L[last] + ' เท่านั้น ยอดสะสมจึงยังต่ำกว่าปีเต็ม ควรดูการเทียบช่วงเดียวกันกับปีก่อน' });
+
+                // 7) เดือนที่เปลี่ยนจากเดือนก่อนมากสุดตลอดช่วง (ต่อเนื่องข้ามปีเมื่อปีติดกัน)
+                const seq = [];
+                H.forEach(function (o, i) {
+                    const contiguous = i > 0 && H[i - 1].year === o.year - 1 && H[i - 1].last === 11;
+                    if (!contiguous) { seq.push(null); }
+                    o.values.forEach(function (v, m) { if (v !== null && v !== undefined && m <= o.last) { seq.push({ y: o.year, m: m, v: v }); } });
+                });
+                let up = null, dn = null;
+                for (let i = 1; i < seq.length; i++) {
+                    if (!seq[i] || !seq[i - 1]) { continue; }
+                    const d = seq[i].v - seq[i - 1].v;
+                    if (d > 0 && (!up || d > up.d)) { up = { d: d, a: seq[i - 1], b: seq[i] }; }
+                    if (d < 0 && (!dn || d < dn.d)) { dn = { d: d, a: seq[i - 1], b: seq[i] }; }
                 }
-                if (!prev) {
-                    out.push({ tone: 'info', mode: 'both', title: mtPrev.length ? 'แสดงปีเดียว' : 'ยังไม่มีปีก่อนให้เทียบ',
-                        text: mtPrev.length ? 'ตอนนี้แสดง ' + Y + ' ปีเดียว คลิกชื่อปีอื่นใต้หัวกราฟเพื่อเปิดแสดงและเทียบช่วงเดียวกัน' : 'ไม่พบข้อมูลรายเดือนของปีก่อนหน้า ตามตัวกรองที่เลือก จึงยังไม่แสดงเส้นเทียบ' });
+                [[up, 'up', 'เดือนที่เพิ่มขึ้นมากสุด', 'เพิ่มขึ้น'], [dn, 'down', 'เดือนที่ลดลงมากสุด', 'ลดลง']].forEach(function (c) {
+                    if (!c[0]) { return; }
+                    const pp = mtPct(c[0].b.v, c[0].a.v);
+                    out.push({ tone: c[1], mode: 'm', title: c[2] + 'ตลอดช่วง',
+                        text: 'เดือน' + L[c[0].b.m] + ' ' + mtYr(c[0].b.y) + ' ' + c[3] + ' ' + mtNum(Math.abs(c[0].d)) + ' คน จากเดือน' + L[c[0].a.m] + ' ' + mtYr(c[0].a.y) + (pp !== null ? ' (' + mtSgn(pp) + ')' : '') });
+                });
+
+                // 8) ยอดสะสมเทียบทุกปี ณ เดือนเดียวกัน
+                if (peers.length) {
+                    const pool = peers.concat([cur]).map(function (o) { return { y: o.year, v: sumK(o) }; }).sort(function (a, b) { return b.v - a.v; });
+                    const rk = pool.findIndex(function (o) { return o.y === cur.year; }) + 1;
+                    out.push({ tone: 'info', mode: 'c', title: 'ยอดสะสมเทียบทุกปี',
+                        text: 'ยอดสะสมถึงเดือน' + L[cur.last] + ' ของ ' + Y + ' อยู่อันดับ ' + rk + ' จาก ' + pool.length + ' ปี สูงสุดคือ ' + mtYr(pool[0].y) + ' (' + mtNum(pool[0].v) + ' คน) ต่ำสุดคือ ' + mtYr(pool[pool.length - 1].y) + ' (' + mtNum(pool[pool.length - 1].v) + ' คน)' });
                 }
-                return out;
+
+                // 9) ข้อจำกัดของข้อมูล
+                const cav = [];
+                if (cur.last < 11) { cav.push(Y + ' มีข้อมูลถึงเดือน' + L[cur.last] + ' เท่านั้น จึงเทียบกับปีอื่นเฉพาะช่วงเดือนเดียวกัน'); }
+                if (full.length < 5) { cav.push('มีเพียง ' + full.length + ' ปีเต็ม แนวโน้มและฤดูกาลเป็นข้อบ่งชี้เบื้องต้น ยังสรุปเชิงสถิติไม่ได้'); }
+                cav.push('เป็นจำนวนผู้ป่วยใหม่ที่รายงาน ยังไม่ปรับตามขนาดประชากรและการเปลี่ยนแปลงระบบรายงาน');
+                out.push({ tone: 'info', mode: 'both', title: 'ข้อจำกัดของข้อมูล', text: cav.join(' ') });
+                // แสดงเฉพาะ 4 การ์ดสำคัญต่อมุมมอง: แนวโน้มรายปี, เทียบช่วงเดียวกัน, ประมาณการทั้งปี (ถ้าปียังไม่ครบ ใช้ภาพรวมแทน), ฤดูกาล (รายเดือน) / ยอดสะสมเทียบทุกปี (ยอดสะสม)
+                const hasForecast = out.some(function (x) { return x.title === 'ประมาณการทั้งปี'; });
+                const keep = ['แนวโน้มรายปี', 'เทียบช่วงเดียวกันทุกปี', 'ฤดูกาลของการพบผู้ป่วยใหม่', 'ยอดสะสมเทียบทุกปี'].concat(hasForecast ? ['ประมาณการทั้งปี'] : ['ภาพรวมทุกปีที่มีข้อมูล']);
+                const NOTES = {
+                    'ภาพรวมทุกปีที่มีข้อมูล': 'สรุปจากข้อมูล 3 ปีงบล่าสุด "ปีเต็ม" คือปีที่มีข้อมูลครบ 12 เดือน ใช้หาค่าเฉลี่ยเพื่อไม่ให้ปีที่ข้อมูลยังไม่ครบดึงค่าต่ำลง',
+                    'แนวโน้มรายปี': 'อ่านผล: % เทียบปีก่อน = (ปีนี้ - ปีก่อน) / ปีก่อน, CAGR = อัตราเติบโตเฉลี่ยต่อปีแบบทบต้น, R² ยิ่งใกล้ 1 แปลว่าแนวโน้มเป็นเส้นตรงชัด (ข้อมูลน้อยกว่า 5 ปี ใช้เป็นข้อบ่งชี้เบื้องต้น)',
+                    'เทียบช่วงเดียวกันทุกปี': 'อ่านผล: เทียบเฉพาะช่วงเดือนเดียวกันของแต่ละปี เพื่อให้ยุติธรรมเมื่อปีล่าสุดข้อมูลยังไม่ครบ อันดับ 1 = สูงสุดใน 3 ปี',
+                    'ประมาณการทั้งปี': 'อ่านผล: คาดจากสัดส่วนยอดสะสมถึงเดือนนี้ในปีเต็มก่อนหน้า เป็นค่าประมาณเพื่อวางแผน ไม่ใช่ตัวเลขจริง',
+                    'ฤดูกาลของการพบผู้ป่วยใหม่': 'อ่านผล: ดัชนี 100 = เดือนที่เท่าค่าเฉลี่ยรายเดือน มากกว่า 100 = พบมากกว่าปกติ น้อยกว่า 100 = พบน้อยกว่าปกติ',
+                    'ยอดสะสมเทียบทุกปี': 'อ่านผล: จัดอันดับยอดสะสม ณ เดือนเดียวกันของแต่ละปี อันดับ 1 = สูงสุด'
+                };
+                out.forEach(function (x) { if (NOTES[x.title]) { x.note = NOTES[x.title]; } });
+                const picked = out.filter(function (x) { return keep.indexOf(x.title) !== -1; });
+                mtScope = (hiddenCount && visible.length) ? H.map(function (o) { return mtYr(o.year); }).join(', ') : '';
+                mtUpdateSub();
+                return picked.length ? picked : out.slice(0, 4);
             }
             function mtRenderInsights(list) {
                 const ul = document.getElementById('mtInsList');
                 if (!ul) { return; }
                 ul.innerHTML = list.map(function (x) {
-                    return '<li class="hm-tr-in ' + x.tone + '" data-mode="' + x.mode + '"' + ((x.mode === 'both' || x.mode === mtMode) ? '' : ' hidden') + '>'
+                    return '<li class="hm-tr-in ' + x.tone + '" data-mode="' + x.mode + '"' + (x.note ? ' title="' + mtEsc(x.note) + '"' : '') + ((x.mode === 'both' || x.mode === mtMode) ? '' : ' hidden') + '>'
                         + '<span class="hm-tr-ic" aria-hidden="true">' + MT_ICON[x.tone] + '</span>'
-                        + '<div><span class="hm-tr-ti">' + mtEsc(x.title) + '</span><span class="hm-tr-tx">' + mtEmph(x.text) + '</span></div></li>';
+                        + '<div><span class="hm-tr-ti">' + mtEsc(x.title) + '</span><span class="hm-tr-tx">' + mtEmph(x.text) + '</span>' + '</div></li>';
                 }).join('');
                 ul.classList.remove('swap'); void ul.offsetWidth; ul.classList.add('swap');
             }
@@ -2084,16 +2226,14 @@
                     card.querySelectorAll('#mtSeg button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.mode === m ? 'true' : 'false'); });
                     card.querySelectorAll('.hm-tr-in[data-mode]').forEach(function (li) { li.hidden = !(li.dataset.mode === 'both' || li.dataset.mode === m); });
                 }
-                const sub = document.getElementById('mtSub');
-                if (sub) {
-                    sub.textContent = 'ตามปีงบประมาณที่เลือก แสดง' + (m === 'm' ? 'จำนวนรายเดือน' : 'ยอดสะสม') + (mtPrev.length ? ' เทียบปีก่อน' : '');
-                }
+                mtUpdateSub();
                 buildTrend();
             }
             document.querySelectorAll('#mtSeg button').forEach(function (b) {
                 b.addEventListener('click', function () { if (b.dataset.mode !== mtMode) { setMtMode(b.dataset.mode); } });
             });
             buildTrend();
+            if (mtHist.length || mtPrev.length || mtYear) { mtRenderInsights(mtComputeInsights()); }
 
             // --- 1b. Province rate map (mean ± SD bands across the 5 provinces) ---
             if (document.getElementById('provinceMapContainer')) {
@@ -2231,7 +2371,7 @@
                     d.target = Number(t.target_b) || 0;
                 });
                 provinceData.push({
-                    y: overallRate, color: toGradient('#334155', true),
+                    y: overallRate, color: toGradient('#2563eb', true),
                     cases: overallCases, target: overallTarget, overall: true
                 });
 
@@ -2246,7 +2386,7 @@
                         plotBands: [{
                             from: provinceCategories.length - 1.5,
                             to: provinceCategories.length - 0.5,
-                            color: 'rgba(51, 65, 85, 0.06)'
+                            color: 'rgba(37, 99, 235, 0.07)'
                         }]
                     },
                     yAxis: { title: { text: 'อัตราต่อแสนประชากร', style: { fontSize: '12px', color: '#64748b' } }, min: 0, maxPadding: 0.14, tickAmount: 5, gridLineColor: '#eef1f6', labels: { style: { fontSize: '11.5px', color: '#64748b' } } },

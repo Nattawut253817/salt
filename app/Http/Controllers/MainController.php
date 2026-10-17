@@ -37,7 +37,7 @@ class MainController extends Controller
         $query = $request->query();
         ksort($query);
         $user = auth()->user();
-        $key = 'page_data_v11:' . $page . ':' . md5(json_encode([
+        $key = 'page_data_v13:' . $page . ':' . md5(json_encode([
             $query,
             ($perUser && $user) ? [$user->id, $user->User_rank_id] : null,
             array_map(fn ($m) => $this->tableStamp($m), $models),
@@ -745,6 +745,10 @@ class MainController extends Controller
             )->values();
         }
 
+        // จำนวนหน่วยงานที่มีการรายงาน (นับหน่วยงานไม่ซ้ำ) และจำนวนแถวพื้นที่ ตามตัวกรอง/คำค้นปัจจุบัน
+        $reportingAgencyCount = $rowEntries->pluck('user.id')->unique()->count();
+        $reportingAreaRowCount = $rowEntries->count();
+
         $perPage = 10;
         $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage('page') ?: 1;
         $paginatedAgencies = new \Illuminate\Pagination\LengthAwarePaginator(
@@ -995,6 +999,8 @@ class MainController extends Controller
             'overviewTopProvince',
             'overviewTopProvincePercent',
             'paginatedAgencies',
+            'reportingAgencyCount',
+            'reportingAreaRowCount',
             'years',
             'provinces',
             'districts',
@@ -2318,6 +2324,37 @@ class MainController extends Controller
         $labels = array_values($months);
         $hasYear = $selectedYear && $selectedYear != 'ทั้งหมด';
         $series = [];
+
+        // ประวัติรายเดือนของ "ทุกปี" ที่มีข้อมูล (ตามตัวกรองจังหวัด/อำเภอ) ใช้วิเคราะห์หลายปีฝั่งข้อความวิเคราะห์
+        $history = [];
+        $hq = Hi::query()->whereNotNull('year');
+        if ($provinceName && $provinceName != 'ทั้งหมด') {
+            $hpid = Province::where('province_name', $provinceName)->value('province_id');
+            $hpid ? $hq->where('Province_id', $hpid) : $hq->whereRaw('1 = 0');
+        }
+        if ($districtName && $districtName != 'ทั้งหมด') {
+            $hq->where('District_name', $districtName);
+        }
+        foreach ($hq->get(array_merge(['year'], $keys))->groupBy('year')->sortKeys() as $hy => $hItems) {
+            $hVals = array_map(fn($k) => (int) $hItems->sum($k), $keys);
+            $hLast = null;
+            foreach ($hVals as $i => $v) {
+                if ($v > 0) {
+                    $hLast = $i;
+                }
+            }
+            if ($hLast === null) {
+                continue;
+            }
+            $history[] = [
+                'year' => (string) $hy,
+                'last_idx' => $hLast,
+                'complete' => $hLast === 11,
+                'total' => array_sum($hVals),
+                'values' => array_map(fn($v, $i) => $i <= $hLast ? $v : null, $hVals, array_keys($hVals)),
+            ];
+        }
+
         if ($hasYear) {
             $q = Hi::query()->whereNotNull('year')->where('year', '<', $selectedYear);
             if ($provinceName && $provinceName != 'ทั้งหมด') {
@@ -2454,7 +2491,7 @@ class MainController extends Controller
             }
         }
 
-        return ['year' => $hasYear ? (string) $selectedYear : null, 'last_idx' => $curLast, 'series' => $series, 'insights' => $ins];
+        return ['year' => $hasYear ? (string) $selectedYear : null, 'last_idx' => $curLast, 'series' => $series, 'history' => $history, 'insights' => $ins];
     }
     /** อัตรา HT รายปีแบบ like-for-like (ตัวตั้งและตัวหารนับเฉพาะจังหวัดที่มีเป้าหมายประชากร) */
     private function htYearTrend($hiAllYears)
@@ -4321,7 +4358,11 @@ class MainController extends Controller
 
     public function staff()
     {
-        $provinces = Province::orderBy('province_name', 'asc')->get();
+        // Province list is static reference data - cache it so the sign-in page
+        // renders without a DB query.
+        $provinces = \Illuminate\Support\Facades\Cache::remember('staff_provinces_v1', now()->addDay(), function () {
+            return Province::orderBy('province_name', 'asc')->get();
+        });
         return view('pages.staff', compact('provinces'));
     }
 

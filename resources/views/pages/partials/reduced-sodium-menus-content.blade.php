@@ -2694,7 +2694,7 @@
         // Reset form
         form.reset();
 
-        form.action = `/admin/sodium-menus/${menu.id}`;
+        form.action = `${APP_BASE}/admin/sodium-menus/${menu.id}`;
 
         // Fill data
         if (document.getElementById('edit_year')) document.getElementById('edit_year').value = menu.year || '';
@@ -2727,7 +2727,7 @@
         const placeholder = document.getElementById('edit_placeholder');
 
         if (menu.product_image) {
-            preview.src = `/storage/${menu.product_image}`;
+            preview.src = `${APP_BASE}/storage/${menu.product_image}`;
             preview.style.display = 'block';
             placeholder.style.display = 'none';
         } else {
@@ -2775,8 +2775,8 @@
     function openMenuDetailModal(menu) {
         const modal = document.getElementById('menuDetailModal');
 
-        document.getElementById('detail_menu_img_view').src = menu.product_image ? `/storage/${menu.product_image}` :
-            '/images/picture.png';
+        document.getElementById('detail_menu_img_view').src = menu.product_image ? `${APP_BASE}/storage/${menu.product_image}` :
+            APP_BASE + '/images/picture.png';
         document.getElementById('detail_menu_name_view').textContent = menu.menu_name;
         document.getElementById('detail_kitchen_view').textContent = menu.kitchen_type || '-';
         document.getElementById('detail_province_view').textContent = menu.province || '-';

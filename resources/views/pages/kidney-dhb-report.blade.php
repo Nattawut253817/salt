@@ -1637,6 +1637,18 @@
                 min-width: 100%;
             }
         }
+
+        /* ตกแต่งตารางความก้าวหน้าผลการดำเนินงาน: กรอบมน หัวตารางไล่สีเขียวน้ำทะเลอ่อน เส้นแนวนอนบาง แถวสลับสี แถบเน้นตอนชี้ */
+        .report-table-container { border: 1px solid #dbe7e9; border-radius: 18px; box-shadow: 0 10px 30px -14px rgba(15, 76, 92, .25); }
+        .report-table th { background: linear-gradient(180deg, #eef6f7, #e2eef0) !important; color: #0f4c5c; border: none; border-bottom: 1px solid #cfe0e3; box-shadow: inset 1px 0 0 rgba(15, 76, 92, .07); }
+        .report-table th:first-child { box-shadow: none; }
+        .report-table th.indicator-th { background: linear-gradient(180deg, #f3f9fa, #e8f1f3) !important; }
+        .report-table td { border: none; border-bottom: 1px solid #edf2f4; box-shadow: inset 1px 0 0 rgba(15, 76, 92, .04); }
+        .report-table tbody tr:last-child td, .report-table tbody tr:last-child th { border-bottom: none; }
+        .report-table tbody tr { transition: background-color .15s ease, box-shadow .15s ease; }
+        .report-table tbody tr:nth-child(even) { background-color: #fafcfc; }
+        .report-table tbody tr:hover { background-color: #f0f8f8; box-shadow: inset 4px 0 0 #0f766e; }
+        .report-table .agency-name-cell { font-weight: 800; color: #1e293b; }
     </style>
 @endsection
 
@@ -2004,6 +2016,12 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-tasks" style="color: #a1671e; font-size: 1.1rem;"></i>
                     <span style="font-weight: 800; color: #23282b; font-size: 0.9rem; font-family: 'Noto Serif Thai', 'Sarabun', serif;">ความก้าวหน้าผลการดำเนินงาน</span>
+                    <span style="display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 12px; border-radius: 999px; background: #e7f3f4; color: #0f4c5c; font-size: 0.8rem; font-weight: 700; white-space: nowrap;">
+                        มีการรายงาน <b style="font-size: 1rem; font-weight: 800;">{{ number_format($reportingAgencyCount ?? 0) }}</b> หน่วยงาน
+                        @if (($reportingAreaRowCount ?? 0) > ($reportingAgencyCount ?? 0))
+                            <span style="font-weight: 600; color: #3f7280;">({{ number_format($reportingAreaRowCount) }} พื้นที่)</span>
+                        @endif
+                    </span>
                 </div>
                 <form method="GET" action="{{ route('kidney-dhb-report') }}">
                     <input type="hidden" name="fiscal_year" value="{{ $fiscalYear }}">
@@ -2154,6 +2172,7 @@
             </div>
         @endif
     </div>
+@include('pages.partials.filter-dropdown')
 @endsection
 
 @section('extra_js')

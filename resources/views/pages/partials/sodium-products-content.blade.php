@@ -1816,7 +1816,7 @@
         const form = document.getElementById('editForm');
 
         // Reset form action
-        form.action = `/admin/sodium-products/${product.id}`;
+        form.action = `${APP_BASE}/admin/sodium-products/${product.id}`;
 
         // Fill data
         document.getElementById('edit_name').value = product.product_name;
@@ -1830,7 +1830,7 @@
         const placeholder = document.getElementById('edit_placeholder');
 
         if (product.product_image) {
-            preview.src = `/storage/${product.product_image}`;
+            preview.src = `${APP_BASE}/storage/${product.product_image}`;
             preview.style.display = 'block';
             placeholder.style.display = 'none';
         } else {
@@ -1877,8 +1877,8 @@
     function openDetailModal(product) {
         const modal = document.getElementById('productDetailModal');
 
-        document.getElementById('detail_img_view').src = product.product_image ? `/storage/${product.product_image}` :
-            '/images/picture.png';
+        document.getElementById('detail_img_view').src = product.product_image ? `${APP_BASE}/storage/${product.product_image}` :
+            APP_BASE + '/images/picture.png';
         document.getElementById('detail_name_view').textContent = product.product_name;
         document.getElementById('detail_type_view').textContent = product.product_type || '-';
         document.getElementById('detail_standard_view').textContent = product.standard_certification || '-';
