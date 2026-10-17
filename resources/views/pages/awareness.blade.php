@@ -1335,12 +1335,26 @@
         table.figure-table th:not(:first-child), table.figure-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
         table.figure-table td:first-child, table.figure-table th:first-child { padding-left: 12px; }
         table.figure-table td:last-child, table.figure-table th:last-child { padding-right: 12px; }
+
+        /* Filter bar: dividers between every segment + balanced widths */
+        .awr-filter-bar { padding: 6px 8px 6px 22px; }
+        .awr-filter-heading { padding-right: 20px; margin-right: 0; border-right: 1.5px solid #cbd5e1; }
+        .awr-filter-item { flex: 1 1 0; padding: 0 20px; min-width: 150px; border-right: 1.5px solid #cbd5e1 !important; }
+        .awr-filter-item:last-of-type { border-right: 1.5px solid #cbd5e1 !important; }
+        .awr-filter-item::before { content:''; }
+        .awr-filter-clear { flex: 0 0 auto; margin-left: 14px; padding: 10px 22px; justify-content: center; }
+        @media (max-width: 900px) {
+            .awr-filter-heading, .awr-filter-item, .awr-filter-item:last-of-type { border-right: none !important; }
+            .awr-filter-item { border-bottom: 1px solid #e2e8f0; padding: 4px 0; }
+            .awr-filter-item:last-of-type { border-bottom: none; }
+            .awr-filter-clear { margin: 8px 0 0; width: 100%; }
+        }
 </style>
 @endsection
 
 @section('content')
     <!-- Filter Section -->
-    <div class="row" style="margin-bottom: 6px;">
+    <div class="row" style="margin-bottom: 14px;">
         <div class="col-12">
             <form action="{{ route('awareness') }}" method="GET" class="awr-filter-bar">
                 <div class="awr-filter-heading">
@@ -1402,6 +1416,8 @@
             </form>
         </div>
     </div>
+
+    <div style="height:1px;background:#e2e8f0;margin:0 0 18px;"></div>
 
     {{-- Headline summary strip: derives 4 at-a-glance stats from the same
          collections the charts below already receive from

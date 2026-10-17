@@ -141,7 +141,7 @@
         background: #eef2ff;
         border-radius: 14px;
         padding: 7px 18px 7px 7px;
-        border-left: 4px solid var(--primary-indigo);
+        border-left: 0;
     }
 
     .form-header-icon {
@@ -1013,6 +1013,164 @@
     .modal-header-custom {
         border-radius: 28px 28px 0 0;
     }
+
+    /* ===== ปรับฟอร์มเพิ่มผลิตภัณฑ์ (ทีละ 4): การ์ดชัด โฟกัสเด่น ช่องที่กรอก/เลือกแล้วมีสีบางๆ ===== */
+    .product-card { border: 1.5px solid #e2e8f0; padding: 18px 18px 8px; transition: border-color .2s, box-shadow .2s; }
+    .product-card:focus-within { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(99, 102, 241, .10), 0 14px 28px -16px rgba(79, 70, 229, .45); }
+    .product-card .card-title { font-size: 1rem; border-bottom: 2px solid #e0e7ff; padding-bottom: 10px; margin-bottom: 14px; }
+    .product-card .form-group { margin-bottom: 13px; }
+    .product-card .form-group label { font-size: .82rem; color: #1e293b; margin-bottom: 6px; }
+    .product-card .form-control { padding: 11px 13px; font-size: .88rem; min-height: 44px; border-radius: 12px; }
+    .product-card .form-control::placeholder { color: #94a3b8; font-weight: 400; }
+    .product-card .image-upload-wrapper { border: 2px dashed #a5b4fc; background: linear-gradient(180deg, #f5f7ff, #fff); padding: 16px 12px; }
+    .product-card .image-upload-wrapper:hover { border-color: #4f46e5; background: #eef2ff; }
+    .product-card .image-upload-wrapper .fa-cloud-upload-alt {
+        width: 46px; height: 46px; border-radius: 50%; background: #4f46e5; color: #fff !important; font-size: 1.1rem !important;
+        display: inline-grid; place-items: center; box-shadow: 0 6px 14px -4px rgba(79, 70, 229, .55);
+    }
+    .product-card .image-upload-wrapper div div { color: #4338ca !important; font-weight: 700; }
+    /* ก่อน/หลังปรับสูตร: แถบสีซ้ายบอกความหมาย (แดง = ก่อน, เขียว = หลัง) */
+    .product-card input[name$="[sodium_amount_before]"] { border-left: 4px solid #fb7185; }
+    .product-card input[name$="[sodium_amount]"] { border-left: 4px solid #4ade80; }
+    /* ช่องที่กรอก/เลือกแล้ว: พื้นสีบางๆ ตามชนิดข้อมูล */
+    .product-card .form-control.is-filled { background: #f5f7ff; border-color: #c7d2fe; font-weight: 600; color: #1e1b4b; }
+    .product-card input[name$="[sodium_amount_before]"].is-filled { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+    .product-card input[name$="[sodium_amount]"].is-filled { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+    .product-card select[name$="[product_type]"].is-filled { background: #eef2ff; border-color: #a5b4fc; color: #3730a3; }
+    .product-card select[name$="[standard_certification]"].is-filled { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
+    .product-card input[name$="[manufacturer_name]"].is-filled { background: #fffbeb; border-color: #fde68a; color: #78350f; }
+    .product-card .form-control.is-filled:focus { background: #fff; }
+    .product-card select option:checked { background: #e0e7ff; color: #312e81; }
+
+    /* ปุ่มยืนยันบันทึก: เขียวมรกตเข้ม สื่อถึงการยืนยัน/สำเร็จ ตัวอักษรขาวชัด */
+    .btn-submit, .btn-submit-modal {
+        background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+        box-shadow: 0 10px 22px -8px rgba(4, 120, 87, .65), inset 0 1px 0 rgba(255, 255, 255, .28);
+        text-shadow: 0 1px 1px rgba(2, 44, 34, .35);
+    }
+    .btn-submit { padding: 13px 32px; font-size: .92rem; border-radius: 14px; }
+    .btn-submit:hover { background: linear-gradient(135deg, #34d399 0%, #059669 100%); transform: translateY(-2px); box-shadow: 0 14px 26px -8px rgba(4, 120, 87, .75), inset 0 1px 0 rgba(255, 255, 255, .35); }
+    .btn-submit:active { transform: translateY(0); }
+    .btn-submit:focus-visible { outline: 3px solid #a7f3d0; outline-offset: 2px; }
+
+    /* ฟอร์มเพิ่มรายการ: ดึงหัวข้อขึ้นชิดด้านบน (ไม่มีปุ่มกลับไปรายการ) */
+    #form-section { margin-top: -22px; }
+    #form-section .list-header-form { margin-bottom: 14px; padding: 10px 16px; }
+
+    /* รูปที่เลือกแล้ว: คลิกดูรูปใหญ่ + ปุ่มกากบาทเล็กๆ มุมขวาบนสำหรับลบ */
+    .product-card .image-upload-wrapper { position: relative; }
+    .product-card .image-preview { cursor: zoom-in; box-shadow: 0 4px 12px -4px rgba(15, 23, 42, .35); }
+    .img-remove-btn {
+        position: absolute; top: 6px; right: 6px; z-index: 2; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%;
+        background: rgba(15, 23, 42, .72); color: #fff; font-size: .72rem; cursor: pointer;
+        display: none; align-items: center; justify-content: center; transition: background .15s, transform .15s;
+    }
+    .img-remove-btn:hover { background: #e11d48; transform: scale(1.1); }
+    .img-remove-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+    .prd-lightbox {
+        position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center;
+        background: rgba(15, 23, 42, .88); padding: 24px; cursor: zoom-out;
+    }
+    .prd-lightbox.open { display: flex; }
+    .prd-lightbox img { max-width: 100%; max-height: 100%; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+
+    /* ===== ปุ่มหัวรายการ: นำเข้า Excel (เขียวมรกต โปร่ง) + เพิ่มรายการใหม่ (ม่วงเข้มมีไฮไลต์) ===== */
+    .btn-toggle-form[data-bs-target*="ImportModal"] {
+        background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%) !important; color: #047857 !important;
+        border: 1.5px solid #6ee7b7 !important; border-radius: 14px !important; height: 46px !important;
+        padding: 0 20px !important; font-size: .88rem !important; font-weight: 700 !important; gap: 9px !important;
+        box-shadow: 0 6px 14px -8px rgba(5, 150, 105, .55), inset 0 1px 0 rgba(255, 255, 255, .8) !important;
+    }
+    .btn-toggle-form[data-bs-target*="ImportModal"] i { color: #059669; font-size: 1rem; }
+    .btn-toggle-form[data-bs-target*="ImportModal"]:hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]) {
+        background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; color: #fff !important;
+        border-radius: 14px !important; height: 46px !important; padding: 0 24px !important; gap: 10px !important;
+        font-size: .9rem !important; font-weight: 800 !important; letter-spacing: .1px;
+        box-shadow: 0 10px 22px -8px rgba(67, 56, 202, .7), inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+        text-shadow: 0 1px 1px rgba(30, 27, 75, .35);
+    }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]) i {
+        width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .22); font-size: .8rem;
+        display: inline-grid; place-items: center;
+    }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]):hover {
+        background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 26px -8px rgba(67, 56, 202, .8), inset 0 1px 0 rgba(255, 255, 255, .35) !important;
+    }
+    .btn-toggle-form:focus-visible { outline: 3px solid #c7d2fe; outline-offset: 2px; }
+
+    /* ปุ่มลบตามตัวกรอง: สีแดง (override สีม่วงของปุ่มเพิ่ม) */
+    .btn-toggle-form[onclick*="confirmBulkDelete"],
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]) {
+        width: 46px !important; height: 46px !important; padding: 0 !important; gap: 0 !important; border-radius: 14px !important;
+        background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.35), rgba(255,255,255,0) 45%), linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
+        color: #fff !important; border: 1px solid rgba(159,18,57,.5) !important;
+        box-shadow: 0 10px 20px -8px rgba(190,18,60,.65), inset 0 1px 0 rgba(255,255,255,.3) !important;
+    }
+    .btn-toggle-form[onclick*="confirmBulkDelete"] i,
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]) i { width: auto; height: auto; background: none; font-size: 1rem; color: #fff; }
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]):hover {
+        background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 24px -8px rgba(190,18,60,.75), inset 0 1px 0 rgba(255,255,255,.35) !important;
+    }
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:focus-visible { outline: 3px solid #fecdd3; outline-offset: 2px; }
+
+    /* Export-filter modal polish (shared look): soft green header, roomy fields, focus ring, equal-height buttons */
+#sodiumMenusExportModal .modal-dialog,
+#sodiumExportModal .modal-dialog,
+#exportModal .modal-dialog {max-width:560px !important;}
+#sodiumMenusExportModal .modal-content,
+#sodiumExportModal .modal-content,
+#exportModal .modal-content {border-radius:24px !important; border:1px solid #e6ebf3 !important; overflow:hidden; box-shadow:0 2px 4px rgba(15,23,42,.04),0 28px 56px -14px rgba(15,23,42,.35) !important;}
+#sodiumMenusExportModal .modal-header,
+#sodiumExportModal .modal-header,
+#exportModal .modal-header {padding:26px 28px 18px !important; background:linear-gradient(180deg,#f0fdf8 0%,#ffffff 100%) !important; border-bottom:1px solid #eef2f7 !important;}
+#sodiumMenusExportModal .modal-header .d-flex > div:first-child,
+#sodiumExportModal .modal-header .d-flex > div:first-child,
+#exportModal .modal-header .d-flex > div:first-child {width:48px !important; height:48px !important; border-radius:15px !important; background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.45),rgba(255,255,255,0) 45%),linear-gradient(145deg,#34d399,#059669) !important; box-shadow:inset 0 -3px 6px rgba(6,78,59,.3),0 10px 18px -6px rgba(5,150,105,.55) !important;}
+#sodiumMenusExportModal .modal-title,
+#sodiumExportModal .modal-title,
+#exportModal .modal-title {font-size:1.15rem !important; color:#0f172a !important; font-weight:800 !important;}
+#sodiumMenusExportModal .modal-header p,
+#sodiumExportModal .modal-header p,
+#exportModal .modal-header p {font-size:.82rem !important; color:#64748b !important; line-height:1.5;}
+#sodiumMenusExportModal .modal-body,
+#sodiumExportModal .modal-body,
+#exportModal .modal-body {padding:22px 28px 26px !important;}
+#sodiumMenusExportModal .modal-body label,
+#sodiumExportModal .modal-body label,
+#exportModal .modal-body label {font-size:.86rem !important; font-weight:700 !important; color:#334155 !important; margin-bottom:7px !important;}
+#sodiumMenusExportModal .modal-body label i,
+#sodiumExportModal .modal-body label i,
+#exportModal .modal-body label i {color:#10b981 !important; width:16px; text-align:center;}
+#sodiumMenusExportModal .modal-body select.form-control,
+#sodiumExportModal .modal-body select.form-control,
+#exportModal .modal-body select.form-control {height:46px !important; padding:0 38px 0 14px !important; border-radius:12px !important; border:1.5px solid #dbe3ee !important; background-color:#fff !important; font-size:.9rem !important; font-weight:600 !important; color:#1e293b !important; box-shadow:0 1px 2px rgba(15,23,42,.04) !important; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:right 14px center !important; background-size:14px !important; transition:border-color .15s, box-shadow .15s;}
+#sodiumMenusExportModal .modal-body select.form-control:hover,
+#sodiumExportModal .modal-body select.form-control:hover,
+#exportModal .modal-body select.form-control:hover {border-color:#a7f3d0 !important;}
+#sodiumMenusExportModal .modal-body select.form-control:focus,
+#sodiumExportModal .modal-body select.form-control:focus,
+#exportModal .modal-body select.form-control:focus {border-color:#10b981 !important; box-shadow:0 0 0 4px rgba(16,185,129,.15) !important; outline:none;}
+#sodiumMenusExportModal .modal-body select.form-control:disabled,
+#sodiumExportModal .modal-body select.form-control:disabled,
+#exportModal .modal-body select.form-control:disabled {background-color:#f1f5f9 !important; color:#94a3b8 !important; cursor:not-allowed;}
+#sodiumMenusExportModal .modal-footer,
+#sodiumExportModal .modal-footer,
+#exportModal .modal-footer {padding:16px 28px 24px !important; background:#fff !important; border-top:1px solid #eef2f7 !important; gap:12px !important; flex-wrap:nowrap !important;}
+#sodiumMenusExportModal .modal-footer .btn,
+#sodiumExportModal .modal-footer .btn,
+#exportModal .modal-footer .btn {height:48px !important; border-radius:14px !important; font-size:.95rem !important; font-weight:700 !important; margin:0 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light,
+#sodiumExportModal .modal-footer .btn-light,
+#exportModal .modal-footer .btn-light {flex:0 0 120px; border:1.5px solid #dbe3ee !important; color:#475569 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light:hover,
+#sodiumExportModal .modal-footer .btn-light:hover,
+#exportModal .modal-footer .btn-light:hover {background:#f8fafc !important; border-color:#cbd5e1 !important;}
+#sodiumMenusExportModal .modal-footer .btn-success,
+#sodiumExportModal .modal-footer .btn-success,
+#exportModal .modal-footer .btn-success {flex:1 1 auto; background:linear-gradient(135deg,#10b981,#047857) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(4,120,87,.6) !important;}
 </style>
 
 <div id="toast-stack" class="toast-stack"></div>
@@ -1443,10 +1601,13 @@
 
                         <div class="form-group">
                             <label>รูปภาพผลิตภัณฑ์</label>
-                            <div class="image-upload-wrapper"
-                                onclick="document.getElementById('img-{{ $i }}').click()">
+                            <div class="image-upload-wrapper" id="imgbox-{{ $i }}"
+                                onclick="imgBoxClick({{ $i }})">
+                                <button type="button" class="img-remove-btn" id="imgdel-{{ $i }}"
+                                    title="ลบรูปนี้" aria-label="ลบรูปนี้"
+                                    onclick="event.stopPropagation(); removeImage({{ $i }})"><i class="fas fa-xmark"></i></button>
                                 <img id="preview-{{ $i }}" class="image-preview" src="#"
-                                    alt="Preview">
+                                    alt="Preview" title="คลิกเพื่อดูรูป">
                                 <div id="placeholder-{{ $i }}">
                                     <i class="fas fa-cloud-upload-alt fa-2x"
                                         style="color: #94a3b8; margin-bottom: 5px;"></i>
@@ -1519,6 +1680,8 @@
             </button>
         </form>
     </div>
+
+    <div class="prd-lightbox" id="prdImgLightbox" role="dialog" aria-label="ดูรูปภาพ" onclick="this.classList.remove('open')"><img alt="รูปผลิตภัณฑ์"></div>
 
     <!-- Edit Modal -->
     <div id="editModal" class="modal-overlay">
@@ -1930,10 +2093,39 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 placeholder.style.display = 'none';
+                const del = document.getElementById(`imgdel-${index}`);
+                if (del) del.style.display = 'inline-flex';
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+    // มีรูปแล้ว: คลิกเพื่อดูรูปขนาดใหญ่ / ยังไม่มีรูป: คลิกเพื่อเลือกไฟล์
+    function imgBoxClick(index) {
+        const input = document.getElementById(`img-${index}`);
+        if (input && input.files && input.files[0]) {
+            const lb = document.getElementById('prdImgLightbox');
+            lb.querySelector('img').src = document.getElementById(`preview-${index}`).src;
+            lb.classList.add('open');
+        } else if (input) {
+            input.click();
+        }
+    }
+
+    // ลบรูปที่เลือกไว้ (ล้างไฟล์ที่จะอัปโหลดด้วย)
+    function removeImage(index) {
+        const input = document.getElementById(`img-${index}`);
+        const preview = document.getElementById(`preview-${index}`);
+        if (input) input.value = '';
+        if (preview) { preview.removeAttribute('src'); preview.style.display = 'none'; }
+        const ph = document.getElementById(`placeholder-${index}`);
+        if (ph) ph.style.display = '';
+        const del = document.getElementById(`imgdel-${index}`);
+        if (del) del.style.display = 'none';
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { const lb = document.getElementById('prdImgLightbox'); if (lb) lb.classList.remove('open'); }
+    });
 
     function confirmDelete(e) {
         e.preventDefault();
@@ -1974,10 +2166,39 @@
                 preview.src = e.target.result;
                 preview.style.display = 'block';
                 placeholder.style.display = 'none';
+                const del = document.getElementById(`imgdel-${index}`);
+                if (del) del.style.display = 'inline-flex';
             }
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+    // มีรูปแล้ว: คลิกเพื่อดูรูปขนาดใหญ่ / ยังไม่มีรูป: คลิกเพื่อเลือกไฟล์
+    function imgBoxClick(index) {
+        const input = document.getElementById(`img-${index}`);
+        if (input && input.files && input.files[0]) {
+            const lb = document.getElementById('prdImgLightbox');
+            lb.querySelector('img').src = document.getElementById(`preview-${index}`).src;
+            lb.classList.add('open');
+        } else if (input) {
+            input.click();
+        }
+    }
+
+    // ลบรูปที่เลือกไว้ (ล้างไฟล์ที่จะอัปโหลดด้วย)
+    function removeImage(index) {
+        const input = document.getElementById(`img-${index}`);
+        const preview = document.getElementById(`preview-${index}`);
+        if (input) input.value = '';
+        if (preview) { preview.removeAttribute('src'); preview.style.display = 'none'; }
+        const ph = document.getElementById(`placeholder-${index}`);
+        if (ph) ph.style.display = '';
+        const del = document.getElementById(`imgdel-${index}`);
+        if (del) del.style.display = 'none';
+    }
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') { const lb = document.getElementById('prdImgLightbox'); if (lb) lb.classList.remove('open'); }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
         @php
@@ -2258,4 +2479,17 @@
             showToast('warning', 'เกิดข้อผิดพลาด', error.message);
         }
     }
+</script>
+
+<script>
+// ช่องที่กรอก/เลือกแล้วในฟอร์มเพิ่มผลิตภัณฑ์: ใส่ class is-filled ให้มีสีบางๆ
+(function () {
+    function mark(el) { el.classList.toggle('is-filled', String(el.value || '').trim() !== ''); }
+    var fields = document.querySelectorAll('.product-card .form-control');
+    fields.forEach(function (el) {
+        mark(el);
+        el.addEventListener('input', function () { mark(el); });
+        el.addEventListener('change', function () { mark(el); });
+    });
+})();
 </script>

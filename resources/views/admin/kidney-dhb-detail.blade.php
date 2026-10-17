@@ -472,6 +472,68 @@
         .kd-bar .kd-save:disabled { background: #6ee7b7; color: #065f46; opacity: 1; box-shadow: inset 0 0 0 2px #34d399; }
         .kd-bar.is-dirty { border-color: #047857; box-shadow: 0 18px 40px -8px rgba(5,150,105,.55), 0 0 0 3px rgba(5,150,105,.2), inset 0 1px 0 rgba(255,255,255,.6); }
         @keyframes kdSaveGlow { 50% { box-shadow: 0 8px 24px -2px rgba(4,120,87,.95), inset 0 1px 0 rgba(255,255,255,.3); } }
+        /* แถบบันทึกการแก้ไข: โทนกรมท่าเข้ม ตัวอักษรขาวชัด ปุ่มบันทึกเขียวสด */
+        .kd-bar {
+            background: linear-gradient(180deg, #1e293b 0%, #0b1220 100%); color: #f1f5f9;
+            border: 1px solid rgba(148,163,184,.28);
+            box-shadow: 0 20px 44px -10px rgba(2,6,23,.65), 0 0 0 1px rgba(15,23,42,.4), inset 0 1px 0 rgba(255,255,255,.07);
+        }
+        .kd-bar-title { color: #fff; font-size: .95rem; font-weight: 800; }
+        .kd-bar-title i { color: #fbbf24; }
+        .kd-bar .kd-count { color: #cbd5e1; font-weight: 600; }
+        .kd-bar .kd-count::before { background: #64748b; }
+        .kd-bar.is-dirty .kd-count { color: #fde68a; font-weight: 700; }
+        .kd-bar.is-dirty .kd-count::before { background: #fbbf24; }
+        .kd-bar-actions { border-left-color: rgba(148,163,184,.3); }
+        .kd-bar button:focus-visible { outline-color: #6ee7b7; }
+        .kd-bar .kd-cancel { background: rgba(244,63,94,.12); color: #fda4af; box-shadow: inset 0 0 0 1.5px rgba(251,113,133,.65); }
+        .kd-bar .kd-cancel:hover { background: linear-gradient(135deg, #fb7185, #e11d48); color: #fff; box-shadow: 0 8px 18px -6px rgba(225,29,72,.7); }
+        .kd-bar .kd-save { background: linear-gradient(135deg, #34d399 0%, #10b981 55%, #059669 100%); color: #052e22; text-shadow: none; box-shadow: 0 8px 20px -4px rgba(16,185,129,.7), inset 0 1px 0 rgba(255,255,255,.4); }
+        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #6ee7b7, #34d399 55%, #10b981); box-shadow: 0 12px 26px -4px rgba(16,185,129,.85), inset 0 1px 0 rgba(255,255,255,.45); }
+        .kd-bar .kd-save:disabled { background: rgba(148,163,184,.14); color: #94a3b8; box-shadow: inset 0 0 0 1.5px rgba(148,163,184,.35); opacity: 1; }
+        .kd-bar.is-dirty { border-color: rgba(52,211,153,.7); box-shadow: 0 20px 44px -10px rgba(2,6,23,.7), 0 0 0 2px rgba(52,211,153,.35), 0 0 30px -6px rgba(16,185,129,.55); }
+        /* แถบบันทึกการแก้ไข: พื้นฟ้าเข้ม ตัวอักษรขาว ปุ่มบันทึกเขียวสดตัดกับพื้น ปุ่มยกเลิกขาว */
+        .kd-bar {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%); color: #fff;
+            border: 1px solid rgba(147,197,253,.55);
+            box-shadow: 0 20px 44px -10px rgba(30,64,175,.7), inset 0 1px 0 rgba(255,255,255,.18);
+        }
+        .kd-bar-title { color: #fff; }
+        .kd-bar-title i { color: #fde68a; }
+        .kd-bar .kd-count { color: #dbeafe; font-weight: 600; }
+        .kd-bar .kd-count::before { background: #93c5fd; }
+        .kd-bar.is-dirty .kd-count { color: #fef08a; font-weight: 800; }
+        .kd-bar.is-dirty .kd-count::before { background: #facc15; }
+        .kd-bar-actions { border-left-color: rgba(191,219,254,.4); }
+        .kd-bar button:focus-visible { outline-color: #fff; }
+        .kd-bar .kd-cancel { background: #fff; color: #be123c; box-shadow: none; }
+        .kd-bar .kd-cancel:hover { background: #ffe4e6; color: #9f1239; box-shadow: 0 6px 14px -6px rgba(0,0,0,.4); }
+        .kd-bar .kd-save { background: linear-gradient(135deg, #34d399, #10b981); color: #052e22; text-shadow: none; box-shadow: 0 8px 18px -6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.4); }
+        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #6ee7b7, #34d399); box-shadow: 0 12px 22px -6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.45); }
+        .kd-bar .kd-save:disabled { background: rgba(255,255,255,.16); color: #bfdbfe; box-shadow: inset 0 0 0 1.5px rgba(191,219,254,.45); }
+        .kd-bar.is-dirty { border-color: #fff; box-shadow: 0 20px 44px -10px rgba(30,64,175,.75), 0 0 0 3px rgba(147,197,253,.4); }
+        /* ปุ่มบนแถบฟ้าเข้ม: ยกเลิก = พื้นแดงเข้ม ตัวอักษรขาว / บันทึก = พื้นเขียวเข้ม ตัวอักษรขาว */
+        .kd-bar .kd-cancel { background: linear-gradient(135deg, #be123c, #9f1239); color: #fff; box-shadow: 0 8px 18px -6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.2); }
+        .kd-bar .kd-cancel:hover { background: linear-gradient(135deg, #e11d48, #be123c); color: #fff; box-shadow: 0 12px 22px -6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.25); }
+        .kd-bar .kd-save { background: linear-gradient(135deg, #059669, #047857); color: #fff; text-shadow: 0 1px 1px rgba(2,44,34,.4); box-shadow: 0 8px 18px -6px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.25); }
+        .kd-bar .kd-save:hover:not(:disabled) { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 12px 22px -6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.3); }
+        .kd-bar .kd-save:disabled { background: #047857; color: rgba(255,255,255,.55); opacity: .7; box-shadow: none; text-shadow: none; }
+        /* แถบบันทึกกว้างเท่ากล่องรูปภาพประกอบ (ตั้งค่า width/right ด้วยสคริปต์) */
+        .kd-bar { box-sizing: border-box; justify-content: space-between; max-width: none; }
+        .kd-bar-actions { margin-left: auto; }
+        /* หัวกล่องคำตอบ "รายละเอียดการดำเนินงาน" */
+        .kd-ta-col { display: flex; flex-direction: column; min-width: 0; }
+        .kd-ta-label { display: inline-flex; align-items: center; gap: 6px; margin: 0 0 6px; font-size: .76rem; font-weight: 700; color: #1e3a8a; }
+        .kd-ta-label i { color: #2563eb; font-size: .7rem; }
+        /* ขนาดกล่องคงที่เท่าเดิม (ไม่ขยายตามข้อความ) ข้อความยาวเลื่อนดูด้วยสกอลล์บาร์ */
+        .kd-ta-col > .kd-edit-ta {
+            flex: 1 1 0; min-height: 150px; height: auto !important; max-height: 260px; resize: none;
+            overflow-y: auto; scrollbar-width: thin; scrollbar-color: #93c5fd #eff6ff;
+        }
+        .kd-ta-col > .kd-edit-ta::-webkit-scrollbar { width: 10px; }
+        .kd-ta-col > .kd-edit-ta::-webkit-scrollbar-track { background: #eff6ff; border-radius: 10px; margin: 6px 0; }
+        .kd-ta-col > .kd-edit-ta::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 10px; border: 2px solid #eff6ff; }
+        .kd-ta-col > .kd-edit-ta::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
         @media (max-width: 640px) {
             .kd-bar { left: 12px; right: 12px; bottom: 12px; flex-direction: column; align-items: stretch; gap: 12px; padding: 14px; max-width: none; }
             .kd-bar-info { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
@@ -1076,7 +1138,7 @@
                     @include('admin.partials.kidney-images-detail', ['cat' => (string) $num])
                     @if($canEdit)
                         <div class="kd-edit-row answer-row">
-                            <textarea form="kdEditForm" name="category_{{ $num }}" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('category_' . $num, $assessment->{'category_' . $num}) }}</textarea>
+                            <div class="kd-ta-col"><span class="kd-ta-label"><i class="fas fa-list-check" aria-hidden="true"></i> รายละเอียดการดำเนินงาน</span><textarea form="kdEditForm" name="category_{{ $num }}" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('category_' . $num, $assessment->{'category_' . $num}) }}</textarea></div>
                             @include('pages.partials.kidney-image-uploader', ['cat' => (string) $num, 'formId' => 'kdEditForm'])
                         </div>
                     @endif
@@ -1115,7 +1177,7 @@
                             @include('admin.partials.kidney-images-detail', ['cat' => $id])
                             @if($canEdit)
                                 <div class="kd-edit-row answer-row">
-                                    <textarea form="kdEditForm" name="category_{{ $id }}" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('category_' . $id, $assessment->{'category_' . $id}) }}</textarea>
+                                    <div class="kd-ta-col"><span class="kd-ta-label"><i class="fas fa-list-check" aria-hidden="true"></i> รายละเอียดการดำเนินงาน</span><textarea form="kdEditForm" name="category_{{ $id }}" class="kd-edit-ta" rows="4" placeholder="ระบุรายละเอียด...">{{ old('category_' . $id, $assessment->{'category_' . $id}) }}</textarea></div>
                                     @include('pages.partials.kidney-image-uploader', ['cat' => $id, 'formId' => 'kdEditForm'])
                                 </div>
                             @endif
@@ -1533,10 +1595,21 @@
             updateStepper();
         }
         function autosize(t) { t.style.height = 'auto'; t.style.height = Math.max(120, t.scrollHeight + 2) + 'px'; }
+        // ขอบซ้าย-ขวาตรงกับกล่อง "รูปภาพประกอบ" พอดี
+        function fitBarToImageBox() {
+            const box = document.querySelector('.kimg');
+            if (!box || window.innerWidth <= 860) { bar.style.removeProperty('width'); bar.style.removeProperty('right'); return; }
+            const r = box.getBoundingClientRect();
+            bar.style.width = Math.round(r.width) + 'px';
+            bar.style.right = Math.round(document.documentElement.clientWidth - r.right) + 'px';
+        }
+        window.addEventListener('resize', fitBarToImageBox);
+        window.addEventListener('scroll', fitBarToImageBox, { passive: true });
         function enterEdit() {
             if (editing) return;
             editing = true;
             root.classList.add('is-editing');
+            fitBarToImageBox();
             bar.classList.add('show');
             updateStepper();
             setTimeout(function () { textareas.forEach(autosize); updateBar(); }, 30);

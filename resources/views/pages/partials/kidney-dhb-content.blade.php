@@ -1388,6 +1388,24 @@
         font-size: 0.95rem;
     }
     .btn-apply-import:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ===== ปรับโฉมแบบฟอร์มรายข้อ: การ์ดต่อข้อ หัวข้อเด่น ช่องคำตอบและรูปภาพเป็นแผงคู่ ===== */
+    #kidneyForm .report-section:not(.sub-report-section):not(.oa-picker-section):not(.note-section):not(#section-8) {
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 18px;
+        padding: 18px 20px 16px; margin-bottom: 22px; box-shadow: 0 8px 22px -14px rgba(30, 64, 175, .35);
+    }
+    #kidneyForm .report-section .section-title {
+        background: linear-gradient(90deg, #eff6ff 0%, #fff 85%); border: 1px solid #dbeafe; margin-bottom: 14px;
+        align-items: center; padding: 11px 14px;
+    }
+    #kidneyForm .report-section .section-label { font-weight: 700; color: #1e293b; font-size: 1.02rem; }
+    #kidneyForm .section-number { width: 34px; height: 34px; border-radius: 11px; font-size: .95rem; margin-top: 0; }
+    #kidneyForm .result-label {
+        display: flex; align-items: center; gap: 7px; margin: 4px 0 8px; font-size: .86rem; font-weight: 800; color: #1e3a8a;
+    }
+    #kidneyForm .result-label::before { content: ""; width: 4px; height: 14px; border-radius: 2px; background: #2563eb; }
+    #kidneyForm .report-textarea { min-height: 190px; line-height: 1.7; border-color: #e2e8f0; background: #fff; }
+    #kidneyForm .report-textarea:hover { border-color: #bfdbfe; }
 </style>
 
 

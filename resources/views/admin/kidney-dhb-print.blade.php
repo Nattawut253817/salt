@@ -300,13 +300,17 @@
             position: relative;
         }
 
+        /* เครื่องหมายถูกวาดด้วยเส้นขอบ (ไม่ใช้ตัวอักษร ✓ ที่ตำแหน่งเพี้ยนตามฟอนต์) อยู่กึ่งกลางกล่องพอดี */
         .square-box.checked::after {
-            content: "✓";
+            content: "";
             position: absolute;
-            top: -3px;
-            left: 1px;
-            font-size: 12px;
-            font-weight: bold;
+            left: 50%;
+            top: 50%;
+            width: 4px;
+            height: 8px;
+            border: solid #000;
+            border-width: 0 2px 2px 0;
+            transform: translate(-50%, -62%) rotate(45deg);
         }
 
         .info-grid {
@@ -451,19 +455,12 @@
             line-height: 1.4;
         }
 
+        /* เส้นคั่นใต้หัวเอกสาร: เส้นประ (แทนเส้นคู่เดิม) */
         .divider {
             width: 100%;
             max-width: 480px;
             margin: 14px auto 18px;
-            border-top: 1.5px solid #1e293b;
-        }
-
-        .divider::after {
-            content: '';
-            display: block;
-            height: 0;
-            border-top: 0.75px solid #94a3b8;
-            margin-top: 3px;
+            border-top: 1.5px dashed #1e293b;
         }
 
         .export-date-stamp {

@@ -591,6 +591,50 @@
         .row-pending-area .pa-note { font-size: .76rem; }
 
         .table-footer { background: #fafbff; border-top: 1px solid var(--kd-line); }
+    
+        /* ---------- Polish: สบายตา อ่านง่าย ---------- */
+        table.report-table tbody td { padding: 14px 6px; vertical-align: middle; }
+        table.report-table tbody tr > td:not(.grp-cat17):not(.grp-cat8):not(.grp-confirm):not(.grp-merged) { transition: background-color .15s; }
+        table.report-table tbody tr:nth-child(even) > td:not(.grp-cat17):not(.grp-cat8):not(.grp-confirm):not(.grp-merged):not(.pa-msg) { background-color: #fafbfe; }
+        table.report-table tbody tr:hover > td:first-child { box-shadow: inset 3px 0 0 #6366f1; }
+        table.report-table tbody tr > td { border-bottom: 1px solid #e8ecf6; }
+
+        /* พื้นที่ดำเนินงาน: ให้ข้อความไม่บีบ อ่านเป็นบล็อกเรียบร้อย */
+        .area-name .area-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 14px; }
+        .area-name .area-row { padding-left: 14px; }
+        .area-name .area-row::before { top: .62em; background: #818cf8; }
+        .area-name .area-place { line-height: 1.4; }
+        .area-name .area-issue {
+            display: block; margin-top: 4px; padding: 4px 9px; border-radius: 8px;
+            background: #f1f3ff; color: #3f46a8; font-size: .72rem; font-weight: 600; line-height: 1.45;
+            border-left: 3px solid #a5b4fc;
+        }
+        .area-name .area-count { margin-bottom: 8px; }
+
+        /* ชื่อหน่วยงาน / ปี */
+        .org-name { font-size: .88rem; letter-spacing: .1px; }
+        .fy-year { font-size: 1rem; }
+
+        /* ไอคอนสถานะ: ช่องว่าง (ยังไม่มีข้อมูล) จางลง ให้ตาไปที่ช่องที่ทำแล้ว */
+        .status-badge { width: 26px; height: 26px; }
+        .confirm-badge { width: 28px; height: 28px; }
+    
+        /* ไอคอนถูก (บันทึกแล้ว): ทรงเม็ดแก้วนูน มีแสงสะท้อนด้านบนและเงาด้านล่าง */
+        .status-badge.status-done {
+            position: relative; width: 26px; height: 26px; font-size: .72rem; color: #fff;
+            background:
+                radial-gradient(circle at 32% 24%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 42%),
+                radial-gradient(circle at 50% 110%, #5b21b6 0, #7c3aed 55%, #a78bfa 100%);
+            border: 1px solid rgba(91,33,182,.55);
+            box-shadow:
+                inset 0 -3px 5px rgba(46,16,101,.38),
+                inset 0 2px 3px rgba(255,255,255,.35),
+                0 0 0 3px rgba(139,92,246,.12),
+                0 5px 9px -3px rgba(91,33,182,.55);
+        }
+        .status-badge.status-done i { text-shadow: 0 1px 1px rgba(46,16,101,.55); filter: drop-shadow(0 1px 0 rgba(46,16,101,.25)); }
+        .status-badge.status-done:hover { transform: translateY(-1px) scale(1.1); }
+        .status-badge.status-empty { width: 26px; height: 26px; background: #f8fafc; box-shadow: inset 0 1px 2px rgba(15,23,42,.06); }
     </style>
 
     <!-- Summary Statistics Cards -->

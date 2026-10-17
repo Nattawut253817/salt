@@ -783,7 +783,63 @@
             color: #10b981;
             transform: translateX(20px);
         }
-    </style>
+    
+    /* Export-filter modal polish (shared look): soft green header, roomy fields, focus ring, equal-height buttons */
+#sodiumMenusExportModal .modal-dialog,
+#sodiumExportModal .modal-dialog,
+#exportModal .modal-dialog {max-width:560px !important;}
+#sodiumMenusExportModal .modal-content,
+#sodiumExportModal .modal-content,
+#exportModal .modal-content {border-radius:24px !important; border:1px solid #e6ebf3 !important; overflow:hidden; box-shadow:0 2px 4px rgba(15,23,42,.04),0 28px 56px -14px rgba(15,23,42,.35) !important;}
+#sodiumMenusExportModal .modal-header,
+#sodiumExportModal .modal-header,
+#exportModal .modal-header {padding:26px 28px 18px !important; background:linear-gradient(180deg,#f0fdf8 0%,#ffffff 100%) !important; border-bottom:1px solid #eef2f7 !important;}
+#sodiumMenusExportModal .modal-header .d-flex > div:first-child,
+#sodiumExportModal .modal-header .d-flex > div:first-child,
+#exportModal .modal-header .d-flex > div:first-child {width:48px !important; height:48px !important; border-radius:15px !important; background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.45),rgba(255,255,255,0) 45%),linear-gradient(145deg,#34d399,#059669) !important; box-shadow:inset 0 -3px 6px rgba(6,78,59,.3),0 10px 18px -6px rgba(5,150,105,.55) !important;}
+#sodiumMenusExportModal .modal-title,
+#sodiumExportModal .modal-title,
+#exportModal .modal-title {font-size:1.15rem !important; color:#0f172a !important; font-weight:800 !important;}
+#sodiumMenusExportModal .modal-header p,
+#sodiumExportModal .modal-header p,
+#exportModal .modal-header p {font-size:.82rem !important; color:#64748b !important; line-height:1.5;}
+#sodiumMenusExportModal .modal-body,
+#sodiumExportModal .modal-body,
+#exportModal .modal-body {padding:22px 28px 26px !important;}
+#sodiumMenusExportModal .modal-body label,
+#sodiumExportModal .modal-body label,
+#exportModal .modal-body label {font-size:.86rem !important; font-weight:700 !important; color:#334155 !important; margin-bottom:7px !important;}
+#sodiumMenusExportModal .modal-body label i,
+#sodiumExportModal .modal-body label i,
+#exportModal .modal-body label i {color:#10b981 !important; width:16px; text-align:center;}
+#sodiumMenusExportModal .modal-body select.form-control,
+#sodiumExportModal .modal-body select.form-control,
+#exportModal .modal-body select.form-control {height:46px !important; padding:0 38px 0 14px !important; border-radius:12px !important; border:1.5px solid #dbe3ee !important; background-color:#fff !important; font-size:.9rem !important; font-weight:600 !important; color:#1e293b !important; box-shadow:0 1px 2px rgba(15,23,42,.04) !important; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:right 14px center !important; background-size:14px !important; transition:border-color .15s, box-shadow .15s;}
+#sodiumMenusExportModal .modal-body select.form-control:hover,
+#sodiumExportModal .modal-body select.form-control:hover,
+#exportModal .modal-body select.form-control:hover {border-color:#a7f3d0 !important;}
+#sodiumMenusExportModal .modal-body select.form-control:focus,
+#sodiumExportModal .modal-body select.form-control:focus,
+#exportModal .modal-body select.form-control:focus {border-color:#10b981 !important; box-shadow:0 0 0 4px rgba(16,185,129,.15) !important; outline:none;}
+#sodiumMenusExportModal .modal-body select.form-control:disabled,
+#sodiumExportModal .modal-body select.form-control:disabled,
+#exportModal .modal-body select.form-control:disabled {background-color:#f1f5f9 !important; color:#94a3b8 !important; cursor:not-allowed;}
+#sodiumMenusExportModal .modal-footer,
+#sodiumExportModal .modal-footer,
+#exportModal .modal-footer {padding:16px 28px 24px !important; background:#fff !important; border-top:1px solid #eef2f7 !important; gap:12px !important; flex-wrap:nowrap !important;}
+#sodiumMenusExportModal .modal-footer .btn,
+#sodiumExportModal .modal-footer .btn,
+#exportModal .modal-footer .btn {height:48px !important; border-radius:14px !important; font-size:.95rem !important; font-weight:700 !important; margin:0 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light,
+#sodiumExportModal .modal-footer .btn-light,
+#exportModal .modal-footer .btn-light {flex:0 0 120px; border:1.5px solid #dbe3ee !important; color:#475569 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light:hover,
+#sodiumExportModal .modal-footer .btn-light:hover,
+#exportModal .modal-footer .btn-light:hover {background:#f8fafc !important; border-color:#cbd5e1 !important;}
+#sodiumMenusExportModal .modal-footer .btn-success,
+#sodiumExportModal .modal-footer .btn-success,
+#exportModal .modal-footer .btn-success {flex:1 1 auto; background:linear-gradient(135deg,#10b981,#047857) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(4,120,87,.6) !important;}
+</style>
 @endsection
 
 @section('content')

@@ -992,8 +992,9 @@
         }
         .hm-sec-head h3 { margin: 0; font-size: 1.12rem; font-weight: 800; color: #1e293b; }
         .hm-scope {
-            font-size: .72rem; font-weight: 700; color: #475569; background: #fff;
-            border: 1px solid #e8edf3; border-radius: 999px; padding: 2px 10px;
+            font-size: .86rem; font-weight: 800; color: #0f172a; background: #fff;
+            border: 1.5px solid var(--a, #cbd5e1); border-radius: 999px; padding: 3px 13px;
+            letter-spacing: .1px; box-shadow: 0 2px 6px -3px rgba(15, 23, 42, .25);
         }
         /* ป้าย "ข้อมูลอัปเดตล่าสุด" บนหัวการ์ด: เด่นกว่าป้ายขอบเขตปี แต่ไม่แย่งหัวข้อ */
         .hm-updated {
@@ -1243,6 +1244,15 @@
         table.hm-t tr:last-child td { border-bottom: none; }
         table.hm-t .num { text-align: right; font-variant-numeric: tabular-nums; }
         table.hm-t tr.hm-total td { background: #f8fafc; }
+        /* สรุปอัตราป่วยรายจังหวัด: เพิ่มช่องไฟระหว่างคอลัมน์/แถวให้สมดุล */
+        .hm-grid.ht > .hm-ht-sum table.hm-t th,
+        .hm-grid.ht > .hm-ht-sum table.hm-t td { padding-left: 14px; padding-right: 14px; }
+        .hm-grid.ht > .hm-ht-sum table.hm-t th:first-child,
+        .hm-grid.ht > .hm-ht-sum table.hm-t td:first-child { padding-left: 8px; }
+        .hm-grid.ht > .hm-ht-sum table.hm-t td { padding-top: 11px; padding-bottom: 11px; }
+        .hm-grid.ht > .hm-ht-sum table.hm-t th { padding-bottom: 11px; }
+        .hm-grid.ht > .hm-ht-sum table.hm-t td:last-child { padding-right: 8px; }
+        .hm-grid.ht > .hm-ht-sum .hm-dot { margin-right: 10px; }
         .hm-muted { color: #94a3b8; }
         .hm-bar { display: flex; align-items: center; gap: 8px; }
         .hm-bar-tr { flex: 1; height: 9px; border-radius: 99px; background: #e2e8f0; overflow: hidden; min-width: 60px; }

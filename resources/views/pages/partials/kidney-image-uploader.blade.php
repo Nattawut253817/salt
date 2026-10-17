@@ -40,27 +40,27 @@
     /* คำตอบ (ซ้าย) + กล่องรูปภาพ (ขวา) อยู่แถวเดียวกัน สูงเท่ากัน */
     .answer-row {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 40%);
         gap: 14px;
         align-items: stretch;
     }
     .answer-row > .report-textarea { height: 100%; margin-bottom: 0 !important; }
     .kimg {
         display: flex; flex-direction: column; box-sizing: border-box; height: 100%;
-        padding: 10px 12px 12px; border: 2px solid #edeff2; border-radius: 15px; background: #fcfdfe;
+        padding: 12px 14px 14px; border: 2px solid #dbeafe; border-radius: 15px; background: linear-gradient(180deg, #f8fbff, #fff);
     }
     .kimg-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; margin-bottom: 8px; }
-    .kimg-title { font-size: .8rem; font-weight: 700; color: #334155; }
+    .kimg-title { font-size: .88rem; font-weight: 800; color: #1e3a8a; }
     .kimg-title i { color: #2563eb; margin-right: 4px; }
     .kimg-count {
         font-size: .7rem; font-weight: 800; color: #1d4ed8; background: #dbeafe;
         border-radius: 999px; padding: 1px 9px; line-height: 1.6;
     }
-    .kimg-hint { font-size: .68rem; color: #94a3b8; margin-left: auto; white-space: nowrap; }
-    .kimg-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(96px, 1fr); gap: 8px; flex: 1; min-height: 0; }
+    .kimg-hint { flex: 1 0 100%; font-size: .72rem; color: #64748b; margin: 0; white-space: normal; }
+    .kimg-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: minmax(110px, 1fr); gap: 10px; flex: 1; min-height: 0; }
     .kimg-slot {
-        position: relative; height: 100%; min-height: 96px; border-radius: 12px; overflow: hidden;
-        background: #f8fafc; border: 1.5px dashed #cbd5e1; transition: border-color .15s, background .15s;
+        position: relative; height: 100%; min-height: 110px; border-radius: 12px; overflow: hidden;
+        background: #fff; border: 2px dashed #93c5fd; transition: border-color .15s, background .15s, transform .15s;
     }
     .kimg-slot.is-drag { border-color: #2563eb; background: #eff6ff; }
     .kimg-slot.has-image { border-style: solid; border-color: #e2e8f0; background: #0f172a; }
@@ -69,7 +69,8 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
         color: #64748b; font: inherit; font-size: .74rem; font-weight: 600;
     }
-    .kimg-add i { font-size: 1.05rem; color: #2563eb; }
+    .kimg-add i { font-size: 1rem; color: #fff; background: #2563eb; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; box-shadow: 0 4px 10px -3px rgba(37, 99, 235, .6); }
+    .kimg-slot:not(.has-image):hover { border-color: #2563eb; transform: translateY(-1px); }
     .kimg-add:hover { color: #1d4ed8; background: #eff6ff; }
     .kimg-add:focus-visible, .kimg-del:focus-visible { outline: 2px solid #2563eb; outline-offset: -2px; }
     .kimg-slot.has-image .kimg-add { display: none; }
@@ -99,7 +100,6 @@
     .kimg-msg { margin-top: 8px; font-size: .76rem; font-weight: 600; color: #b45309; background: #fffbeb; border-radius: 8px; padding: 6px 10px; }
     .kimg-msg.is-error { color: #be123c; background: #fff1f2; }
     @media (max-width: 1100px) {
-        .kimg-hint { display: none; }
         .kimg-add span { font-size: .68rem; }
     }
     /* จอแคบ: กล่องรูปไปอยู่ใต้ช่องคำตอบ */

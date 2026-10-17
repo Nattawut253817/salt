@@ -124,7 +124,7 @@
         background: #eef2ff;
         border-radius: 14px;
         padding: 7px 18px 7px 7px;
-        border-left: 4px solid var(--primary-indigo);
+        border-left: 0;
     }
 
     .form-header-icon {
@@ -1678,6 +1678,142 @@
         transform: translateY(-1px);
         box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
     }
+
+    /* ===== ปรับฟอร์มเมนูลดโซเดียม: จัดคอลัมน์ให้ตรงกันทั้งสองแถว, ป้ายชัด, ช่องกรอกโล่ง กดง่าย ===== */
+    .menu-row-item {
+        background: #fff; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 18px; gap: 18px;
+        box-shadow: 0 6px 18px -12px rgba(30, 41, 59, .25);
+    }
+    .menu-row-item:focus-within { border-color: #818cf8; box-shadow: 0 0 0 4px rgba(99, 102, 241, .10), 0 10px 24px -14px rgba(79, 70, 229, .45); }
+    .menu-row-num { width: 34px; height: 34px; font-size: .95rem; }
+    .menu-row-thumb {
+        width: 210px; height: auto; min-height: 176px; align-self: stretch; border: 2px dashed #a5b4fc;
+        background: linear-gradient(180deg, #f5f7ff, #fff);
+    }
+    .menu-row-thumb:hover { border-color: #4f46e5; background: #eef2ff; }
+    .menu-row-thumb-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 0 10px; }
+    .menu-row-thumb-placeholder i {
+        width: 44px; height: 44px; border-radius: 50%; background: #4f46e5; color: #fff; font-size: 1.1rem;
+        display: grid; place-items: center; box-shadow: 0 6px 14px -4px rgba(79, 70, 229, .55);
+    }
+    .menu-row-thumb-placeholder span { font-size: .8rem; font-weight: 700; color: #4338ca; }
+    /* สองแถวใช้ผังคอลัมน์เดียวกัน: ชื่อเมนู|สถานที่จำหน่าย และ หน่วยงาน|โซเดียม ขอบซ้าย-ขวาตรงกัน */
+    .menu-row-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 14px 16px; align-content: start; }
+    .menu-row-top, .menu-row-bottom { display: contents; }
+    .menu-row-name, .menu-row-loc, .menu-row-agency { min-width: 0; flex: none; }
+    .menu-row-sodium { width: auto; flex: none; align-self: end; }
+    .menu-row-item .form-group label { font-size: .88rem !important; font-weight: 700; color: #1e293b; margin-bottom: 6px !important; }
+    .menu-row-item .form-group .form-control { height: 46px; border-radius: 12px; background: #f8fafc; }
+    .menu-row-item .form-group .form-control:focus { background: #fff; }
+    .menu-row-sodium { gap: 12px; }
+    .sodium-box { padding: 9px 11px 11px; border-radius: 13px; }
+    .sodium-box label { font-size: .74rem; margin-bottom: 5px; }
+    .sodium-box .form-control { height: 40px; font-size: .92rem; padding-left: 32px; }
+    .sodium-box .input-with-icon i { left: 11px; font-size: .8rem; }
+    @media (max-width: 900px) {
+        .menu-row-body { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (max-width: 640px) {
+        .menu-row-thumb { width: 100%; min-height: 150px; }
+    }
+
+    /* ===== ปุ่มหัวรายการ: นำเข้า Excel (เขียวมรกต โปร่ง) + เพิ่มรายการใหม่ (ม่วงเข้มมีไฮไลต์) ===== */
+    .btn-toggle-form[data-bs-target*="ImportModal"] {
+        background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%) !important; color: #047857 !important;
+        border: 1.5px solid #6ee7b7 !important; border-radius: 14px !important; height: 46px !important;
+        padding: 0 20px !important; font-size: .88rem !important; font-weight: 700 !important; gap: 9px !important;
+        box-shadow: 0 6px 14px -8px rgba(5, 150, 105, .55), inset 0 1px 0 rgba(255, 255, 255, .8) !important;
+    }
+    .btn-toggle-form[data-bs-target*="ImportModal"] i { color: #059669; font-size: 1rem; }
+    .btn-toggle-form[data-bs-target*="ImportModal"]:hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]) {
+        background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; color: #fff !important;
+        border-radius: 14px !important; height: 46px !important; padding: 0 24px !important; gap: 10px !important;
+        font-size: .9rem !important; font-weight: 800 !important; letter-spacing: .1px;
+        box-shadow: 0 10px 22px -8px rgba(67, 56, 202, .7), inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+        text-shadow: 0 1px 1px rgba(30, 27, 75, .35);
+    }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]) i {
+        width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .22); font-size: .8rem;
+        display: inline-grid; place-items: center;
+    }
+    .btn-toggle-form:not(.btn-back):not([data-bs-target]):hover {
+        background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 26px -8px rgba(67, 56, 202, .8), inset 0 1px 0 rgba(255, 255, 255, .35) !important;
+    }
+    .btn-toggle-form:focus-visible { outline: 3px solid #c7d2fe; outline-offset: 2px; }
+
+    /* ปุ่มลบตามตัวกรอง: สีแดง (override สีม่วงของปุ่มเพิ่ม) */
+    .btn-toggle-form[onclick*="confirmBulkDelete"],
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]) {
+        width: 46px !important; height: 46px !important; padding: 0 !important; gap: 0 !important; border-radius: 14px !important;
+        background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.35), rgba(255,255,255,0) 45%), linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
+        color: #fff !important; border: 1px solid rgba(159,18,57,.5) !important;
+        box-shadow: 0 10px 20px -8px rgba(190,18,60,.65), inset 0 1px 0 rgba(255,255,255,.3) !important;
+    }
+    .btn-toggle-form[onclick*="confirmBulkDelete"] i,
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]) i { width: auto; height: auto; background: none; font-size: 1rem; color: #fff; }
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:not(.btn-back):not([data-bs-target]):hover {
+        background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 24px -8px rgba(190,18,60,.75), inset 0 1px 0 rgba(255,255,255,.35) !important;
+    }
+    .btn-toggle-form[onclick*="confirmBulkDelete"]:focus-visible { outline: 3px solid #fecdd3; outline-offset: 2px; }
+
+    /* Export-filter modal polish (shared look): soft green header, roomy fields, focus ring, equal-height buttons */
+#sodiumMenusExportModal .modal-dialog,
+#sodiumExportModal .modal-dialog,
+#exportModal .modal-dialog {max-width:560px !important;}
+#sodiumMenusExportModal .modal-content,
+#sodiumExportModal .modal-content,
+#exportModal .modal-content {border-radius:24px !important; border:1px solid #e6ebf3 !important; overflow:hidden; box-shadow:0 2px 4px rgba(15,23,42,.04),0 28px 56px -14px rgba(15,23,42,.35) !important;}
+#sodiumMenusExportModal .modal-header,
+#sodiumExportModal .modal-header,
+#exportModal .modal-header {padding:26px 28px 18px !important; background:linear-gradient(180deg,#f0fdf8 0%,#ffffff 100%) !important; border-bottom:1px solid #eef2f7 !important;}
+#sodiumMenusExportModal .modal-header .d-flex > div:first-child,
+#sodiumExportModal .modal-header .d-flex > div:first-child,
+#exportModal .modal-header .d-flex > div:first-child {width:48px !important; height:48px !important; border-radius:15px !important; background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.45),rgba(255,255,255,0) 45%),linear-gradient(145deg,#34d399,#059669) !important; box-shadow:inset 0 -3px 6px rgba(6,78,59,.3),0 10px 18px -6px rgba(5,150,105,.55) !important;}
+#sodiumMenusExportModal .modal-title,
+#sodiumExportModal .modal-title,
+#exportModal .modal-title {font-size:1.15rem !important; color:#0f172a !important; font-weight:800 !important;}
+#sodiumMenusExportModal .modal-header p,
+#sodiumExportModal .modal-header p,
+#exportModal .modal-header p {font-size:.82rem !important; color:#64748b !important; line-height:1.5;}
+#sodiumMenusExportModal .modal-body,
+#sodiumExportModal .modal-body,
+#exportModal .modal-body {padding:22px 28px 26px !important;}
+#sodiumMenusExportModal .modal-body label,
+#sodiumExportModal .modal-body label,
+#exportModal .modal-body label {font-size:.86rem !important; font-weight:700 !important; color:#334155 !important; margin-bottom:7px !important;}
+#sodiumMenusExportModal .modal-body label i,
+#sodiumExportModal .modal-body label i,
+#exportModal .modal-body label i {color:#10b981 !important; width:16px; text-align:center;}
+#sodiumMenusExportModal .modal-body select.form-control,
+#sodiumExportModal .modal-body select.form-control,
+#exportModal .modal-body select.form-control {height:46px !important; padding:0 38px 0 14px !important; border-radius:12px !important; border:1.5px solid #dbe3ee !important; background-color:#fff !important; font-size:.9rem !important; font-weight:600 !important; color:#1e293b !important; box-shadow:0 1px 2px rgba(15,23,42,.04) !important; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E") !important; background-repeat:no-repeat !important; background-position:right 14px center !important; background-size:14px !important; transition:border-color .15s, box-shadow .15s;}
+#sodiumMenusExportModal .modal-body select.form-control:hover,
+#sodiumExportModal .modal-body select.form-control:hover,
+#exportModal .modal-body select.form-control:hover {border-color:#a7f3d0 !important;}
+#sodiumMenusExportModal .modal-body select.form-control:focus,
+#sodiumExportModal .modal-body select.form-control:focus,
+#exportModal .modal-body select.form-control:focus {border-color:#10b981 !important; box-shadow:0 0 0 4px rgba(16,185,129,.15) !important; outline:none;}
+#sodiumMenusExportModal .modal-body select.form-control:disabled,
+#sodiumExportModal .modal-body select.form-control:disabled,
+#exportModal .modal-body select.form-control:disabled {background-color:#f1f5f9 !important; color:#94a3b8 !important; cursor:not-allowed;}
+#sodiumMenusExportModal .modal-footer,
+#sodiumExportModal .modal-footer,
+#exportModal .modal-footer {padding:16px 28px 24px !important; background:#fff !important; border-top:1px solid #eef2f7 !important; gap:12px !important; flex-wrap:nowrap !important;}
+#sodiumMenusExportModal .modal-footer .btn,
+#sodiumExportModal .modal-footer .btn,
+#exportModal .modal-footer .btn {height:48px !important; border-radius:14px !important; font-size:.95rem !important; font-weight:700 !important; margin:0 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light,
+#sodiumExportModal .modal-footer .btn-light,
+#exportModal .modal-footer .btn-light {flex:0 0 120px; border:1.5px solid #dbe3ee !important; color:#475569 !important;}
+#sodiumMenusExportModal .modal-footer .btn-light:hover,
+#sodiumExportModal .modal-footer .btn-light:hover,
+#exportModal .modal-footer .btn-light:hover {background:#f8fafc !important; border-color:#cbd5e1 !important;}
+#sodiumMenusExportModal .modal-footer .btn-success,
+#sodiumExportModal .modal-footer .btn-success,
+#exportModal .modal-footer .btn-success {flex:1 1 auto; background:linear-gradient(135deg,#10b981,#047857) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(4,120,87,.6) !important;}
 </style>
 
 <div id="toast-stack" class="toast-stack"></div>
@@ -2233,7 +2369,7 @@
                                 <img id="preview-menu-{{ $i }}" src="#" alt="Preview" style="display: none;">
                                 <div class="menu-row-thumb-placeholder" id="placeholder-menu-{{ $i }}">
                                     <i class="fas fa-camera"></i>
-                                    <span>รูปภาพ</span>
+                                    <span>คลิกเพื่อเพิ่มรูปเมนู</span>
                                 </div>
                                 <input type="file" name="menus[{{ $i }}][product_image]"
                                     id="menu_img_{{ $i }}" style="display: none;" accept="image/*"

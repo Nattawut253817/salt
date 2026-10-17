@@ -1025,6 +1025,7 @@
             </div>
         @endif
     </form>
+    <div class="filter-under-line" style="height:1px;background:#e2e8f0;margin:14px 0 18px;"></div>
 
     @if ($htTrendData)
         @include('pages.partials.ht-trend-popup', [

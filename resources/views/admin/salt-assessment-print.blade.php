@@ -305,19 +305,12 @@
             font-weight: bold;
         }
 
+        /* เส้นคั่นใต้ชื่อสำนักงาน: เส้นประ (แทนเส้นคู่เดิม) */
         .divider {
             width: 100%;
             max-width: 480px;
             margin: 14px auto 0;
-            border-top: 1.5px solid #1e293b;
-        }
-
-        .divider::after {
-            content: '';
-            display: block;
-            height: 0;
-            border-top: 0.75px solid #94a3b8;
-            margin-top: 3px;
+            border-top: 1.5px dashed #1e293b;
         }
 
         .info-section {

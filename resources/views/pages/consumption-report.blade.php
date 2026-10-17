@@ -1146,6 +1146,7 @@
                 <i class="fas fa-sync-alt"></i> ล้างตัวกรอง
             </a>
         </form>
+        <div class="filter-under-line" style="height:1px;background:#e2e8f0;margin:14px 0 18px;"></div>
 
         {{-- ── ROW 3: PROGRESS CHART + ตัวชี้วัด 2 การ์ด ── --}}
         <div class="cr-top-grid">

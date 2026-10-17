@@ -91,7 +91,8 @@
             background-color: var(--admin-bg);
             margin: 0;
             min-height: 100vh;
-            overflow-x: hidden;
+            /* ไม่ตั้ง overflow บน body (ตั้งที่ html อยู่แล้ว): ถ้าตั้งทั้งคู่ body จะกลายเป็นตัวเลื่อนอีกชั้น เกิดสกอลล์บาร์ซ้อนสองอัน */
+            overflow-x: clip;
             width: 100%;
         }
 
@@ -727,6 +728,11 @@
         .btn-back-home i {
             font-size: 0.95rem;
         }
+
+        /* ปุ่มหัวหน้า (เพิ่มเมนู/เพิ่มผลิตภัณฑ์/กลับหน้าหลัก) ไม่ขีดเส้นใต้ลิงก์ ทั้งปกติและเมื่อชี้/โฟกัส */
+        .btn-take-assessment, .btn-take-assessment:hover, .btn-take-assessment:focus, .btn-take-assessment:active,
+        .btn-back-home, .btn-back-home:hover, .btn-back-home:focus, .btn-back-home:active,
+        .btn-take-assessment span, .btn-back-home span { text-decoration: none !important; }
 
         /* Primary / forward action (ทำแบบประเมิน, เพิ่มเมนู, เพิ่มผลิตภัณฑ์) -
            lighter indigo pill, matches the left button in the reference image. */
@@ -1453,6 +1459,74 @@
             transform: translateY(-2px);
         }
 
+        /* Logout modal - modern polish: frosted backdrop, spring-in card,
+           glossy icon tile with soft halo, equal-width buttons. */
+        .logout-confirm-overlay { background: radial-gradient(circle at 50% 40%, rgba(30,41,59,.38), rgba(15,23,42,.62)); backdrop-filter: blur(6px) saturate(1.1); -webkit-backdrop-filter: blur(6px) saturate(1.1); }
+        .logout-confirm-card {
+            position: relative; overflow: hidden;
+            max-width: 400px; padding: 36px 30px 28px; border-radius: 26px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+            border: 1px solid rgba(226,232,240,.9);
+            box-shadow: 0 2px 4px rgba(15,23,42,.04), 0 24px 48px -12px rgba(15,23,42,.35), 0 0 0 6px rgba(255,255,255,.35);
+            transform: translateY(24px) scale(.94);
+            transition: transform .35s cubic-bezier(.2,1.1,.3,1);
+        }
+        .logout-confirm-card::before { content:''; position:absolute; left:0; right:0; top:0; height:5px; background: linear-gradient(90deg,#fb7185,#ef4444,#f97316); }
+        .logout-confirm-card::after { content:''; position:absolute; top:-70px; left:50%; width:240px; height:170px; transform:translateX(-50%); background: radial-gradient(closest-side, rgba(254,202,202,.7), rgba(254,202,202,0)); pointer-events:none; }
+        .logout-confirm-icon {
+            position: relative; z-index: 1; width: 84px; height: 84px; border-radius: 26px; margin-bottom: 20px;
+            color: #fff; font-size: 2rem;
+            background:
+                radial-gradient(circle at 30% 22%, rgba(255,255,255,.5) 0, rgba(255,255,255,0) 45%),
+                linear-gradient(145deg, #fb7185 0%, #ef4444 55%, #dc2626 100%);
+            box-shadow: inset 0 -5px 10px rgba(127,29,29,.3), inset 0 2px 4px rgba(255,255,255,.4), 0 0 0 8px rgba(239,68,68,.1), 0 14px 24px -8px rgba(220,38,38,.55);
+        }
+        .logout-confirm-icon i { filter: drop-shadow(0 2px 2px rgba(127,29,29,.4)); }
+        .logout-confirm-title { position: relative; z-index: 1; font-size: 1.35rem; letter-spacing: .1px; color: #0f172a; margin-bottom: 8px; }
+        .logout-confirm-text { position: relative; z-index: 1; font-size: .95rem; color: #64748b; }
+        .logout-confirm-actions { position: relative; z-index: 1; gap: 12px; margin-top: 28px; }
+        .logout-confirm-btn { flex: 1 1 0; padding: 13px 16px !important; border-radius: 14px; font-size: .95rem; }
+        .logout-confirm-btn-cancel { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; box-shadow: 0 1px 2px rgba(15,23,42,.05); }
+        .logout-confirm-btn-cancel:hover { background: #f8fafc; border-color: #cbd5e1; color: #1e293b; }
+        .logout-confirm-btn-confirm { background: linear-gradient(135deg, #f43f5e 0%, #dc2626 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 12px 22px -6px rgba(220,38,38,.5); }
+        .logout-confirm-btn-confirm:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 16px 28px -6px rgba(220,38,38,.6); }
+        @media (prefers-reduced-motion: reduce) { .logout-confirm-card { transition: none; } }
+
+        /* Logout modal - tech theme: dark slate card, faint grid, red neon accents */
+        .logout-confirm-overlay { background: radial-gradient(circle at 50% 35%, rgba(15,23,42,.55), rgba(2,6,23,.8)); }
+        .logout-confirm-card {
+            background:
+                linear-gradient(rgba(148,163,184,.05) 1px, transparent 1px) 0 0 / 24px 24px,
+                linear-gradient(90deg, rgba(148,163,184,.05) 1px, transparent 1px) 0 0 / 24px 24px,
+                linear-gradient(180deg, #151c2e 0%, #0e1424 100%);
+            border: 1px solid rgba(148,163,184,.16); border-radius: 22px;
+            box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 30px 60px -16px rgba(0,0,0,.75), 0 0 60px -20px rgba(244,63,94,.35);
+        }
+        .logout-confirm-card::before { height: 2px; background: linear-gradient(90deg, transparent, #f43f5e 30%, #fb7185 50%, #f43f5e 70%, transparent); box-shadow: 0 0 14px rgba(244,63,94,.7); }
+        .logout-confirm-card::after { background: radial-gradient(closest-side, rgba(244,63,94,.22), rgba(244,63,94,0)); top: -60px; }
+        .logout-confirm-icon {
+            width: 76px; height: 76px; border-radius: 22px; color: #fb7185; font-size: 1.8rem;
+            background: linear-gradient(160deg, rgba(244,63,94,.18), rgba(244,63,94,.05));
+            border: 1px solid rgba(251,113,133,.55);
+            box-shadow: inset 0 0 18px rgba(244,63,94,.25), 0 0 0 6px rgba(244,63,94,.07), 0 0 28px -4px rgba(244,63,94,.55);
+        }
+        .logout-confirm-icon i { filter: drop-shadow(0 0 6px rgba(251,113,133,.7)); }
+        .logout-confirm-title { color: #f1f5f9; }
+        .logout-confirm-text { color: #94a3b8; }
+        .logout-confirm-btn { border-radius: 12px; }
+        .logout-confirm-btn-cancel { background: rgba(148,163,184,.08); color: #cbd5e1; border: 1px solid rgba(148,163,184,.25); box-shadow: none; }
+        .logout-confirm-btn-cancel:hover { background: rgba(148,163,184,.16); border-color: rgba(148,163,184,.45); color: #fff; }
+        .logout-confirm-btn-confirm { background: linear-gradient(135deg, #f43f5e 0%, #be123c 100%); border: 1px solid rgba(251,113,133,.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 0 22px -4px rgba(244,63,94,.65); }
+        .logout-confirm-btn-confirm:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 0 30px -2px rgba(244,63,94,.85); }
+        .logout-confirm-btn:focus-visible { box-shadow: 0 0 0 3px rgba(251,113,133,.35); }
+
+        /* Logout icon v2: line-art exit glyph inside concentric tech rings */
+        .logout-confirm-icon { width: 88px; height: 88px; border-radius: 50%; background: radial-gradient(circle at 50% 38%, rgba(244,63,94,.28), rgba(244,63,94,.06) 70%); border: 1px solid rgba(251,113,133,.5); box-shadow: inset 0 0 22px rgba(244,63,94,.28), 0 0 0 7px rgba(244,63,94,.06), 0 0 0 8px rgba(251,113,133,.18), 0 0 34px -4px rgba(244,63,94,.6); }
+        .logout-confirm-icon::before { content:''; position:absolute; inset:-15px; border-radius:50%; border:1px dashed rgba(251,113,133,.35); animation: logoutRingSpin 18s linear infinite; }
+        .logout-confirm-icon svg { color: #fda4af; filter: drop-shadow(0 0 7px rgba(251,113,133,.85)); }
+        @keyframes logoutRingSpin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .logout-confirm-icon::before { animation: none; } }
+
         /* User profile modal - richer header, icon-badged info rows, and
            gentle hover states for a more polished, easier-to-read look. */
         #userProfileModal .modal-content {
@@ -1649,7 +1723,14 @@
     <!-- Logout confirm modal (self-contained, no external CDN dependency) -->
     <div class="logout-confirm-overlay" id="logoutConfirmOverlay">
         <div class="logout-confirm-card">
-            <div class="logout-confirm-icon"><i class="fas fa-right-from-bracket"></i></div>
+            <div class="logout-confirm-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 8h-8a4 4 0 0 0-4 4v24a4 4 0 0 0 4 4h8" opacity=".55"/>
+                    <path d="M18 24h22"/>
+                    <path d="M32 15l9 9-9 9"/>
+                    <circle cx="24" cy="24" r="1.4" fill="currentColor" stroke="none" opacity=".0"/>
+                </svg>
+            </div>
             <div class="logout-confirm-title">ยืนยันการออกจากระบบ?</div>
             <p class="logout-confirm-text">คุณต้องการออกจากระบบตอนนี้ใช่หรือไม่</p>
             <div class="logout-confirm-actions">

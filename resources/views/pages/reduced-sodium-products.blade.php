@@ -961,6 +961,7 @@
                 <span>ล้างตัวกรอง</span>
             </a>
         </form>
+        <div class="filter-under-line" style="height:1px;background:#e2e8f0;margin:14px 0 18px;"></div>
 
         {{-- Headline summary strip: derives 4 at-a-glance stats from the
              same collections the charts below already receive from
@@ -1020,8 +1021,7 @@
                             {{-- request('fiscal_year')/$years[0] are already Buddhist-era
                                  (see $years above) - only the last-resort fallback (no years
                                  at all) needs converting from the current Gregorian year. --}}
-                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}</span>
-                            <span class="prd-total">รวมทั้งเขต <b>{{ number_format(collect($mapData)->sum()) }}</b> รายการ</span></div>
+                            {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}</span></div>
                     </div>
                 </div>
                 <div id="map-container" class="chart-fill" style="--fill-min: 340px;"></div>

@@ -2336,6 +2336,7 @@
                 <span>ล้างตัวกรอง</span>
             </a>
         </form>
+        <div class="filter-under-line" style="height:1px;background:#e2e8f0;margin:14px 0 18px;"></div>
 
         {{-- Headline summary strip: derives 3 at-a-glance stats from the
              same collections the charts below already receive from

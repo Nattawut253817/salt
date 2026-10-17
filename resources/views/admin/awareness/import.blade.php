@@ -577,6 +577,21 @@
             transform: translateY(-1px);
             box-shadow: 0 8px 20px rgba(0,0,0,0.22) !important;
         }
+    
+        /* ปุ่มลบตามตัวกรอง: แดงทรงนูน */
+        #deleteFilteredBtn {
+            width: 46px !important; height: 46px !important; padding: 0 !important; border-radius: 14px !important;
+            background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.35), rgba(255,255,255,0) 45%), linear-gradient(135deg, #f43f5e 0%, #be123c 100%) !important;
+            color: #fff !important; border: 1px solid rgba(159,18,57,.5) !important;
+            box-shadow: 0 10px 20px -8px rgba(190,18,60,.65), inset 0 1px 0 rgba(255,255,255,.3) !important;
+            transition: transform .15s, box-shadow .15s, background .15s;
+        }
+        #deleteFilteredBtn i { color: #fff !important; font-size: 1rem; }
+        #deleteFilteredBtn:hover {
+            background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%) !important; transform: translateY(-2px);
+            box-shadow: 0 14px 24px -8px rgba(190,18,60,.75), inset 0 1px 0 rgba(255,255,255,.35) !important;
+        }
+        #deleteFilteredBtn:focus-visible { outline: 3px solid #fecdd3; outline-offset: 2px; }
     </style>
 
     <div class="report-container">

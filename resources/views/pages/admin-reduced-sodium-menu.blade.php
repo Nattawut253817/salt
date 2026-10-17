@@ -12,8 +12,9 @@
 @endsection
 
 @section('content')
+    <style>html, body { overflow: hidden !important; }</style>
     <div class="container-fluid p-0" style="height: calc(100vh - 70px); overflow: hidden;">
-        <iframe src="{{ route('reduced-sodium-menu', ['org_lock' => 1, 'iframe' => 1]) }}"
+        <iframe src="{{ route('reduced-sodium-menu', ['iframe' => 1]) }}"
             style="display: block; width: 100%; height: 100%; border: none;" id="dashboard-iframe">
         </iframe>
     </div>

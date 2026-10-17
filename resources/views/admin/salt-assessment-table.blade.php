@@ -505,6 +505,42 @@
             font-size: 0.78rem;
             color: #64748b;
         }
+    
+        /* ---------- Polish: สบายตา สวยงาม อ่านง่าย ---------- */
+        table.report-table { border-collapse: separate; border-spacing: 0; font-size: .9rem; color: #1e293b; }
+        table.report-table th, table.report-table td { border-right: 0 !important; border-left: 0; }
+        table.report-table thead th { border: 0 !important; border-bottom: 1px solid #d9e2ef !important; padding: 12px 6px; font-weight: 700; letter-spacing: .1px; }
+        table.report-table thead th.grp-org { background: #eef1fb; color: #2b3380; text-align: left; }
+        table.report-table thead th.grp-org:first-child { padding-left: 20px; text-align: left; }
+        table.report-table thead th.grp-step14 { background: #dcf7ea; }
+        table.report-table thead th.grp-step55 { background: #ede6fd; }
+        table.report-table thead th.grp-confirm { background: #fcefcf; color: #8a4b08; }
+        table.report-table thead th.grp-actions { background: #eef1f6; color: #475569; }
+        table.report-table thead th.grp-step14 + th.grp-step55,
+        table.report-table thead th.grp-step55 + th.grp-confirm,
+        table.report-table thead th.grp-confirm + th.grp-actions { box-shadow: inset 1px 0 0 rgba(255,255,255,.9); }
+
+        table.report-table tbody td { padding: 15px 6px; vertical-align: middle; border-bottom: 1px solid #e8ecf6 !important; background-color: #fff; }
+        table.report-table tbody tr:nth-child(even) > td:not(.grp-step14):not(.grp-step55):not(.grp-confirm) { background-color: #fafbfe; }
+        table.report-table tbody tr:hover > td:first-child { box-shadow: inset 3px 0 0 #6366f1; }
+        table.report-table tbody td:first-child { padding-left: 20px; text-align: left; font-weight: 700; color: #3340a5; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
+        table.report-table tbody td:nth-child(2) { font-weight: 700; color: #1e293b; line-height: 1.45; }
+        table.report-table tbody td.grp-step14 { background-color: #fafffc; }
+        table.report-table tbody td.grp-step55 { background-color: #fbfaff; }
+        table.report-table tbody td.grp-confirm { background-color: #fffdf6; }
+
+        /* ไอคอนถูก: ทรงเม็ดแก้วนูน */
+        .status-badge.status-done {
+            width: 26px; height: 26px; font-size: .72rem; color: #fff;
+            background:
+                radial-gradient(circle at 32% 24%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 42%),
+                radial-gradient(circle at 50% 110%, #047857 0, #10b981 55%, #6ee7b7 100%);
+            border: 1px solid rgba(4,120,87,.55);
+            box-shadow: inset 0 -3px 5px rgba(6,78,59,.35), inset 0 2px 3px rgba(255,255,255,.35), 0 0 0 3px rgba(16,185,129,.12), 0 5px 9px -3px rgba(4,120,87,.5);
+        }
+        .status-badge.status-done i { text-shadow: 0 1px 1px rgba(6,78,59,.5); }
+        .status-badge.status-done:hover { transform: translateY(-1px) scale(1.1); }
+        .status-badge.status-empty { width: 26px; height: 26px; background: #f8fafc; box-shadow: inset 0 1px 2px rgba(15,23,42,.06); }
     </style>
 
     <!-- Summary Statistics Cards -->
