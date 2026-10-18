@@ -2219,6 +2219,18 @@
         .mnu-cmp-card .hm-fly-total { margin-top: 6px; padding: 10px 6px 6px; border-top: 2px solid #0f766e; border-bottom: none; background: linear-gradient(180deg, #f2fbf9, #fff); border-radius: 0 0 12px 12px; }
         .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0f766e; font-weight: 800; }
         .mnu-cmp-card .hm-fly-row:last-child { border-bottom: none; }
+        /* ลดมิติ: แท่งสีเรียบ ไม่มีเงา/ไฮไลต์ คงโครงสร้างเดิม */
+        .mnu-cmp-card .hm-fly-before { background: #ef6a82 !important; box-shadow: none !important; }
+        .mnu-cmp-card .hm-fly-after { background: #3fb97a !important; box-shadow: none !important; }
+        .mnu-cmp-card .hm-fly-bar::after { display: none !important; }
+        .mnu-cmp-card .hm-fly-side::before { background: #f1f5f9 !important; box-shadow: none !important; }
+        .mnu-cmp-card .hm-fly-core { background: #2c4a8f !important; box-shadow: 0 0 0 3px #e6ecf7 !important; }
+        .mnu-cmp-card .hm-fly-core.is-empty { background: #e2e8f0 !important; color: #64748b; box-shadow: 0 0 0 3px #f1f5f9 !important; }
+        .mnu-cmp-card .hm-fly-legend i:nth-of-type(1) { background: #ef6a82 !important; }
+        .mnu-cmp-card .hm-fly-legend span:nth-child(1) i { background: #ef6a82 !important; }
+        .mnu-cmp-card .hm-fly-legend span:nth-child(2) i { background: #3fb97a !important; }
+        .mnu-cmp-card .hm-fly-total { background: transparent !important; }
+        .mnu-cmp-card .hm-fly-row:not(.hm-fly-total):hover { background: transparent !important; }
 
         /* ตกแต่งตารางรายการเมนู: กรอบมนมีเส้นขอบ หัวตารางนุ่ม แถวสลับสี แถบเน้นตอนชี้ รูปและป้ายอ่อนลง */
         .menu-table-container { border: 1px solid #e6eaf3; border-radius: 18px; box-shadow: 0 10px 30px -14px rgba(49, 46, 129, .22); }

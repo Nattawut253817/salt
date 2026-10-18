@@ -961,13 +961,8 @@
         .am-note-card {
             background: #ffffff;
             border: 1px solid #e3e0d4;
-            border-left: 4px solid #ad6a13;
             border-radius: 10px;
             padding: 14px 17px;
-        }
-
-        .am-note-card.suggest {
-            border-left-color: #0f4c5c;
         }
 
         .am-note-card h4 {
@@ -1669,7 +1664,14 @@
         .report-table tbody tr:nth-child(even) { background-color: #fafcfc; }
         .report-table tbody tr:hover { background-color: #f0f8f8; box-shadow: inset 4px 0 0 #0f766e; }
         .report-table .agency-name-cell { font-weight: 800; color: #1e293b; }
-    </style>
+            /* รายการข้อในกล่องปัญหา/ข้อเสนอแนะ */
+        .am-note-card { --nc: #ad6a13; }
+        .am-note-card.suggest { --nc: #0f4c5c; }
+        .am-note-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+        .am-note-list li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--nc) 6%, #fff); }
+        .am-note-no { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 800; color: #fff; background: var(--nc); }
+        .am-note-tx { font-size: .86rem; line-height: 1.6; color: #1e293b; }
+</style>
 @endsection
 
 @section('content')
@@ -1891,7 +1893,7 @@
                     <div class="chart-header-icon"><i class="fas fa-chart-column"></i></div>
                     <div>
                         <div class="chart-header-title">เปรียบเทียบสถานการณ์และผลดำเนินงานรายจังหวัด</div>
-                        <div class="chart-header-subtitle">อำเภอที่มีการตอบ ÷ อำเภอที่ปักหน่วยงาน (ปี {{ $fiscalYear !== '' ? $fiscalYear : 'ทั้งหมด' }})</div>
+                        <div class="chart-header-subtitle">พื้นที่ที่มีการตอบ ÷ พื้นที่ที่ปักหน่วยงาน (อำเภอ หรือระดับจังหวัด) (ปี {{ $fiscalYear !== '' ? $fiscalYear : 'ทั้งหมด' }})</div>
                     </div>
                 </div>
                 <div class="po-panel">
@@ -1909,7 +1911,7 @@
                                     <th class="po-province" scope="row">{{ $row['province'] }}</th>
                                     <td>
                                         @if($row['percent'] !== null)
-                                            <div class="po-bar-wrap" title="ตอบแล้ว {{ $row['answered'] }} จาก {{ $row['total'] }} อำเภอที่ปักหน่วยงาน">
+                                            <div class="po-bar-wrap" title="ตอบแล้ว {{ $row['answered'] }} จาก {{ $row['total'] }} พื้นที่ (อำเภอ/ระดับจังหวัด)">
                                                 <div class="po-bar-track"><div class="po-bar-fill" style="width: {{ $row['percent'] }}%;"></div></div>
                                                 <span class="po-bar-value">{{ $row['percent'] }}%</span>
                                             </div>
@@ -2374,17 +2376,27 @@
                 }
                 return null;
             }
+            // แยกข้อความที่พิมพ์เป็น "1. ... 2. ..." หรือ "1) ... 2) ..." ต่อกันยาว ให้เป็นรายการทีละข้อ
+            function noteBody(text) {
+                if (!text) return '<p class="is-empty">ยังไม่มีข้อมูล</p>';
+                const parts = String(text).trim().split(/\s+(?=\d{1,2}[.)]\s*)/);
+                const ok = parts.length >= 2 && parts.every(function (t, i) { return new RegExp('^' + (i + 1) + '[.)]').test(t); });
+                if (!ok) return '<p>' + escapeHtml(text) + '</p>';
+                return '<ol class="am-note-list">' + parts.map(function (t, i) {
+                    return '<li><span class="am-note-no">' + (i + 1) + '</span><span class="am-note-tx">' + escapeHtml(t.replace(/^\d{1,2}[.)]\s*/, '')) + '</span></li>';
+                }).join('') + '</ol>';
+            }
             const problems = latestOf('problems');
             const recommendations = latestOf('recommendations');
 
             cardsHtml += '<div class="am-note-row">'
                 + '<div class="am-note-card">'
                 + '<h4><i class="fas fa-triangle-exclamation" style="color:#ad6a13; margin-right:6px;"></i>ปัญหา/อุปสรรค</h4>'
-                + '<p' + (problems ? '' : ' class="is-empty"') + '>' + escapeHtml(problems || 'ยังไม่มีข้อมูล') + '</p>'
+                + noteBody(problems)
                 + '</div>'
                 + '<div class="am-note-card suggest">'
                 + '<h4><i class="fas fa-lightbulb" style="color:#0f4c5c; margin-right:6px;"></i>ข้อเสนอแนะ/โอกาสพัฒนา</h4>'
-                + '<p' + (recommendations ? '' : ' class="is-empty"') + '>' + escapeHtml(recommendations || 'ยังไม่มีข้อมูล') + '</p>'
+                + noteBody(recommendations)
                 + '</div>'
                 + '</div>';
 
@@ -2484,8 +2496,54 @@
         const filteredFeatures = fullMapData.features.filter(f => targetKeys.includes(f.properties['hc-key']));
         const filteredMapData = { ...fullMapData, features: filteredFeatures };
 
+        // มิติให้แผนที่: เงาตกพื้น + ความหนาของแผ่นจังหวัด (ชั้นสีเข้มเลื่อนลง) + ประกายแสงมุมซ้ายบน
+        // ทุกชั้นทำซ้ำจากรูปร่างจังหวัดเอง เลื่อนเป็นพิกเซลจริง (หารด้วยสเกลของกลุ่มแผนที่)
+        function oaMapDepth(chart) {
+            const svg = chart.container.querySelector('svg');
+            if (!svg) return;
+            svg.querySelectorAll('.oa-depth').forEach(el => el.remove());
+            const ns = 'http://www.w3.org/2000/svg';
+            const pts = chart.series[0].points.filter(p => p.graphic && p.graphic.element);
+            if (!pts.length) return;
+            const parent = pts[0].graphic.element.parentNode;
+            const m = /scale\(\s*([-\d.e]+)[ ,]+([-\d.e]+)\s*\)/.exec(parent.getAttribute('transform') || '');
+            const kx = m ? parseFloat(m[1]) || 1 : 1, ky = m ? parseFloat(m[2]) || 1 : 1;
+            const px = n => n / ky;                       // เลื่อนลงบนจอ n พิกเซล -> หน่วยของแผนที่
+            const defs = document.createElementNS(ns, 'defs');
+            defs.setAttribute('class', 'oa-depth');
+            defs.innerHTML =
+                '<linearGradient id="oaGloss" x1="0" y1="1" x2=".75" y2="0">' +
+                '<stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".06"/>' +
+                '<stop offset="1" stop-color="#0f172a" stop-opacity=".16"/></linearGradient>' +
+                '<filter id="oaBlur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="' + (6 / Math.abs(kx)) + '"/></filter>';
+            svg.insertBefore(defs, svg.firstChild);
+            const first = pts.map(p => p.graphic.element).sort((a, b) => (a.compareDocumentPosition(b) & 4) ? -1 : 1)[0];
+            const mk = (el, attrs, dy) => {
+                const c = el.cloneNode(false);
+                ['class', 'filter', 'fill', 'stroke', 'stroke-width', 'style'].forEach(n => c.removeAttribute(n));
+                c.setAttribute('class', 'oa-depth');
+                c.setAttribute('pointer-events', 'none');
+                Object.keys(attrs).forEach(k => c.setAttribute(k, attrs[k]));
+                if (dy) c.setAttribute('transform', 'translate(0 ' + px(dy) + ')');
+                return c;
+            };
+            // 1) เงาตกพื้นเบลอ  2) ความหนาแผ่น (ซ้อน 7 ชั้นไล่ลง)
+            pts.forEach(p => parent.insertBefore(mk(p.graphic.element, { fill: '#0b2f3a', 'fill-opacity': '.30', filter: 'url(#oaBlur)' }, 17), first));
+            for (let d = 7; d >= 1; d--) {
+                pts.forEach(p => {
+                    const col = (oaProvinceColors[p.name] || oaColorForProvinceDefault).stroke;
+                    parent.insertBefore(mk(p.graphic.element, { fill: col, stroke: col, 'stroke-width': 1.2 / Math.abs(kx), 'stroke-linejoin': 'round', 'fill-opacity': '1' }, d), first);
+                });
+            }
+            // 3) ประกายแสงบนผิวแผ่น
+            pts.forEach(p => {
+                const el = p.graphic.element;
+                el.parentNode.insertBefore(mk(el, { fill: 'url(#oaGloss)' }), el.nextSibling);
+            });
+        }
+
         Highcharts.mapChart('map-container', {
-            chart: { map: filteredMapData, backgroundColor: 'transparent' },
+            chart: { map: filteredMapData, backgroundColor: 'transparent', events: { load: function () { oaMapDepth(this); }, redraw: function () { oaMapDepth(this); } } },
             title: { text: '' }, // shown in the .chart-header above instead
             mapNavigation: { enabled: false },
             plotOptions: {

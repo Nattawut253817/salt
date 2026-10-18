@@ -1555,6 +1555,60 @@
          th-all.js, under its own map key. --}}
     <script src="{{ asset('vendor/highcharts/th-districts-r10.js') }}"></script>
     <script>
+        // มิติให้แผนที่: เงาตกพื้น + ความหนาของแผ่น (ชั้นสีเข้มเลื่อนลง) + ประกายแสงมุมซ้ายบน
+        // ทำซ้ำจากรูปร่างพื้นที่เอง เลื่อนเป็นพิกเซลจริง (หารด้วยสเกลของกลุ่มแผนที่)
+        window.mapDepth = function (chart, opt) {
+            opt = opt || {};
+            const depth = opt.depth || 7, shadowDy = opt.shadowDy || 17;
+            const svg = chart.container.querySelector('svg');
+            if (!svg) return;
+            svg.querySelectorAll('.md-depth').forEach(el => el.remove());
+            const ns = 'http://www.w3.org/2000/svg';
+            const pts = chart.series[0].points.filter(p => p.graphic && p.graphic.element);
+            if (!pts.length) return;
+            const uid = 'md' + (chart.index || 0);
+            const parent = pts[0].graphic.element.parentNode;
+            [parent, parent.parentNode].forEach(g => { if (g && g.removeAttribute) g.removeAttribute('clip-path'); });
+            const m = /scale\(\s*([-\d.e]+)[ ,]+([-\d.e]+)\s*\)/.exec(parent.getAttribute('transform') || '');
+            const kx = m ? parseFloat(m[1]) || 1 : 1, ky = m ? parseFloat(m[2]) || 1 : 1;
+            const px = n => n / ky;
+            const dark = p => {
+                let c = p.color;
+                if (c && c.stops) c = c.stops[c.stops.length - 1][1];
+                try { return Highcharts.color(c).brighten(-0.34).get('rgb'); } catch (e) { return '#7c5a00'; }
+            };
+            const defs = document.createElementNS(ns, 'defs');
+            defs.setAttribute('class', 'md-depth');
+            defs.innerHTML =
+                '<linearGradient id="' + uid + 'g" x1="0" y1="1" x2=".75" y2="0">' +
+                '<stop offset="0" stop-color="#fff" stop-opacity=".40"/><stop offset=".45" stop-color="#fff" stop-opacity=".05"/>' +
+                '<stop offset="1" stop-color="#0f172a" stop-opacity=".15"/></linearGradient>' +
+                '<filter id="' + uid + 'b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="' + (6 / Math.abs(kx)) + '"/></filter>';
+            svg.insertBefore(defs, svg.firstChild);
+            const first = pts.map(p => p.graphic.element).sort((a, b) => (a.compareDocumentPosition(b) & 4) ? -1 : 1)[0];
+            const mk = (el, attrs, dy) => {
+                const c = el.cloneNode(false);
+                ['class', 'filter', 'fill', 'stroke', 'stroke-width', 'style'].forEach(n => c.removeAttribute(n));
+                c.setAttribute('class', 'md-depth');
+                c.setAttribute('pointer-events', 'none');
+                Object.keys(attrs).forEach(k => c.setAttribute(k, attrs[k]));
+                if (dy) c.setAttribute('transform', 'translate(0 ' + px(dy) + ')');
+                return c;
+            };
+            pts.forEach(p => parent.insertBefore(mk(p.graphic.element, { fill: '#0b2f3a', 'fill-opacity': '.28', filter: 'url(#' + uid + 'b)' }, shadowDy), first));
+            for (let d = depth; d >= 1; d--) {
+                pts.forEach(p => {
+                    const col = dark(p);
+                    parent.insertBefore(mk(p.graphic.element, { fill: col, stroke: col, 'stroke-width': 1.2 / Math.abs(kx), 'stroke-linejoin': 'round' }, d), first);
+                });
+            }
+            pts.forEach(p => {
+                const el = p.graphic.element;
+                el.parentNode.insertBefore(mk(el, { fill: 'url(#' + uid + 'g)' }), el.nextSibling);
+            });
+        };
+    </script>
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
             if (typeof Highcharts === 'undefined') {
                 console.warn('Highcharts not loaded');
@@ -1787,7 +1841,8 @@
                         chart: {
                             map: filteredDistrictMapData,
                             backgroundColor: 'transparent',
-                            spacing: [10, 10, 10, 10]
+                            spacing: [10, 10, 22, 10],
+                            events: { load: function () { window.mapDepth(this, { depth: 5, shadowDy: 12 }); }, redraw: function () { window.mapDepth(this, { depth: 5, shadowDy: 12 }); } }
                         },
                         title: { text: '' },
                         mapNavigation: { enabled: false },
@@ -2305,7 +2360,7 @@
                     }
 
                     Highcharts.mapChart('provinceMapContainer', {
-                        chart: { map: regionMap, backgroundColor: 'transparent', spacing: [4, 4, 4, 4], style: { fontFamily: 'Sarabun' } },
+                        chart: { map: regionMap, backgroundColor: 'transparent', spacing: [4, 4, 22, 4], style: { fontFamily: 'Sarabun' }, events: { load: function () { window.mapDepth(this); }, redraw: function () { window.mapDepth(this); } } },
                         title: { text: '' },
                         legend: { enabled: false },
                         credits: { enabled: false },

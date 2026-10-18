@@ -13,7 +13,8 @@
             } elseif ($assessment->user->User_rank_id == 4) {
                 $unit_name = $assessment->user->subdistrictHospital ? $assessment->user->subdistrictHospital->hospital_name : $assessment->user->Con_name;
             } elseif ($assessment->user->User_rank_id == 5) {
-                $unit_name = 'โรงพยาบาล' . ($assessment->user->hospital ? $assessment->user->hospital->hos_name : $assessment->user->Con_name);
+                $unit_hos = $assessment->user->hospital ? $assessment->user->hospital->hos_name : $assessment->user->Con_name;
+                $unit_name = \Illuminate\Support\Str::startsWith($unit_hos, 'โรงพยาบาล') ? $unit_hos : 'โรงพยาบาล' . $unit_hos;
             } else {
                 $unit_name = $assessment->user->name;
             }
@@ -519,7 +520,7 @@
                         @elseif($assessment->user->User_rank_id == 4)
                             {{ $assessment->user->subdistrictHospital ? $assessment->user->subdistrictHospital->hospital_name : $assessment->user->Con_name }}
                         @elseif($assessment->user->User_rank_id == 5)
-                            โรงพยาบาล{{ $assessment->user->hospital ? $assessment->user->hospital->hos_name : $assessment->user->Con_name }}
+                            {{ (function ($n) { return \Illuminate\Support\Str::startsWith($n, 'โรงพยาบาล') ? $n : 'โรงพยาบาล' . $n; })($assessment->user->hospital ? $assessment->user->hospital->hos_name : $assessment->user->Con_name) }}
                         @else
                             {{ $assessment->user->name }}
                         @endif

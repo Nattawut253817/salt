@@ -421,6 +421,17 @@
         }
         .gr-empty { padding: 48px 0; text-align: center; color: #94a3b8; font-size: 14px; }
         @media (max-width: 420px) { .gr-row { gap: 12px; padding: 14px; } .gr-icon { width: 46px; height: 46px; font-size: 21px; } .gr-count { font-size: 13.5px; } }
+        /* ปรับให้ดูดีขึ้น: พื้นไล่สีอ่อนตามเพศ + แถบสัดส่วนเต็มความกว้าง + ตัวเลขจำนวนคนเป็นแคปซูล */
+        .gr-row { background: linear-gradient(120deg, color-mix(in srgb, var(--gr-c) 15%, #fff) 0%, color-mix(in srgb, var(--gr-c) 4%, #fff) 80%);
+            border: 1px solid color-mix(in srgb, var(--gr-c) 22%, #fff); box-shadow: 0 10px 18px -16px var(--gr-c); }
+        .gr-row::after { display: none; }
+        .gr-name { font-size: 14px; font-weight: 800; color: color-mix(in srgb, var(--gr-c) 45%, #334155); }
+        .gr-track { display: block; margin-top: 9px; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--gr-c) 16%, #fff); overflow: hidden; }
+        .gr-track i { display: block; height: 100%; width: var(--gr-w); border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--gr-c) 70%, #fff), var(--gr-c)); box-shadow: 0 0 8px -1px var(--gr-c); }
+        .gr-count { display: flex; flex-direction: column; align-items: center; padding: 6px 14px 7px; border-radius: 14px; background: rgba(255,255,255,.85);
+            border: 1px solid color-mix(in srgb, var(--gr-c) 25%, #fff); line-height: 1.1; }
+        .gr-count b { font-size: 17px; font-weight: 800; color: var(--gr-ink); }
+        .gr-count small { font-size: 11.5px; font-weight: 700; color: #64748b; }
         .gr-ratio-badge { margin-left: auto; flex: 0 0 auto; align-self: center; display: flex; flex-direction: column; align-items: center; padding: 5px 14px 6px; border-radius: 14px; background: #f5f3ff; border: 1px solid #ddd6fe; line-height: 1.15; }
         .gr-ratio-badge small { font-size: 11.5px; font-weight: 700; color: #6d28d9; }
         .gr-ratio-badge b { font-size: 1.2rem; font-weight: 800; color: #4c1d95; font-variant-numeric: tabular-nums; letter-spacing: -.2px; white-space: nowrap; }
@@ -764,7 +775,7 @@
             max-width: 92px; margin-bottom: 11px; padding: 7px 4px 6px; border-radius: 14px;
             background: linear-gradient(180deg, #ffffff 0%, #d7f8e8 100%);
             border: 1px solid #9fe8c6;
-            box-shadow: 0 1px 0 #fff inset, 0 8px 14px -8px rgba(5, 150, 105, .55);
+            box-shadow: 0 1px 0 #fff inset, 0 4px 8px -6px rgba(5, 150, 105, .4);
             position: relative;
         }
         .pf-badge::after {
@@ -776,25 +787,23 @@
         .pf-tube {
             max-width: 68px; border-radius: 20px;
             background:
-                repeating-linear-gradient(135deg, rgba(255,255,255,.28) 0 6px, rgba(255,255,255,0) 6px 12px),
-                linear-gradient(180deg, #ffd7d7 0%, #ffeaea 100%);
-            box-shadow: inset 0 0 0 1px rgba(239, 68, 68, .10), inset 5px 0 8px -5px rgba(255,255,255,.9),
-                inset -4px 0 8px -5px rgba(190, 60, 60, .18), 0 12px 18px -12px rgba(15, 23, 42, .35);
+                linear-gradient(180deg, #ffdede 0%, #ffeeee 100%);
+            box-shadow: inset 0 0 0 1px rgba(239, 68, 68, .10), 0 6px 10px -8px rgba(15, 23, 42, .28);
             position: relative;
         }
         .pf-tube::after { /* เงาสะท้อนแก้วด้านซ้าย */
             content: ""; position: absolute; left: 7px; top: 12px; bottom: 12px; width: 5px; border-radius: 99px;
-            background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,0)); pointer-events: none;
+            background: linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,0)); pointer-events: none;
         }
-        .pf-tube-fail { font-size: .72rem; color: #b84344; padding-top: 9px; }
+        .pf-tube-fail { font-size: .86rem; font-weight: 800; color: #8a1c1f; padding-top: 10px; }
         .pf-tube-pass {
             position: relative; z-index: 1;
             background: linear-gradient(90deg, #10b981 0%, #34d399 38%, #059669 100%);
             border-radius: 16px 16px 0 0;
-            box-shadow: 0 -3px 0 #fff, 0 -8px 14px -6px rgba(16, 185, 129, .55), inset 0 3px 4px rgba(255,255,255,.45);
+            box-shadow: 0 -2px 0 #fff, 0 -4px 8px -5px rgba(16, 185, 129, .4), inset 0 2px 3px rgba(255,255,255,.25);
         }
         .pf-name { margin-top: 10px; font-weight: 800; font-size: .86rem; color: #1e293b; }
-        .pf-name small, .pf-name span { color: #64748b; font-weight: 600; }
+        .pf-name small, .pf-name span { color: #334155; font-weight: 700; }
         .pf-col:first-child .pf-badge {
             background: linear-gradient(180deg, #ffffff 0%, #b8f2d6 100%); border-color: #5fd6a2;
             box-shadow: 0 1px 0 #fff inset, 0 10px 18px -8px rgba(5, 150, 105, .75);
@@ -927,7 +936,7 @@
         }
 
         /* One full-width diverging bar per question - see
-           createDivergingBars() in extra_js below. สีแดง-ส้ม = คำตอบที่ควรปรับ,
+           createDivergingBars() in extra_js below. สีแดง-ส้ม = คำตอบที่ควรปรับปรุง,
            เทา = กลาง, ฟ้าอมเขียว = คำตอบที่ดี (แดง/ฟ้าแยกกันได้แม้ตาบอดสีแดง-เขียว) */
         .divsum {
             display: flex;
@@ -1073,13 +1082,23 @@
         /* donut (กรอบที่ 2) */
         .chart-card:has(#seasoningChart){display:flex;flex-direction:column;height:100%}
         #seasoningChart{flex:1 1 auto;display:flex;min-height:0}
+        #seasoningChart .lk-split{width:100%;flex:1 1 auto}
+        #seasoningChart .lk-main{display:flex;min-width:0;container-type:inline-size}
+        #seasoningChart .lk-side .lk-pts{justify-content:space-evenly;gap:10px}
         .dn-grid{flex:1 1 auto;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px}
-        #seasoningChart{container-type:inline-size}
         /* 3 หัวข้อ: สองใบแรกอยู่บน ใบที่สามยาวเต็มแถวด้านล่าง | 4 หัวข้อ: 2 x 2 | 1 หัวข้อ: เต็มแถว */
         .dn-grid[data-n="3"] .dn:nth-child(3),.dn-grid[data-n="1"] .dn:first-child{grid-column:1/-1}
         .dn-grid[data-n="3"] .dn:nth-child(3) .dn-body,.dn-grid[data-n="1"] .dn-body{gap:48px}
         .dn-grid[data-n="3"] .dn:nth-child(3) .dn-list,.dn-grid[data-n="1"] .dn-list{max-width:340px}
         @container (max-width:520px){.dn-grid{grid-template-columns:minmax(0,1fr)}.dn-grid[data-n="3"] .dn:nth-child(3){grid-column:auto}}
+        /* ยืดหยุ่นตามจำนวนกล่อง: เลขคี่ใบสุดท้ายยาวเต็มแถว, 4+ กล่องลดขนาดวง, กล่องแคบวางวงไว้บนรายการ */
+        .dn-grid:not([data-n="1"]) .dn:last-child:nth-child(odd){grid-column:1/-1}
+        .dn-grid:not([data-n="1"]):not([data-n="2"]) .dn:last-child:nth-child(odd) .dn-list{max-width:340px}
+        .dn-grid:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]) .dn-svg{width:128px;height:128px}
+        .dn-grid:not([data-n="1"]):not([data-n="2"]):not([data-n="3"]) .dn-body{gap:14px}
+        .dn{container-type:inline-size}
+        @container (max-width:300px){.dn-body{flex-direction:column;gap:10px}.dn-list{width:100%;flex:none}}
+        @container (max-width:520px){.dn-grid .dn:last-child:nth-child(odd){grid-column:auto}}
         .dn{display:flex;flex-direction:column;border:1px solid #eef2f6;border-radius:14px;background:linear-gradient(180deg,#fff,#fafbfd);padding:14px 16px}
         .dn-title{font-size:16.5px;font-weight:800;line-height:1.35;color:#0f172a;margin-bottom:4px}
         .dn-title small{display:block;font-size:11px;font-weight:500;color:#94a3b8;margin-top:1px}
@@ -1098,7 +1117,30 @@
         /* heatmap (กรอบที่ 3) */
         .hm{display:flex;flex-direction:column;gap:4px}
         .hm-row{display:grid;grid-template-columns:minmax(120px,1.6fr) repeat(3,1fr);gap:4px;align-items:stretch}
-        .hm-col{text-align:center;font-size:12px;font-weight:700;color:#475569;padding:2px 0}
+        .hm-col{text-align:center;padding:2px 0 0}
+        .hm-col span{display:block;width:100%;padding:6px 8px;border-radius:10px 10px 4px 4px;font-size:14px;font-weight:800;letter-spacing:.2px;text-align:center;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(15,23,42,.12)}
+        .hm-cell b{font-size:20px !important;font-weight:800;letter-spacing:-.3px}
+        .hm-cell small{font-size:12.5px !important;font-weight:700}
+        .hm-cell[style*="color:#fff"] b,.hm-cell[style*="color:#fff"] small{text-shadow:0 1px 2px rgba(15,23,42,.35)}
+        @media(min-width:576px){
+            .hm-row{grid-template-columns:minmax(170px,.85fr) repeat(3,minmax(0,1.05fr)) !important;gap:8px !important}
+            .hm-lab{padding:0 16px 0 18px !important}
+            .hm-cell{min-height:60px}
+        }
+        @media(min-width:1200px){ .hm-row{grid-template-columns:minmax(190px,.8fr) repeat(3,minmax(0,1fr)) !important} }
+        /* ช่องคอลัมน์ "ควรปรับปรุง" ใช้สีเต็มเหมือนแถบหัวคอลัมน์ */
+        .hm-row .hm-cell:nth-child(2){background:linear-gradient(155deg,#c42a65 0%,#b0164e 55%,#98113f 100%) !important;color:#fff !important}
+        .hm-row .hm-cell:nth-child(2) b,.hm-row .hm-cell:nth-child(2) small{color:#fff !important;text-shadow:0 1px 3px rgba(60,5,30,.5)}
+        /* หัวคอลัมน์สีอ่อนลง */
+        .hm-headrow .hm-col:nth-child(2) span{background:linear-gradient(180deg,#f1b6cb,#e397b3) !important;color:#6b0f33 !important}
+        .hm-headrow .hm-col:nth-child(3) span{background:linear-gradient(180deg,#ddd3f4,#cbbcee) !important;color:#2b1b59 !important}
+        .hm-headrow .hm-col:nth-child(4) span{background:linear-gradient(180deg,#b4a3e6,#9d89dc) !important;color:#20134f !important}
+        .hm-cell b{font-size:22px !important;font-weight:800 !important}
+        .hm-cell small{font-size:13.5px !important;font-weight:800 !important;margin-top:1px}
+        .hm-row .hm-cell:nth-child(2):not([style*="color:#fff"]){color:#4a0b2c !important}
+        .hm-row .hm-cell:nth-child(3):not([style*="color:#fff"]){color:#1c1046 !important}
+        .hm-cell[style*="color:#fff"] b,.hm-cell[style*="color:#fff"] small{text-shadow:0 1px 3px rgba(15,10,50,.5)}
+        .hm-lab{font-size:17px !important;font-weight:800 !important;color:#0b1220 !important;line-height:1.3 !important}
         .hm-lab{display:flex;flex-direction:column;justify-content:center;gap:1px;padding-right:10px;font-size:16px;font-weight:800;line-height:1.35;color:#0f172a;letter-spacing:.1px}
         .hm-lab small{font-size:11px;font-weight:500;color:#94a3b8}
         .lbl-gap{color:#94a3b8;font-weight:500}
@@ -1116,6 +1158,189 @@
         .hm{padding:10px;border-radius:14px;background:linear-gradient(160deg,rgba(194,37,92,.04),rgba(95,61,196,.05))}
         .hm-lab{padding-left:12px;border-radius:9px;background:linear-gradient(90deg,rgba(69,39,160,.16),rgba(69,39,160,.02) 88%)}
         .hm-headrow .hm-lab{background:none}
+        /* ===== ตารางแนววิชาการ (ตารางสามเส้น) ===== */
+        .hm-cap{font-size:14.5px;line-height:1.5;color:#1f2a44;margin:2px 0 10px}
+        .hm-cap b{font-weight:800;margin-right:6px}
+        .hm-note{font-size:12.5px;line-height:1.6;color:#5b6475;margin-top:10px;padding-top:8px;border-top:1px solid #e5e8ee}
+        .hm-note b{color:#1f2a44;font-weight:700}
+        .hm.hm-ac{padding:0;border-radius:0;background:#fff;gap:0;border-top:2px solid #1f2a44;border-bottom:2px solid #1f2a44;font-variant-numeric:tabular-nums}
+        .hm-ac .hm-row{gap:6px !important;align-items:center;padding:7px 0;border-bottom:1px solid #e5e8ee}
+        .hm-ac .hm-row:last-child{border-bottom:0}
+        .hm-ac .hm-headrow{padding:8px 0 7px;border-bottom:1.5px solid #1f2a44 !important;align-items:end}
+        .hm-ac .hm-col{padding:0}
+        .hm-ac .hm-col span,.hm-ac .hm-headrow .hm-col:nth-child(n) span{background:none !important;color:#1f2a44 !important;box-shadow:none !important;border-radius:0;padding:0 4px 7px;font-size:15px;font-weight:800;position:relative;line-height:1.25}
+        .hm-ac .hm-col span::after{content:'';position:absolute;left:12%;right:12%;bottom:0;height:3px;border-radius:2px;background:var(--gc,#cbd5e1)}
+        .hm-ac .hm-col span small{display:block;font-size:11.5px;font-weight:500;color:#64748b;margin-top:1px}
+        .hm-ac .hm-ncol span::after{display:none}
+        .hm-ac .hm-lab,.hm-ac .hm-lab{background:none !important;border-radius:0;padding:0 8px 0 2px !important;flex-direction:row;align-items:baseline;gap:9px;font-size:16px !important;font-weight:600 !important;color:#1f2a44 !important}
+        .hm-ac .hm-labh{font-size:13.5px !important;font-weight:800 !important;color:#1f2a44 !important;align-items:flex-end;padding-bottom:7px !important}
+        .hm-no{font-style:normal;font-weight:500;font-size:13px;color:#8a93a5;min-width:16px;text-align:right}
+        .hm-ac .hm-cell{border-radius:6px;box-shadow:none !important;min-height:54px;transform:none !important}
+        .hm-ac .hm-cell::after{display:none}
+        .hm-ac .hm-cell b{font-size:20px !important;font-weight:800 !important;letter-spacing:0;text-shadow:none !important}
+        .hm-ac .hm-cell small{font-size:12px !important;font-weight:500 !important;opacity:.9;text-shadow:none !important}
+        .hm-n{text-align:center;font-size:14px;font-weight:700;color:#334155}
+        @media(min-width:576px){
+            .hm-ac .hm-row{grid-template-columns:minmax(190px,.9fr) repeat(3,minmax(0,1fr)) 76px !important}
+        }
+        @media(max-width:575px){
+            .hm-ac .hm-row{grid-template-columns:minmax(78px,1.2fr) repeat(3,minmax(0,1fr)) 38px !important;gap:3px !important}
+            .hm-ac .hm-col span,.hm-ac .hm-headrow .hm-col:nth-child(n) span{font-size:11px;padding:0 0 6px}
+            .hm-ac .hm-col span small{font-size:9.5px}
+            .hm-ac .hm-lab{font-size:12px !important;gap:4px}
+            .hm-no{min-width:10px;font-size:11px}
+            .hm-ac .hm-labh{font-size:11px !important}
+            .hm-ac .hm-cell b{font-size:15px !important}
+            .hm-ac .hm-cell small{font-size:10px !important}
+            .hm-n{font-size:11px}
+            .hm-cap{font-size:13px}.hm-note{font-size:11.5px}
+        }
+        /* ===== แถบ 100% ซ้อนต่อข้อ ===== */
+        .sb{border-top:2px solid #1f2a44;border-bottom:2px solid #1f2a44;padding:4px 0 6px}
+        .sb-key{display:flex;flex-wrap:wrap;gap:6px 22px;padding:10px 2px 10px;border-bottom:1.5px solid #1f2a44;font-size:14px;font-weight:800;color:#1f2a44}
+        .sb-key span{display:inline-flex;align-items:center;gap:7px}
+        .sb-key i{width:14px;height:14px;border-radius:4px;display:inline-block}
+        .sb-key small{font-weight:500;color:#64748b;font-size:12px}
+        .sb-item{padding:12px 0 13px;border-bottom:1px solid #e5e8ee}
+        .sb-item:last-child{border-bottom:0}
+        .sb-head{display:flex;align-items:baseline;gap:9px;margin-bottom:8px}
+        .sb-q{flex:1;min-width:0;font-size:16px;font-weight:600;color:#1f2a44;line-height:1.35}
+        .sb-n{font-size:13px;font-weight:600;color:#64748b;white-space:nowrap;font-variant-numeric:tabular-nums}
+        .sb-bar{display:flex;gap:3px;height:58px}
+        .sb-seg{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:34px;border-radius:7px;cursor:default;transition:filter .12s;font-variant-numeric:tabular-nums}
+        .sb-seg:hover{filter:brightness(1.07) saturate(1.1)}
+        .sb-seg b{font-size:19px;font-weight:800;line-height:1.1}
+        .sb-seg small{font-size:12px;font-weight:500;opacity:.92}
+        @media(max-width:575px){.sb-q{font-size:13px}.sb-n{font-size:11px}.sb-bar{height:50px}.sb-seg{min-width:30px}.sb-seg b{font-size:15px}.sb-seg small{font-size:10px}.sb-key{font-size:12px;gap:4px 14px}.sb-key small{display:none}}
+        /* ===== วาฟเฟิล 100 ช่อง ===== */
+        .wf{border-top:2px solid #1f2a44;border-bottom:2px solid #1f2a44}
+        .wf .sb-key{border-bottom:1px solid #e5e8ee}
+        .wf-grid{display:grid;grid-template-columns:1fr;gap:0}
+        @media(min-width:900px){.wf-grid{grid-template-columns:repeat(3,1fr)}}
+        .wf-item{padding:14px 16px 12px;border-bottom:1px solid #e5e8ee}
+        .wf-item:last-child{border-bottom:0}
+        .wf-item+.wf-item{border-left:0}
+        @media(min-width:900px){.wf-item{border-bottom:0}.wf-item+.wf-item{border-left:1px solid #e5e8ee}}
+        .wf-head{display:flex;align-items:baseline;gap:8px;min-height:44px;margin-bottom:8px}
+        .wf-sq{display:grid;grid-template-columns:repeat(20,1fr);grid-template-rows:repeat(5,1fr);grid-auto-flow:column;gap:3px}
+        .wf-sq i{aspect-ratio:1;border-radius:3px;display:block;transition:transform .1s}
+        .wf-sq i:hover{transform:scale(1.35);position:relative;z-index:2}
+        .wf-stats{display:flex;justify-content:space-between;gap:6px;margin-top:12px}
+        .wf-st{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}
+        .wf-dot{width:18px;height:4px;border-radius:2px;margin-bottom:5px}
+        .wf-st b{font-size:21px;font-weight:800;color:#1f2a44;font-variant-numeric:tabular-nums}
+        .wf-st small{font-size:12px;color:#64748b;font-variant-numeric:tabular-nums}
+        .wf-n{margin-top:8px;font-size:12px;font-weight:600;color:#64748b;text-align:right}
+        /* ===== Likert แยกซ้าย-ขวา ===== */
+        .lk{border-top:2px solid #1f2a44;border-bottom:2px solid #1f2a44}
+        .lk .sb-key{border-bottom:1px solid #e5e8ee}
+        .lk-axis{padding:10px 0 0}
+        .lk-ticks{position:relative;height:16px;margin:0 14px}
+        .lk-tk{position:absolute;transform:translateX(-50%);font-size:11.5px;color:#64748b;font-variant-numeric:tabular-nums}
+        .lk-tk.z{font-weight:800;color:#1f2a44}
+        .lk-item{padding:10px 14px 12px;border-bottom:1px solid #e5e8ee}
+        .lk-item:last-child{border-bottom:0}
+        .lk-track{position:relative;height:56px}
+        .lk-gl{display:block;position:absolute;top:-4px;bottom:-4px;width:0;border-left:1px dashed #cbd2de}
+        .lk-item .wf-head{min-height:0;margin-bottom:10px}
+        .lk-gl.z{border-left:1.5px solid #1f2a44}
+        .lk-bar{position:relative;display:flex;gap:2px;height:100%}
+        .lk-bar .sb-seg{min-width:0;overflow:hidden;flex:none}
+        @media(max-width:575px){.lk-track{height:48px}.lk-item{padding:8px 8px 10px}.lk-ticks{margin:0 8px}.lk-bar .sb-seg b{font-size:14px}}
+        /* ===== แบ่ง 2 ฝั่ง: กราฟ + สรุป ===== */
+        .lk-split{display:grid;grid-template-columns:1fr;gap:14px;align-items:start}
+        @media(min-width:900px){.lk-split{grid-template-columns:minmax(0,1.7fr) minmax(260px,1fr);gap:18px}}
+        .lk-side{border:1px solid #e5e8ee;border-top:2px solid #1f2a44;border-radius:0 0 10px 10px;padding:14px 16px;background:#fbfbfd}
+        .lk-sh{font-size:14px;font-weight:800;color:#1f2a44;margin-bottom:10px}
+        .lk-big{display:flex;flex-direction:column;gap:2px;padding-bottom:12px;border-bottom:1px solid #e5e8ee}
+        .lk-big b{font-size:34px;line-height:1.1;font-weight:800;color:#4527a0;font-variant-numeric:tabular-nums}
+        .lk-big span{font-size:13px;color:#475569}
+        .lk-avg{padding:12px 0;border-bottom:1px solid #e5e8ee}
+        .lk-avgt{font-size:12.5px;font-weight:700;color:#334155;margin-bottom:7px}
+        .lk-avgbar{display:flex;gap:2px;height:14px;border-radius:7px;overflow:hidden}
+        .lk-avgbar i{display:block;height:100%}
+        .lk-avgl{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:8px;font-size:12px;color:#475569}
+        .lk-avgl em{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px}
+        .lk-avgl b{color:#1f2a44;font-variant-numeric:tabular-nums}
+        .lk-pts{list-style:none;margin:0;padding:0}
+        .lk-pts li{display:grid;grid-template-columns:1fr auto;column-gap:10px;padding:10px 0;border-bottom:1px solid #eef0f4}
+        .lk-pts li:last-child{border-bottom:0;padding-bottom:0}
+        .lk-pts small{grid-column:1/3;font-size:11.5px;color:#64748b}
+        .lk-pts b{font-size:14px;font-weight:700;color:#1f2a44;line-height:1.35}
+        .lk-pts em{font-style:normal;font-weight:800;font-size:16px;color:#1f2a44;align-self:center;font-variant-numeric:tabular-nums}
+        .lk-pts em.r{color:#c0344f}.lk-pts em.g{color:#1f7a5c}
+        .lk-g{padding:8px 0}
+        .lk-gh{display:flex;align-items:baseline;gap:7px}
+        .lk-gd{width:10px;height:10px;border-radius:3px;align-self:center}
+        .lk-gh b{font-size:14px;color:#1f2a44}
+        .lk-gh small{font-size:11.5px;color:#64748b}
+        .lk-gh em{margin-left:auto;font-style:normal;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+        .lk-gb{height:8px;border-radius:4px;background:#eceef4;margin:6px 0 4px;overflow:hidden}
+        .lk-gb span{display:block;height:100%;border-radius:4px}
+        .lk-gr{font-size:11.5px;color:#64748b}
+        .lk-pts{margin-top:6px;border-top:1px solid #e5e8ee}
+        /* ฝั่งสรุปสูงเท่ากราฟ กระจายรายการให้สมดุล */
+        .lk-split{align-items:stretch}
+        .lk-side{display:flex;flex-direction:column;border:0;border-top:2px solid #1f2a44;border-bottom:2px solid #1f2a44;border-radius:0;padding:12px 18px;background:#fbfbfd}
+        .lk-side .lk-sh{font-size:15px;padding-bottom:8px;border-bottom:1px solid #e5e8ee;margin-bottom:0}
+        .lk-side .lk-pts{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;margin-top:0;border-top:0}
+        .lk-side .lk-pts li{padding:0;border-bottom:0;row-gap:3px}
+        .lk-side .lk-pts li+li{border-top:1px solid #eef0f4;padding-top:12px}
+        .lk-side .lk-pts small{font-size:12.5px}
+        .lk-side .lk-pts b{font-size:16px;line-height:1.4}
+        .lk-side .lk-pts em{font-size:24px}
+        @media(max-width:899px){.lk-side .lk-pts{gap:12px}}
+        /* เอาเส้นบนของกราฟและกล่องสรุปออก */
+        .lk{border-top:0}
+        .lk-side{border-top:0 !important}
+        /* เอาเส้นล่างของกราฟและกล่องสรุปออก */
+        .lk{border-bottom:0}
+        .lk-side{border-bottom:0 !important}
+        /* กล่องสรุป: การ์ดรายการมีไอคอนและแถบสี */
+        .lk-side .lk-pts{gap:10px;justify-content:center;padding-top:12px}
+        .lk-side .lk-pts li,.lk-side .lk-pts li+li{display:grid;grid-template-columns:42px 1fr auto;column-gap:12px;align-items:center;padding:12px 14px;border:0;border-radius:10px;background:var(--lb)}
+        .lk-pts li.is-risk{--lc:#c0344f;--lb:rgba(217,67,94,.08)}
+        .lk-pts li.is-good{--lc:#1f7a5c;--lb:rgba(42,157,120,.09)}
+        .lk-pts li.is-n{--lc:#64748b;--lb:rgba(100,116,139,.08)}
+        .lk-ic{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;color:var(--lc);font-size:18px;box-shadow:0 2px 6px rgba(15,23,42,.08)}
+        .lk-tx{display:flex;flex-direction:column;gap:2px;min-width:0}
+        .lk-side .lk-tx small{grid-column:auto;font-size:12.5px;color:#475569}
+        .lk-side .lk-tx b{font-size:15.5px;line-height:1.35}
+        .lk-v{display:flex;flex-direction:column;align-items:flex-end;line-height:1.1}
+        .lk-side .lk-v em{font-size:26px;font-weight:800;color:var(--lc)}
+        .lk-side .lk-v small{font-size:11.5px;color:#64748b}
+        .lk-pts li.is-n .lk-v em{color:#1f2a44}
+        @media(max-width:575px){.lk-side .lk-pts li{grid-template-columns:34px 1fr auto;column-gap:9px;padding:10px 10px}.lk-ic{width:34px;height:34px;font-size:14px}.lk-side .lk-v em{font-size:21px}.lk-side .lk-tx b{font-size:14px}}
+        /* หัวกล่องสรุป + พื้นหลัง */
+        .lk-side{border-radius:14px;background:linear-gradient(165deg,#fbfcfd 0%,#f3f7f6 60%,#fbf4f5 100%);padding:16px 18px}
+        .lk-side .lk-sh{display:flex;align-items:center;gap:12px;font-size:inherit;padding-bottom:12px;border-bottom:1px solid rgba(31,42,68,.12);margin-bottom:0}
+        .lk-shi{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex:none;color:#fff;font-size:17px;background:linear-gradient(135deg,#3b4f86,#1f2a44);box-shadow:0 6px 14px -6px rgba(31,42,68,.55)}
+        .lk-sht{display:flex;flex-direction:column;line-height:1.25}
+        .lk-sht b{font-size:17px;font-weight:800;color:#1f2a44}
+        .lk-sht small{font-size:12.5px;color:#64748b}
+        .lk-side .lk-pts li,.lk-side .lk-pts li+li{background:#fff;box-shadow:0 1px 0 rgba(15,23,42,.04),0 8px 18px -12px rgba(31,42,68,.25)}
+        .lk-pts li.is-risk .lk-ic{background:rgba(217,67,94,.14)}
+        .lk-pts li.is-good .lk-ic{background:rgba(42,157,120,.16)}
+        .lk-pts li.is-n .lk-ic{background:rgba(100,116,139,.12)}
+        .lk-side .lk-ic{box-shadow:none}
+        /* การ์ดแถบซ้อน (2 ฝั่ง): ให้แถวฝั่งกราฟยืดเท่ากับความสูงฝั่งสรุป ไม่เหลือพื้นที่ว่างใต้กราฟ */
+        .lk-main:has(> .divrow){display:flex;flex-direction:column;gap:14px}
+        .lk-main > .divrow{flex:1 1 0;display:flex;flex-direction:column;justify-content:center;margin:0}
+        .lk-main > .divrow + .divrow{border-top:1px solid rgba(184,50,63,.08)}
+        .lk-split:has(> .lk-main > .divrow) .lk-side .lk-pts{justify-content:space-evenly;gap:10px}
+        /* รองรับ 3-4+ ข้อ: ฝั่งกราฟไม่ล้น ฝั่งสรุปยืดตามความสูงและกระจายรายการเอง */
+        .lk-main{min-width:0}
+        .lk-main > .divrow{min-height:88px}
+        /* สีตามสัญญาณจราจร: แดง = ควรปรับปรุง, เหลือง = ปานกลาง, เขียว = ดี */
+        .lk-bar{gap:3px}
+        .lk-bar .sb-seg{position:relative;border-radius:10px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.10)}
+        .lk-bar .sb-seg::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,0) 55%);pointer-events:none}
+        .lk-bar .sb-seg>*{position:relative;z-index:1}
+        .lk-bar .sb-seg b{font-size:21px;letter-spacing:-.2px}
+        .lk-bar .sb-seg small{font-size:12.5px;font-weight:600}
+        .lk-track{height:60px}
+        .lk-item{padding:12px 14px 14px}
+        .lk-item .sb-q{font-size:16.5px;font-weight:700;color:#1f2a44}
         .awr-loadbar{position:fixed;left:0;top:0;height:3px;width:0;z-index:10000;background:linear-gradient(90deg,#22d3ee,#6366f1);opacity:0;pointer-events:none}
         .awr-loadbar.on{opacity:1;width:92%;transition:width 6s cubic-bezier(.1,.7,.2,1)}
         body.awr-busy .chart-card{opacity:.65;transition:opacity .2s}
@@ -1133,6 +1358,18 @@
         .dtip-v{font-weight:700;color:#0f172a}
         .dtip-b{grid-column:1/-1;display:block;height:4px;border-radius:3px;background:#eef2f6;overflow:hidden}
         .dtip-b u{display:block;height:100%;border-radius:3px}
+        /* ปรับ tooltip ให้อ่านง่าย: หัวเด่น แถบสัดส่วนทุกแถว ตัวเลขชิดขวาเป็นระเบียบ */
+        .dtip{min-width:210px;max-width:280px;padding:12px 14px 10px;border-radius:14px;border:1px solid #e2e8f0;box-shadow:0 16px 36px -10px rgba(15,23,42,.28);font-size:13px}
+        .dtip-h{padding-bottom:6px;gap:8px}
+        .dtip-h b{font-size:15.5px;font-weight:800;letter-spacing:-.1px}
+        .dtip-h em{font-size:19px;font-weight:800;letter-spacing:-.4px;font-variant-numeric:tabular-nums}
+        .dtip-dot{width:12px;height:12px;box-shadow:0 0 0 3px rgba(15,23,42,.06)}
+        .dtip-sub{margin:0 0 8px 20px;font-size:12.5px;font-weight:600;color:#64748b}
+        .dtip-r{padding:7px 0 8px;gap:4px 12px;border-top:1px solid #f1f5f9}
+        .dtip-t{font-size:13px;font-weight:600;color:#334155}
+        .dtip-v{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums}
+        .dtip-b{height:5px;border-radius:99px;background:#eef2f7}
+        .dtip-b u{border-radius:99px}
         .divrow-bar {
             display: flex;
             gap: 2px;
@@ -1707,7 +1944,7 @@
 
         <div class="col-md-6 col-lg-4 col-xl-4 mb-4">
             <div class="chart-card">
-                <div class="chart-header" style="--chart-accent:#ec4899;">
+                <div class="chart-header" style="--chart-accent:#f97316;">
                     <div class="chart-header-icon"><i class="fas fa-map-location-dot"></i></div>
                     <div>
                         <div class="chart-header-title">ร้อยละผู้ตอบแบบประเมิน</div>
@@ -1867,7 +2104,7 @@
             </div>
 
             <!-- Chart 1: Risky Consumption (Negative) -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 mb-4">
                 <div class="chart-card"
                     style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 16px;">
                     <div class="chart-header" style="--chart-accent:#e74c3c;">
@@ -1880,10 +2117,10 @@
                     <div id="riskChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับปรุง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>ปานกลาง</span>
                             <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
-                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับปรุงมากที่สุด</span>
                         </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
@@ -1896,7 +2133,7 @@
             </div>
 
             <!-- Chart 2: Seasoning & Eating Out (Negative) -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 mb-4">
                 <div class="chart-card"
                     style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 16px;">
                     <div class="chart-header" style="--chart-accent:#e67e22;">
@@ -1909,10 +2146,10 @@
                     <div id="seasoningChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับปรุง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>ปานกลาง</span>
                             <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
-                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับปรุงมากที่สุด</span>
                         </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
@@ -1938,10 +2175,10 @@
                     <div id="mindsetChart" style="width: 100%;"></div>
                     <div class="chart-figure-footer">
                         <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับปรุง</span>
+                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>ปานกลาง</span>
                             <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
-                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
+                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับปรุงมากที่สุด</span>
                         </div>
                         <details>
                             <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
@@ -2109,11 +2346,12 @@
             // (ageStats' keys carry a trailing space - see the ageOrder
             // remap above.)
             const ageColorMap = {
-                'ต่ำกว่า 20 ปี ': '#2a78d6', // categorical slot 1 - blue
-                '20 - 35 ปี ': '#eb6834', // slot 2 - orange
-                '36 - 50 ปี ': '#1baf7a', // slot 3 - aqua
-                '51 - 60 ปี ': '#eda100', // slot 4 - yellow
-                'มากกว่า 60 ปี ': '#e87ba4', // slot 5 - magenta
+                // โทนนุ่มลง (ลดความสดจัดให้สบายตา) แต่ยังคงแยกสีชัดเจนทั้ง 5 ชิ้น
+                'ต่ำกว่า 20 ปี ': '#4a86d8', // slot 1 - blue
+                '20 - 35 ปี ': '#ee8a5e', // slot 2 - orange
+                '36 - 50 ปี ': '#3dae8b', // slot 3 - aqua
+                '51 - 60 ปี ': '#efb94d', // slot 4 - yellow
+                'มากกว่า 60 ปี ': '#d98cb3', // slot 5 - magenta
                 'อื่นๆ ': NEUTRAL_FALLBACK
             };
 
@@ -2199,8 +2437,9 @@
                     rows += '<div class="gr-row" style="--gr-c:' + base + '; --gr-ink:' + shadeHexColor(base, -22) + '; --gr-w:' + pct.toFixed(2) + '%;">' +
                         '<span class="gr-icon" aria-hidden="true"><i class="fas ' + iconFor(label) + '"></i></span>' +
                         '<span class="gr-main"><span class="gr-name">' + esc(labelFor(label)) + '</span>' +
-                        '<span class="gr-pct">' + pct.toFixed(1) + '%</span></span>' +
-                        '<span class="gr-count">' + value.toLocaleString('en-US') + ' คน</span></div>';
+                        '<span class="gr-pct">' + pct.toFixed(1) + '%</span>' +
+                        '<span class="gr-track"><i></i></span></span>' +
+                        '<span class="gr-count"><b>' + value.toLocaleString('en-US') + '</b><small>คน</small></span></div>';
                 });
                 container.innerHTML = '<div class="gr-rows">' + rows + '</div>';
 
@@ -2242,13 +2481,12 @@
                     name: label.trim(),
                     y: data[label],
                     baseColor: colorMap[label] || fallback,
-                    // ไล่เฉดแบบทรงกลม: สว่างบน-เข้มล่าง ให้ชิ้นพายดูมีมิติ
+                    // ไล่เฉดนุ่มๆ แบบเรียบ (ลดมิติให้สบายตา)
                     color: {
-                        radialGradient: { cx: 0.35, cy: 0.25, r: 1.0 },
+                        linearGradient: { x1: 0, y1: 0, x2: 1, y2: 1 },
                         stops: [
-                            [0, shadeHexColor(colorMap[label] || fallback, 22)],
-                            [0.55, colorMap[label] || fallback],
-                            [1, shadeHexColor(colorMap[label] || fallback, -14)]
+                            [0, shadeHexColor(colorMap[label] || fallback, 8)],
+                            [1, shadeHexColor(colorMap[label] || fallback, -6)]
                         ]
                     }
                 }));
@@ -2261,9 +2499,7 @@
                             fontFamily: 'Sarabun'
                         }
                     },
-                    title: {
-                        text: ''
-                    },
+                    title: { text: '' },
                     tooltip: {
                         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b> ({point.y} คน)'
                     },
@@ -2276,15 +2512,12 @@
                         pie: {
                             allowPointSelect: true,
                             cursor: 'pointer',
-                            borderWidth: 2,
+                            borderWidth: 3,
                             borderColor: '#fff',
-                            shadow: {
-                                color: 'rgba(15, 23, 42, 0.28)',
-                                offsetX: 0,
-                                offsetY: 7,
-                                width: 12
-                            },
-                            slicedOffset: 8,
+                            innerSize: '58%',
+                            borderRadius: 6,
+                            shadow: false,
+                            slicedOffset: 6,
                             states: {
                                 hover: {
                                     brightness: 0.06
@@ -2708,7 +2941,7 @@
                 // Traffic-light ramp: red (risky) -> orange -> yellow
                 // (neutral) -> light green -> dark green (healthy), matching
                 // the reference palette requested for the dashboard.
-                // สีแบบสองขั้ว ส้ม-แดง (ควรปรับ) <-> ฟ้า-น้ำเงิน (ดี) ผ่านเทากลาง: ส้ม/ฟ้าแยกได้ชัดแม้ตาบอดสีแดง-เขียว
+                // สีแบบสองขั้ว ส้ม-แดง (ควรปรับปรุง) <-> ฟ้า-น้ำเงิน (ดี) ผ่านเทากลาง: ส้ม/ฟ้าแยกได้ชัดแม้ตาบอดสีแดง-เขียว
                 // ปลายสองข้างเข้มสุด ตรงกลางอ่อนสุด จึงอ่านระดับความเสี่ยงได้ทันทีจากความเข้ม
                 const rankColors = ['#b8323f', '#f08a3c', '#f4e4b0', '#6fb1d6', '#1d5a96'];
                 const rankTextColors = ['#ffffff', '#3d1d03', '#5a4713', '#08304d', '#ffffff'];
@@ -2727,12 +2960,17 @@
                 const getSemanticRank = (label) => {
                     label = label.toString().trim().replace(/\s/g, '');
                     if (Object.prototype.hasOwnProperty.call(ORDINAL_RANK, label)) return ORDINAL_RANK[label];
+                    // ระดับความรู้ (ทราบ/ไม่ทราบ): ต้องเช็กก่อนกฎ "0%" ด้านล่าง เพราะ "50-100%" และ "50%" มี "0%" อยู่ในข้อความ
+                    // ไม่ทราบเลย = ปลายแย่สุด, ทราบเป็นบางรายการ = กลาง, ทราบเป็นส่วนใหญ่ = ปลายดี (เชิงบวก)
+                    if (/ไม่ทราบเลย/.test(label)) return 4;
+                    if (/ทราบเป็นบางรายการ/.test(label)) return 2;
+                    if (/ทราบเป็นส่วนใหญ่/.test(label)) return 0;
                     // Lowest Frequency / Best for Negative Polarity (Or Highest Score for +)
                     if (/^([9]|10)$|ไม่เคย|ไม่เลย|ไม่ใช่|ไม่สุ่มเสี่ยง|0%|ไม่เห็นด้วย/i.test(label))
                         return 4;
                     // Infrequent
                     if (/^([7-8])$|นานๆครั้ง|1-2ครั้ง|น้อยกว่า50%/i.test(label)) return 3;
-                    // "บ่อย" (ตรงตัว) = ความถี่สูงรองจากทุกวัน -> ฝั่งควรปรับ, ไม่ใช่กลาง
+                    // "บ่อย" (ตรงตัว) = ความถี่สูงรองจากทุกวัน -> ฝั่งควรปรับปรุง, ไม่ใช่กลาง
                     if (/^บ่อย(ๆ)?$/.test(label)) return 1;
                     // Neutral / Moderate
                     if (/^([5-6])$|พอดี|บ่อย|ปานกลาง|บางครั้ง|50-100%|สำคัญพอควร|ทราบเป็นบางรายการ|ไม่แน่ใจ/i
@@ -2847,7 +3085,7 @@
                     // one from the "ทิศทาง" dropdown next to the question in
                     // "ตั้งค่าแดชบอร์ด" - an explicit choice made there always
                     // wins over this fallback map (see polarityFor below).
-                    'ความดันสูง...เสี่ยงโรค': 'positive', // ข้อความความรู้ที่ถูกต้อง - เห็นด้วยมาก = ดี (เดิมไม่มีในรายการจึงถูกกลับสีเป็นควรปรับ)
+                    'ความดันสูง...เสี่ยงโรค': 'positive', // ข้อความความรู้ที่ถูกต้อง - เห็นด้วยมาก = ดี (เดิมไม่มีในรายการจึงถูกกลับสีเป็นควรปรับปรุง)
                     'จำกัดการบริโภคโซเดียม...': 'positive', // ทำบ่อย = ดี (เดิมไม่มีในรายการจึงถูกนับเป็นเสี่ยง)
                     'ท่านเติมน้ำปลา...': 'negative', // เติมเครื่องปรุงรสเค็มขณะทาน - ทำบ่อย = เสี่ยง
                     'บริโภคอาหารแปรรูป...': 'negative', // อาหารแปรรูป - ทานบ่อย = เสี่ยง
@@ -2958,28 +3196,28 @@
 
                         if (segments.length === 0) return;
 
-                        // สัดส่วน "ควรปรับ" = ผู้ตอบที่อยู่ปลายส้มสองระดับ (rank 0-1)
+                        // สัดส่วน "ควรปรับปรุง" = ผู้ตอบที่อยู่ปลายส้มสองระดับ (rank 0-1)
                         const risk = segments.filter(s => s.rank <= 1).reduce((a, s) => a + s.pct, 0);
                         rows.push({ c: c, segments: segments, risk: risk, total: total });
                     });
 
-                    // เรียงจากข้อที่ควรปรับมากที่สุด -> อ่านเป็นลำดับความสำคัญได้ทันที
+                    // เรียงจากข้อที่ควรปรับปรุงมากที่สุด -> อ่านเป็นลำดับความสำคัญได้ทันที
                     rows.sort((a, b) => b.risk - a.risk);
 
-                    // รวม 5 ระดับเป็น 3 กลุ่มอ่านง่าย: ควรปรับ (rank 0-1) / กลาง (2) / ดี (3-4)
+                    // รวม 5 ระดับเป็น 3 กลุ่มอ่านง่าย: ควรปรับปรุง (rank 0-1) / กลาง (2) / ดี (3-4)
                     // รายละเอียดรายคำตอบดูได้จาก tooltip และปุ่ม "ดูข้อมูลตัวเลข"
                     // ชื่อข้อที่ถูกตัดด้วย ... จากหัวคอลัมน์: แสดงเป็นจุดไข่ปลาจางๆ คั่นกลาง อ่านต่อเนื่องและไม่ดูเหมือนข้อความขาด
                     const pretty = t => escapeHtml(t).replace(/\.{2,}|…/g, '<span class="lbl-gap"> … </span>');
                     const GROUPS = [
-                        { key: 'risk', name: 'ควรปรับ', ranks: [0, 1], color: rankColors[0], text: rankTextColors[0] },
-                        { key: 'mid', name: 'กลาง', ranks: [2], color: rankColors[2], text: rankTextColors[2] },
+                        { key: 'risk', name: 'ควรปรับปรุง', ranks: [0, 1], color: rankColors[0], text: rankTextColors[0] },
+                        { key: 'mid', name: 'ปานกลาง', ranks: [2], color: rankColors[2], text: rankTextColors[2] },
                         { key: 'good', name: 'ดี', ranks: [3, 4], color: rankColors[4], text: rankTextColors[4] }
                     ];
 
-                    // สีเฉพาะการ์ด: คงความหมาย อุ่น = ควรปรับ / กลางอ่อน = กลาง / เย็น = ดี แต่แต่ละการ์ดใช้โทนต่างกัน
+                    // สีเฉพาะการ์ด: คงความหมาย อุ่น = ควรปรับปรุง / กลางอ่อน = กลาง / เย็น = ดี แต่แต่ละการ์ดใช้โทนต่างกัน
                     const MODE_PALETTE = {
                         donut: [['#e8590c', '#ffffff'], ['#f6dfb4', '#5a3d0a'], ['#0b7285', '#ffffff']],
-                        heat: [['#b0164e', '#ffffff'], ['#a893dc', '#26184f'], ['#4527a0', '#ffffff']]
+                        heat: [['#d9435e', '#ffffff'], ['#f2c14e', '#4a3205'], ['#2a9d78', '#ffffff']]
                     };
                     if (MODE_PALETTE[mode]) {
                         GROUPS.forEach((g, i) => { g.color = MODE_PALETTE[mode][i][0]; g.text = MODE_PALETTE[mode][i][1]; });
@@ -3009,48 +3247,100 @@
                     rows.forEach(r => { r.groups = buildGroups(r); });
 
                     let html = '';
-                    // สรุป "ควรปรับมากที่สุด" ไปอยู่แถวเดียวกับหัวข้อการ์ด (ชิดขวา)
+                    // ไม่แสดงป้ายสรุป "ควรปรับปรุงมากที่สุด" ที่หัวการ์ด (ลบป้ายเก่าที่อาจค้างอยู่)
                     const headerEl = container.closest('.chart-card')
                         ? container.closest('.chart-card').querySelector('.chart-header') : null;
                     if (headerEl) {
                         headerEl.querySelectorAll('.divsum').forEach(function (el) { el.remove(); });
                     }
-                    if (rows.length > 1 && rows[0].risk > 0) {
-                        const sumHtml = '<div class="divsum"><i class="fas fa-lightbulb"></i><span class="divsum-text"><small>ควรปรับมากที่สุด</small><b>' +
-                            pretty(rows[0].c) + '</b></span><em class="divsum-pct">' + rows[0].riskRnd + '%</em></div>';
-                        if (headerEl) {
-                            headerEl.insertAdjacentHTML('beforeend', sumHtml);
-                        } else {
-                            html += sumHtml;
-                        }
-                    }
 
                     const tip2 = x => '<div class="dtip-h"><span class="dtip-dot" style="background:' + x.g.color + '"></span><b>' + escapeHtml(x.g.name) + '</b><em>' + x.pct.toFixed(1) + '%</em></div><div class="dtip-sub">' + x.count.toLocaleString() + ' คน</div>' +
-                        x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span></div>').join('');
+                        x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span>' +
+                            '<i class="dtip-b"><u style="width:' + Math.min(100, s.pct / (x.pct || 1) * 100).toFixed(0) + '%;background:' + x.g.color + '"></u></i></div>').join('');
                     const escAttr = h => h.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
                     if (mode === 'heat') {
-                        // ตารางความร้อน: แถว = ข้อ, คอลัมน์ = กลุ่มคำตอบ, ความเข้มสี = สัดส่วน
-                        const cols = GROUPS.map(g => '<div class="hm-col">' + g.name + '</div>').join('');
-                        html += '<div class="hm"><div class="hm-row hm-headrow"><div class="hm-lab"></div>' + cols + '</div>';
-                        rows.forEach(r => {
-                            const cells = GROUPS.map(g => {
-                                const x = r.groups.find(y => y.g.key === g.key);
-                                if (!x) return '<div class="hm-cell is-zero">0%</div>';
-                                const a = (0.46 + 0.54 * Math.min(1, x.pct / 100)).toFixed(2);
-                                const dark = x.pct >= 30;
+                        // Likert แบบแยกซ้าย-ขวา: จัดแนวกึ่งกลางที่ "ปานกลาง" ซ้าย = ควรปรับปรุง ขวา = ดี ใช้แกนเดียวกันทุกข้อ
+                        const LV = { risk: 'ระดับ 1–2', mid: 'ระดับ 3', good: 'ระดับ 4–5' };
+                        // ปีที่ใช้ชื่อย่อ (ระดับความรู้ ฯลฯ) แสดงเป็นหัวข้อ = ข้อความคำถามจริง เหมือนปีที่ใช้คำถามรายข้อ
+                        const FULL_Q = {
+                            'ระดับความรู้': 'คุณทราบปริมาณโซเดียมหรือเกลือในอาหารที่คุณรับประทานในแต่ละวัน',
+                            'ระดับความพยายาม': 'ในแต่ละวันคุณได้พยายามจำกัดหรือลดปริมาณการบริโภคเกลือและโซเดียม',
+                            'ระดับความสำคัญ': 'คุณตระหนักว่าการจำกัดการบริโภคโซเดียมและเกลือ มีความสำคัญมากเท่าใด'
+                        };
+                        const gv = (r, k) => { const x = r.groups.find(y => y.g.key === k); return x ? x.pct : 0; };
+                        const sumP = r => (gv(r, 'risk') + gv(r, 'mid') + gv(r, 'good')) || 1;
+                        let L = 0, Rr = 0;
+                        rows.forEach(r => { const t = sumP(r); L = Math.max(L, (gv(r, 'risk') + gv(r, 'mid') / 2) * 100 / t); Rr = Math.max(Rr, (gv(r, 'good') + gv(r, 'mid') / 2) * 100 / t); });
+                        L = Math.ceil(L / 10) * 10; Rr = Math.ceil(Rr / 10) * 10;
+                        const span = L + Rr, pos = v => ((L + v) * 100 / span).toFixed(2) + '%';
+                        let ticks = '';
+                        for (let d = -Math.floor(L / 20) * 20; d <= Math.floor(Rr / 20) * 20; d += 20) {
+                            ticks += '<span class="lk-tk' + (d === 0 ? ' z' : '') + '" style="left:' + pos(d) + '">' + Math.abs(d) + '%</span>';
+                        }
+                        let grid = '';
+                        for (let d = -Math.floor(L / 20) * 20; d <= Math.floor(Rr / 20) * 20; d += 20) {
+                            grid += '<span class="lk-gl' + (d === 0 ? ' z' : '') + '" style="left:' + pos(d) + '"></span>';
+                        }
+                        html += '<div class="hm-cap"><b>ภาพที่ 1</b> ร้อยละของผู้ตอบแบบประเมินจำแนกตามระดับคำตอบรายข้อ แถบเต็ม 100% ของผู้ตอบแต่ละข้อ (ซ้าย = ควรปรับปรุง, กลาง = ปานกลาง, ขวา = ดี) เรียงจากข้อที่มีสัดส่วน "ควรปรับปรุง" สูงสุด</div>';
+                        html += '<div class="lk-split"><div class="lk-main"><div class="lk">';
+                        
+                        rows.forEach((r, ri) => {
+                            const t = sumP(r);
+                            const midHalf = gv(r, 'mid') / 2 * 100 / t;
+                            const startV = -(gv(r, 'risk') * 100 / t + midHalf);
+                            const segs = r.groups.filter(x => x.pct > 0).map(x => {
+                                const g = x.g;
                                 const tipTxt = '<div class="dtip-h"><span class="dtip-dot" style="background:' + g.color + '"></span><b>' + escapeHtml(g.name) + '</b><em>' + x.pct.toFixed(1) + '%</em></div><div class="dtip-sub">' + x.count.toLocaleString() + ' คน</div>' +
-                                    x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span></div>').join('');
-                                const hex = g.color.replace('#', '');
-                                const rgb = [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16)).join(',');
-                                return '<div class="hm-cell" style="--c:' + rgb + ';background:rgba(' + rgb + ',' + a + ');color:' + (dark && g.key !== 'mid' ? '#fff' : '#1e293b') + '" data-dtip="' + escAttr(tipTxt) + '"><b>' + x.rnd + '%</b><small>' + x.count.toLocaleString() + ' คน</small></div>';
+                                    x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span>' +
+                                        '<i class="dtip-b"><u style="width:' + Math.min(100, s.pct / (x.pct || 1) * 100).toFixed(0) + '%;background:' + g.color + '"></u></i></div>').join('');
+                                const w = (x.pct * 100 / t).toFixed(2);
+                                return '<div class="sb-seg" style="flex:' + w + ' 1 0;background:' + g.color + ';color:' + g.text + '" data-dtip="' + escAttr(tipTxt) + '">' + (x.rnd >= 1 ? '<b>' + x.rnd + '%</b>' : '') + (x.rnd >= 14 ? '<small>' + x.count.toLocaleString() + ' คน</small>' : '') + '</div>';
                             }).join('');
-                            html += '<div class="hm-row"><div class="hm-lab"><span>' + pretty(r.c) + '</span></div>' + cells + '</div>';
+                            html += '<div class="lk-item"><div class="wf-head"><span class="sb-q">' + pretty(FULL_Q[r.c] || r.c) + '</span></div>' +
+                                '<div class="lk-track">' + '<div class="lk-bar">' + segs + '</div></div></div>';
                         });
-                        html += '</div>';
+                        html += '</div></div>';
+                        const byRisk = rows.slice().sort((a, b) => gv(b, 'risk') / sumP(b) - gv(a, 'risk') / sumP(a));
+                        const byGood = rows.slice().sort((a, b) => gv(b, 'good') / sumP(b) - gv(a, 'good') / sumP(a));
+                        const pc = (r, k) => (gv(r, k) * 100 / sumP(r)).toFixed(1);
+                        // ฝั่งสรุป: ใช้สี/ลำดับเดียวกับกราฟ (ซ้าย = ควรปรับปรุง, กลาง, ขวา = ดี)
+                        const nMax = Math.max.apply(null, rows.map(r => r.total || 0));
+                        const totAll = rows.reduce((a, r) => a + (r.total || 0), 0) || 1;
+                        const pcOf = (r, k) => gv(r, k) * 100 / sumP(r);
+                        const avgOf = k => rows.reduce((a, r) => a + pcOf(r, k) * (r.total || 0), 0) / totAll;
+                        const rowsHtml = GROUPS.map(g => {
+                            const vals = rows.map(r => pcOf(r, g.key));
+                            const lo = Math.round(Math.min.apply(null, vals)), hi = Math.round(Math.max.apply(null, vals));
+                            const av = avgOf(g.key);
+                            return '<div class="lk-g"><div class="lk-gh"><span class="lk-gd" style="background:' + g.color + '"></span><b>' + g.name + '</b><small>' + LV[g.key] + '</small><em style="color:' + (g.key === 'mid' ? '#6d55b8' : g.color) + '">' + av.toFixed(1) + '%</em></div>'  + '</div>';
+                        }).join('');
+                        html += '<aside class="lk-side"><div class="lk-sh"><span class="lk-shi"><i class="fas fa-chart-pie"></i></span><div class="lk-sht"><b>สรุปผล</b><small>ภาพรวมจากทุกข้อที่ประเมิน</small></div></div>' +
+                            '<ul class="lk-pts">' +
+                            '<li class="is-risk"><span class="lk-ic"><i class="fas fa-exclamation-triangle"></i></span><div class="lk-tx"><small>ข้อที่ควรปรับปรุงมากที่สุด</small><b>' + pretty(FULL_Q[byRisk[0].c] || byRisk[0].c) + '</b></div><div class="lk-v"><em>' + pc(byRisk[0], 'risk') + '%</em><small>ของผู้ตอบ</small></div></li>' +
+                            '<li class="is-good"><span class="lk-ic"><i class="fas fa-check-circle"></i></span><div class="lk-tx"><small>ข้อที่ผู้ตอบอยู่ในระดับดีมากที่สุด</small><b>' + pretty(FULL_Q[byGood[0].c] || byGood[0].c) + '</b></div><div class="lk-v"><em>' + pc(byGood[0], 'good') + '%</em><small>ของผู้ตอบ</small></div></li>' +
+                            '<li class="is-n"><span class="lk-ic"><i class="fas fa-users"></i></span><div class="lk-tx"><small>จำนวนผู้ตอบต่อข้อ</small><b>ผู้ตอบแบบประเมิน (n)</b></div><div class="lk-v"><em>' + nMax.toLocaleString() + '</em><small>คน</small></div></li>' +
+                            '</ul></aside></div>';
+                        html += '<div class="hm-note"><b>หมายเหตุ:</b> ร้อยละคำนวณจากจำนวนผู้ตอบในแต่ละข้อ (n) แต่ละแถบรวมเป็น 100% ของผู้ตอบข้อนั้น ความกว้างของแต่ละส่วนเทียบกันได้ตรง ๆ · วางเมาส์เหนือแต่ละส่วนเพื่อดูรายละเอียดรายคำตอบ</div>';
                     }
 
+                    const buildSummaryAside = () => {
+                        const gx = (r, k) => { const x = r.groups.find(y => y.g.key === k); return x ? x.exact : 0; };
+                        const gRisk = GROUPS.find(g => g.key === 'risk'), gMid = GROUPS.find(g => g.key === 'mid'), gGood = GROUPS.find(g => g.key === 'good');
+                        const topRisk = rows.slice().sort((a, b) => gx(b, 'risk') - gx(a, 'risk'))[0];
+                        const topGood = rows.slice().sort((a, b) => gx(b, 'good') - gx(a, 'good'))[0];
+                        const nMaxB = Math.max.apply(null, rows.map(r => r.total || 0));
+                        const tint = (hex, a) => { const h = hex.replace('#', ''); return 'rgba(' + [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)).join(',') + ',' + a + ')'; };
+                        const pcv = (hex) => '--lc:' + hex + ';--lb:' + tint(hex, 0.08);
+                        return '<aside class="lk-side"><div class="lk-sh"><span class="lk-shi"><i class="fas fa-chart-pie"></i></span><div class="lk-sht"><b>สรุปผล</b><small>ภาพรวมจากทุกข้อที่ประเมิน</small></div></div>' +
+                            '<ul class="lk-pts">' +
+                            '<li class="is-risk" style="' + pcv(gRisk.color) + '"><span class="lk-ic" style="background:' + tint(gRisk.color, 0.14) + '"><i class="fas fa-exclamation-triangle"></i></span><div class="lk-tx"><small>ข้อที่ควรปรับปรุงมากที่สุด</small><b>' + pretty(topRisk.c) + '</b></div><div class="lk-v"><em>' + gx(topRisk, 'risk').toFixed(1) + '%</em><small>ของผู้ตอบ</small></div></li>' +
+                            '<li class="is-good" style="' + pcv(gGood.color) + '"><span class="lk-ic" style="background:' + tint(gGood.color, 0.16) + '"><i class="fas fa-check-circle"></i></span><div class="lk-tx"><small>ข้อที่ผู้ตอบอยู่ในระดับดีมากที่สุด</small><b>' + pretty(topGood.c) + '</b></div><div class="lk-v"><em>' + gx(topGood, 'good').toFixed(1) + '%</em><small>ของผู้ตอบ</small></div></li>' +
+                            '<li class="is-n"><span class="lk-ic"><i class="fas fa-users"></i></span><div class="lk-tx"><small>จำนวนผู้ตอบต่อข้อ</small><b>ผู้ตอบแบบประเมิน (n)</b></div><div class="lk-v"><em>' + nMaxB.toLocaleString() + '</em><small>คน</small></div></li>' +
+                            '</ul></aside></div>';
+                    };
+
                     if (mode === 'donut') {
-                        // โดนัทต่อข้อ: วงแหวนสามช่วง กลางวงบอกสัดส่วน "ควรปรับ"
+                        // โดนัทต่อข้อ: วงแหวนสามช่วง กลางวงบอกสัดส่วน "ควรปรับปรุง"
                         const R = 42, C = 2 * Math.PI * R;
                         const mix = (hex, t) => {   // ผสมกับขาว (t>0) หรือดำ (t<0) เพื่อไล่เฉดให้ดูมีมิติ
                             const h = hex.replace('#', '');
@@ -3061,7 +3351,7 @@
                             }).join('');
                         };
                         let uid = 0;
-                        html += '<div class="dn-grid" data-n="' + rows.length + '">';
+                        html += '<div class="lk-split"><div class="lk-main"><div class="dn-grid" data-n="' + rows.length + '">';
                         rows.forEach(r => {
                             let off = 0;
                             const id = 'dng' + (++uid) + '-' + Math.random().toString(36).slice(2, 6);
@@ -3084,12 +3374,13 @@
                             html += '<div class="dn"><div class="dn-title">' + pretty(r.c) + '</div><div class="dn-body">' +
                                 '<svg class="dn-svg" viewBox="0 0 110 110" role="img" aria-label="' + escAttr(escapeHtml(r.c)) + '">' + defs + '<circle cx="55" cy="55" r="' + R + '" fill="none" stroke="#e8edf3" stroke-width="14"></circle>' + arcs +
                                 '<circle class="dn-disc" cx="55" cy="55" r="32" fill="url(#' + id + 'c)"></circle>' +
-                                '<text x="55" y="56" text-anchor="middle" class="dn-pct" fill="' + GROUPS[0].color + '">' + r.riskRnd + '%</text><text x="55" y="67" text-anchor="middle" class="dn-cap">ควรปรับ</text></svg>' +
+                                '<text x="55" y="56" text-anchor="middle" class="dn-pct" fill="' + GROUPS[0].color + '">' + r.riskRnd + '%</text><text x="55" y="67" text-anchor="middle" class="dn-cap">ควรปรับปรุง</text></svg>' +
                                 '<div class="dn-list">' + rowsTxt + '</div></div></div>';
                         });
-                        html += '</div>';
+                        html += '</div></div>' + buildSummaryAside();
                     }
 
+                    if (mode === 'bars') html += '<div class="lk-split"><div class="lk-main">';
                     if (mode === 'bars') rows.forEach(r => {
                         const groups = r.groups;
 
@@ -3114,11 +3405,16 @@
                         ).join('');
 
                         html += '<div class="divrow"><div class="divrow-head"><div class="divrow-label">' + pretty(r.c) +
-                            '</div><span class="divrow-risk' + (r.risk < 10 ? ' is-low' : '') + '" title="ผู้ตอบที่อยู่ในกลุ่มคำตอบที่ควรปรับ">ควรปรับ ' +
+                            '</div><span class="divrow-risk' + (r.risk < 10 ? ' is-low' : '') + '" title="ผู้ตอบที่อยู่ในกลุ่มคำตอบที่ควรปรับปรุง">ควรปรับปรุง ' +
                             r.riskRnd + '%</span></div>' +
                             '<div class="divrow-bar">' + segHtml + '</div>' +
                             '<div class="divrow-glabs">' + labHtml + '</div></div>';
                     });
+
+                    if (mode === 'bars') {
+                        html += '</div>';
+                        html += buildSummaryAside();
+                    }
 
                     container.innerHTML = html;
 
@@ -3159,7 +3455,7 @@
                         const cardTitle = (cardEl.querySelector('.chart-header-title') || {}).textContent || '';
                         const GDESC = {
                             risk: 'คำตอบที่เสี่ยงต่อสุขภาพที่สุด 2 ระดับ ควรช่วยกันปรับพฤติกรรม',
-                            mid: 'คำตอบระดับกลาง ยังปรับให้ดีขึ้นได้',
+                            mid: 'คำตอบระดับปานกลาง ยังปรับให้ดีขึ้นได้',
                             good: 'คำตอบที่ดีต่อสุขภาพที่สุด 2 ระดับ'
                         };
                         const fmt = n => n.toLocaleString();
@@ -3169,12 +3465,12 @@
                             '<div><b>' + g.name + '</b><span>' + GDESC[g.key] + '</span></div></div>'
                         ).join('');
 
-                        // ตัวอย่างคำนวณจากข้อแรกของการ์ด (ข้อที่ควรปรับมากที่สุด) ด้วยตัวเลขจริง
+                        // ตัวอย่างคำนวณจากข้อแรกของการ์ด (ข้อที่ควรปรับปรุงมากที่สุด) ด้วยตัวเลขจริง
                         const ex = rows[0];
                         const exRisk = ex ? ex.groups.find(x => x.g.key === 'risk') : null;
                         const exHtml = (ex && exRisk) ?
                             '<div class="sim-ex"><div class="sim-ex-q">' + escapeHtml(ex.c) + '</div>' +
-                            '<div class="sim-ex-calc"><span><small>ผู้ตอบกลุ่มควรปรับ</small><b>' + fmt(exRisk.count) + ' คน</b></span>' +
+                            '<div class="sim-ex-calc"><span><small>ผู้ตอบกลุ่มควรปรับปรุง</small><b>' + fmt(exRisk.count) + ' คน</b></span>' +
                             '<em>÷</em><span><small>ผู้ตอบทั้งหมด</small><b>' + fmt(ex.total) + ' คน</b></span>' +
                             '<em>=</em><span class="is-res"><small>สัดส่วน</small><b>' + exRisk.exact.toFixed(1) + '%</b></span></div>' +
                             '<div class="sim-ex-note">แสดงในแถบเป็น ' + exRisk.rnd + '% (ปัดเศษให้ทั้ง 3 กลุ่มรวมกันได้ 100%)</div></div>' : '';

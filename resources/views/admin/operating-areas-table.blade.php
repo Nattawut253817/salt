@@ -77,7 +77,7 @@
                     <td class="oa-note">{{ $pin->label ?? '–' }}</td>
                     <td class="oa-meta">
                         <div class="oa-meta-name">{{ $pin->creator->name ?? '-' }}</div>
-                        <div class="oa-meta-date">{{ $pin->created_at->format('d/m/Y H:i') }}</div>
+                        <div class="oa-meta-date">{{ $pin->created_at->copy()->timezone('Asia/Bangkok')->format('d/m/Y H:i') }}</div>
                     </td>
                     @if ($isSuperAdmin)
                         @php

@@ -1980,7 +1980,7 @@
 
             <div class="hm-card hm-kd-cmp">
                 <h4>เปรียบเทียบผลดำเนินงานรายจังหวัด</h4>
-                <div class="hm-cap">พื้นที่ดำเนินงาน = อำเภอที่ตอบ ÷ อำเภอที่ปักหน่วยงาน · ข้อมูลครบ = ทุกหน่วยงานทำครบ 8 ข้อ</div>
+                <div class="hm-cap">พื้นที่ดำเนินงาน = พื้นที่ที่ตอบ ÷ พื้นที่ที่ปักหน่วยงาน (อำเภอ หรือระดับจังหวัด) · ข้อมูลครบ = ทุกหน่วยงานทำครบ 8 ข้อ</div>
                 <table class="hm-t">
                     <thead><tr><th>จังหวัด</th><th>พื้นที่ดำเนินงาน</th><th>ข้อมูลครบ</th></tr></thead>
                     <tbody>
@@ -1989,7 +1989,7 @@
                                 <td style="white-space: nowrap;"><i class="hm-dot" style="background: {{ $hmProvColor[$row['province']] ?? '#64748b' }};"></i>{{ $row['province'] }}</td>
                                 <td>
                                     @if ($row['percent'] !== null)
-                                        <div class="hm-bar" title="{{ $row['answered'] }} จาก {{ $row['total'] }} อำเภอที่ปักหน่วยงาน">
+                                        <div class="hm-bar" title="{{ $row['answered'] }} จาก {{ $row['total'] }} พื้นที่ (อำเภอ/ระดับจังหวัด)">
                                             <div class="hm-bar-tr"><div class="hm-bar-fl" style="width: {{ $row['percent'] }}%;"></div></div>
                                             <span class="hm-bar-pc">{{ $row['percent'] }}%</span>
                                         </div>
@@ -2651,6 +2651,60 @@
         <script src="{{ asset('vendor/highcharts/th-all.js') }}"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
         <script src="{{ asset('vendor/highcharts/th-districts-r10.js') }}"></script>
+        <script>
+            // มิติให้แผนที่: เงาตกพื้น + ความหนาของแผ่นจังหวัด (ชั้นสีเข้มเลื่อนลง) + ประกายแสงมุมซ้ายบน
+            // ทุกชั้นทำซ้ำจากรูปร่างจังหวัดเอง เลื่อนเป็นพิกเซลจริง (หารด้วยสเกลของกลุ่มแผนที่)
+            window.hmMapDepth = function (chart, colorOf) {
+                const svg = chart.container.querySelector('svg');
+                if (!svg) return;
+                svg.querySelectorAll('.hm-depth').forEach(el => el.remove());
+                const ns = 'http://www.w3.org/2000/svg';
+                const pts = chart.series[0].points.filter(p => p.graphic && p.graphic.element);
+                if (!pts.length) return;
+                const uid = 'hmd' + (chart.index || 0);
+                const parent = pts[0].graphic.element.parentNode;
+                // กลุ่มซีรีส์ถูกตัดที่ขอบพื้นที่พล็อต เอาออกเพื่อให้ความหนา/เงาโผล่พ้นขอบล่างได้
+                [parent, parent.parentNode].forEach(g => { if (g && g.removeAttribute) g.removeAttribute('clip-path'); });
+                const m = /scale\(\s*([-\d.e]+)[ ,]+([-\d.e]+)\s*\)/.exec(parent.getAttribute('transform') || '');
+                const kx = m ? parseFloat(m[1]) || 1 : 1, ky = m ? parseFloat(m[2]) || 1 : 1;
+                const px = n => n / ky;
+                const dark = p => {
+                    if (colorOf) { const c = colorOf(p); if (c) return c; }
+                    let c = p.color;
+                    if (c && c.stops) c = c.stops[c.stops.length - 1][1];
+                    try { return Highcharts.color(c).brighten(-0.32).get('rgb'); } catch (e) { return '#334155'; }
+                };
+                const defs = document.createElementNS(ns, 'defs');
+                defs.setAttribute('class', 'hm-depth');
+                defs.innerHTML =
+                    '<linearGradient id="' + uid + 'g" x1="0" y1="1" x2=".75" y2="0">' +
+                    '<stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".45" stop-color="#fff" stop-opacity=".06"/>' +
+                    '<stop offset="1" stop-color="#0f172a" stop-opacity=".16"/></linearGradient>' +
+                    '<filter id="' + uid + 'b" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="' + (6 / Math.abs(kx)) + '"/></filter>';
+                svg.insertBefore(defs, svg.firstChild);
+                const first = pts.map(p => p.graphic.element).sort((a, b) => (a.compareDocumentPosition(b) & 4) ? -1 : 1)[0];
+                const mk = (el, attrs, dy) => {
+                    const c = el.cloneNode(false);
+                    ['class', 'filter', 'fill', 'stroke', 'stroke-width', 'style'].forEach(n => c.removeAttribute(n));
+                    c.setAttribute('class', 'hm-depth');
+                    c.setAttribute('pointer-events', 'none');
+                    Object.keys(attrs).forEach(k => c.setAttribute(k, attrs[k]));
+                    if (dy) c.setAttribute('transform', 'translate(0 ' + px(dy) + ')');
+                    return c;
+                };
+                pts.forEach(p => parent.insertBefore(mk(p.graphic.element, { fill: '#0b2f3a', 'fill-opacity': '.30', filter: 'url(#' + uid + 'b)' }, 17), first));
+                for (let d = 7; d >= 1; d--) {
+                    pts.forEach(p => {
+                        const col = dark(p);
+                        parent.insertBefore(mk(p.graphic.element, { fill: col, stroke: col, 'stroke-width': 1.2 / Math.abs(kx), 'stroke-linejoin': 'round' }, d), first);
+                    });
+                }
+                pts.forEach(p => {
+                    const el = p.graphic.element;
+                    el.parentNode.insertBefore(mk(el, { fill: 'url(#' + uid + 'g)' }), el.nextSibling);
+                });
+            };
+        </script>
         @php
             $hmMiPins = [];
             foreach (($hmKd['pins'] ?? []) as $hmP) {
@@ -2736,7 +2790,7 @@
                 const want = Object.values(keys);
                 const mapData = Object.assign({}, full, { features: full.features.filter(f => want.includes(f.properties['hc-key'])) });
                 Highcharts.mapChart('hmMapChoro', {
-                    chart: { map: mapData, backgroundColor: 'transparent', spacing: [4, 4, 4, 4], marginBottom: 134 },
+                    chart: { map: mapData, backgroundColor: 'transparent', spacing: [4, 4, 4, 4], marginBottom: 148, events: { load: function () { window.hmMapDepth(this, p => (colors[p.name] || dflt).stroke); }, redraw: function () { window.hmMapDepth(this, p => (colors[p.name] || dflt).stroke); } } },
                     title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
                     exporting: { enabled: false }, mapNavigation: { enabled: false },
                     plotOptions: { map: {
@@ -2934,7 +2988,8 @@
                         chart: {
                             map: filteredMapData,
                             backgroundColor: 'transparent',
-                            spacing: [10, 10, 10, 10]
+                            spacing: [10, 10, 20, 10],
+                            events: { load: function () { window.hmMapDepth(this); }, redraw: function () { window.hmMapDepth(this); } }
                         },
                         title: {
                             text: ''

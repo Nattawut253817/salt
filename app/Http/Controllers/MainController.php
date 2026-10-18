@@ -37,7 +37,7 @@ class MainController extends Controller
         $query = $request->query();
         ksort($query);
         $user = auth()->user();
-        $key = 'page_data_v13:' . $page . ':' . md5(json_encode([
+        $key = 'page_data_v17:' . $page . ':' . md5(json_encode([
             $query,
             ($perUser && $user) ? [$user->id, $user->User_rank_id] : null,
             array_map(fn ($m) => $this->tableStamp($m), $models),
@@ -336,7 +336,8 @@ class MainController extends Controller
                     ]);
                     return [
                         'id' => null,
-                        'district_id' => $first->operating_area_district_id,
+                        // รายงานที่ปักพื้นที่โดยไม่ได้เลือกอำเภอ -> ใช้อำเภอของหน่วยงานผู้รายงานแทน (เหมือนรายงานเก่าที่ไม่มีหมุด)
+                        'district_id' => $first->operating_area_district_id ?: optional($first->user)->District_id,
                         'lat' => (float) $first->operating_area_latitude,
                         'lng' => (float) $first->operating_area_longitude,
                         'label' => trim((string) $first->operating_area) ?: null,
@@ -546,10 +547,12 @@ class MainController extends Controller
         //              which is different from a real 0%.
         $provinceAreaProgress = collect($targetProvinces)->map(function ($provName) use ($operatingAreaPins) {
             $provPins = $operatingAreaPins->where('province_name', $provName);
-            $total = $provPins->pluck('district_id')->filter()->unique()->count();
+            // หน่วยนับ = อำเภอ; รายงานที่ทำระดับจังหวัด (ไม่ระบุอำเภอ) นับรวมเป็น 1 หน่วย "ระดับจังหวัด" ต่อจังหวัด
+            $unitOf = fn($pin) => $pin['district_id'] ?: 'province';
+            $total = $provPins->map($unitOf)->unique()->count();
             $answered = $provPins
                 ->filter(fn($pin) => ($pin['progress'] ?? 0) > 0)
-                ->pluck('district_id')->filter()->unique()->count();
+                ->map($unitOf)->unique()->count();
 
             // ข้อมูลครบ: a pin is "complete" at 8/8 (milestones 1-7 all filled,
             // plus any one of 8.1/8.2/8.3 - the same rule behind each pin's
@@ -1682,7 +1685,7 @@ class MainController extends Controller
         // awareness bundle above (different source tables, cheaper, and
         // they should not be invalidated together).
         $homeModules = Cache::remember(
-            'home_modules_v16:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
+            'home_modules_v17:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
             now()->addMinutes(10),
             fn() => $this->buildHomeModuleSummaries($activeFiscalYear, $selectedProvince, $targetProvinces)
         );
@@ -1937,8 +1940,10 @@ class MainController extends Controller
 
         $kidneyProvinces = collect($scopeProvinces)->map(function ($prov) use ($pins) {
             $pp = $pins->where('province_name', $prov);
-            $total = $pp->pluck('district_id')->filter()->unique()->count();
-            $answered = $pp->filter(fn($p) => $p['progress'] > 0)->pluck('district_id')->filter()->unique()->count();
+            // หน่วยนับ = อำเภอ; รายงานระดับจังหวัด (ไม่ระบุอำเภอ) นับเป็น 1 หน่วย "ระดับจังหวัด" (เหมือนหน้ารายงาน พชอ.ไต)
+            $unitOf = fn($p) => ($p['district_id'] ?? null) ?: 'province';
+            $total = $pp->map($unitOf)->unique()->count();
+            $answered = $pp->filter(fn($p) => $p['progress'] > 0)->map($unitOf)->unique()->count();
             $pc = $pp->count();
             $ap = $pp->filter(fn($p) => $p['progress'] > 0)->count();
             $cp = $pp->filter(fn($p) => $p['progress'] >= 8)->count();
