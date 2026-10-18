@@ -51,10 +51,21 @@
     </div>
 </div>
 
+@php $canBulk = auth()->user()->isSuperAdmin(); @endphp
+@if ($canBulk)
+    <div class="bulk-bar" id="bulk-bar" hidden>
+        <span class="bulk-count"><i class="fas fa-check-double"></i> เลือกแล้ว <b id="bulk-count">0</b> บัญชี</span>
+        <button type="button" class="bulk-clear" id="bulk-clear">ล้างการเลือก</button>
+        <button type="button" class="bulk-delete" id="bulk-delete"><i class="fas fa-trash-alt"></i> ลบที่เลือก</button>
+    </div>
+@endif
 <div class="table-responsive">
     <table class="table table-hover align-middle mb-0 custom-table">
         <thead>
             <tr>
+                @if ($canBulk)
+                    <th class="pl-4 py-3 bulk-col"><input type="checkbox" class="bulk-check" id="bulk-all" title="เลือกทั้งหน้า" aria-label="เลือกทั้งหน้า"></th>
+                @endif
                 <th class="px-4 py-3">ลำดับ</th>
                 <th class="px-4 py-3">ชื่อ-นามสกุล</th>
                 <th class="px-4 py-3">อีเมล</th>
@@ -72,6 +83,14 @@
             @endphp
             @forelse($users as $index => $user)
                 <tr>
+                    @if ($canBulk)
+                        <td class="pl-4 py-3 bulk-col">
+                            @if ($user->id !== auth()->id() && ! $user->isSuperAdmin())
+                                <input type="checkbox" class="bulk-check bulk-row" value="{{ $user->id }}"
+                                    aria-label="เลือก {{ $user->User_firstname }} {{ $user->User_lastname }}">
+                            @endif
+                        </td>
+                    @endif
                     <td class="px-4 py-3 text-muted font-weight-500">{{ $start + $index }}</td>
                     <td class="px-4 py-3">
                         <div class="d-flex align-items-center">
@@ -166,17 +185,19 @@
                                 title="แก้ไข">
                                 <i class="fas fa-edit"></i> แก้ไข
                             </button>
+            @if ($canBulk)
                             <button type="button" class="btn-action btn-delete delete-user" data-id="{{ $user->id }}"
                                 data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
                                 title="ลบ">
                                 <i class="fas fa-trash-alt"></i> ลบ
                             </button>
+            @endif
                         </div>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="8" class="text-center py-5 text-muted">
+                    <td colspan="{{ $canBulk ? 9 : 8 }}" class="text-center py-5 text-muted">
                         <i class="fas fa-user-slash fa-3x mb-3 opacity-25"></i>
                         <p>ไม่พบข้อมูลผู้ใช้งานที่ค้นหา</p>
                     </td>

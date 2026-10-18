@@ -758,6 +758,51 @@
             overflow-wrap: anywhere;
         }
 
+        /* ปรับแท่งให้มีมิติ: หลอดแก้วนุ่ม + ส่วนที่ตระหนักรู้เป็นของเหลวเงา + ป้ายร้อยละเด่น */
+        .pf-cols { gap: 14px; padding-top: 2px; }
+        .pf-badge {
+            max-width: 92px; margin-bottom: 11px; padding: 7px 4px 6px; border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #d7f8e8 100%);
+            border: 1px solid #9fe8c6;
+            box-shadow: 0 1px 0 #fff inset, 0 8px 14px -8px rgba(5, 150, 105, .55);
+            position: relative;
+        }
+        .pf-badge::after {
+            content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px;
+            transform: translateX(-50%) rotate(45deg); background: #d7f8e8;
+            border-right: 1px solid #9fe8c6; border-bottom: 1px solid #9fe8c6; border-radius: 0 0 3px 0;
+        }
+        .pf-pct { font-size: 1.3rem; color: #047857; letter-spacing: -.3px; }
+        .pf-tube {
+            max-width: 68px; border-radius: 20px;
+            background:
+                repeating-linear-gradient(135deg, rgba(255,255,255,.28) 0 6px, rgba(255,255,255,0) 6px 12px),
+                linear-gradient(180deg, #ffd7d7 0%, #ffeaea 100%);
+            box-shadow: inset 0 0 0 1px rgba(239, 68, 68, .10), inset 5px 0 8px -5px rgba(255,255,255,.9),
+                inset -4px 0 8px -5px rgba(190, 60, 60, .18), 0 12px 18px -12px rgba(15, 23, 42, .35);
+            position: relative;
+        }
+        .pf-tube::after { /* เงาสะท้อนแก้วด้านซ้าย */
+            content: ""; position: absolute; left: 7px; top: 12px; bottom: 12px; width: 5px; border-radius: 99px;
+            background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(255,255,255,0)); pointer-events: none;
+        }
+        .pf-tube-fail { font-size: .72rem; color: #b84344; padding-top: 9px; }
+        .pf-tube-pass {
+            position: relative; z-index: 1;
+            background: linear-gradient(90deg, #10b981 0%, #34d399 38%, #059669 100%);
+            border-radius: 16px 16px 0 0;
+            box-shadow: 0 -3px 0 #fff, 0 -8px 14px -6px rgba(16, 185, 129, .55), inset 0 3px 4px rgba(255,255,255,.45);
+        }
+        .pf-name { margin-top: 10px; font-weight: 800; font-size: .86rem; color: #1e293b; }
+        .pf-name small, .pf-name span { color: #64748b; font-weight: 600; }
+        .pf-col:first-child .pf-badge {
+            background: linear-gradient(180deg, #ffffff 0%, #b8f2d6 100%); border-color: #5fd6a2;
+            box-shadow: 0 1px 0 #fff inset, 0 10px 18px -8px rgba(5, 150, 105, .75);
+        }
+        .pf-col:first-child .pf-badge::after { background: #b8f2d6; border-color: #5fd6a2; }
+        .pf-top { padding: 6px 4px 8px; border-bottom: 1px dashed #e2e8f0; }
+        @media (max-width: 560px) { .pf-cols { gap: 7px; } .pf-name { font-size: .76rem; } .pf-badge { padding: 6px 2px 5px; } .pf-pct { font-size: 1.12rem; } }
+
         .pf-n {
             font-size: .7rem;
             font-weight: 500;
@@ -1024,6 +1069,70 @@
             color: #64748b;
         }
 
+
+        /* donut (กรอบที่ 2) */
+        .chart-card:has(#seasoningChart){display:flex;flex-direction:column;height:100%}
+        #seasoningChart{flex:1 1 auto;display:flex;min-height:0}
+        .dn-grid{flex:1 1 auto;width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:12px}
+        #seasoningChart{container-type:inline-size}
+        /* 3 หัวข้อ: สองใบแรกอยู่บน ใบที่สามยาวเต็มแถวด้านล่าง | 4 หัวข้อ: 2 x 2 | 1 หัวข้อ: เต็มแถว */
+        .dn-grid[data-n="3"] .dn:nth-child(3),.dn-grid[data-n="1"] .dn:first-child{grid-column:1/-1}
+        .dn-grid[data-n="3"] .dn:nth-child(3) .dn-body,.dn-grid[data-n="1"] .dn-body{gap:48px}
+        .dn-grid[data-n="3"] .dn:nth-child(3) .dn-list,.dn-grid[data-n="1"] .dn-list{max-width:340px}
+        @container (max-width:520px){.dn-grid{grid-template-columns:minmax(0,1fr)}.dn-grid[data-n="3"] .dn:nth-child(3){grid-column:auto}}
+        .dn{display:flex;flex-direction:column;border:1px solid #eef2f6;border-radius:14px;background:linear-gradient(180deg,#fff,#fafbfd);padding:14px 16px}
+        .dn-title{font-size:16.5px;font-weight:800;line-height:1.35;color:#0f172a;margin-bottom:4px}
+        .dn-title small{display:block;font-size:11px;font-weight:500;color:#94a3b8;margin-top:1px}
+        .dn-body{flex:1;display:flex;align-items:center;justify-content:center;gap:18px}
+        .dn-svg{width:150px;height:150px;flex:none;filter:drop-shadow(0 7px 9px rgba(15,23,42,.18))}
+        .dn-disc{filter:drop-shadow(0 1px 2px rgba(15,23,42,.22));stroke:#fff;stroke-width:1.5}
+        .dn-arc{cursor:default;transition:stroke-width .12s}
+        .dn-arc:hover{stroke-width:18}
+        .dn-pct{font-size:15px;font-weight:800}
+        .dn-cap{font-size:7.5px;fill:#64748b}
+        .dn-list{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px}
+        .dn-r{display:grid;grid-template-columns:10px 1fr auto;gap:0 7px;align-items:center;font-size:12.5px;color:#475569}
+        .dn-r i{width:10px;height:10px;border-radius:50%}
+        .dn-r b{color:#0f172a;font-size:14px}
+        .dn-r small{grid-column:2/4;color:#334155;font-weight:600;font-size:12px;margin-top:-2px}
+        /* heatmap (กรอบที่ 3) */
+        .hm{display:flex;flex-direction:column;gap:4px}
+        .hm-row{display:grid;grid-template-columns:minmax(120px,1.6fr) repeat(3,1fr);gap:4px;align-items:stretch}
+        .hm-col{text-align:center;font-size:12px;font-weight:700;color:#475569;padding:2px 0}
+        .hm-lab{display:flex;flex-direction:column;justify-content:center;gap:1px;padding-right:10px;font-size:16px;font-weight:800;line-height:1.35;color:#0f172a;letter-spacing:.1px}
+        .hm-lab small{font-size:11px;font-weight:500;color:#94a3b8}
+        .lbl-gap{color:#94a3b8;font-weight:500}
+        .hm-cell{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 0 rgba(15,23,42,.07),0 7px 12px -8px rgba(var(--c,100,100,100),.75);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 4px;border-radius:8px;min-height:52px;cursor:default;transition:transform .12s}
+        .hm-cell::after{content:'';position:absolute;inset:0;background:linear-gradient(155deg,rgba(255,255,255,.38),rgba(255,255,255,0) 55%);pointer-events:none}
+        .hm-cell>*{position:relative;z-index:1}
+        .hm-cell:hover{transform:translateY(-2px) scale(1.03);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 0 rgba(15,23,42,.07),0 12px 18px -8px rgba(var(--c,100,100,100),.85)}
+        .hm-cell b{font-size:16px;line-height:1.1}
+        .hm-cell small{font-size:12px;font-weight:700;opacity:1}
+        .hm-cell.is-zero{background:#f8fafc;color:#94a3b8}
+        @media(max-width:575px){.hm-row{grid-template-columns:minmax(80px,1.2fr) repeat(3,1fr)}.hm-lab{font-size:12px}}
+        /* พื้นหลังโทนบางต่อการ์ด เพิ่มมิติโดยไม่แย่งสีข้อมูล */
+        #riskChart .divrow{background:linear-gradient(135deg,rgba(184,50,63,.05),rgba(29,90,150,.03) 70%,transparent)}
+        #seasoningChart .dn{background:linear-gradient(150deg,rgba(232,89,12,.07),rgba(246,223,180,.10) 45%,rgba(11,114,133,.08));border-color:rgba(11,114,133,.08)}
+        .hm{padding:10px;border-radius:14px;background:linear-gradient(160deg,rgba(194,37,92,.04),rgba(95,61,196,.05))}
+        .hm-lab{padding-left:12px;border-radius:9px;background:linear-gradient(90deg,rgba(69,39,160,.16),rgba(69,39,160,.02) 88%)}
+        .hm-headrow .hm-lab{background:none}
+        .awr-loadbar{position:fixed;left:0;top:0;height:3px;width:0;z-index:10000;background:linear-gradient(90deg,#22d3ee,#6366f1);opacity:0;pointer-events:none}
+        .awr-loadbar.on{opacity:1;width:92%;transition:width 6s cubic-bezier(.1,.7,.2,1)}
+        body.awr-busy .chart-card{opacity:.65;transition:opacity .2s}
+        .dtip{position:fixed;left:0;top:0;z-index:9999;pointer-events:none;min-width:190px;max-width:260px;padding:10px 12px 9px;
+            background:#fff;border:1px solid #e3e8ef;border-radius:12px;box-shadow:0 10px 28px rgba(15,23,42,.18);
+            font-size:12.5px;color:#334155;opacity:0;transition:opacity .12s}
+        .dtip.on{opacity:1}
+        .dtip-h{display:flex;align-items:center;gap:7px}
+        .dtip-h b{font-size:14px;color:#0f172a}
+        .dtip-h em{margin-left:auto;font-style:normal;font-weight:800;font-size:16px;color:#0f172a}
+        .dtip-dot{width:10px;height:10px;border-radius:50%;flex:none}
+        .dtip-sub{margin:1px 0 7px 17px;color:#64748b;font-size:12px}
+        .dtip-r{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:5px 0;border-top:1px solid #eef2f6}
+        .dtip-t{line-height:1.3}
+        .dtip-v{font-weight:700;color:#0f172a}
+        .dtip-b{grid-column:1/-1;display:block;height:4px;border-radius:3px;background:#eef2f6;overflow:hidden}
+        .dtip-b u{display:block;height:100%;border-radius:3px}
         .divrow-bar {
             display: flex;
             gap: 2px;
@@ -1278,6 +1387,7 @@
         }
 
         .divrow-label::before {
+            display: none !important; /* เอาเลขลำดับวงกลมออก */
             counter-increment: divrank;
             content: counter(divrank);
             flex: 0 0 auto;
@@ -1430,7 +1540,15 @@
             .awr-filter-item:last-of-type { border-bottom: none; }
             .awr-filter-clear { margin: 8px 0 0; width: 100%; }
         }
-</style>
+        /* การ์ดแถบ: เพิ่มมิติ (แสงสะท้อนบนแถบ เงาใต้แถบ ยกตัวเมื่อชี้) */
+        #riskChart .divrow{border:1px solid rgba(184,50,63,.08);box-shadow:0 6px 14px -10px rgba(15,23,42,.35)}
+        #riskChart .divrow-bar{overflow:hidden;border-radius:14px;box-shadow:0 8px 14px -8px rgba(29,45,80,.45),inset 0 -3px 0 rgba(15,23,42,.10)}
+        #riskChart .divrow-seg{position:relative;overflow:hidden;transition:filter .15s ease,transform .15s ease}
+        #riskChart .divrow-seg::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.34) 0,rgba(255,255,255,.10) 48%,rgba(255,255,255,0) 52%,rgba(0,0,0,.08) 100%);pointer-events:none}
+        #riskChart .divrow-seg>*{position:relative;z-index:1}
+        #riskChart .divrow-seg:hover{filter:brightness(1.05) saturate(1.08)}
+        .divrow-glab small{color:#334155 !important;font-weight:600 !important}
+    </style>
 @endsection
 
 @section('content')
@@ -1467,7 +1585,7 @@
                 <div class="awr-filter-item">
                     <i class="fa-solid fa-map-location-dot awr-filter-icon"></i>
                     <span class="awr-filter-field-label">จังหวัด</span>
-                    <select name="province" class="awr-filter-select" onchange="this.form.submit()">
+                    <select name="province" class="awr-filter-select" onchange="this.form.elements.district.value=''; this.form.submit()">
                         <option value="">ทั้งหมด</option>
                         @foreach ($provinces as $prov)
                             <option value="{{ $prov }}"
@@ -1784,7 +1902,7 @@
                     <div class="chart-header" style="--chart-accent:#e67e22;">
                         <div class="chart-header-icon"><i class="fas fa-utensils"></i></div>
                         <div>
-                            <div class="chart-header-title">พฤติกรรมการปรุงและการทานนอกบ้าน</div>
+                            <div class="chart-header-title">พฤติกรรมการปรุง การสั่งอาหาร และการทานนอกบ้าน</div>
                             <div class="chart-header-subtitle">สัดส่วนพฤติกรรมที่พบ</div>
                         </div>
                     </div>
@@ -1806,37 +1924,8 @@
                 </div>
             </div>
 
-            <!-- Chart 3: Healthy Habits (Positive) -->
-            <div class="col-lg-6 mb-4">
-                <div class="chart-card"
-                    style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 16px;">
-                    <div class="chart-header" style="--chart-accent:#3498db;">
-                        <div class="chart-header-icon"><i class="fas fa-heartbeat"></i></div>
-                        <div>
-                            <div class="chart-header-title">พฤติกรรมสุขภาพและการสั่งอาหาร</div>
-                            <div class="chart-header-subtitle">สัดส่วนพฤติกรรมที่พบ</div>
-                        </div>
-                    </div>
-                    <div id="healthyHabitChart" style="width: 100%;"></div>
-                    <div class="chart-figure-footer">
-                        <div class="scale-legend" aria-label="คำอธิบายสี">
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#b8323f,#f08a3c)"></span>ควรปรับ</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:#f4e4b0"></span>กลาง</span>
-                            <span class="scale-legend-item"><span class="scale-legend-swatch" style="background:linear-gradient(90deg,#6fb1d6,#1d5a96)"></span>ดี</span>
-                            <span class="scale-legend-note">ความยาวแถบ = สัดส่วนผู้ตอบ · เรียงจากข้อที่ควรปรับมากที่สุด</span>
-                        </div>
-                        <details>
-                            <summary class="chart-table-toggle"><i class="fas fa-caret-right"></i> ดูข้อมูลตัวเลข</summary>
-                            <div class="figure-table-wrap">
-                                <div id="healthyHabitTable"></div>
-                            </div>
-                        </details>
-                    </div>
-                </div>
-            </div>
-
             <!-- Chart 4: Awareness & Mindset (Positive) -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-12 mb-4">
                 <div class="chart-card"
                     style="box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); border-radius: 16px;">
                     <div class="chart-header" style="--chart-accent:#2ecc71;">
@@ -2602,7 +2691,8 @@
             // --- 5. Behavioral Charts (full-width diverging bar rows, one
             //     per question, matching the approved "ออกแบบกราฟพฤติกรรม
             //     โซเดียม" mockup) ---
-            const createDivergingBars = (containerId, tableContainerId, statsData, polarityOverrides, extremeValuesOverrides) => {
+            const createDivergingBars = (containerId, tableContainerId, statsData, polarityOverrides, extremeValuesOverrides, mode) => {
+                mode = mode || 'bars'; // bars = แถบซ้อน | donut = วงแหวนต่อข้อ | heat = ตารางความร้อน
                 const categories = Object.keys(statsData);
                 const container = document.getElementById(containerId);
                 if (!container) return;
@@ -2757,6 +2847,8 @@
                     // one from the "ทิศทาง" dropdown next to the question in
                     // "ตั้งค่าแดชบอร์ด" - an explicit choice made there always
                     // wins over this fallback map (see polarityFor below).
+                    'ความดันสูง...เสี่ยงโรค': 'positive', // ข้อความความรู้ที่ถูกต้อง - เห็นด้วยมาก = ดี (เดิมไม่มีในรายการจึงถูกกลับสีเป็นควรปรับ)
+                    'จำกัดการบริโภคโซเดียม...': 'positive', // ทำบ่อย = ดี (เดิมไม่มีในรายการจึงถูกนับเป็นเสี่ยง)
                     'ท่านเติมน้ำปลา...': 'negative', // เติมเครื่องปรุงรสเค็มขณะทาน - ทำบ่อย = เสี่ยง
                     'บริโภคอาหารแปรรูป...': 'negative', // อาหารแปรรูป - ทานบ่อย = เสี่ยง
                     'บริโภคอาหารหมักดอง...': 'negative', // อาหารหมักดอง - ทานบ่อย = เสี่ยง
@@ -2876,11 +2968,22 @@
 
                     // รวม 5 ระดับเป็น 3 กลุ่มอ่านง่าย: ควรปรับ (rank 0-1) / กลาง (2) / ดี (3-4)
                     // รายละเอียดรายคำตอบดูได้จาก tooltip และปุ่ม "ดูข้อมูลตัวเลข"
+                    // ชื่อข้อที่ถูกตัดด้วย ... จากหัวคอลัมน์: แสดงเป็นจุดไข่ปลาจางๆ คั่นกลาง อ่านต่อเนื่องและไม่ดูเหมือนข้อความขาด
+                    const pretty = t => escapeHtml(t).replace(/\.{2,}|…/g, '<span class="lbl-gap"> … </span>');
                     const GROUPS = [
                         { key: 'risk', name: 'ควรปรับ', ranks: [0, 1], color: rankColors[0], text: rankTextColors[0] },
                         { key: 'mid', name: 'กลาง', ranks: [2], color: rankColors[2], text: rankTextColors[2] },
                         { key: 'good', name: 'ดี', ranks: [3, 4], color: rankColors[4], text: rankTextColors[4] }
                     ];
+
+                    // สีเฉพาะการ์ด: คงความหมาย อุ่น = ควรปรับ / กลางอ่อน = กลาง / เย็น = ดี แต่แต่ละการ์ดใช้โทนต่างกัน
+                    const MODE_PALETTE = {
+                        donut: [['#e8590c', '#ffffff'], ['#f6dfb4', '#5a3d0a'], ['#0b7285', '#ffffff']],
+                        heat: [['#b0164e', '#ffffff'], ['#a893dc', '#26184f'], ['#4527a0', '#ffffff']]
+                    };
+                    if (MODE_PALETTE[mode]) {
+                        GROUPS.forEach((g, i) => { g.color = MODE_PALETTE[mode][i][0]; g.text = MODE_PALETTE[mode][i][1]; });
+                    }
 
                     const buildGroups = r => {
                         const groups = GROUPS.map(g => {
@@ -2914,7 +3017,7 @@
                     }
                     if (rows.length > 1 && rows[0].risk > 0) {
                         const sumHtml = '<div class="divsum"><i class="fas fa-lightbulb"></i><span class="divsum-text"><small>ควรปรับมากที่สุด</small><b>' +
-                            escapeHtml(rows[0].c) + '</b></span><em class="divsum-pct">' + rows[0].riskRnd + '%</em></div>';
+                            pretty(rows[0].c) + '</b></span><em class="divsum-pct">' + rows[0].riskRnd + '%</em></div>';
                         if (headerEl) {
                             headerEl.insertAdjacentHTML('beforeend', sumHtml);
                         } else {
@@ -2922,25 +3025,95 @@
                         }
                     }
 
-                    rows.forEach(r => {
+                    const tip2 = x => '<div class="dtip-h"><span class="dtip-dot" style="background:' + x.g.color + '"></span><b>' + escapeHtml(x.g.name) + '</b><em>' + x.pct.toFixed(1) + '%</em></div><div class="dtip-sub">' + x.count.toLocaleString() + ' คน</div>' +
+                        x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span></div>').join('');
+                    const escAttr = h => h.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+                    if (mode === 'heat') {
+                        // ตารางความร้อน: แถว = ข้อ, คอลัมน์ = กลุ่มคำตอบ, ความเข้มสี = สัดส่วน
+                        const cols = GROUPS.map(g => '<div class="hm-col">' + g.name + '</div>').join('');
+                        html += '<div class="hm"><div class="hm-row hm-headrow"><div class="hm-lab"></div>' + cols + '</div>';
+                        rows.forEach(r => {
+                            const cells = GROUPS.map(g => {
+                                const x = r.groups.find(y => y.g.key === g.key);
+                                if (!x) return '<div class="hm-cell is-zero">0%</div>';
+                                const a = (0.46 + 0.54 * Math.min(1, x.pct / 100)).toFixed(2);
+                                const dark = x.pct >= 30;
+                                const tipTxt = '<div class="dtip-h"><span class="dtip-dot" style="background:' + g.color + '"></span><b>' + escapeHtml(g.name) + '</b><em>' + x.pct.toFixed(1) + '%</em></div><div class="dtip-sub">' + x.count.toLocaleString() + ' คน</div>' +
+                                    x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span><span class="dtip-v">' + s.pct.toFixed(1) + '%</span></div>').join('');
+                                const hex = g.color.replace('#', '');
+                                const rgb = [0, 2, 4].map(i => parseInt(hex.substr(i, 2), 16)).join(',');
+                                return '<div class="hm-cell" style="--c:' + rgb + ';background:rgba(' + rgb + ',' + a + ');color:' + (dark && g.key !== 'mid' ? '#fff' : '#1e293b') + '" data-dtip="' + escAttr(tipTxt) + '"><b>' + x.rnd + '%</b><small>' + x.count.toLocaleString() + ' คน</small></div>';
+                            }).join('');
+                            html += '<div class="hm-row"><div class="hm-lab"><span>' + pretty(r.c) + '</span></div>' + cells + '</div>';
+                        });
+                        html += '</div>';
+                    }
+
+                    if (mode === 'donut') {
+                        // โดนัทต่อข้อ: วงแหวนสามช่วง กลางวงบอกสัดส่วน "ควรปรับ"
+                        const R = 42, C = 2 * Math.PI * R;
+                        const mix = (hex, t) => {   // ผสมกับขาว (t>0) หรือดำ (t<0) เพื่อไล่เฉดให้ดูมีมิติ
+                            const h = hex.replace('#', '');
+                            return '#' + [0, 2, 4].map(i => {
+                                const v = parseInt(h.substr(i, 2), 16);
+                                const m = t >= 0 ? v + (255 - v) * t : v * (1 + t);
+                                return Math.round(Math.max(0, Math.min(255, m))).toString(16).padStart(2, '0');
+                            }).join('');
+                        };
+                        let uid = 0;
+                        html += '<div class="dn-grid" data-n="' + rows.length + '">';
+                        rows.forEach(r => {
+                            let off = 0;
+                            const id = 'dng' + (++uid) + '-' + Math.random().toString(36).slice(2, 6);
+                            const defs = '<defs>' + r.groups.map((x, i) =>
+                                '<linearGradient id="' + id + i + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + mix(x.g.color, 0.28) + '"/><stop offset="1" stop-color="' + mix(x.g.color, -0.14) + '"/></linearGradient>').join('') +
+                                '<radialGradient id="' + id + 'c" cx=".35" cy=".3" r=".9"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eef2f6"/></radialGradient></defs>';
+                            const arcs = r.groups.map((x, i) => {
+                                const len = C * x.pct / 100;
+                                const gap = r.groups.length > 1 ? 1.5 : 0;
+                                const a = '<circle class="dn-arc" cx="55" cy="55" r="' + R + '" fill="none" stroke="url(#' + id + i + ')" stroke-width="14" ' +
+                                    'stroke-dasharray="' + Math.max(0, len - gap).toFixed(2) + ' ' + (C - Math.max(0, len - gap)).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) +
+                                    '" transform="rotate(-90 55 55)" data-dtip="' + escAttr(tip2(x)) + '"></circle>';
+                                off += len;
+                                return a;
+                            }).join('');
+                            const rowsTxt = GROUPS.map(g => {
+                                const x = r.groups.find(y => y.g.key === g.key);
+                                return '<div class="dn-r"><i style="background:' + g.color + '"></i><span>' + g.name + '</span><b>' + (x ? x.rnd : 0) + '%</b><small>' + (x ? x.count.toLocaleString() : 0) + ' คน</small></div>';
+                            }).join('');
+                            html += '<div class="dn"><div class="dn-title">' + pretty(r.c) + '</div><div class="dn-body">' +
+                                '<svg class="dn-svg" viewBox="0 0 110 110" role="img" aria-label="' + escAttr(escapeHtml(r.c)) + '">' + defs + '<circle cx="55" cy="55" r="' + R + '" fill="none" stroke="#e8edf3" stroke-width="14"></circle>' + arcs +
+                                '<circle class="dn-disc" cx="55" cy="55" r="32" fill="url(#' + id + 'c)"></circle>' +
+                                '<text x="55" y="56" text-anchor="middle" class="dn-pct" fill="' + GROUPS[0].color + '">' + r.riskRnd + '%</text><text x="55" y="67" text-anchor="middle" class="dn-cap">ควรปรับ</text></svg>' +
+                                '<div class="dn-list">' + rowsTxt + '</div></div></div>';
+                        });
+                        html += '</div>';
+                    }
+
+                    if (mode === 'bars') rows.forEach(r => {
                         const groups = r.groups;
 
-                        const tip = x => x.g.name + ' ' + x.pct.toFixed(1) + '% (' + x.count.toLocaleString() + ' คน): ' +
-                            x.items.map(s => s.title + ' ' + s.pct.toFixed(1) + '%').join(', ');
+                        // ข้อมูลที่แสดงตอนชี้: ป้ายกลุ่ม + รายคำตอบพร้อมแถบสัดส่วนเล็ก ๆ
+                        const tip = x => '<div class="dtip-h"><span class="dtip-dot" style="background:' + x.g.color + '"></span>' +
+                            '<b>' + escapeHtml(x.g.name) + '</b><em>' + x.pct.toFixed(1) + '%</em></div>' +
+                            '<div class="dtip-sub">' + x.count.toLocaleString() + ' คน</div>' +
+                            x.items.map(s => '<div class="dtip-r"><span class="dtip-t">' + escapeHtml(s.title) + '</span>' +
+                                '<span class="dtip-v">' + s.pct.toFixed(1) + '%</span>' +
+                                '<i class="dtip-b"><u style="width:' + Math.min(100, s.pct / (x.pct || 1) * 100).toFixed(0) + '%;background:' + x.g.color + '"></u></i></div>').join('');
 
                         const segHtml = groups.map(x =>
                             '<div class="divrow-seg" style="flex:' + x.pct.toFixed(3) + ' 1 0%;background:' + x.g.color +
-                            ';color:' + x.g.text + '" title="' + escapeHtml(tip(x)) + '">' +
+                            ';color:' + x.g.text + '" data-dtip="' + tip(x).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">' +
                             (x.pct >= 6 ? '<b>' + x.rnd + '%</b>' : '') + '</div>'
                         ).join('');
 
                         const labHtml = groups.map(x =>
-                            '<span class="divrow-glab" style="flex:' + x.pct.toFixed(3) + ' 1 0%" title="' + escapeHtml(tip(x)) + '">' +
+                            '<span class="divrow-glab" style="flex:' + x.pct.toFixed(3) + ' 1 0%" data-dtip="' + tip(x).replace(/&/g, '&amp;').replace(/"/g, '&quot;') + '">' +
                             x.g.name + (x.pct < 6 ? ' ' + x.rnd + '%' : '') +
                             '<small>' + x.count.toLocaleString() + ' คน</small></span>'
                         ).join('');
 
-                        html += '<div class="divrow"><div class="divrow-head"><div class="divrow-label">' + escapeHtml(r.c) +
+                        html += '<div class="divrow"><div class="divrow-head"><div class="divrow-label">' + pretty(r.c) +
                             '</div><span class="divrow-risk' + (r.risk < 10 ? ' is-low' : '') + '" title="ผู้ตอบที่อยู่ในกลุ่มคำตอบที่ควรปรับ">ควรปรับ ' +
                             r.riskRnd + '%</span></div>' +
                             '<div class="divrow-bar">' + segHtml + '</div>' +
@@ -2949,11 +3122,39 @@
 
                     container.innerHTML = html;
 
+                    // ทูลทิปแบบกำหนดเอง (แทน title ของเบราว์เซอร์) — ผูกครั้งเดียว
+                    if (!window.__dtipBound) {
+                        window.__dtipBound = true;
+                        const tipEl = document.createElement('div');
+                        tipEl.className = 'dtip';
+                        document.body.appendChild(tipEl);
+                        const place = e => {
+                            const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+                            let x = e.clientX - w / 2, y = e.clientY - h - 16;
+                            x = Math.max(8, Math.min(x, window.innerWidth - w - 8));
+                            if (y < 8) y = e.clientY + 20;
+                            tipEl.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+                        };
+                        document.addEventListener('mousemove', e => {
+                            const t = e.target.closest ? e.target.closest('[data-dtip]') : null;
+                            if (!t) { tipEl.classList.remove('on'); return; }
+                            if (tipEl.__src !== t) { tipEl.innerHTML = t.getAttribute('data-dtip'); tipEl.__src = t; }
+                            tipEl.classList.add('on');
+                            place(e);
+                        });
+                        document.addEventListener('scroll', () => tipEl.classList.remove('on'), true);
+                    }
+
                     // ไอคอน (i) ข้างคำอธิบายสี: คลิกเพื่อดูวิธีคิดเกณฑ์สีของการ์ดนี้
                     const cardEl = container.closest('.chart-card');
                     const legendEl = cardEl ? cardEl.querySelector('.scale-legend') : null;
                     if (legendEl) {
                         legendEl.querySelectorAll('.scale-info-btn').forEach(el => el.remove());
+                        if (MODE_PALETTE[mode]) {
+                            legendEl.querySelectorAll('.scale-legend-swatch').forEach((el, i) => {
+                                if (GROUPS[i]) el.style.background = GROUPS[i].color;
+                            });
+                        }
 
                         const cardTitle = (cardEl.querySelector('.chart-header-title') || {}).textContent || '';
                         const GDESC = {
@@ -3169,9 +3370,8 @@
                     sodiumBehaviorEl.closest('.col-lg-6').style.display = 'none';
                 }
                 createDivergingBars('riskChart', 'riskTable', statsPanel1, polarityPanel1, extremeValuesPanel1);
-                createDivergingBars('seasoningChart', 'seasoningTable', statsPanel2, polarityPanel2, extremeValuesPanel2);
-                createDivergingBars('healthyHabitChart', 'healthyHabitTable', statsPanel3, polarityPanel3, extremeValuesPanel3);
-                createDivergingBars('mindsetChart', 'mindsetTable', statsPanel4, polarityPanel4, extremeValuesPanel4);
+                createDivergingBars('seasoningChart', 'seasoningTable', statsPanel2, polarityPanel2, extremeValuesPanel2, 'donut');
+                createDivergingBars('mindsetChart', 'mindsetTable', statsPanel4, polarityPanel4, extremeValuesPanel4, 'heat');
             }
 
             renderEducationTable('educationTable', educationStats);
@@ -3303,6 +3503,54 @@
             window.addEventListener('resize', function () {
                 document.querySelectorAll('.chart-figure-footer details[open]').forEach(place);
             });
+        })();
+    </script>
+
+    <script>
+        // ตัวกรองเร็วขึ้น: (1) แถบโหลดทันทีที่เลือก (2) โหลดตัวเลือกอื่นไว้ล่วงหน้าเงียบๆ ให้เบราว์เซอร์เก็บไว้
+        // ตอนผู้ใช้เลือกจริงจะขึ้นทันทีจากแคชในเครื่อง (เซิร์ฟเวอร์ส่ง Cache-Control 2 นาที)
+        (function () {
+            var form = document.querySelector('.awr-filter-bar');
+            if (!form) return;
+
+            var bar = document.createElement('div');
+            bar.className = 'awr-loadbar';
+            document.body.appendChild(bar);
+            form.addEventListener('change', function () { bar.classList.add('on'); document.body.classList.add('awr-busy'); });
+            window.addEventListener('pageshow', function () { bar.classList.remove('on'); document.body.classList.remove('awr-busy'); });
+
+            var stopped = false;
+            ['pointerdown', 'keydown'].forEach(function (ev) {
+                form.addEventListener(ev, function () { stopped = true; }, { once: true, capture: true });
+            });
+
+            function urlWith(name, value) {
+                var fd = new FormData(form);
+                fd.set(name, value);
+                if (name === 'province') fd.set('district', '');
+                return form.action + '?' + new URLSearchParams(fd).toString();
+            }
+
+            var queue = [];
+            ['fiscal_year', 'province'].forEach(function (name) { // อำเภอมีเยอะ ไม่โหลดล่วงหน้าเพื่อไม่ให้เซิร์ฟเวอร์ทำงานหนักเกินจำเป็น
+                var sel = form.elements[name];
+                if (!sel) return;
+                Array.prototype.forEach.call(sel.options, function (o) {
+                    if (o.selected) return;
+                    if (name === 'fiscal_year' && o.value === '') return; // "ทั้งหมด" ของทุกปี หนักสุด ไม่โหลดล่วงหน้า
+                    queue.push(urlWith(name, o.value));
+                });
+            });
+
+            function next() {
+                if (stopped || !queue.length) return;
+                fetch(queue.shift(), { credentials: 'same-origin', headers: { 'X-Prefetch': '1' } })
+                    .then(function (r) { return r.text(); })
+                    .catch(function () {})
+                    .then(function () { setTimeout(next, 250); });
+            }
+            var start = function () { setTimeout(next, 1200); };
+            if (document.readyState === 'complete') start(); else window.addEventListener('load', start);
         })();
     </script>
 @endsection

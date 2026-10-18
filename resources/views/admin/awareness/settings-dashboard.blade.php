@@ -804,7 +804,7 @@
             <div class="hero-icon"><i class="fa-solid fa-table-cells-large"></i></div>
             <div class="hero-card-body">
                 <div class="hero-title">
-                    กรอบแสดงพฤติกรรม 4 กรอบ
+                    กรอบแสดงพฤติกรรม 3 กรอบ
                     <button type="button" class="preview-image-btn"
                         data-preview-src="{{ asset('images/Additional-photos/chart-health.png') }}"
                         data-preview-label="ตัวอย่าง: กรอบแสดงพฤติกรรมในหน้ารายงานความตระหนักรู้ (/awareness)"

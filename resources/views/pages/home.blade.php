@@ -746,6 +746,7 @@
             align-items: center;
             gap: 14px;
             padding: 20px 22px;
+            min-height: 96px;
             border-radius: 18px;
             background: linear-gradient(155deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.6));
             backdrop-filter: blur(10px) saturate(150%);
@@ -805,9 +806,35 @@
         }
 
         .kpi-summary-sub {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
             font-size: 0.74rem;
             color: #94a3b8;
             font-weight: 600;
+        }
+
+        /* เมื่อการ์ดกว้าง (1-2 คอลัมน์): ป้าย+คำอธิบายชิดซ้าย ตัวเลขใหญ่ชิดขวา เต็มความกว้างการ์ด */
+        @media (max-width: 960px) {
+            .kpi-summary-body {
+                flex: 1;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-rows: auto auto;
+                column-gap: 12px;
+                row-gap: 2px;
+                align-items: center;
+            }
+            .kpi-summary-label { grid-column: 1; grid-row: 1; align-self: end; font-size: 0.86rem; }
+            .kpi-summary-sub   { grid-column: 1; grid-row: 2; align-self: start; }
+            .kpi-summary-value {
+                grid-column: 2; grid-row: 1 / span 2;
+                font-size: 2.3rem; text-align: right;
+                color: color-mix(in srgb, var(--kpi-accent) 55%, #0f172a);
+            }
+        }
+        @media (max-width: 380px) {
+            .kpi-summary-value { font-size: 1.9rem; }
         }
 
         .kpi-summary-card.kpi-total { --kpi-accent: #6366f1; }
@@ -922,15 +949,19 @@
            on this page (donut, tables, bars) - same as the pin map. */
         .hm-band {
             display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(5, minmax(0, 1fr));
             gap: 14px;
             margin: 4px 0 26px;
         }
+        @media (max-width: 1279px) { .hm-band { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 799px) { .hm-band { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hm-band > .hm-tile:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+        @media (max-width: 519px) { .hm-band { grid-template-columns: minmax(0, 1fr); } }
         /* Summary tile: frosted glass with a faint accent glow from the top-right
            corner and an accent-tinted shadow for lift (no colored edge strip). */
         .hm-tile {
             position: relative;
-            display: block;
+            display: flex;
+            flex-direction: column;
             border-radius: 18px;
             padding: 16px 18px;
             background: linear-gradient(155deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.7));
@@ -965,7 +996,7 @@
         .hm-tile-big { font-size: 1.95rem; font-weight: 800; line-height: 1.15; margin-top: 2px; color: #0f172a; }
         .hm-tile-big small { font-size: .92rem; font-weight: 800; color: #1e293b; }
         .hm-tile-sub { font-size: .8rem; font-weight: 600; color: #1e293b; margin-top: 2px; }
-        .hm-tile-st { margin-top: 8px; }
+        .hm-tile-st { margin-top: auto; padding-top: 10px; }
         .hm-chip {
             display: inline-flex; align-items: center; gap: 5px;
             border-radius: 9px; padding: 3px 9px; font-size: .72rem; font-weight: 800;
@@ -1038,6 +1069,42 @@
         .hm-grid.kd > .hm-kd-map { grid-area: m; }
         .hm-grid.kd > .hm-stack { grid-area: s; grid-template-columns: 1fr; align-content: start; }
         .hm-kd-map { display: flex; flex-direction: column; overflow: hidden; }
+        .hm-mp-head { display: flex; align-items: center; gap: 12px; padding-bottom: 10px; margin-bottom: 6px; border-bottom: 1px solid #eef2f6; }
+        .hm-mp-ico { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #0f4c5c, #0e7490); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; flex: 0 0 40px; box-shadow: 0 4px 10px rgba(15, 76, 92, .3); }
+        .hm-mp-t { font-weight: 800; font-size: .95rem; color: #1e293b; line-height: 1.25; }
+        .hm-mp-s { font-size: .76rem; color: #64748b; font-weight: 600; }
+        #hmMapChoro { flex: 1 1 auto; min-height: 410px; border-radius: 16px; position: relative;
+            background: radial-gradient(60% 55% at 50% 45%, rgba(15, 76, 92, .09), rgba(15, 76, 92, 0) 70%), radial-gradient(rgba(15, 76, 92, .13) 1px, transparent 1.4px) 0 0 / 16px 16px; }
+        #hmMapChoro .oa-map-label { position: relative; text-align: center; line-height: 1.15; white-space: nowrap; pointer-events: none; background: rgba(255, 255, 255, .95); border-radius: 9px; padding: 2px 8px 3px; box-shadow: 0 1px 5px rgba(15, 23, 42, .28); font-family: inherit; animation: oaLabelPop .5s cubic-bezier(.2, .9, .3, 1.3) both; }
+        #hmMapChoro .oa-map-label-name { display: block; font-size: 12px; font-weight: 700; color: #1e293b; }
+        #hmMapChoro .oa-map-label-count { display: block; font-size: 16px; font-weight: 800; }
+        #hmMapChoro .oa-map-label-count i { font-size: 11px; margin-right: 3px; opacity: .9; }
+        #hmMapChoro .oa-map-label-count small { font-size: 11px; font-weight: 700; margin-left: 2px; }
+        #hmMapChoro .oa-map-label-bar { display: block; height: 4px; margin-top: 3px; border-radius: 99px; background: rgba(15, 23, 42, .1); overflow: hidden; }
+        #hmMapChoro .oa-map-label-bar > b { display: block; height: 100%; border-radius: 99px; }
+        #hmMapChoro .oa-map-label.is-top { box-shadow: 0 0 0 2px #f5b301, 0 3px 10px rgba(245, 179, 1, .55); }
+        #hmMapChoro .oa-map-crown { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #5b3a00; font-size: 10px; font-weight: 800; box-shadow: 0 2px 6px rgba(245, 158, 11, .5); white-space: nowrap; }
+        #hmMapChoro .oa-top-province { filter: drop-shadow(0 0 7px rgba(245, 179, 1, .85)); }
+        /* แผงรายละเอียดซ้อนทับด้านล่างของแผนที่ (ไม่เพิ่มความสูงการ์ด) */
+        .hm-mi { position: relative; z-index: 2; margin: -128px 8px 8px; height: 120px; padding: 9px 14px 8px; border-radius: 14px; border: 1px solid #dbe4ee; background: rgba(255, 255, 255, .97); box-shadow: 0 4px 14px rgba(15, 23, 42, .12); display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+        .hm-mi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .hm-mi-name { font-weight: 800; font-size: 1rem; color: #0f172a; white-space: nowrap; }
+        .hm-mi-go { font-size: .74rem; font-weight: 800; color: var(--pc, #0f4c5c); text-decoration: none; padding: 3px 11px; border-radius: 99px; border: 1.5px solid currentColor; white-space: nowrap; }
+        .hm-mi-go:hover { background: var(--pc, #0f4c5c); color: #fff; }
+        .hm-mi-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; text-align: center; }
+        .hm-mi-stats .hm-mi-st { display: block; font-size: .72rem; font-weight: 700; color: #334155; line-height: 1.2; border-right: 1px solid #e2e8f0; }
+        .hm-mi-stats .hm-mi-st:last-child { border-right: 0; }
+        .hm-mi-stats b { display: block; font-size: 1.1rem; font-weight: 800; color: var(--pc, #0f172a); line-height: 1.2; }
+        .hm-mi-pill { font-size: .74rem; font-weight: 800; padding: 2px 11px; border-radius: 99px; background: color-mix(in srgb, var(--pc, #0f4c5c) 14%, #fff); color: var(--pc, #0f4c5c); white-space: nowrap; }
+        .hm-mi .hm-mi-mb { display: block; height: 4px; border-radius: 99px; background: #e8eef4; margin: 4px 14% 0; overflow: hidden; }
+        .hm-mi .hm-mi-mf { display: block; height: 100%; border-radius: 99px; background: var(--pc, #0f4c5c); text-decoration: none; }
+        .hm-mi-bar { height: 5px; border-radius: 99px; background: #e8eef4; overflow: hidden; }
+        .hm-mi-bar i { display: block; height: 100%; border-radius: 99px; background: var(--pc, #0f4c5c); }
+        .hm-mi-dist { font-size: .72rem; font-weight: 700; color: #334155; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #hmMapChoro .oa-map-label { transition: outline-color .15s; outline: 2px solid transparent; outline-offset: 1px; }
+        #hmMapChoro .oa-map-label.is-sel { outline-color: #0f172a; }
+        @keyframes oaLabelPop { from { opacity: 0; transform: translateY(8px) scale(.85); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { #hmMapChoro .oa-map-label { animation: none; } }
         .hm-kd-map #hmPinMap { flex: 1 1 auto; min-height: 320px; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; z-index: 0; }
         .hm-pin-legend { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; }
         .hm-pin-legend span { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px 2px 7px; border-radius: 999px; border: 1px solid transparent; font-size: .72rem; font-weight: 700; color: #334155; line-height: 1.4; }
@@ -1300,8 +1367,8 @@
         .hm-aw-kpis .kpi-pending-note { margin: 0; }
         .hm-aw-main { min-width: 0; }
         /* tighter vertical rhythm for the three awareness cards */
-        .hm-aw-main .home-row-top .dash-card { padding: 16px 20px !important; }
-        .hm-aw-main .home-row-top .dash-card-head { margin-bottom: 10px; padding-bottom: 10px; }
+        .hm-aw-main .home-row-top .dash-card { padding: 12px 18px !important; }
+        .hm-aw-main .home-row-top .dash-card-head { margin-bottom: 6px; padding-bottom: 8px; }
         .hm-aw-main #donutLegend { margin-top: 8px !important; gap: 4px !important; }
         .hm-aw-main #metricsListView { gap: 8px !important; }
         .hm-aw-main .home-row-top { margin-bottom: 0 !important; }
@@ -1456,6 +1523,9 @@
         $hmHtLatest = $hmHt['latest_month'];
         // Headline total = province-table total (sum of total_a), shared by the tile, KPI card and monthly chart chip.
         $hmHtMonthTotal = (int) $hmHt['total_cases'];
+        // product tile (same numbers as the "ผลิตภัณฑ์ลดโซเดียม" section further down)
+        $hmPdTile = $productStats ?? ['total' => 0, 'certified' => 0, 'certified_percent' => null, 'top_type' => null, 'top_type_count' => 0, 'type_total' => 0];
+        $hmPdTileProv = collect($productCountData ?? [])->filter(fn($r) => ($r['count'] ?? 0) > 0)->count();
     @endphp
 
     <!-- ===== Summary band: one tile per module (click = jump to its section) ===== -->
@@ -1469,6 +1539,9 @@
             @else
                 <div class="hm-tile-big">{{ $awarenessOverallRate }}%<small> ผ่านเกณฑ์</small></div>
                 <div class="hm-tile-sub">{{ number_format($awarenessOverallPass) }} จาก {{ number_format($awarenessOverallTotal) }} คนที่ตอบแบบประเมิน</div>
+                @if ($hmAwBest)
+                    <div class="hm-tile-sub"><i class="fas fa-trophy" style="color:#db2777;"></i> ผ่านเกณฑ์สูงสุด: <b>{{ $hmAwBest['name'] }}</b> {{ rtrim(rtrim(number_format($hmAwBest['passed_percentage'], 1), '0'), '.') }}%</div>
+                @endif
                 <div class="hm-tile-st">
                     @if ($hmAwRate >= 80)
                         <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ผ่านเป้า 80%</span>
@@ -1537,6 +1610,27 @@
                 @endif
             </div>
         </a>
+        <a class="hm-tile" href="#sec-products" style="--c: #6366f1;">
+            <div class="hm-tile-name">ผลิตภัณฑ์ลดโซเดียม</div>
+            @if (($hmPdTile['total'] ?? 0) > 0)
+                <div class="hm-tile-big">{{ number_format($hmPdTile['total']) }}<small> รายการ</small></div>
+                <div class="hm-tile-sub">จาก {{ number_format($hmPdTileProv) }} จังหวัด · ได้รับรองมาตรฐาน {{ number_format($hmPdTile['certified']) }} รายการ</div>
+                @if ($hmPdTile['top_type'])
+                    <div class="hm-tile-sub"><i class="fas fa-tags" style="color:#6366f1;"></i> ยอดนิยม: <b>{{ $hmPdTile['top_type'] }}</b> ({{ number_format($hmPdTile['top_type_count']) }} รายการ)</div>
+                @endif
+                <div class="hm-tile-st">
+                    @if (($hmPdTile['certified_percent'] ?? 0) >= 80)
+                        <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ได้มาตรฐาน {{ $hmPdTile['certified_percent'] }}%</span>
+                    @else
+                        <span class="hm-chip warn"><i class="fas fa-circle-half-stroke"></i> ได้มาตรฐาน {{ $hmPdTile['certified_percent'] ?? 0 }}%</span>
+                    @endif
+                </div>
+            @else
+                <div class="hm-tile-big">—</div>
+                <div class="hm-tile-sub">ยังไม่มีข้อมูลผลิตภัณฑ์ลดโซเดียมในช่วงนี้</div>
+                <div class="hm-tile-st"><span class="hm-chip none"><i class="fas fa-circle-minus"></i> ยังไม่มีข้อมูล</span></div>
+            @endif
+        </a>
     </div>
 
     <!-- ===== 1. ความตระหนักรู้ด้านโซเดียม (existing cards, same data/JS) ===== -->
@@ -1559,7 +1653,7 @@
             <div class="kpi-summary-body">
                 <span class="kpi-summary-label">จำนวนผู้เข้าร่วมทั้งหมด</span>
                 <span class="kpi-summary-value">{{ number_format($awarenessOverallTotal) }}</span>
-                <span class="kpi-summary-sub">ปีงบฯ {{ $fiscalYearLabel }}</span>
+                <span class="kpi-summary-sub">คน · ปีงบฯ {{ $fiscalYearLabel }}</span>
             </div>
         </div>
         <div class="kpi-summary-card kpi-pass">
@@ -1567,7 +1661,7 @@
             <div class="kpi-summary-body">
                 <span class="kpi-summary-label">ผ่านเกณฑ์</span>
                 <span class="kpi-summary-value">{{ number_format($awarenessOverallPass) }}</span>
-                <span class="kpi-summary-sub">คน</span>
+                <span class="kpi-summary-sub">คน · {{ $awarenessOverallTotal > 0 ? round($awarenessOverallPass * 100 / $awarenessOverallTotal, 1) : 0 }}% ของทั้งหมด</span>
             </div>
         </div>
         <div class="kpi-summary-card kpi-fail">
@@ -1575,7 +1669,7 @@
             <div class="kpi-summary-body">
                 <span class="kpi-summary-label">ไม่ผ่านเกณฑ์</span>
                 <span class="kpi-summary-value">{{ number_format($awarenessOverallFail) }}</span>
-                <span class="kpi-summary-sub">คน</span>
+                <span class="kpi-summary-sub">คน · {{ $awarenessOverallTotal > 0 ? round($awarenessOverallFail * 100 / $awarenessOverallTotal, 1) : 0 }}% ของทั้งหมด</span>
             </div>
         </div>
         <div class="kpi-summary-card kpi-rate">
@@ -1585,11 +1679,11 @@
                 <span class="kpi-summary-value">{{ $awarenessOverallRate }}%</span>
                 <span class="kpi-summary-sub">
                     @if ($awarenessMethod === 'mixed')
-                        เกณฑ์ผ่าน: ตามเกณฑ์ที่กำหนดของแต่ละปีงบประมาณ
+                        ตามเกณฑ์ของแต่ละปีงบฯ
                     @elseif ($awarenessMethod === \App\Models\AwarenessPassSetting::METHOD_SCORE)
                         เกณฑ์ผ่าน &ge; 19.2 / 32 คะแนน
                     @else
-                        เกณฑ์ผ่าน: ตรงตามเกณฑ์ข้อ 1 และข้อ 2 ที่กำหนด
+                        ผ่านเกณฑ์ข้อ 1 และข้อ 2
                     @endif
                 </span>
             </div>
@@ -1619,7 +1713,7 @@
                     </div>
                 </div>
                 <!-- Always render map for all years -->
-                <div class="hm-awmap-wrap" style="position: relative; min-height: 330px;">
+                <div class="hm-awmap-wrap" style="position: relative; min-height: 290px;">
                     <div id="map-container"
                         style="height: 330px; width: 100%; {{ ($awarenessCriteriaPending ?? false) ? 'filter: blur(4px); opacity: 0.6;' : '' }}">
                     </div>
@@ -1656,18 +1750,19 @@
                     </div>
                 </div>
                 <!-- Donut Chart -->
-                <div style="width: 100%; max-width: 176px; height: 176px; position: relative; flex-shrink: 0;">
+                <div style="width: 100%; max-width: 200px; height: 200px; position: relative; flex-shrink: 0; filter: drop-shadow(0 10px 18px rgba(15,23,42,.12));">
                     <canvas id="participantDonutChart"></canvas>
                     <div
                         style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
-                        <div id="donutTotal" style="font-size: 1.6rem; font-weight: 800; color: #1e293b; line-height: 1;">0
+                        <div id="donutCap" style="font-size: 0.78rem; color: #64748b; font-weight: 600; margin-bottom: 4px; max-width:110px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">ผู้ตอบทั้งหมด</div>
+                        <div id="donutTotal" style="font-size: 2.1rem; font-weight: 800; color: #0f172a; line-height: 1; letter-spacing:-.5px;">0
                         </div>
-                        <div style="font-size: 0.7rem; color: #64748b; margin-top: 4px;">คน</div>
+                        <div id="donutSub" style="font-size: 0.8rem; color: #64748b; margin-top: 5px; font-weight:600;">คน</div>
                     </div>
                 </div>
                 <!-- Legend Below Chart -->
                 <div id="donutLegend"
-                    style="width: 100%; max-width: none; margin-top: 18px; display: flex; flex-direction: column; gap: 6px;">
+                    style="width: 100%; max-width: none; margin-top: 18px; display: flex; flex-direction: column; gap: 7px;">
                     <!-- generated by JS -->
                 </div>
             </div>
@@ -1918,10 +2013,15 @@
             </div>
 
             <div class="hm-card hm-kd-map">
-                <h4>พื้นที่ดำเนินงาน พชอ.ไต</h4>
-                <div class="hm-cap">แยกสีตามจังหวัด · คลิกหน่วยงานเพื่อดูความก้าวหน้า</div>
-                <div id="hmPinMap"></div>
-                <div id="hmPinLegend" class="hm-pin-legend"></div>
+                <div class="hm-mp-head">
+                    <div class="hm-mp-ico"><i class="fas fa-map-location-dot"></i></div>
+                    <div>
+                        <div class="hm-mp-t">จำนวนพื้นที่ดำเนินงาน พชอ.ไต</div>
+                        <div class="hm-mp-s">แยกรายจังหวัด · ชี้หรือแตะจังหวัดเพื่อดูรายละเอียด</div>
+                    </div>
+                </div>
+                <div id="hmMapChoro"></div>
+                <div id="hmMapInfo" class="hm-mi" aria-live="polite"></div>
             </div>
 
             <div class="hm-stack">
@@ -2551,11 +2651,22 @@
         <script src="{{ asset('vendor/highcharts/th-all.js') }}"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
         <script src="{{ asset('vendor/highcharts/th-districts-r10.js') }}"></script>
+        @php
+            $hmMiPins = [];
+            foreach (($hmKd['pins'] ?? []) as $hmP) {
+                if (!empty($hmP['display_only'])) { continue; }
+                $hmCrumb = explode(' › ', (string) ($hmP['breadcrumb'] ?? ''));
+                $hmMiPins[] = ['p' => $hmP['province_name'] ?? null, 'g' => (int) ($hmP['progress'] ?? 0), 't' => (int) ($hmP['progress_total'] ?? 8), 'd' => trim($hmCrumb[0])];
+            }
+            $hmMiDist = [];
+            foreach (($hmKd['provinces'] ?? []) as $hmR) {
+                $hmMiDist[$hmR['province']] = ['a' => $hmR['answered'], 't' => $hmR['total']];
+            }
+        @endphp
         <script>
             (function () {
-                const el = document.getElementById('hmPinMap');
-                if (!el || typeof L === 'undefined') return;
-                const pins = @json($hmKd['pins'] ?? []);
+                const el = document.getElementById('hmMapChoro');
+                if (!el || !window.Highcharts || !Highcharts.maps) return;
                 const colors = {
                     'อุบลราชธานี': { fill: '#2563eb', stroke: '#1e40af' },
                     'ศรีสะเกษ': { fill: '#d97706', stroke: '#92400e' },
@@ -2564,95 +2675,97 @@
                     'มุกดาหาร': { fill: '#db2777', stroke: '#9d174d' },
                 };
                 const dflt = { fill: '#6b7280', stroke: '#374151' };
-                const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-                const hexA = (hex, a) => {
-                    const n = parseInt(hex.slice(1), 16);
-                    return 'rgba(' + (n >> 16) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+                const keys = { 'อุบลราชธานี': 'th-ur', 'ศรีสะเกษ': 'th-si', 'ยโสธร': 'th-ys', 'อำนาจเจริญ': 'th-ac', 'มุกดาหาร': 'th-md' };
+                const raw = @json($hmKd['area_counts'] ?? []);
+                const pinList = @json($hmMiPins);
+                const distRows = @json($hmMiDist);
+                const esc = t => String(t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+                const info = document.getElementById('hmMapInfo');
+                const stat = (v, label, pct) => '<div class="hm-mi-st"><b>' + v + '</b>' + label + '<div class="hm-mi-mb"><div class="hm-mi-mf" style="width:' + Math.max(3, Math.min(100, Math.round(pct))) + '%"></div></div></div>';
+                function showOverview() {
+                    if (!info) return;
+                    const sum = (f) => names.reduce((a, n) => a + f(n), 0);
+                    const areas = sum(n => raw[n] || 0);
+                    const da = sum(n => (distRows[n] || { a: 0 }).a), dt = sum(n => (distRows[n] || { t: 0 }).t);
+                    const full = pinList.filter(x => x.g >= x.t).length;
+                    const sumG = pinList.reduce((a, x) => a + x.g, 0), sumT = pinList.reduce((a, x) => a + x.t, 0);
+                    const avg = sumT > 0 ? Math.round(sumG / sumT * 100) : 0;
+                    info.style.setProperty('--pc', '#0f4c5c');
+                    info.innerHTML = '<div class="hm-mi-top"><span class="hm-mi-name">ภาพรวม</span>'
+                        + '<span class="hm-mi-pill">ก้าวหน้า ' + avg + '%</span></div>'
+                        + '<div class="hm-mi-stats">' + stat(areas, 'พื้นที่', 100) + stat(da + '/' + dt, 'อำเภอตอบแล้ว', dt ? da / dt * 100 : 0) + '</div>'
+                        + '<div class="hm-mi-bar"><i style="width:' + avg + '%"></i></div>'
+                        + '<div class="hm-mi-dist">ก้าวหน้าเฉลี่ย ' + avg + '%' + (top ? ' · มากที่สุด: ' + esc(top) + ' ' + (raw[top] || 0) + ' พื้นที่' : '') + '</div>';
+                    document.querySelectorAll('#hmMapChoro .oa-map-label').forEach(l => l.classList.remove('is-sel'));
+                }
+                function showInfo(name) {
+                    if (!info) return;
+                    if (!name) { showOverview(); return; }
+                    const areasAll = names.reduce((a, n) => a + (raw[n] || 0), 0);
+                    const c = colors[name] || dflt;
+                    const pp = pinList.filter(x => x.p === name);
+                    const full = pp.filter(x => x.g >= x.t).length;
+                    const sumG = pp.reduce((a, x) => a + x.g, 0), sumT = pp.reduce((a, x) => a + x.t, 0);
+                    const avg = sumT > 0 ? Math.round(sumG / sumT * 100) : 0;
+                    const byD = {};
+                    pp.forEach(x => { if (!x.d) return; (byD[x.d] = byD[x.d] || { n: 0, ans: 0 }).n++; if (x.g > 0) byD[x.d].ans++; });
+                    const on = Object.keys(byD).filter(d => byD[d].ans > 0).sort((a, b) => byD[b].ans - byD[a].ans);
+                    const off = Object.keys(byD).filter(d => byD[d].ans === 0).sort();
+                    const dr = distRows[name] || { a: 0, t: 0 };
+                    info.style.setProperty('--pc', c.fill);
+                    const dtitle = 'ดำเนินงานแล้ว: ' + (on.join(', ') || '-') + (off.length ? ' | ยังไม่รายงาน: ' + off.join(', ') : '');
+                    info.innerHTML = '<div class="hm-mi-top"><span class="hm-mi-name">' + esc(name) + '</span>'
+                        + '<span class="hm-mi-pill">ก้าวหน้า ' + avg + '%</span></div>'
+                        + '<div class="hm-mi-stats">' + stat(raw[name] || 0, 'พื้นที่', areasAll ? (raw[name] || 0) / areasAll * 100 : 0) + stat(dr.a + '/' + dr.t, 'อำเภอตอบแล้ว', dr.t ? dr.a / dr.t * 100 : 0) + '</div>'
+                        + '<div class="hm-mi-bar" title="ความก้าวหน้าเฉลี่ย ' + avg + '%"><i style="width:' + avg + '%"></i></div>'
+                        + '<div class="hm-mi-dist" title="' + esc(dtitle) + '">ก้าวหน้าเฉลี่ย ' + avg + '%' + (off.length ? ' · ยังไม่รายงาน: ' + esc(off.join(', ')) : ' · ทุกอำเภอรายงานแล้ว') + '</div>';
+                    document.querySelectorAll('#hmMapChoro .oa-map-label').forEach(l => l.classList.toggle('is-sel', l.dataset.p === name));
+                }
+                const names = Object.keys(keys).filter(n => (n in raw));
+                const max = Math.max(1, ...names.map(n => raw[n] || 0));
+                const total = names.reduce((a, n) => a + (raw[n] || 0), 0);
+                const top = total > 0 ? names.reduce((a, n) => ((raw[n] || 0) > (raw[a] || 0) ? n : a)) : null;
+                const fillOf = n => {
+                    const base = Highcharts.color((colors[n] || dflt).fill);
+                    const mix = amt => Highcharts.color('#ffffff').tweenTo(base, amt);
+                    return { linearGradient: { x1: 0, y1: 0, x2: 0.35, y2: 1 }, stops: [[0, mix(0.6)], [1, mix(0.9)]] };
                 };
-                const iconCache = {};
-                const icon = name => {
-                    const k = name || '_';
-                    if (!iconCache[k]) {
-                        const c = colors[name] || dflt;
-                        iconCache[k] = L.divIcon({
-                            html: '<svg width="26" height="35" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">' +
-                                '<ellipse cx="17" cy="41" rx="8" ry="2.6" fill="#0f172a" opacity="0.25"/>' +
-                                '<path d="M17 2C9.8 2 4 7.8 4 15c0 10.2 13 27 13 27s13-16.8 13-27C30 7.8 24.2 2 17 2z" fill="' + c.fill + '" stroke="' + c.stroke + '" stroke-width="1.5" stroke-linejoin="round"/>' +
-                                '<circle cx="17" cy="15" r="5.5" fill="#fff"/></svg>',
-                            className: 'hm-pin-icon',
-                            iconSize: [26, 35], iconAnchor: [13, 33], popupAnchor: [0, -30],
-                        });
-                    }
-                    return iconCache[k];
-                };
-
-                const map = L.map(el, { scrollWheelZoom: false, zoomSnap: 0.5, zoomDelta: 0.5, minZoom: 6, maxZoom: 18 });
-                // Wheel-zoom is armed by a click so a page scroll that passes
-                // over the map does not get captured; +/- buttons, double
-                // click, pinch and drag always work.
-                map.on('click', () => map.scrollWheelZoom.enable());
-                map.on('mouseout', () => map.scrollWheelZoom.disable());
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap', maxZoom: 18,
-                }).addTo(map);
-
-                // Province areas (district polygons of เขต 10, WGS84), tinted per
-                // province with a thin border - sits under the pins and ignores
-                // the mouse so pin clicks and map dragging are unaffected.
-                const dist = window.Highcharts && Highcharts.maps && Highcharts.maps['countries/th/th-districts-r10'];
-                if (dist) {
-                    L.geoJSON(dist, {
-                        interactive: false,
-                        style: f => {
-                            const c = colors[f.properties.province_name] || dflt;
-                            return { color: c.fill, weight: 1, opacity: .55, fillColor: c.fill, fillOpacity: .12, lineJoin: 'round' };
+                const offs = { 'ยโสธร': { x: -26, y: -4 }, 'อำนาจเจริญ': { x: 16, y: 10 }, 'อุบลราชธานี': { x: 18, y: 16 }, 'ศรีสะเกษ': { x: -6, y: 10 } };
+                const data = names.map(n => ({ 'hc-key': keys[n], value: raw[n] || 0, name: n, color: fillOf(n), className: n === top ? 'oa-top-province' : undefined, dataLabels: offs[n] || {} }));
+                const full = Highcharts.maps['countries/th/th-all'];
+                const want = Object.values(keys);
+                const mapData = Object.assign({}, full, { features: full.features.filter(f => want.includes(f.properties['hc-key'])) });
+                Highcharts.mapChart('hmMapChoro', {
+                    chart: { map: mapData, backgroundColor: 'transparent', spacing: [4, 4, 4, 4], marginBottom: 134 },
+                    title: { text: '' }, credits: { enabled: false }, legend: { enabled: false },
+                    exporting: { enabled: false }, mapNavigation: { enabled: false },
+                    plotOptions: { map: {
+                        allAreas: false, borderColor: '#FFFFFF', borderWidth: 2.5, cursor: 'pointer',
+                        shadow: { color: 'rgba(15, 76, 92, 0.32)', offsetX: 0, offsetY: 6, width: 9 },
+                        states: { hover: { brightness: 0.15, borderColor: '#1e293b' } },
+                        dataLabels: {
+                            enabled: true, useHTML: true, allowOverlap: true, crop: false, overflow: 'allow',
+                            style: { textOutline: 'none', pointerEvents: 'none' },
+                            formatter: function () {
+                                const c = colors[this.point.name] || dflt;
+                                const isTop = this.point.name === top;
+                                const pct = Math.round(this.point.value / max * 100);
+                                const d = (this.point.index * 0.12 + 0.2).toFixed(2);
+                                return '<div class="oa-map-label' + (isTop ? ' is-top' : '') + '" data-p="' + this.point.name + '" style="animation-delay:' + d + 's;">'
+                                    + (isTop ? '<span class="oa-map-crown"><i class="fas fa-star"></i>มากที่สุด</span>' : '')
+                                    + '<span class="oa-map-label-name">' + this.point.name + '</span>'
+                                    + '<span class="oa-map-label-count" style="color:' + c.stroke + ';"><i class="fas fa-location-dot"></i>' + this.point.value + '<small>พื้นที่</small></span>'
+                                    + '<span class="oa-map-label-bar"><b style="width:' + pct + '%;background:' + c.fill + '"></b></span></div>';
+                            }
                         },
-                    }).addTo(map);
-                }
-
-                const bounds = [], seen = {};
-                pins.forEach(p => {
-                    const lat = parseFloat(p.lat), lng = parseFloat(p.lng);
-                    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) return;
-                    const c = colors[p.province_name] || dflt;
-                    const prog = Number(p.progress) || 0, tot = Number(p.progress_total) || 8;
-                    const pct = tot > 0 ? Math.round(prog / tot * 100) : 0;
-                    const html = p.display_only
-                        ? '<div class="hm-pin-pop" style="--pa:' + c.fill + ';">' +
-                        '<div class="hm-pin-pop-head"><span class="hm-pin-pop-prov">' + esc(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
-                        (p.fiscal_year ? '<span class="hm-pin-pop-year" style="background:' + hexA(c.fill, .14) + ';color:' + c.stroke + ';">ปีงบ ' + esc(p.fiscal_year) + '</span>' : '') + '</div>' +
-                        (p.breadcrumb ? '<div class="hm-pin-pop-bc">' + esc(p.breadcrumb) + '</div>' : '') +
-                        (p.label && String(p.breadcrumb || '').split(' › ').pop().trim() !== String(p.label).trim() ? '<div class="hm-pin-pop-lb">ประเด็น: ' + esc(p.label) + '</div>' : '') +
-                        '<div class="hm-pin-pop-bc"><b>ดำเนินงาน พชอ.ไต</b> โดย ' + esc(p.agency_label || '-') + '</div></div>'
-                        :
-                        '<div class="hm-pin-pop" style="--pa:' + c.fill + ';">' +
-                        '<div class="hm-pin-pop-head"><span class="hm-pin-pop-prov">' + esc(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
-                        (p.fiscal_year ? '<span class="hm-pin-pop-year" style="background:' + hexA(c.fill, .14) + ';color:' + c.stroke + ';">ปีงบ ' + esc(p.fiscal_year) + '</span>' : '') + '</div>' +
-                        (p.breadcrumb ? '<div class="hm-pin-pop-bc">' + esc(p.breadcrumb) + '</div>' : '') +
-                        (p.approx ? '<div class="hm-pin-pop-bc" style="color:#b45309;"><i class="fas fa-circle-info"></i> ตำแหน่งโดยประมาณ (กึ่งกลางอำเภอ) - ยังไม่ได้ปักหมุดจริง</div>' : '') +
-                        (p.label && String(p.breadcrumb || '').split(' › ').pop().trim() !== String(p.label).trim() ? '<div class="hm-pin-pop-lb">ประเด็น: ' + esc(p.label) + '</div>' : '') +
-                        '<div class="hm-pin-pop-pr"><div class="hm-pin-pop-row"><span>ความก้าวหน้า</span><strong>' + prog + '/' + tot + ' ข้อ</strong></div>' +
-                        '<div class="hm-pin-pop-tr"><i style="width:' + pct + '%;"></i></div></div></div>';
-                    L.marker([lat, lng], { icon: icon(p.province_name) }).addTo(map).bindPopup(html);
-                    bounds.push([lat, lng]);
-                    seen[p.province_name || ''] = (seen[p.province_name || ''] || 0) + 1;
+                        point: { events: { mouseOver: function () { showInfo(this.name); }, click: function () { showInfo(this.name); } } }
+                    } },
+                    tooltip: { enabled: false }, /* ป้ายบนแผนที่บอกชื่อ+จำนวนอยู่แล้ว - ไม่ให้ tooltip มาบัง */
+                    series: [{ name: 'จำนวนพื้นที่', data: data, joinBy: 'hc-key' }]
                 });
-
-                if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 });
-                else map.setView([15.2, 104.5], 7);
-
-                const lg = document.getElementById('hmPinLegend');
-                if (lg) {
-                    const names = Object.keys(colors).filter(n => seen[n]).concat(Object.keys(seen).filter(n => n && !colors[n]));
-                    lg.innerHTML = names.map(n => {
-                        const c = colors[n] || dflt;
-                        return '<span title="' + esc(n) + ' ปักหมุด ' + seen[n] + ' หมุด" style="border-color:' + hexA(c.stroke, .35) + ';background:' + hexA(c.fill, .1) + ';"><i style="background:' + c.fill + ';"></i>' + esc(n) + '<b class="hm-pin-n" style="color:' + c.stroke + ';">' + seen[n] + '</b></span>';
-                    }).join('');
-                }
-                const fix = () => map.invalidateSize();
-                setTimeout(fix, 250);
-                window.addEventListener('load', () => { fix(); if (bounds.length) map.fitBounds(bounds, { padding: [24, 24], maxZoom: 10 }); });
-                window.addEventListener('resize', fix);
+                showOverview();
+                el.addEventListener('mouseleave', showOverview);
+                if (info) info.addEventListener('click', e => { if (!e.target.closest('a')) showOverview(); });
             })();
         </script>
 
@@ -3100,6 +3213,15 @@
 
                 const donutColors = donutLabels.map(name => provinceColorMap[name] || '#64748b');
 
+                function resetDonutCenter() {
+                    const t = document.getElementById('donutTotal');
+                    if (!t) return;
+                    t.innerText = totalParticipants.toLocaleString();
+                    t.style.color = '#0f172a';
+                    const c = document.getElementById('donutCap'); if (c) c.innerText = 'ผู้ตอบทั้งหมด';
+                    const u = document.getElementById('donutSub'); if (u) u.innerText = 'คน';
+                }
+
                 new Chart(participantDonutCtx, {
                     type: 'doughnut',
                     data: {
@@ -3108,16 +3230,18 @@
                             data: donutValues,
                             backgroundColor: (context) => makeDepthGradient(context, donutColors[context.dataIndex]),
                             hoverBackgroundColor: (context) => makeDepthGradient(context, donutColors[context.dataIndex]),
-                            borderColor: 'rgba(255, 255, 255, 0.96)',
-                            borderWidth: 3,
-                            borderRadius: 7,
-                            hoverOffset: 10
+                            borderColor: '#ffffff',
+                            borderWidth: 2,
+                            borderRadius: 6,
+                            spacing: 2,
+                            hoverOffset: 6
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        cutout: '72%',
+                        cutout: '70%',
+                        layout: { padding: 8 },
                         // Swap the center number for the hovered province's
                         // own count, reverting to the grand total once the
                         // pointer leaves that slice (elements comes back
@@ -3125,11 +3249,16 @@
                         onHover: function(event, elements) {
                             const totalEl = document.getElementById('donutTotal');
                             if (!totalEl) return;
+                            const capEl = document.getElementById('donutCap');
+                            const subEl = document.getElementById('donutSub');
                             if (elements && elements.length > 0) {
                                 const idx = elements[0].index;
                                 totalEl.innerText = donutValues[idx].toLocaleString();
+                                totalEl.style.color = donutColors[idx];
+                                if (capEl) capEl.innerText = donutLabels[idx];
+                                if (subEl) subEl.innerText = 'คน · ' + (donutValues[idx] * 100 / totalParticipants).toFixed(1) + '%';
                             } else {
-                                totalEl.innerText = totalParticipants.toLocaleString();
+                                resetDonutCenter();
                             }
                         },
                         plugins: {
@@ -3176,8 +3305,7 @@
                 // canvas fast enough that Chart.js's own hover tracking
                 // misses the final empty-elements callback.
                 participantDonutCtx.canvas.addEventListener('mouseleave', function() {
-                    const totalEl = document.getElementById('donutTotal');
-                    if (totalEl) totalEl.innerText = totalParticipants.toLocaleString();
+                    resetDonutCenter();
                 });
 
                 // Custom Legend for Donut (below chart)
@@ -3189,15 +3317,15 @@
 
                         const item = document.createElement('div');
                         item.style.cssText =
-                            'display:flex; align-items:center; justify-content:space-between; width:100%; padding:9px 4px; border-bottom:1px dashed #e8edf3; overflow:hidden;';
+                            'display:flex; align-items:center; justify-content:space-between; width:100%; padding:9px 14px; border-radius:12px; overflow:hidden;' +
+                            'background:linear-gradient(90deg, color-mix(in srgb, ' + donutColors[i] + ' 17%, #ffffff) 0%, color-mix(in srgb, ' + donutColors[i] + ' 4%, #ffffff) 85%);';
 
                         // Left: dot + name
                         const left = document.createElement('div');
                         left.style.cssText =
                             'display:flex; align-items:center; gap:10px; flex:1; min-width:0; margin-right:10px;';
                         left.innerHTML = `
-                            <span style="width:13px;height:13px;border-radius:50%;background:${donutColors[i]};flex-shrink:0;display:inline-block;"></span>
-                            <span style="color:#334155;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</span>
+                            <span style="color:#0f172a;font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${label}</span>
                         `;
 
                         // Right: count + percent
@@ -3205,8 +3333,8 @@
                         right.style.cssText =
                             'display:flex; align-items:center; gap:12px; flex-shrink:0; white-space:nowrap;';
                         right.innerHTML = `
-                            <span style="color:#64748b;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;">${val.toLocaleString()}</span>
-                            <span style="color:#0f172a;font-weight:800;font-size:17px;min-width:46px;text-align:right;">${perc}%</span>
+                            <span style="color:#475569;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;">${val.toLocaleString()}</span>
+                            <span style="color:color-mix(in srgb, ${donutColors[i]} 62%, #0f172a);font-weight:800;font-size:17px;min-width:46px;text-align:right;">${perc}%</span>
                         `;
 
                         item.appendChild(left);

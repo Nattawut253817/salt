@@ -470,6 +470,71 @@
             color: color-mix(in srgb, var(--ch-accent) 40%, #334155);
         }
 
+        /* Banner รุ่นสวย (ใช้ร่วมทุกหน้าที่มีธีม): ไล่สีตามสีประจำหน้า + แสงเรือง + วงกลมตกแต่ง
+           + ไอคอนมีมิติ + หัวข้อไล่สี + เส้นสั้นนำหน้าคำอธิบาย */
+        .content-header.content-header-themed {
+            position: relative;
+            overflow: hidden;
+            padding: 18px 28px;
+            gap: 18px;
+            border: 1px solid rgba(255, 255, 255, .8);
+            background:
+                radial-gradient(circle at 92% 20%, rgba(255, 255, 255, .85) 0, rgba(255, 255, 255, 0) 38%),
+                linear-gradient(105deg,
+                    color-mix(in srgb, var(--ch-accent) 28%, #fff) 0%,
+                    var(--ch-bg-a) 42%,
+                    color-mix(in srgb, var(--ch-bg-a) 55%, #fff) 70%,
+                    var(--ch-bg-b) 100%);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset,
+                0 16px 30px -22px rgba(var(--ch-accent-rgb), .55), 0 2px 6px rgba(15, 23, 42, .04);
+        }
+        .content-header.content-header-themed::before,
+        .content-header.content-header-themed::after {
+            content: ""; position: absolute; border-radius: 50%; pointer-events: none;
+        }
+        .content-header.content-header-themed::before {
+            width: 190px; height: 190px; right: -46px; top: -92px;
+            background: radial-gradient(circle at 35% 35%, rgba(var(--ch-accent-rgb), .20), rgba(var(--ch-accent-rgb), 0) 70%);
+        }
+        .content-header.content-header-themed::after {
+            width: 120px; height: 120px; right: 150px; bottom: -78px;
+            background: radial-gradient(circle at 40% 40%, rgba(var(--ch-accent-rgb), .22), rgba(var(--ch-accent-rgb), 0) 70%);
+        }
+        .content-header.content-header-themed .content-header-icon {
+            position: relative; z-index: 1;
+            width: 54px; height: 54px; min-width: 54px; border-radius: 17px; font-size: 1.4rem;
+            background: linear-gradient(150deg,
+                color-mix(in srgb, var(--ch-accent) 72%, #fff) 0%,
+                var(--ch-accent) 55%,
+                color-mix(in srgb, var(--ch-accent) 70%, #000) 100%);
+            box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 0 0 4px rgba(255, 255, 255, .55),
+                0 10px 18px -8px rgba(var(--ch-accent-rgb), .75);
+        }
+        .content-header.content-header-themed .content-header-text { position: relative; z-index: 1; gap: 4px; }
+        .content-header.content-header-themed h1 {
+            font-size: 1.65rem; font-weight: 800; letter-spacing: -.2px;
+            background: linear-gradient(90deg,
+                color-mix(in srgb, var(--ch-accent) 62%, #000) 0%,
+                var(--ch-accent) 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .content-header.content-header-themed .content-header-subtitle {
+            font-size: .9rem; font-weight: 600;
+            color: color-mix(in srgb, var(--ch-accent) 35%, #475569);
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .content-header.content-header-themed .content-header-subtitle::before {
+            content: ""; flex: none; width: 22px; height: 3px; border-radius: 99px;
+            background: linear-gradient(90deg, var(--ch-accent), color-mix(in srgb, var(--ch-accent) 40%, #fff));
+        }
+        @media (max-width: 560px) {
+            .content-header.content-header-themed { padding: 14px 16px; gap: 12px; }
+            .content-header.content-header-themed .content-header-icon { width: 44px; height: 44px; min-width: 44px; font-size: 1.15rem; border-radius: 14px; }
+            .content-header.content-header-themed h1 { font-size: 1.2rem; }
+            .content-header.content-header-themed .content-header-subtitle { font-size: .78rem; }
+            .content-header.content-header-themed .content-header-subtitle::before { width: 14px; }
+        }
+
         /* Sidebar Toggle Button */
         .sidebar-toggle {
             display: none;

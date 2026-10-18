@@ -40,24 +40,27 @@ class SurveyYearMapping extends Model
     // removed - that same name/content already lives on the home dashboard
     // (MainController::index()'s "Awareness Metrics Card Data" section), so
     // it was a duplicate on /awareness rather than a new thing.
-    const DASHBOARD_PANEL_COUNT = 4;
+    // เหลือ 3 กรอบ: กรอบเดิมที่ 3 (พฤติกรรมสุขภาพและการสั่งอาหาร) ถูกยุบรวมเข้ากรอบที่ 2
+    // เลข 3 จึงเลิกใช้ (ไม่เลื่อนเลข 4 เพื่อให้ข้อมูลที่เก็บไว้ไม่ต้องเปลี่ยน) -
+    // migration 2026_10_18_000001 ย้ายคำถามที่เคยอยู่กรอบ 3 ไปกรอบ 2 ให้แล้ว
+    const DASHBOARD_PANEL_COUNT = 3;
+
+    const DASHBOARD_PANEL_IDS = [1, 2, 4];
 
     const DASHBOARD_PANEL_TITLES = [
         1 => 'พฤติกรรมการบริโภคที่เสี่ยง (ความถี่การทาน)',
-        2 => 'พฤติกรรมการปรุงและการทานนอกบ้าน',
-        3 => 'พฤติกรรมสุขภาพและการสั่งอาหาร',
+        2 => 'พฤติกรรมการปรุง การสั่งอาหาร และการทานนอกบ้าน',
         4 => 'ความตระหนักรู้ ทัศนคติ และความพยายาม',
     ];
 
     // Display/offer order for the panels above.
-    const DASHBOARD_PANEL_DISPLAY_ORDER = [1, 2, 3, 4];
+    const DASHBOARD_PANEL_DISPLAY_ORDER = [1, 2, 4];
 
     // Presentation metadata for the "ตั้งค่าแดชบอร์ด" card picker - keyed the
     // same as DASHBOARD_PANEL_TITLES.
     const DASHBOARD_PANEL_META = [
         1 => ['icon' => 'fa-triangle-exclamation', 'color' => '#e74c3c', 'description' => 'ความถี่ในการบริโภคอาหารเสี่ยงโซเดียมสูง เช่น อาหารแช่แข็ง อาหารหมักดอง'],
-        2 => ['icon' => 'fa-utensils', 'color' => '#e67e22', 'description' => 'พฤติกรรมการเติมเครื่องปรุงระหว่างปรุง/บนโต๊ะ และการทานอาหารนอกบ้าน'],
-        3 => ['icon' => 'fa-heart-pulse', 'color' => '#3498db', 'description' => 'การทำอาหารทานเองและพฤติกรรมการสั่งอาหารในเชิงสุขภาพ'],
+        2 => ['icon' => 'fa-utensils', 'color' => '#e67e22', 'description' => 'การเติมเครื่องปรุงระหว่างปรุง/บนโต๊ะ การทำอาหารเอง การสั่งอาหาร และการทานนอกบ้าน'],
         4 => ['icon' => 'fa-brain', 'color' => '#2ecc71', 'description' => 'ระดับความสำคัญ ความพยายาม และความรู้ในการลดโซเดียม'],
     ];
 

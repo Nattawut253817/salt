@@ -142,12 +142,7 @@
                                 <h4 id="hmTrendTitle">สถานการณ์แนวโน้มอัตราป่วยรายใหม่ HT</h4>
                                 <p id="hmTrSub" data-scope="{{ $htTrendScope }}">ข้อมูลปีงบประมาณ {{ $htTrend['years'][0] }}{{ count($htTrend['years']) > 1 ? '–' . end($htTrend['years']) : '' }} · {{ $htTrendScope }}</p>
                             </div>
-                            @if (!empty($htTrend['summary']))
-                                <span class="hm-tr-chip {{ $htTrend['summary']['tone'] }}" id="hmTrChip">
-                                    {{ ['up' => '▲', 'down' => '▼', 'flat' => '●', 'info' => 'i'][$htTrend['summary']['tone']] }}
-                                    {{ $htTrend['summary']['label'] }} {{ $htTrend['summary']['pct'] }}
-                                </span>
-                            @endif
+                            {{-- ป้าย "แนวโน้ม…%" ถูกเอาออก: ไม่ระบุปีที่ใช้เทียบ ทำให้ตีความตัวเลขไม่ได้ (ข้อมูลยังคำนวณใน summary เผื่อนำกลับมาใช้) --}}
                             @if (!$htTrInline)
                                 <button type="button" class="hm-tr-x" id="hmTrendClose" aria-label="ปิดหน้าต่าง">&times;</button>
                             @endif

@@ -78,7 +78,7 @@ class AwarenessYearGrid
         // 4 แผงคำถาม: ข้อละ 1 สแกน แต่ทำครั้งเดียวต่อปี (เดิมทำซ้ำทุกครั้งที่เปลี่ยนตัวกรอง)
         $panels = [];
         $questionKeys = SurveyYearMapping::where('fiscal_year', $year)
-            ->whereIn('dashboard_panel', range(1, SurveyYearMapping::DASHBOARD_PANEL_COUNT))
+            ->whereIn('dashboard_panel', SurveyYearMapping::DASHBOARD_PANEL_IDS)
             ->pluck('question_key')
             ->unique();
         foreach ($questionKeys as $questionKey) {

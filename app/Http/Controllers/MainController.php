@@ -1682,7 +1682,7 @@ class MainController extends Controller
         // awareness bundle above (different source tables, cheaper, and
         // they should not be invalidated together).
         $homeModules = Cache::remember(
-            'home_modules_v13:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
+            'home_modules_v16:' . md5(json_encode(['y' => $activeFiscalYear, 'p' => $selectedProvince, 'hi' => $this->tableStamp(Hi::class), 'fy' => $this->tableStamp(FiscalYear::class), 'op' => $this->tableStamp(OperatingAreaPin::class), 'ka' => $this->tableStamp(KidneyAssessment::class)])),
             now()->addMinutes(10),
             fn() => $this->buildHomeModuleSummaries($activeFiscalYear, $selectedProvince, $targetProvinces)
         );
@@ -1842,8 +1842,18 @@ class MainController extends Controller
         if ($year !== '') {
             $pinsQuery->where('fiscal_year', $year);
         }
-        $pins = $pinsQuery->get()->map(function ($pin) {
+        // รายงานที่ครอบคลุมหลายพื้นที่ (_extra_pin_ids) ต้องนับให้หมุดอื่นด้วย - ใช้กติกาเดียวกับ kidneyDHBReport()
+        $extraAssessmentsByPin = [];
+        foreach (KidneyAssessment::where('reporter_metadata', 'like', '%"' . \App\Support\KidneyAreaList::META_KEY . '"%')->get() as $multiRep) {
+            foreach (\App\Support\KidneyAreaList::extraPinIds($multiRep) as $extraPid) {
+                $extraAssessmentsByPin[$extraPid][] = $multiRep;
+            }
+        }
+        $pins = $pinsQuery->get()->map(function ($pin) use ($extraAssessmentsByPin) {
             $assess = $pin->assessments->where('fiscal_year', $pin->fiscal_year);
+            if (!empty($extraAssessmentsByPin[$pin->id])) {
+                $assess = $assess->concat(collect($extraAssessmentsByPin[$pin->id])->where('fiscal_year', $pin->fiscal_year))->unique('id');
+            }
             $done = [];
             for ($i = 1; $i <= 7; $i++) {
                 $f = "category_$i";
@@ -1950,7 +1960,16 @@ class MainController extends Controller
 
         $displayPinsForHome = $this->displayOnlyPinList($scopeProvinces, $year);
 
+        // จำนวนพื้นที่ดำเนินงานรายจังหวัด (แผนที่) - 1 หมุด = 1 พื้นที่ นับเหมือน kidneyDHBReport():
+        // หมุดรายงาน (ลงทะเบียน + ปักตอนรายงาน + เก่า) รวมหมุดแสดงผลของ SuperAdmin
+        $allMapPins = $pins->concat(collect($displayPinsForHome));
+        $areaCounts = [];
+        foreach ($scopeProvinces as $prov) {
+            $areaCounts[$prov] = $allMapPins->where('province_name', $prov)->count();
+        }
+
         $kidney = [
+            'area_counts' => $areaCounts,
             'pin_total' => $pinTotal,
             // หมุดแสดงผล (SuperAdmin เพิ่มไว้แสดงบนแผนที่) - นับแยก ไม่ปนกับหมุดรายงาน แต่รวมในเลข "ปักหมุดทั้งหมด"
             'display_pin_count' => count($displayPinsForHome),
@@ -3508,7 +3527,9 @@ class MainController extends Controller
             })->distinct()->orderBy('district_name')->pluck('district_name');
         });
 
-        return view('pages.awareness', compact(
+        // เก็บผลลัพธ์ในเบราว์เซอร์ 2 นาที: เลือกตัวกรองซ้ำ/ย้อนกลับ/ตัวกรองที่โหลดล่วงหน้าไว้ จะแสดงทันทีโดยไม่ต้องถามเซิร์ฟเวอร์
+        // (ข้อมูลฝั่งเซิร์ฟเวอร์แคชไว้ 60 นาทีอยู่แล้ว จึงไม่ทำให้ข้อมูลเก่าลงกว่าเดิมอย่างมีนัย)
+        return response()->view('pages.awareness', compact(
             'provinceStats',
             'passFailByProvince',
             'districtStats',
@@ -3532,7 +3553,7 @@ class MainController extends Controller
             'districts',
             'hasPendingCriteria',
             'effectiveFiscalYear'
-        ));
+        ))->header('Cache-Control', 'private, max-age=120');
     }
 
     public function foodSurvey()

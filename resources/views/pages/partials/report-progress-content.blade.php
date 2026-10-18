@@ -3155,7 +3155,7 @@
                         resolvedTargetUserId = null;
                         resolvedTargetLabel = '';
                         groupAccount.style.display = 'none';
-                        setTargetStatus('<i class="fas fa-triangle-exclamation"></i> ไม่พบบัญชีผู้ใช้งานที่ตรงกับหน่วยงานที่เลือก กรุณาตรวจสอบข้อมูล หรือให้ผู้ดูแลระบบสร้างบัญชีนี้ก่อน', 'warning');
+                        setTargetStatus('<i class="fas fa-triangle-exclamation"></i> หน่วยงานนี้ยังไม่มีบัญชี - ไม่ต้องสร้าง กดนำเข้าได้เลย ระบบจะบันทึกภายใต้หน่วยงานที่เลือกให้', 'warning');
                     } else if (users.length === 1) {
                         resolvedTargetUserId = users[0].id;
                         resolvedTargetLabel = users[0].label;
@@ -3393,7 +3393,7 @@
                 });
         });
 
-        btnApply.addEventListener('click', function () {
+        btnApply.addEventListener('click', async function () {
             if (!lastParseResult) return;
 
             if (!resolvedTargetUserId) {
@@ -3413,8 +3413,30 @@
                     resolvedTargetLabel = fallbackOption.text;
                     updateReporterSourceUI();
                 } else {
-                    Swal.fire({ icon: 'warning', title: 'ไม่พบบัญชีผู้ใช้งาน', text: 'ไม่พบบัญชีผู้ใช้งานที่ตรงกับหน่วยงานที่เลือก กรุณาตรวจสอบข้อมูล หรือให้ผู้ดูแลระบบสร้างบัญชีนี้ก่อน', confirmButtonColor: '#f59e0b', confirmButtonText: 'ตกลง' });
-                    return;
+                    // ไม่มีบัญชีของหน่วยงานนี้: ข้ามเรื่องบัญชี แล้วให้เซิร์ฟเวอร์สร้างบัญชีตัวแทนหน่วยงาน
+                    // (ล็อกอินไม่ได้ ไม่อนุมัติ) ตามประเภท/จังหวัด/อำเภอที่เลือก ใช้เป็นเจ้าของข้อมูลที่นำเข้า
+                    // - ใช้ endpoint เดียวกับหน้าแบบรายงาน พชอ.ไต
+                    try {
+                        const ensureBody = new URLSearchParams({ rank: rankSelect.value, province_id: provinceSelect.value });
+                        if (districtSelect.value) ensureBody.set('district_id', districtSelect.value);
+                        if (hospitalSelect.value) ensureBody.set('hos_id', hospitalSelect.value);
+                        if (subdistrictHospitalSelect.value) ensureBody.set('sh_id', subdistrictHospitalSelect.value);
+                        const ensureRes = await fetch('{{ route("admin.kidney-dhb.ensure-target-agency") }}', {
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: ensureBody.toString()
+                        });
+                        const ensureJson = await ensureRes.json();
+                        if (!ensureRes.ok || !ensureJson.success) {
+                            throw new Error(ensureJson.message || 'เกิดข้อผิดพลาด');
+                        }
+                        resolvedTargetUserId = ensureJson.id;
+                        resolvedTargetLabel = ensureJson.label || '';
+                        updateReporterSourceUI();
+                    } catch (err) {
+                        Swal.fire({ icon: 'warning', title: 'เลือกหน่วยงานให้ครบก่อน', text: (err && err.message) || 'กรุณาเลือกประเภทหน่วยงาน จังหวัด และอำเภอให้ครบก่อนนำเข้า', confirmButtonColor: '#f59e0b', confirmButtonText: 'ตกลง' });
+                        return;
+                    }
                 }
             }
             const quarterSelectEl = document.getElementById('import_detected_quarter');

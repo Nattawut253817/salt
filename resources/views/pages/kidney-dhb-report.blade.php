@@ -594,6 +594,26 @@
             font-size: 16px;
             font-weight: 800;
         }
+        #map-container .oa-map-label-count i { font-size: 11px; margin-right: 3px; opacity: .9; }
+        #map-container .oa-map-label-bar { display: block; height: 4px; margin-top: 3px; border-radius: 99px; background: rgba(15, 23, 42, .1); overflow: hidden; }
+        #map-container .oa-map-label-bar > b { display: block; height: 100%; border-radius: 99px; background: var(--lc, #0f4c5c); }
+        #map-container .oa-map-label.is-top { box-shadow: 0 0 0 2px #f5b301, 0 3px 10px rgba(245, 179, 1, .55); }
+        #map-container .oa-map-crown {
+            position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+            display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #5b3a00; font-size: 10px; font-weight: 800;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, .5); white-space: nowrap;
+        }
+        #map-container .oa-map-label { position: relative; }
+        #map-container .oa-top-province { filter: drop-shadow(0 0 7px rgba(245, 179, 1, .85)); }
+        #map-container .oa-map-label { animation: oaLabelPop .5s cubic-bezier(.2, .9, .3, 1.3) both; animation-delay: var(--d, 0s); }
+        @keyframes oaLabelPop { from { opacity: 0; transform: translateY(8px) scale(.85); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { #map-container .oa-map-label { animation: none; } }
+        #map-container { position: relative; border-radius: 16px;
+            background:
+                radial-gradient(60% 55% at 50% 45%, rgba(15, 76, 92, .09), rgba(15, 76, 92, 0) 70%),
+                radial-gradient(rgba(15, 76, 92, .13) 1px, transparent 1.4px) 0 0 / 16px 16px; }
+
 
         #map-container .oa-map-label-count small {
             font-size: 11px;
@@ -2447,11 +2467,15 @@
             'ยโสธร': { x: -26, y: -4 }, 'อำนาจเจริญ': { x: 16, y: 10 },
             'อุบลราชธานี': { x: 18, y: 16 }, 'ศรีสะเกษ': { x: -6, y: 10 }
         };
+        const oaMapMax = Math.max(1, ...Object.keys(hcMapKeys).map(n => mapDataRaw[n] || 0));
+        const oaMapTotal = Object.keys(hcMapKeys).reduce((a, n) => a + (mapDataRaw[n] || 0), 0);
+        const oaTopProvince = oaMapTotal > 0 ? Object.keys(hcMapKeys).reduce((a, n) => ((mapDataRaw[n] || 0) > (mapDataRaw[a] || 0) ? n : a)) : null;
         const mapSeriesData = Object.keys(hcMapKeys).map(name => ({
             'hc-key': hcMapKeys[name],
             'value': mapDataRaw[name] || 0,
             'name': name,
             'color': oaMapFillColor(name),
+            'className': name === oaTopProvince ? 'oa-top-province' : undefined,
             'dataLabels': oaLabelOffsets[name] || {}
         }));
 
@@ -2482,9 +2506,14 @@
                         overflow: 'allow',
                         formatter: function () {
                             const ink = (oaProvinceColors[this.point.name] || oaColorForProvinceDefault).stroke;
-                            return '<div class="oa-map-label">'
+                            const top = this.point.name === oaTopProvince;
+                            const pct = Math.round((this.point.value / oaMapMax) * 100);
+                            const delay = (this.point.index * 0.12 + 0.2).toFixed(2);
+                            return '<div class="oa-map-label' + (top ? ' is-top' : '') + '" style="animation-delay:' + delay + 's;">'
+                                + (top ? '<span class="oa-map-crown"><i class="fas fa-star"></i>มากที่สุด</span>' : '')
                                 + '<span class="oa-map-label-name">' + this.point.name + '</span>'
-                                + '<span class="oa-map-label-count" style="color:' + ink + ';">' + this.point.value + '<small>พื้นที่</small></span>'
+                                + '<span class="oa-map-label-count" style="color:' + ink + ';"><i class="fas fa-location-dot"></i>' + this.point.value + '<small>พื้นที่</small></span>'
+                                + '<span class="oa-map-label-bar"><b style="width:' + pct + '%;background:' + (oaProvinceColors[this.point.name] || oaColorForProvinceDefault).fill + '"></b></span>'
                                 + '</div>';
                         },
                         style: { textOutline: 'none', pointerEvents: 'none' }
@@ -2518,6 +2547,7 @@
                 pointFormat: '{point.name}: <b>{point.value} พื้นที่</b><br><span style="opacity:.7;">คลิกเพื่อดูหน่วยงานในตาราง</span>'
             },
             series: [{ name: 'จำนวนพื้นที่', data: mapSeriesData, joinBy: 'hc-key' }],
+            legend: { enabled: false },
             credits: { enabled: false }
         });
 

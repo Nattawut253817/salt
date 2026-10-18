@@ -10,6 +10,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\ToCollection;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
 
 /**
@@ -29,7 +30,7 @@ use Maatwebsite\Excel\Concerns\WithCustomCsvSettings;
  * demographic columns it adds - never needs a new migration, model, or
  * import class: just upload it.
  */
-class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEmptyRows
+class SodiumSurveyImport implements ToCollection, WithChunkReading, WithCustomCsvSettings, SkipsEmptyRows
 {
     // A sanity floor only - not every column this many wide is necessarily
     // valid, but nothing narrower can possibly be a real survey export.
@@ -104,7 +105,7 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
     protected int $updatedCount = 0;
 
     // จำนวนแถวที่บันทึกต่อ 1 รอบ (INSERT หลายแถวใน 1 คำสั่ง)
-    const BATCH_SIZE = 500;
+    const BATCH_SIZE = 1000; // 1,000 แถว x ~22 คอลัมน์ ยังต่ำกว่าเพดาน 65,535 พารามิเตอร์ของ MySQL
 
     /** @var array<string, int> คีย์แถวซ้ำ => id ของแถวที่มีอยู่แล้วในฐานข้อมูล (แถวแรกสุดของคีย์นั้น) - โหลดครั้งเดียวตอนเริ่มนำเข้า */
     protected array $knownRowIds = [];
@@ -115,7 +116,44 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
     {
         $this->fiscal_year = (string) $fiscal_year;
         $this->duplicate_action = $duplicate_action;
+        // ไฟล์หลายหมื่นแถว: ไม่เก็บประวัติคำสั่ง SQL ไว้ในหน่วยความจำ
+        DB::disableQueryLog();
         \Log::info('==== SODIUM SURVEY IMPORT START (fiscal_year=' . $this->fiscal_year . ', mode=' . $duplicate_action . ') ====');
+    }
+
+    // อ่านไฟล์ทีละ 2,000 แถว แทนการโหลดทั้งชีตเข้าหน่วยความจำ - ไฟล์หลักหมื่นแถว
+    // (เช่น 34,000 แถว x 24 คอลัมน์) เคยทำให้ PHP หน่วยความจำหมดแล้วตอบกลับไม่ได้
+    const READ_CHUNK_SIZE = 2000;
+
+    protected bool $headerReady = false;
+    protected array $questionKeys = [];
+    protected array $fixedIndices = [];
+
+    public function chunkSize(): int
+    {
+        return self::READ_CHUNK_SIZE;
+    }
+
+    /**
+     * นำเข้าจากชุดแถวที่อ่านแบบสตรีมมา (ดู App\Support\XlsxRowStream) - ใช้กับ .xlsx ไฟล์ใหญ่
+     * แถวว่างทั้งแถวถูกข้าม แล้วส่งเข้า collection() ทีละก้อนเหมือนการอ่านแบบแบ่งก้อน
+     */
+    public function importStream(iterable $rows): void
+    {
+        $chunk = [];
+        foreach ($rows as $cells) {
+            if (!array_filter($cells, fn ($c) => $c !== null && $c !== '')) {
+                continue;
+            }
+            $chunk[] = collect($cells);
+            if (count($chunk) >= self::READ_CHUNK_SIZE) {
+                $this->collection(collect($chunk));
+                $chunk = [];
+            }
+        }
+        if ($chunk !== []) {
+            $this->collection(collect($chunk));
+        }
     }
 
     public function getCsvSettings(): array
@@ -129,19 +167,28 @@ class SodiumSurveyImport implements ToCollection, WithCustomCsvSettings, SkipsEm
             return;
         }
 
-        $header = $rows->first();
-        $dataRows = $rows->slice(1);
+        if (!$this->headerReady) {
+            // ก้อนแรกของไฟล์: แถวแรกคือหัวตาราง
+            $header = $rows->first();
+            $dataRows = $rows->slice(1);
 
-        // Validate BEFORE syncMappings() touches the database - syncMappings()
-        // always overwrites question_label with whatever text sits in the
-        // new file's header, so a mismatched/wrong file uploaded for a
-        // fiscal year that's already been configured would otherwise
-        // silently corrupt its stored question set.
-        $this->assertHeaderMatches($header);
+            // Validate BEFORE syncMappings() touches the database - syncMappings()
+            // always overwrites question_label with whatever text sits in the
+            // new file's header, so a mismatched/wrong file uploaded for a
+            // fiscal year that's already been configured would otherwise
+            // silently corrupt its stored question set.
+            $this->assertHeaderMatches($header);
 
-        $synced = $this->syncMappings($header);
-        $questionKeys = $synced['questionKeys'];
-        $fixedIndices = $synced['fixedIndices'];
+            $synced = $this->syncMappings($header);
+            $this->questionKeys = $synced['questionKeys'];
+            $this->fixedIndices = $synced['fixedIndices'];
+            $this->headerReady = true;
+        } else {
+            $dataRows = $rows;
+        }
+
+        $questionKeys = $this->questionKeys;
+        $fixedIndices = $this->fixedIndices;
 
         // บันทึกเป็นชุดละ BATCH_SIZE แถว: ตรวจซ้ำในหน่วยความจำ + INSERT หลายแถวต่อคำสั่ง
         // (เดิม SELECT 1 + INSERT 1 ต่อแถว ผ่านโมเดล Eloquent ทีละแถว)

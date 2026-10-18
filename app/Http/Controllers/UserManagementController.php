@@ -18,6 +18,12 @@ class UserManagementController extends Controller
             $query->withoutSuperAdmins();
         }
 
+        // บัญชีตัวแทน (นำเข้า Word) ซ่อนไว้เป็นค่าเริ่มต้น — เฉพาะ SuperAdmin เปิดดูได้ด้วยตัวกรอง
+        $showPlaceholders = $request->user()->isSuperAdmin() && $request->boolean('show_placeholders');
+        if (! $showPlaceholders) {
+            $query->withoutImportPlaceholders();
+        }
+
         // Filter by Province
         if ($request->filled('province_id')) {
             $query->where('Province_id', $request->province_id);
@@ -254,5 +260,39 @@ class UserManagementController extends Controller
             'success' => true,
             'message' => 'ลบผู้ใช้งานเรียบร้อยแล้ว'
         ]);
+    }
+
+    /**
+     * ลบผู้ใช้หลายคนพร้อมกัน (เฉพาะ SuperAdmin - กั้นที่ route ด้วย middleware super.admin)
+     * ข้ามบัญชีตัวเองและบัญชี SuperAdmin เสมอ เพื่อไม่ให้ลบสิทธิ์ผู้ดูแลระบบโดยไม่ตั้งใจ
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => 'required|array|min:1|max:200',
+            'ids.*' => 'integer',
+        ]);
+
+        $users = User::whereIn('id', $data['ids'])->get();
+        $deleted = 0;
+        $skipped = 0;
+
+        foreach ($users as $user) {
+            if ($user->id === auth()->id() || $user->isSuperAdmin()) {
+                $skipped++;
+                continue;
+            }
+            $user->delete();
+            $deleted++;
+        }
+
+        \App\Support\ActivityLog::record('data_change', 'ลบผู้ใช้งานหลายรายการ ' . $deleted . ' บัญชี', null, ['deleted' => $deleted, 'skipped' => $skipped], $request);
+
+        $message = 'ลบผู้ใช้งานเรียบร้อย ' . $deleted . ' บัญชี';
+        if ($skipped > 0) {
+            $message .= ' (ข้าม ' . $skipped . ' บัญชีที่เป็นตัวเอง/SuperAdmin)';
+        }
+
+        return response()->json(['success' => true, 'message' => $message, 'deleted' => $deleted, 'skipped' => $skipped]);
     }
 }

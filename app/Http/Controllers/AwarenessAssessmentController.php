@@ -183,8 +183,9 @@ class AwarenessAssessmentController extends Controller
     public function store(Request $request)
     {
         // Increase execution time and memory for large files
-        ini_set('max_execution_time', 600); // 10 minutes
-        ini_set('memory_limit', '512M');
+        ini_set('max_execution_time', 0); // ไม่จำกัดเวลา - ไฟล์ใหญ่หลายหมื่นแถว
+        @set_time_limit(0);
+        ini_set('memory_limit', '1024M');
 
         $request->validate([
             'fiscal_year' => 'required',
@@ -202,7 +203,13 @@ class AwarenessAssessmentController extends Controller
         try {
             $import = new SodiumSurveyImport($request->fiscal_year, $request->duplicate_action);
 
-            Excel::import($import, $request->file('file'));
+            $uploaded = $request->file('file');
+            if (strtolower($uploaded->getClientOriginalExtension()) === 'xlsx') {
+                // .xlsx: อ่านแบบสตรีมครั้งเดียวจบ (เร็วและกินหน่วยความจำน้อยกว่า PhpSpreadsheet มาก)
+                $import->importStream(\App\Support\XlsxRowStream::rows($uploaded->getRealPath()));
+            } else {
+                Excel::import($import, $uploaded);
+            }
 
             \Illuminate\Support\Facades\DB::commit();
 

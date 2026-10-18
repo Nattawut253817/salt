@@ -186,6 +186,8 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::delete('/sodium-menus/{id}', [AdminController::class, 'destroySodiumMenu'])->name('admin.sodium-menus.destroy');
     // Awareness Assessment (การประเมินความตระหนักรู้)
     Route::get('/awareness', [AwarenessAssessmentController::class, 'index'])->name('admin.awareness');
+    // เปิด URL นี้ด้วย GET (รีเฟรช/กดย้อนหลังนำเข้า/redirect กลับมา) ให้ไปหน้ารายการแทนที่จะขึ้น 405 - flash session ยังคงอยู่
+    Route::redirect('/awareness/import', '/admin/awareness'); // ไม่ใช้ closure เพื่อให้ route:cache ใช้ได้
     Route::post('/awareness/import', [AwarenessAssessmentController::class, 'store'])->name('admin.awareness.import');
     Route::delete('/awareness/delete-filtered', [AwarenessAssessmentController::class, 'deleteFiltered'])->name('admin.awareness.delete-filtered');
     Route::get('/awareness/interpretation', [AwarenessAssessmentController::class, 'interpretation'])->name('admin.awareness.interpretation');
@@ -220,7 +222,8 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::post('/users/{id}/toggle-super-admin', [\App\Http\Controllers\UserManagementController::class, 'toggleSuperAdmin'])->middleware('super.admin')->name('admin.users.toggle-super-admin');
     Route::get('/users/{id}/edit', [\App\Http\Controllers\UserManagementController::class, 'edit'])->name('admin.users.edit');
     Route::put('/users/{id}', [\App\Http\Controllers\UserManagementController::class, 'update'])->name('admin.users.update');
-    Route::post('/users/{id}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->name('admin.users.destroy');
+    Route::post('/users/bulk-delete', [\App\Http\Controllers\UserManagementController::class, 'bulkDestroy'])->middleware('super.admin')->name('admin.users.bulk-destroy');
+    Route::post('/users/{id}', [\App\Http\Controllers\UserManagementController::class, 'destroy'])->middleware('super.admin')->name('admin.users.destroy');
 
     // Fiscal Year Management
     Route::get('/fiscal-years', [\App\Http\Controllers\FiscalYearController::class, 'index'])->name('admin.fiscal-years.index');

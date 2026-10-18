@@ -6,6 +6,7 @@ use App\Models\Hi;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
 /**
  * Importer behind the "นำเข้าข้อมูล (Excel)" modal on the อัตราป่วยรายใหม่ HT
@@ -20,7 +21,7 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
  * row is processed (see assertHeaderMatches()), so a file whose columns
  * don't match this layout is rejected outright with nothing saved.
  */
-class HiImport implements ToCollection, SkipsEmptyRows
+class HiImport implements ToCollection, SkipsEmptyRows, WithCalculatedFormulas
 {
     /** Row 1 (index 0) - columns A-E, by 0-based column index. */
     protected const EXPECTED_ROW1 = [
@@ -128,6 +129,23 @@ class HiImport implements ToCollection, SkipsEmptyRows
             && (bool) preg_match('/^(รวม(ทั้งหมด|ทั้งสิ้น|เขต|จังหวัด)?|total)$/iu', $label);
     }
 
+    /** แปลงค่าในเซลล์เป็นตัวเลข - ค่าที่อ่านไม่ได้ (ข้อความ, สูตรที่ไม่ถูกคำนวณ, ว่าง) เป็น 0 */
+    protected function num($value)
+    {
+        if ($value === null || is_bool($value)) {
+            return 0;
+        }
+        if (is_int($value) || is_float($value)) {
+            return $value;
+        }
+        $clean = str_replace([',', ' ', "\u{00A0}"], '', trim((string) $value));
+        if ($clean !== '' && is_numeric($clean)) {
+            return $clean + 0;
+        }
+
+        return 0;
+    }
+
     protected function importRow(array $row): void
     {
         // Column indices:
@@ -143,23 +161,33 @@ class HiImport implements ToCollection, SkipsEmptyRows
 
         $districtName = trim($row[0]);
 
-        // Build the data array from the Excel row
+        // ตัวเลขทุกช่องผ่าน num(): รองรับสูตรที่ยังไม่ถูกคำนวณ ("=C3*100000/B3"), ตัวเลขมี
+        // ลูกน้ำ/ช่องว่าง, "-" หรือช่องว่าง (นับเป็น 0) - ไม่ปล่อยให้ข้อความหลุดไปถึงฐานข้อมูล
+        $targetB = $this->num($row[1] ?? null);
+        $totalA  = $this->num($row[2] ?? null);
+
+        // อัตราต่อแสน = A x 100,000 / B (ตามหัวคอลัมน์ของเทมเพลต) - คำนวณเองเสมอเมื่อมี B
+        // เพื่อไม่พึ่งสูตร/ค่าที่แคชไว้ในไฟล์ (ไฟล์ที่ไม่เคยถูกเปิดคำนวณใน Excel จะไม่มีค่าแคช)
+        $rate = $targetB > 0
+            ? round($totalA * 100000 / $targetB, 2)
+            : $this->num($row[3] ?? null);
+
         $newData = [
-            'target_b'      => $row[1]  ?? 0,
-            'total_a'       => $row[2]  ?? 0,
-            'rate_per_100k' => $row[3]  ?? 0,
-            'm10_oct'       => $row[4]  ?? 0,
-            'm11_nov'       => $row[5]  ?? 0,
-            'm12_dec'       => $row[6]  ?? 0,
-            'm01_jan'       => $row[7]  ?? 0,
-            'm02_feb'       => $row[8]  ?? 0,
-            'm03_mar'       => $row[9]  ?? 0,
-            'm04_apr'       => $row[10] ?? 0,
-            'm05_may'       => $row[11] ?? 0,
-            'm06_jun'       => $row[12] ?? 0,
-            'm07_jul'       => $row[13] ?? 0,
-            'm08_aug'       => $row[14] ?? 0,
-            'm09_sep'       => $row[15] ?? 0,
+            'target_b'      => $targetB,
+            'total_a'       => $totalA,
+            'rate_per_100k' => $rate,
+            'm10_oct'       => $this->num($row[4] ?? null),
+            'm11_nov'       => $this->num($row[5] ?? null),
+            'm12_dec'       => $this->num($row[6] ?? null),
+            'm01_jan'       => $this->num($row[7] ?? null),
+            'm02_feb'       => $this->num($row[8] ?? null),
+            'm03_mar'       => $this->num($row[9] ?? null),
+            'm04_apr'       => $this->num($row[10] ?? null),
+            'm05_may'       => $this->num($row[11] ?? null),
+            'm06_jun'       => $this->num($row[12] ?? null),
+            'm07_jul'       => $this->num($row[13] ?? null),
+            'm08_aug'       => $this->num($row[14] ?? null),
+            'm09_sep'       => $this->num($row[15] ?? null),
         ];
 
         // Check for existing record

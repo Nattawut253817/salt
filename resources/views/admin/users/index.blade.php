@@ -329,6 +329,19 @@
             gap: 10px;
         }
 
+        /* เลือกหลายบัญชีเพื่อลบ (เฉพาะ SuperAdmin) */
+        .bulk-col { width: 44px; }
+        .bulk-check { width: 18px; height: 18px; accent-color: #e11d48; cursor: pointer; vertical-align: middle; }
+        .bulk-bar { display: flex; align-items: center; gap: 12px; margin: 0 24px 12px; padding: 10px 14px;
+            background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 14px; }
+        .bulk-bar[hidden] { display: none; }
+        .bulk-count { font-weight: 600; color: #9f1239; margin-right: auto; }
+        .bulk-count b { font-size: 1.1rem; }
+        .bulk-clear { border: 0; background: transparent; color: #64748b; font-weight: 600; padding: 6px 10px; border-radius: 10px; }
+        .bulk-clear:hover { background: #ffe4e6; }
+        .bulk-delete { border: 0; background: #e11d48; color: #fff; font-weight: 700; padding: 8px 16px; border-radius: 12px;
+            box-shadow: 0 6px 14px rgba(225, 29, 72, .28); }
+        .bulk-delete:hover { background: #be123c; }
         .btn-delete {
             background: #fef1f2;
             color: #e11d48;
@@ -843,6 +856,14 @@
 @endsection
 
 @section('content')
+<style>
+    .filter-section .ph-pill { display:inline-flex; align-items:center; padding:7px 16px 7px 40px; border-radius:999px;
+        background:linear-gradient(90deg,#eef2ff,#f8fafc); border:1px solid #e0e7ff; font-weight:700; font-size:.88rem; color:#1e293b; }
+    .filter-section .ph-pill .custom-control-label { display:flex; align-items:center; }
+    .filter-section .ph-pill small { font-weight:600; font-size:.76rem; }
+    .filter-section .col-md-3.d-flex.align-items-end .btn { height:46px; display:flex; align-items:center; justify-content:center; border-radius:12px; font-weight:700; }
+</style>
+
     <div class="user-mgmt-container">
         <!-- Filter Section -->
         <div class="filter-section mt-2">
@@ -889,6 +910,7 @@
                     </select>
                 </div>
 
+
                 <!-- Action Buttons -->
                 <div class="col-md-3 d-flex align-items-end">
                     <div id="search-spinner" style="display: none; align-items: center; margin-right: 10px; color: var(--primary-indigo);">
@@ -907,6 +929,17 @@
                         <i class="fas fa-file-excel mr-1"></i> Export
                     </button>
                 </div>
+                @if (auth()->user()->isSuperAdmin())
+                <div class="col-12 mt-3 pt-3" style="border-top:1px dashed #e2e8f0;">
+                    <div class="custom-control custom-switch ph-pill">
+                        <input type="checkbox" class="custom-control-input" id="filter-placeholders" {{ request()->boolean('show_placeholders') ? 'checked' : '' }}>
+                        <label class="custom-control-label" for="filter-placeholders" style="cursor:pointer;">
+                            <i class="fas fa-user-secret mr-1" style="color:#6366f1;"></i> แสดงบัญชีตัวแทน
+                            <small class="text-muted ml-1">สร้างอัตโนมัติจากการนำเข้า Word</small>
+                        </label>
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
         <!-- User Table Card -->
@@ -1080,7 +1113,7 @@
             });
 
             // Handle Agency, District & Status Change
-            $('#filter-rank, #filter-district, #filter-status').on('change', function () {
+            $('#filter-rank, #filter-district, #filter-status, #filter-placeholders').on('change', function () {
                 fastSearch(1);
             });
 
@@ -1489,6 +1522,54 @@
                 });
             });
 
+            // เลือกหลายบัญชีเพื่อลบ (เฉพาะ SuperAdmin)
+            const bulkSync = () => {
+                const rows = $('.bulk-row');
+                const n = rows.filter(':checked').length;
+                $('#bulk-count').text(n);
+                $('#bulk-bar').prop('hidden', n === 0);
+                $('#bulk-all').prop('checked', rows.length > 0 && n === rows.length)
+                    .prop('indeterminate', n > 0 && n < rows.length);
+            };
+            $(document).on('change', '#bulk-all', function () { $('.bulk-row').prop('checked', this.checked); bulkSync(); });
+            $(document).on('change', '.bulk-row', bulkSync);
+            $(document).on('click', '#bulk-clear', function () { $('.bulk-row, #bulk-all').prop('checked', false); bulkSync(); });
+            $(document).on('click', '#bulk-delete', function () {
+                const ids = $('.bulk-row:checked').map(function () { return Number(this.value); }).get();
+                if (!ids.length) return;
+                Swal.fire({
+                    title: 'ลบ ' + ids.length + ' บัญชี?',
+                    html: 'ข้อมูลจะถูกลบถาวรและไม่สามารถเรียกคืนได้<br>(บัญชีของตัวเองและ SuperAdmin จะไม่ถูกลบ)',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'ใช่, ลบที่เลือก',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true,
+                    buttonsStyling: false,
+                    customClass: { popup: 'modern-confirm', confirmButton: 'modern-confirm-confirm', cancelButton: 'modern-confirm-cancel' }
+                }).then(async (result) => {
+                    if (!result.isConfirmed) return;
+                    try {
+                        const response = await fetch(`{{ url('/admin/users/bulk-delete') }}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                                'Accept': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({ ids })
+                        });
+                        const data = await response.json();
+                        if (!response.ok) throw new Error(data.message || 'เกิดข้อผิดพลาด');
+                        Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', text: data.message, timer: 2500, showConfirmButton: false });
+                        fastSearch($('.page-item.active .page-link').text() || 1);
+                    } catch (error) {
+                        Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: error.message || 'ไม่สามารถลบข้อมูลได้', confirmButtonText: 'ตกลง' });
+                    }
+                });
+            });
+
             bindPagination();
         });
         async function loadDistricts(provinceId) {
@@ -1520,6 +1601,7 @@
             const district_id = $('#filter-district').val();
             const status = $('#filter-status').val();
             const rank_id = $('#filter-rank').val();
+            const showPh = $('#filter-placeholders').is(':checked');
             const tableWrapper = $('#table-wrapper');
             const spinner = $('#search-spinner');
 
@@ -1532,6 +1614,7 @@
                 if (district_id) url.searchParams.set('district_id', district_id);
                 if (status !== '') url.searchParams.set('status', status);
                 if (rank_id) url.searchParams.set('rank_id', rank_id);
+                if (showPh) url.searchParams.set('show_placeholders', '1');
                 url.searchParams.set('page', page);
 
                 const response = await fetch(url.toString(), {
@@ -1563,6 +1646,7 @@
             $('#filter-province').val('').trigger('change.select2');
             $('#filter-district').empty().append('<option value="">ทุกอำเภอ</option>').prop('disabled', true).trigger('change.select2');
             $('#filter-status').val('').trigger('change.select2');
+            $('#filter-placeholders').prop('checked', false);
             fastSearch(1);
         }
 

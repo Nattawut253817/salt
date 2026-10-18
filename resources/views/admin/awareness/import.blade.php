@@ -1231,6 +1231,18 @@
                         // redirected to the login page) - fall back to a
                         // plain navigation so the user sees whatever the
                         // server actually sent instead of a silent stall.
+                        if (xhr.status === 413 || xhr.status >= 500) {
+                            // เซิร์ฟเวอร์ล้มกลางทาง (ไฟล์ใหญ่เกินที่ตั้งไว้ / หน่วยความจำหมด) - แจ้งสาเหตุแทนการเด้งไปหน้าอื่น
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'นำเข้าไม่สำเร็จ',
+                                html: '<div style="font-size:1rem;">เซิร์ฟเวอร์ประมวลผลไฟล์ไม่สำเร็จ (รหัส ' + xhr.status + ')<br>' +
+                                    (xhr.status === 413 ? 'ไฟล์ใหญ่เกินที่เซิร์ฟเวอร์รับได้' : 'ไฟล์อาจมีขนาดใหญ่มาก ลองแบ่งไฟล์เป็นส่วนย่อย หรือแจ้งผู้ดูแลระบบ') + '</div>',
+                                confirmButtonColor: '#ef4444',
+                                confirmButtonText: 'ปิด',
+                            });
+                            return;
+                        }
                         window.location.href = xhr.responseURL || form.action;
                         return;
                     }
