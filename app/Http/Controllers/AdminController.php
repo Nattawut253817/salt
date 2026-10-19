@@ -60,7 +60,7 @@ class AdminController extends Controller
         // fully generic admin.kidney-dhb.resolve-target-agency endpoint -
         // no salt-specific resolver needed. Only built for Level 1 users.
         $provinces = $canImportWord
-            ? \App\Models\Province::orderBy('province_name', 'asc')->get()
+            ? \App\Support\AdminCache::provinces()
             : collect();
 
         // เปิดมาจากปุ่ม "ทำแบบประเมิน" ในหน้ารายการ: ระดับ 1 เลือกแก้ไขข้อมูลของหน่วยงานอื่นได้
@@ -95,8 +95,12 @@ class AdminController extends Controller
                 ->distinct()->orderBy('fiscal_year', 'desc')->pluck('fiscal_year')
                 ->map(fn ($y) => (int) $y)->all();
             $availableYears = array_values(array_diff($this->saltAssessmentYears(), $doneYears));
-            if (empty($availableYears)) {
-                return redirect()->route('admin.salt-assessment-list')->with('salt_done_years', $doneYears);
+            if (empty($availableYears) || $this->saltStartBlock($doneYears) !== null) {
+                $block = $this->saltStartBlock($doneYears) ?? ['type' => 'all_done', 'years' => $doneYears];
+                return redirect()->route('admin.salt-assessment-list')->with(
+                    $block['type'] === 'not_open' ? 'salt_not_open_year' : 'salt_done_years',
+                    $block['type'] === 'not_open' ? $block['year'] : $doneYears
+                );
             }
         }
 
@@ -119,27 +123,51 @@ class AdminController extends Controller
      * ปีงบประมาณทั้งหมดที่ให้เลือกในแบบประเมินลดการบริโภคเกลือ (มาก -> น้อย), ใช้ร่วมกันทั้งฟอร์ม ปุ่มเริ่มทำแบบประเมินใหม่
      * และการเช็ก "ทำครบทุกปีแล้ว" เพื่อให้ปีงบใหม่ที่เปิดแล้วถูกนับเสมอ:
      *  - ปีที่ผู้ดูแลเปิดไว้ใน "จัดการปีงบประมาณ" (module salt_assessment) และปีที่มีข้อมูลจริงอยู่แล้ว
-     *  - ปีงบประมาณปัจจุบันตามปฏิทิน (เริ่มวันที่ 1 ต.ค. ของทุกปี => เดือน ต.ค.-ธ.ค. นับเป็นปีถัดไป)
+     *  - ไม่เพิ่มปีงบประมาณปัจจุบันให้อัตโนมัติ: ต้องให้ผู้ดูแลเพิ่มในหน้า "จัดการปีงบประมาณ" ก่อนจึงถือว่าเปิด
      *  - ตัดปีที่ผู้ดูแลซ่อนไว้ออก และไม่แสดงต่ำกว่าปี 2568
      */
     private function saltAssessmentYears(): array
     {
         $floor = 2568;
-        $current = (int) date('Y') + 543 + ((int) date('n') >= 10 ? 1 : 0);
+        $norm = fn ($y) => (int) $y;
 
+        // "Open" = exactly what the จัดการปีงบประมาณ page lists for this
+        // module: years with real data + admin-enabled years - hidden ones.
+        // The current calendar fiscal year is NOT added automatically any
+        // more; an admin has to enable it there first.
         $hidden = FiscalYear::where('module', 'salt_assessment')->where('hidden', true)
-            ->pluck('year')->map(fn ($y) => (int) $y);
+            ->pluck('year')->map($norm);
+        $enabled = FiscalYear::where('module', 'salt_assessment')->where('hidden', false)
+            ->pluck('year')->map($norm);
+        $real = \App\Support\AdminCache::distinct(\App\Models\SaltAssessment::class, 'fiscal_year')
+            ->filter(fn ($y) => $y !== null && $y !== '')->map($norm);
 
-        $years = FiscalYear::selectableYearsFor('salt_assessment', SaltAssessment::distinct()->pluck('fiscal_year'))
-            ->merge(range($current, min($floor, $current)))
-            ->map(fn ($y) => (int) $y)
+        return $real->merge($enabled)
             ->unique()
             ->filter(fn ($y) => $y >= $floor && !$hidden->contains($y))
             ->sortDesc()
             ->values()
             ->all();
+    }
 
-        return $years ?: [$current];
+    /**
+     * Why the "ทำแบบประเมิน" button has nothing to start (null = it can start).
+     *  - not_open: nothing left to do and the current fiscal year is not in
+     *    the open list of "จัดการปีงบประมาณ".
+     *  - all_done: every open fiscal year already has a record.
+     */
+    private function saltStartBlock(array $doneYears): ?array
+    {
+        $current = (int) date('Y') + 543 + ((int) date('n') >= 10 ? 1 : 0);
+        $open = $this->saltAssessmentYears();
+
+        if (!empty(array_diff($open, $doneYears))) {
+            return null;
+        }
+
+        return !in_array($current, $open, true)
+            ? ['type' => 'not_open', 'year' => $current]
+            : ['type' => 'all_done', 'years' => $doneYears];
     }
 
     /**
@@ -172,8 +200,16 @@ class AdminController extends Controller
             : $currentUser;
         $agencyUserIds = $this->getAgencyUserIds($targetUser);
 
+        // One query serves both the "quarter already confirmed" gate and the
+        // existing-record lookup below (they used to be two separate queries
+        // with the same WHERE clause).
+        $existingRows = SaltAssessment::whereIn('user_id', $agencyUserIds)
+            ->where('fiscal_year', $request->fiscal_year)
+            ->where('quarter', $request->quarter)
+            ->get();
+
         // ไตรมาสที่ยืนยันข้อมูลแล้ว ปิดการแก้ไข/บันทึกทับ "ทุกบทบาท" (รวม สคร.) - ต้องยกเลิกการยืนยันก่อนจึงจะแก้ไขได้
-        if ($this->saltQuarterConfirmed($agencyUserIds, $request->fiscal_year, $request->quarter)) {
+        if ($existingRows->contains(fn($row) => $row->confirmed_at !== null)) {
             return redirect()->route('admin.report-progress', array_filter([
                 'fiscal_year' => $request->fiscal_year,
                 'quarter' => $request->quarter,
@@ -212,10 +248,7 @@ class AdminController extends Controller
         ] : null;
 
         // 1. Find ANY existing record from this agency
-        $record = SaltAssessment::whereIn('user_id', $agencyUserIds)
-            ->where('fiscal_year', $request->fiscal_year)
-            ->where('quarter', $request->quarter)
-            ->first();
+        $record = $existingRows->first();
 
         $data = $record ? $record->toArray() : [
             'fiscal_year' => $request->fiscal_year,
@@ -281,8 +314,10 @@ class AdminController extends Controller
         // Files intentionally do NOT carry forward: a PDF stays attached to the
         // quarter it was actually uploaded in. Only the written detail flows
         // forward as a convenience so staff don't have to retype it every quarter.
-        if ($request->quarter > 1) {
-            $prevAssessments = SaltAssessment::whereIn('user_id', $agencyUserIds)
+        $emptyDetailKeys = array_filter($fields, fn($f) => empty($data["ans_{$f}_detail"]));
+        if ($request->quarter > 1 && $emptyDetailKeys) {
+            $prevAssessments = SaltAssessment::with('user')
+                ->whereIn('user_id', $agencyUserIds)
                 ->where('fiscal_year', $request->fiscal_year)
                 ->where('quarter', '<', $request->quarter)
                 ->orderBy('quarter', 'desc')
@@ -308,12 +343,13 @@ class AdminController extends Controller
         $data['is_read'] = 0; // Mark as unread on every save/update
 
         try {
-            SaltAssessment::updateOrCreate(
-                [
-                    'id' => $record->id ?? null, // Use ID if exists to force update the same record
-                ],
-                $data
-            );
+            // Direct update/create: updateOrCreate() issued an extra SELECT
+            // by id just to rediscover the row that was already loaded above.
+            if ($record) {
+                $record->update($data);
+            } else {
+                SaltAssessment::create($data);
+            }
 
             return redirect()->route('admin.report-progress', [
                 'fiscal_year' => $request->fiscal_year,
@@ -618,10 +654,24 @@ class AdminController extends Controller
      * - Rank 2 (สสจ.): same Province_id
      * - Rank 3+ (สสอ./others): same District_id
      */
+    private array $agencyIdsMemo = [];
+
     private function getAgencyUserIds($user): array
     {
         if (!$user)
             return [];
+        // คำนวณครั้งเดียวต่อคำขอ (เดิมถูกเรียกซ้ำสิบกว่าครั้งต่อหน้า ครั้งละ 1 query)
+        // แคชตามกลุ่มหน่วยงาน (จังหวัด/อำเภอ) ไม่ใช่ตามผู้ใช้ - ผู้ใช้หลายคนในอำเภอเดียวกันใช้ผลเดียวกัน
+        $memoKey = $user->User_rank_id == 2 ? 'p' . $user->Province_id
+            : ($user->User_rank_id >= 3 ? 'd' . $user->District_id : 'u' . $user->id);
+        if (isset($this->agencyIdsMemo[$memoKey])) {
+            return $this->agencyIdsMemo[$memoKey];
+        }
+        return $this->agencyIdsMemo[$memoKey] = $this->computeAgencyUserIds($user);
+    }
+
+    private function computeAgencyUserIds($user): array
+    {
         $query = \App\Models\User::query();
 
         if ($user->User_rank_id == 2) {
@@ -678,7 +728,7 @@ class AdminController extends Controller
         // also needed by every rank for the "พื้นที่การดำเนินงาน" field's own
         // ปักหน่วยงานพื้นที่ใหม่ cascade+map - so it's no longer gated behind
         // $canImportWord.
-        $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
         $provinceCoords = $this->operatingAreaVillageCentroids('province_id');
 
         // Registered operating-area pins (จัดการพื้นที่ดำเนินงาน), scoped to
@@ -715,7 +765,7 @@ class AdminController extends Controller
             'userOwnLocation' => $userOwnLocation,
             'canImportWord' => $canImportWord,
             // ปีงบประมาณในช่อง "ปีงบประมาณของรายงานนี้" (นำเข้า Word) - ใช้รายการเดียวกับหน้า "จัดการปีงบประมาณ" ของ พชอ.ไต
-            'importYears' => FiscalYear::selectableYearsFor('kidney', KidneyAssessment::distinct()->pluck('fiscal_year'))->all(),
+            'importYears' => FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'))->all(),
         ]);
     }
 
@@ -1724,6 +1774,15 @@ class AdminController extends Controller
         });
     }
 
+    /** ล้างแคชตัวเลือก filter ของเมนู/ผลิตภัณฑ์ลดโซเดียม หลังมีการเพิ่ม/แก้/ลบ/นำเข้า */
+    private function forgetSodiumFilterCache(): void
+    {
+        foreach (['perf.sodium_menus.years', 'perf.sodium_menus.provinces', 'perf.sodium_menus.kitchens',
+                  'perf.sodium_products.types', 'perf.sodium_products.standards', 'perf.sodium_products.years'] as $k) {
+            \Illuminate\Support\Facades\Cache::forget($k);
+        }
+    }
+
     public function sodiumProducts(Request $request)
     {
         $user = auth()->user();
@@ -1750,8 +1809,8 @@ class AdminController extends Controller
 
         // Calculate Summary Statistics (on filtered results)
         $statsQuery = clone $query;
-        $totalProducts = $statsQuery->count();
-        $avgSodium = $statsQuery->avg('sodium_amount') ?: 0;
+        $totalProducts = (clone $statsQuery)->reorder()->count();
+        $avgSodium = (clone $statsQuery)->reorder()->avg('sodium_amount') ?: 0;
 
         // Get detailed certification counts
         $standardsCount = (clone $statsQuery)
@@ -1784,7 +1843,8 @@ class AdminController extends Controller
             'กลุ่มแป้ง',
             'กลุ่มเครื่องเทศและเครื่องปรุงรส'
         ];
-        $dbTypes = ReducedSodiumProduct::whereNotNull('product_type')->distinct()->pluck('product_type')->toArray();
+        $dbTypes = \Illuminate\Support\Facades\Cache::remember('perf.sodium_products.types', 120, fn() =>
+            ReducedSodiumProduct::whereNotNull('product_type')->distinct()->pluck('product_type')->toArray());
         $productTypes = collect($defaultTypes)->merge($dbTypes)->unique()->sort()->values();
 
         $defaultStandards = [
@@ -1795,7 +1855,8 @@ class AdminController extends Controller
             'มาตรฐานผลิตภัณฑ์อินทรีย์',
             'มาตรฐานฮาลาล'
         ];
-        $dbStandards = ReducedSodiumProduct::whereNotNull('standard_certification')->distinct()->pluck('standard_certification')->toArray();
+        $dbStandards = \Illuminate\Support\Facades\Cache::remember('perf.sodium_products.standards', 120, fn() =>
+            ReducedSodiumProduct::whereNotNull('standard_certification')->distinct()->pluck('standard_certification')->toArray());
         $standards = collect($defaultStandards)->merge($dbStandards)->unique()->sort()->values();
 
         // ปีงบประมาณ options for the filter dropdown - always Buddhist year.
@@ -1803,19 +1864,22 @@ class AdminController extends Controller
         // the "นำเข้า Excel" importer) contribute it directly; anything
         // older only has update_date to go by, so its (Gregorian) year is
         // converted to Buddhist here - matching scopeProductsByFiscalYear().
-        $fiscalYearValues = ReducedSodiumProduct::whereNotNull('fiscal_year')
-            ->where('fiscal_year', '!=', 0)
-            ->distinct()
-            ->pluck('fiscal_year');
-        $legacyYearValues = ReducedSodiumProduct::where(function ($q) {
-                $q->whereNull('fiscal_year')->orWhere('fiscal_year', 0);
-            })
-            ->selectRaw('YEAR(update_date) as year')
-            ->distinct()
-            ->pluck('year')
-            ->filter()
-            ->map(fn($y) => (int) $y + 543);
-        $years = FiscalYear::selectableYearsFor('sodium_products', $fiscalYearValues->merge($legacyYearValues));
+        $yearValues = \Illuminate\Support\Facades\Cache::remember('perf.sodium_products.years', 120, function () {
+            $fiscalYearValues = ReducedSodiumProduct::whereNotNull('fiscal_year')
+                ->where('fiscal_year', '!=', 0)
+                ->distinct()
+                ->pluck('fiscal_year');
+            $legacyYearValues = ReducedSodiumProduct::where(function ($q) {
+                    $q->whereNull('fiscal_year')->orWhere('fiscal_year', 0);
+                })
+                ->selectRaw('YEAR(update_date) as year')
+                ->distinct()
+                ->pluck('year')
+                ->filter()
+                ->map(fn($y) => (int) $y + 543);
+            return $fiscalYearValues->merge($legacyYearValues)->values()->all();
+        });
+        $years = FiscalYear::selectableYearsFor('sodium_products', collect($yearValues));
 
         if ($request->ajax()) {
             return view('pages.partials.sodium-products-table', compact('products', 'stats'));
@@ -1829,6 +1893,7 @@ class AdminController extends Controller
      */
     public function storeSodiumProducts(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $products = $request->input('products', []);
         $files = $request->file('products', []);
         $savedCount = 0;
@@ -1876,6 +1941,7 @@ class AdminController extends Controller
      */
     public function updateSodiumProduct(Request $request, $id)
     {
+        $this->forgetSodiumFilterCache();
         $product = ReducedSodiumProduct::findOrFail($id);
 
         $request->validate([
@@ -1917,6 +1983,7 @@ class AdminController extends Controller
      */
     public function destroySodiumProduct($id)
     {
+        $this->forgetSodiumFilterCache();
         $product = ReducedSodiumProduct::findOrFail($id);
 
         // Delete image file if exists
@@ -2027,6 +2094,7 @@ class AdminController extends Controller
      */
     public function bulkDeleteSodiumProducts(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $user = auth()->user();
         if ($user->User_rank_id != 1) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -2072,6 +2140,7 @@ class AdminController extends Controller
      */
     public function bulkDeleteSodiumProductsByIds(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'integer',
@@ -2137,6 +2206,7 @@ class AdminController extends Controller
      */
     public function importSodiumProducts(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $user = auth()->user();
         if (!in_array($user->User_rank_id, [1, 2])) {
             abort(403, 'Unauthorized action.');
@@ -2365,6 +2435,7 @@ class AdminController extends Controller
      */
     public function bulkDeleteSodiumMenus(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $user = auth()->user();
         if ($user->User_rank_id != 1) {
             return response()->json(['error' => 'Unauthorized'], 403);
@@ -2407,6 +2478,7 @@ class AdminController extends Controller
      */
     public function bulkDeleteSodiumMenusByIds(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'integer',
@@ -2470,12 +2542,13 @@ class AdminController extends Controller
         }
 
         // Calculate Summary Statistics
-        $statsQuery = clone $query;
-        $totalMenus = $statsQuery->count();
-        $avgSodiumAfter = $totalSubmissions = $statsQuery->avg('sodium_after') ?: 0;
-
-        // Total Reduction = Sum(sodium_before - sodium_after)
-        $totalReduction = $statsQuery->selectRaw('SUM(sodium_before - sodium_after) as total_red')->first()->total_red ?: 0;
+        // 1 query แทน 3 (count + avg + sum)
+        $agg = (clone $query)->reorder()
+            ->selectRaw('COUNT(*) as total_menus, AVG(sodium_after) as avg_after, SUM(sodium_before - sodium_after) as total_red')
+            ->first();
+        $totalMenus = (int) ($agg->total_menus ?? 0);
+        $avgSodiumAfter = $agg->avg_after ?: 0;
+        $totalReduction = $agg->total_red ?: 0;
 
         $stats = [
             'total_menus' => $totalMenus,
@@ -2484,12 +2557,17 @@ class AdminController extends Controller
         ];
 
         $menus = $query->orderBy('update_date', 'desc')->paginate(15)->appends($request->all());
-        $realMenuYears = ReducedSodiumMenu::whereNotNull('year')->where('year', '!=', '')->distinct()->pluck('year')->map(fn($y) => trim($y));
+        // ตัวเลือก filter (distinct) เปลี่ยนไม่บ่อย - แคช 2 นาทีลดการสแกนตารางทุกครั้งที่เปิด/กรองหน้า
+        $realMenuYears = \Illuminate\Support\Facades\Cache::remember('perf.sodium_menus.years', 120, fn() =>
+            ReducedSodiumMenu::whereNotNull('year')->where('year', '!=', '')->distinct()->pluck('year')->map(fn($y) => trim($y))->all()
+        );
+        $realMenuYears = collect($realMenuYears);
         $years = FiscalYear::selectableYearsFor('sodium_menus', $realMenuYears);
-        $dbProvinces = ReducedSodiumMenu::whereNotNull('province')
+        $dbProvinces = collect(\Illuminate\Support\Facades\Cache::remember('perf.sodium_menus.provinces', 120, fn() =>
+            ReducedSodiumMenu::whereNotNull('province')
             ->whereNotIn('province', ['', '-', ' '])
             ->distinct()
-            ->pluck('province')
+            ->pluck('province')->all()))
             ->map(function ($p) {
                 // Check if the value is numeric (legacy ID)
                 if (is_numeric($p)) {
@@ -2521,7 +2599,8 @@ class AdminController extends Controller
             ->values();
 
         $defaultKitchenTypes = ['ร้านอาหาร', 'โรงอาหาร', 'ศูนย์พัฒนาเด็กเล็ก', 'โรงพยาบาล', 'อื่นๆ'];
-        $dbKitchenTypes = ReducedSodiumMenu::whereNotNull('kitchen_type')->where('kitchen_type', '!=', '')->distinct()->pluck('kitchen_type')->toArray();
+        $dbKitchenTypes = \Illuminate\Support\Facades\Cache::remember('perf.sodium_menus.kitchens', 120, fn() =>
+            ReducedSodiumMenu::whereNotNull('kitchen_type')->where('kitchen_type', '!=', '')->distinct()->pluck('kitchen_type')->toArray());
         $kitchenTypes = collect($defaultKitchenTypes)->merge($dbKitchenTypes)->unique()->sort()->values();
 
         if ($request->ajax()) {
@@ -2575,6 +2654,7 @@ class AdminController extends Controller
      */
     public function importSodiumMenus(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $user = auth()->user();
         if (!in_array($user->User_rank_id, [1, 2])) {
             abort(403, 'Unauthorized action.');
@@ -2729,6 +2809,7 @@ class AdminController extends Controller
      */
     public function storeSodiumMenu(Request $request)
     {
+        $this->forgetSodiumFilterCache();
         $request->validate([
             'year' => 'required|integer',
             'menus' => 'required|array',
@@ -2813,6 +2894,7 @@ class AdminController extends Controller
      */
     public function updateSodiumMenu(Request $request, $id)
     {
+        $this->forgetSodiumFilterCache();
         $menu = ReducedSodiumMenu::findOrFail($id);
 
         $request->validate([
@@ -2866,6 +2948,7 @@ class AdminController extends Controller
      */
     public function destroySodiumMenu($id)
     {
+        $this->forgetSodiumFilterCache();
         $menu = ReducedSodiumMenu::findOrFail($id);
 
         if ($menu->product_image) {
@@ -2971,7 +3054,9 @@ class AdminController extends Controller
         // earlier quarters (same agency / fiscal year / operating area) - the same
         // cumulative rule the detail page and the per-row icons below use.
         $flowCache = [];
-        $completeCount = (clone $query)->with('user')->get()->filter(function ($rec) use (&$flowCache) {
+        $completeRecs = (clone $query)->with('user')->get();
+        $this->prefetchKidneyPageRecords($completeRecs, $flowCache);
+        $completeCount = $completeRecs->filter(function ($rec) use (&$flowCache) {
             return !in_array(false, $this->kidneyFlowFilled($rec, $flowCache), true);
         })->count();
 
@@ -3003,6 +3088,7 @@ class AdminController extends Controller
         // รายงานมาก่อน แถวยังไม่มีข้อมูลต่อท้าย - ใช้ตัวกรอง "สถานะข้อมูล" เพื่อดูเฉพาะกลุ่มได้
         $status = in_array($request->input('status'), ['has', 'selected', 'free', 'display'], true) ? $request->input('status') : '';
         $pendingTail = collect();
+        $pendingHead = collect();
         if (in_array((int) $user->User_rank_id, [1, 2], true)) {
             $perPage = 15;
             $page = max(1, (int) $request->input('page', 1));
@@ -3012,18 +3098,29 @@ class AdminController extends Controller
                 ? 0
                 : (clone $assessments)->toBase()->getCountForPagination();
 
+            // ลำดับแถว: พื้นที่ที่หน่วยงานนี้เลือกไว้เองแล้วแต่ยังไม่รายงาน (เพิ่มใหม่) ขึ้นก่อน
+            // -> แถวรายงาน -> พื้นที่ยังไม่มีข้อมูลอื่นๆ ต่อท้าย - แบ่งหน้าร่วมกันทั้งสามกลุ่ม
+            [$headAll, $restAll] = $pendingAll->partition(fn($r) => $r['status'] === 'selected' && !empty($r['own']));
+            $headAll = $headAll->values();
+            $restAll = $restAll->values();
+            $headCount = $headAll->count();
+
+            $pendingHead = $headAll->slice($offset, $perPage)->values();
+            $remaining = $perPage - $pendingHead->count();
+
             $reportRows = collect();
-            if ($offset < $reportTotal) {
-                $reportRows = (clone $assessments)->skip($offset)->take(min($perPage, $reportTotal - $offset))->get();
+            $reportOffset = max(0, $offset - $headCount);
+            if ($remaining > 0 && $reportOffset < $reportTotal) {
+                $reportRows = (clone $assessments)->skip($reportOffset)->take(min($remaining, $reportTotal - $reportOffset))->get();
             }
-            $need = $perPage - $reportRows->count();
+            $need = $remaining - $reportRows->count();
             if ($need > 0) {
-                $pendingTail = $pendingAll->slice(max(0, $offset - $reportTotal), $need)->values();
+                $pendingTail = $restAll->slice(max(0, $offset - $headCount - $reportTotal), $need)->values();
             }
 
             $assessments = new \Illuminate\Pagination\LengthAwarePaginator(
                 $reportRows,
-                $reportTotal + $pendingAll->count(),
+                $headCount + $reportTotal + $restAll->count(),
                 $perPage,
                 $page,
                 ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
@@ -3041,6 +3138,7 @@ class AdminController extends Controller
         // line up with what's actually being deduped on this page. A
         // quarter counts as "confirmed" if any record for it is confirmed.
         $quarterCache = [];
+        $this->prefetchKidneyPageRecords($assessments->getCollection(), $flowCache, $quarterCache);
         foreach ($assessments as $item) {
             // Built as a plain local array, not mutated in place on the
             // model - PHP can't do indirect modification of an overloaded
@@ -3106,20 +3204,20 @@ class AdminController extends Controller
             : $this->pendingChosenAreasForList($user, $request, $assessments);
 
         if ($request->ajax()) {
-            return view('admin.kidney-dhb-table', compact('assessments', 'stats', 'pendingAreas', 'pendingTail'));
+            return view('admin.kidney-dhb-table', compact('assessments', 'stats', 'pendingAreas', 'pendingTail', 'pendingHead'));
         }
 
         // Fetch Provinces for dropdown
-        $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
 
         // ปีงบประมาณ options for the filter dropdown - real distinct years
         // already in the data, plus any admin-enabled years and minus any
         // admin-hidden years from "จัดการปีงบประมาณ" (FiscalYearController).
-        $years = FiscalYear::selectableYearsFor('kidney', KidneyAssessment::distinct()->pluck('fiscal_year'));
+        $years = FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'));
 
         $needAreaSelection = $this->needsAreaSelection(auth()->user());
 
-        return view('admin.kidney-dhb-list', compact('assessments', 'provinces', 'stats', 'years', 'operatingAreas', 'canImportWord', 'needAreaSelection', 'pendingAreas', 'pendingTail'));
+        return view('admin.kidney-dhb-list', compact('assessments', 'provinces', 'stats', 'years', 'operatingAreas', 'canImportWord', 'needAreaSelection', 'pendingAreas', 'pendingTail', 'pendingHead'));
     }
 
     /**
@@ -3267,6 +3365,52 @@ class AdminController extends Controller
      *
      * @return array<string,bool> key = ชื่อคอลัมน์
      */
+    /**
+     * โหลดรายงานที่ต้องใช้คำนวณ "ข้อมูลไหล" (flow) และสถานะรายไตรมาสของทุกแถวในครั้งเดียว
+     * แทนการยิง query ต่อแถว/ต่อพื้นที่ (เดิมหลายสิบ query ต่อหน้า) - เติมค่าลงแคชเดียวกับที่ kidneyFlowFilled() ใช้
+     */
+    private function prefetchKidneyPageRecords($items, array &$flowCache, ?array &$quarterCache = null): void
+    {
+        $items = collect($items)->values();
+        if ($items->isEmpty()) {
+            return;
+        }
+        $fields = ['category_1', 'category_2', 'category_3', 'category_4', 'category_5', 'category_6', 'category_7',
+            'category_8_1', 'category_8_2', 'category_8_3'];
+
+        $agencyIds = [];
+        foreach ($items as $it) {
+            $uid = $it->user_id;
+            if (!isset($agencyIds[$uid])) {
+                $agencyIds[$uid] = $it->user ? ($this->getAgencyUserIds($it->user) ?: [$uid]) : [$uid];
+            }
+        }
+        $allIds = collect($agencyIds)->flatten()->unique()->values()->all();
+        $years = $items->pluck('fiscal_year')->unique()->values()->all();
+
+        $recs = KidneyAssessment::whereIn('user_id', $allIds)
+            ->whereIn('fiscal_year', $years)
+            ->get(array_merge(['user_id', 'fiscal_year', 'operating_area', 'quarter', 'confirmed_at'], $fields));
+
+        $norm = fn($a) => ($a === null || $a === '') ? '' : (string) $a;
+        foreach ($items as $it) {
+            $area = $norm($it->operating_area);
+            $same = fn($r) => (string) $r->fiscal_year === (string) $it->fiscal_year && $norm($r->operating_area) === $area;
+
+            $flowKey = $it->user_id . '|' . $it->fiscal_year . '|' . (string) $it->operating_area;
+            if (!isset($flowCache[$flowKey])) {
+                $ids = $agencyIds[$it->user_id];
+                $flowCache[$flowKey] = $recs->filter(fn($r) => in_array($r->user_id, $ids) && $same($r))->values();
+            }
+            if ($quarterCache !== null) {
+                $qKey = $it->user_id . '-' . $it->fiscal_year . '-' . (string) $it->operating_area;
+                if (!array_key_exists($qKey, $quarterCache)) {
+                    $quarterCache[$qKey] = $recs->filter(fn($r) => (int) $r->user_id === (int) $it->user_id && $same($r))->values();
+                }
+            }
+        }
+    }
+
     private function kidneyFlowFilled(KidneyAssessment $item, array &$cache): array
     {
         $fields = ['category_1', 'category_2', 'category_3', 'category_4', 'category_5', 'category_6', 'category_7',
@@ -3564,6 +3708,7 @@ class AdminController extends Controller
             $v['tambon_id'] = $v['tambon_id'] ?? null;
             $v['village_id'] = $v['village_id'] ?? null;
             $pin = OperatingAreaPin::create($v);
+            $this->pinListMemo = [];
             $pin->load(['province', 'district', 'tambon', 'village']);
         } else {
             $request->validate(['pin_id' => 'required|integer']);
@@ -3999,10 +4144,70 @@ class AdminController extends Controller
 
     public function destroyKidneyDHB($id)
     {
-        $assessment = KidneyAssessment::findOrFail($id);
+        $assessment = KidneyAssessment::with('user')->findOrFail($id);
+
+        // พื้นที่ (หมุด) ที่รายงานนี้ผูกอยู่ - รวมพื้นที่ที่ปักพร้อมกันในรายงานเดียวกัน
+        $pinIds = collect([(int) $assessment->operating_area_pin_id])
+            ->merge(\App\Support\KidneyAreaList::extraPinIds($assessment))
+            ->filter()->unique()->values()->all();
+        $agencyUserIds = $assessment->user ? ($this->getAgencyUserIds($assessment->user) ?: [$assessment->user_id]) : [$assessment->user_id];
+        // ผู้เลือกพื้นที่อาจอยู่คนละกลุ่ม (จังหวัด/อำเภอ) กับเจ้าของรายงาน เช่น รายงานที่ SuperAdmin กรอกแทน
+        // จึงรวมผู้ใช้ในอำเภอ/จังหวัดเดียวกับเจ้าของรายงานด้วย เพื่อให้ปลดการเลือกได้ครบ
+        if ($assessment->user) {
+            $sameArea = \App\Models\User::query()
+                ->where(function ($q) use ($assessment) {
+                    $q->where('id', $assessment->user_id);
+                    if ($assessment->user->District_id) {
+                        $q->orWhere('District_id', $assessment->user->District_id);
+                    }
+                })
+                ->pluck('id')->all();
+            $agencyUserIds = array_values(array_unique(array_merge($agencyUserIds, $sameArea)));
+        }
+
         $assessment->delete();
 
-        return redirect()->route('admin.kidney-dhb-list')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+        // ลบพื้นที่ = ลบจริง: เมื่อไม่เหลือรายงานของพื้นที่นี้ (ทุกไตรมาส) ให้ปลดการเลือกพื้นที่ของหน่วยงานด้วย
+        // มิฉะนั้นพื้นที่จะย้อนกลับมาเป็นแถว "เลือกพื้นที่แล้ว · ยังไม่มีรายงานผล" ในตาราง
+        if ($pinIds && \App\Support\SchemaProbe::hasTable('kidney_operating_area_selections')) {
+            $stillReported = KidneyAssessment::whereIn('user_id', $agencyUserIds)
+                ->whereIn('operating_area_pin_id', $pinIds)
+                ->exists();
+            if (!$stillReported) {
+                DB::table('kidney_operating_area_selections')
+                    ->whereIn('user_id', $agencyUserIds)
+                    ->whereIn('pin_id', $pinIds)
+                    ->delete();
+            }
+        }
+
+        // SuperAdmin ลบรายงาน = ลบพื้นที่เลย: ถ้าไม่เหลือรายงานใดของพื้นที่นี้ (ทุกหน่วยงาน) ให้ลบหมุดพื้นที่ด้วย
+        // เพื่อให้หายจากหน้าแผนที่/ตารางเปรียบเทียบของหน้าสาธารณะ (หมุดแสดงผลไม่ถูกลบ)
+        $pinsRemoved = 0;
+        $me = auth()->user();
+        if ($pinIds && $me && $me->isSuperAdmin()) {
+            $reportedAnywhere = [];
+            foreach (KidneyAssessment::get(['operating_area_pin_id', 'reporter_metadata']) as $r) {
+                $reportedAnywhere[] = (int) $r->operating_area_pin_id;
+                foreach (\App\Support\KidneyAreaList::extraPinIds($r) as $x) {
+                    $reportedAnywhere[] = (int) $x;
+                }
+            }
+            $removable = array_values(array_diff($pinIds, $reportedAnywhere));
+            if ($removable) {
+                if (\App\Support\SchemaProbe::hasTable('kidney_operating_area_selections')) {
+                    DB::table('kidney_operating_area_selections')->whereIn('pin_id', $removable)->delete();
+                }
+                $q = OperatingAreaPin::whereIn('id', $removable);
+                if (OperatingAreaPin::hasDisplayColumns()) {
+                    $q->where(fn($w) => $w->whereNull('display_only')->orWhere('display_only', false));
+                }
+                $pinsRemoved = $q->delete();
+                $this->pinListMemo = [];
+            }
+        }
+
+        return redirect()->route('admin.kidney-dhb-list')->with('success', $pinsRemoved ? 'ลบข้อมูลและพื้นที่ดำเนินงานออกจากระบบทั้งหมดเรียบร้อยแล้ว' : 'ลบข้อมูลและพื้นที่ดำเนินงานเรียบร้อยแล้ว');
     }
 
     public function exportKidneyDHBPdf($id)
@@ -4365,12 +4570,12 @@ class AdminController extends Controller
             return view('admin.salt-assessment-table', compact('assessments', 'stats'));
         }
 
-        $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
 
         // ปีงบประมาณ options for the filter dropdown - real distinct years
         // already in the data, plus any admin-enabled years and minus any
         // admin-hidden years from "จัดการปีงบประมาณ" (FiscalYearController).
-        $years = FiscalYear::selectableYearsFor('salt_assessment', SaltAssessment::distinct()->pluck('fiscal_year'));
+        $years = FiscalYear::selectableYearsFor('salt_assessment', \App\Support\AdminCache::distinct(\App\Models\SaltAssessment::class, 'fiscal_year'));
 
         // Word-import entry point ("นำเข้าไฟล์ Word") is shown on this list
         // only for Level 1 - same rank gate as the actual import feature on
@@ -4381,17 +4586,21 @@ class AdminController extends Controller
         // ทำแบบประเมินครบทุกปีงบประมาณแล้วหรือยัง (ผู้ใช้ที่ไม่ใช่ สคร.) - ให้ปุ่ม "ทำแบบประเมิน" เด้งป๊อปอัปแจ้งทันทีโดยไม่ต้องโหลดหน้าใหม่
         // เกณฑ์เดียวกับ reportProgress() โหมด new=1 (ปีใดมีรายการของหน่วยงาน = ทำแล้ว; นับตั้งแต่ปี 2568 ถึงปีปัจจุบัน)
         $allDoneYears = [];
+        $notOpenYear = null;
         $currentAgencyUser = auth()->user();
         if ($currentAgencyUser->User_rank_id != 1) {
             $doneYearsAll = SaltAssessment::whereIn('user_id', $this->getAgencyUserIds($currentAgencyUser))
                 ->distinct()->orderBy('fiscal_year', 'desc')->pluck('fiscal_year')
                 ->map(fn ($y) => (int) $y)->all();
-            if (empty(array_diff($this->saltAssessmentYears(), $doneYearsAll))) {
+            $block = $this->saltStartBlock($doneYearsAll);
+            if ($block && $block['type'] === 'not_open') {
+                $notOpenYear = $block['year'];
+            } elseif ($block) {
                 $allDoneYears = $doneYearsAll;
             }
         }
 
-        return view('admin.salt-assessment-list', compact('assessments', 'provinces', 'stats', 'years', 'canImportWord', 'allDoneYears'));
+        return view('admin.salt-assessment-list', compact('assessments', 'provinces', 'stats', 'years', 'canImportWord', 'allDoneYears', 'notOpenYear'));
     }
 
     public function showSaltAssessment(Request $request, $id)
@@ -4632,9 +4841,9 @@ class AdminController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $provinces = Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
         $provinceCoords = $this->operatingAreaVillageCentroids('province_id');
-        $fiscalYears = FiscalYear::selectableYearsFor('kidney', KidneyAssessment::distinct()->pluck('fiscal_year'));
+        $fiscalYears = FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'));
 
         $mapPins = OperatingAreaPin::with(['province', 'district', 'tambon', 'village'])
             ->get();
@@ -4777,6 +4986,16 @@ class AdminController extends Controller
      */
     private function operatingAreaVillageCentroids(string $groupColumn, $provinceId = null, $districtId = null)
     {
+        // ค่ากึ่งกลางหมู่บ้านเป็นข้อมูลคงที่ แต่คำนวณด้วย AVG ทั้งตารางหมู่บ้านทุกครั้งที่เปิดหน้า - แคชไว้ 1 วัน
+        return \Illuminate\Support\Facades\Cache::remember(
+            'adm.village_centroids.' . md5($groupColumn . '|' . $provinceId . '|' . $districtId),
+            86400,
+            fn () => $this->buildOperatingAreaVillageCentroids($groupColumn, $provinceId, $districtId)
+        );
+    }
+
+    private function buildOperatingAreaVillageCentroids(string $groupColumn, $provinceId = null, $districtId = null)
+    {
         $query = Village::query()
             ->whereBetween('latitude', self::OA_REGION_LAT_RANGE)
             ->whereBetween('longitude', self::OA_REGION_LNG_RANGE);
@@ -4822,7 +5041,22 @@ class AdminController extends Controller
      * can restore the map/cascade and fill operating_area's companion
      * columns without a second round trip.
      */
+    /** แคชในคำขอเดียว: รายการหมุดทั้งหมดของผู้ใช้ (ไม่รวมกรณี onlySelected) - ฟังก์ชันนี้ถูกเรียกหลายรอบต่อหน้า */
+    private array $pinListMemo = [];
+
     private function operatingAreaPinsForUser($forUser, bool $onlySelected = false)
+    {
+        if ($onlySelected) {
+            return $this->buildOperatingAreaPinsForUser($forUser, true);
+        }
+        $key = (string) $forUser->id;
+        if (!isset($this->pinListMemo[$key])) {
+            $this->pinListMemo[$key] = $this->buildOperatingAreaPinsForUser($forUser, false);
+        }
+        return $this->pinListMemo[$key];
+    }
+
+    private function buildOperatingAreaPinsForUser($forUser, bool $onlySelected = false)
     {
         // "หมุดแสดงผล" (SuperAdmin เพิ่มไว้แสดงอย่างเดียว) ขึ้นในรายการด้วย แต่เป็น view_only (เลือก/รายงานต่อไม่ได้)
         $query = OperatingAreaPin::with(['province', 'district', 'tambon', 'village'])
@@ -5355,6 +5589,7 @@ class AdminController extends Controller
         DB::transaction(function () use ($items) {
             foreach ($items as $item) {
                 OperatingAreaPin::create($item);
+                $this->pinListMemo = [];
             }
         });
 
@@ -5447,14 +5682,14 @@ class AdminController extends Controller
 
         // จังหวัดล็อกตามจังหวัดของผู้ใช้งาน (ผู้ใช้ที่ไม่มี Province_id เลือกได้ทุกจังหวัด)
         $lockedProvinceId = $user->Province_id ? (int) $user->Province_id : null;
-        $provinces = Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
         if ($lockedProvinceId && $provinces->contains('province_id', $lockedProvinceId)) {
             $provinces = $provinces->where('province_id', $lockedProvinceId)->values();
         } else {
             $lockedProvinceId = null;
         }
         $provinceCoords = $this->operatingAreaVillageCentroids('province_id');
-        $fiscalYears = FiscalYear::selectableYearsFor('kidney', KidneyAssessment::distinct()->pluck('fiscal_year'));
+        $fiscalYears = FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'));
         $pins = $this->operatingAreaPinsForUser($user);
 
         // Fiscal year starts 1 Oct (Buddhist era); fall back to the first
@@ -5764,6 +5999,7 @@ class AdminController extends Controller
         DB::transaction(function () use ($items, $user, &$pinIds) {
             foreach ($items as $item) {
                 $pin = OperatingAreaPin::create($item);
+                $this->pinListMemo = [];
                 // A pin you just saved is one you want to use - choose it right away.
                 $this->choosePinForUser($user, $pin->id);
                 $pinIds[] = $pin->id;
@@ -5901,6 +6137,10 @@ class AdminController extends Controller
                 ->delete();
         }
 
+        if ($request->input('back') === 'list') {
+            return redirect()->route('admin.kidney-dhb-list')->with('success', 'ลบพื้นที่ออกจากรายการเรียบร้อยแล้ว');
+        }
+
         return redirect()->route('admin.kidney-dhb.areas')
             ->with('success', 'ยกเลิกการเลือกพื้นที่ของหน่วยงานเรียบร้อยแล้ว');
     }
@@ -5919,7 +6159,7 @@ class AdminController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => false, 'message' => $message], $status);
             }
-            return redirect()->route('admin.operating-areas.index')->with('error', $message);
+            return redirect()->route($request->input('back') === 'list' ? 'admin.kidney-dhb-list' : 'admin.operating-areas.index')->with('error', $message);
         };
 
         $pin = OperatingAreaPin::with(['province', 'district', 'tambon', 'village'])->findOrFail($id);
@@ -5934,6 +6174,19 @@ class AdminController extends Controller
         }
 
         $labels = $ownership['selectors'][(int) $pin->id] ?? [];
+
+        // ลบพื้นที่ทั้งหมด (ปุ่มถังขยะหน้ารายการ พชอ.ไต): ปลดการเลือก + ลบหมุดออกจากระบบ (ยังไม่มีรายงาน)
+        if ($request->boolean('delete_pin') && empty($pin->display_only)) {
+            DB::table('kidney_operating_area_selections')->where('pin_id', $pin->id)->delete();
+            $pin->delete();
+            $this->pinListMemo = [];
+            $msg = 'ลบพื้นที่ดำเนินงานออกจากระบบทั้งหมดเรียบร้อยแล้ว';
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json(['success' => true, 'message' => $msg]);
+            }
+            return redirect()->route($request->input('back') === 'list' ? 'admin.kidney-dhb-list' : 'admin.operating-areas.index')->with('success', $msg);
+        }
+
         $deleted = DB::table('kidney_operating_area_selections')->where('pin_id', $pin->id)->delete();
         if (!$deleted) {
             return $fail('ยังไม่มีหน่วยงานเลือกพื้นที่นี้');
@@ -5943,6 +6196,10 @@ class AdminController extends Controller
 
         if ($request->ajax() || $request->wantsJson()) {
             return response()->json(['success' => true, 'message' => $message]);
+        }
+
+        if ($request->input('back') === 'list') {
+            return redirect()->route('admin.kidney-dhb-list')->with('success', $message);
         }
 
         return redirect()->route('admin.operating-areas.index')->with('success', $message);
@@ -6005,6 +6262,7 @@ class AdminController extends Controller
                         DB::table('kidney_operating_area_selections')->whereIn('pin_id', $chunk)->delete();
                     }
                     OperatingAreaPin::whereIn('id', $chunk)->delete();
+                    $this->pinListMemo = [];
                 }
             });
         } catch (\Throwable $e) {
@@ -6030,6 +6288,7 @@ class AdminController extends Controller
 
         $pin = OperatingAreaPin::findOrFail($id);
         $pin->delete();
+        $this->pinListMemo = [];
 
         return redirect()->route('admin.operating-areas.index')
             ->with('success', 'ลบพื้นที่ดำเนินงานเรียบร้อยแล้ว');

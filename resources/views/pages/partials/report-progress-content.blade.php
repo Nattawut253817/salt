@@ -321,6 +321,45 @@
         border: 1px solid #ffcdd2;
     }
 
+    /* ปุ่มเพิ่มไฟล์: กรอบประ + ไอคอนในช่องสี + ป้าย PDF - ชี้แล้วเติมสีนุ่ม */
+    .btn-upload {
+        gap: 12px;
+        padding: 8px 18px 8px 9px;
+        background: #f1f5f9;
+        border: 2px solid #fff;
+        border-radius: 14px;
+        color: var(--primary-color);
+        font-size: 0.92rem;
+        box-shadow: 0 6px 16px -8px rgba(28, 61, 90, .35);
+    }
+
+    .btn-upload > i.fa-file-pdf {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #fff;
+        background: linear-gradient(145deg, #ef5350, #c62828);
+        box-shadow: 0 5px 10px -4px rgba(198, 40, 40, .55);
+    }
+
+    .btn-upload:hover {
+        background: #fff;
+        border-color: #fff;
+        box-shadow: 0 10px 22px -10px rgba(28, 61, 90, .5);
+        transform: translateY(-1px);
+    }
+
+    .btn-upload .pdf-badge {
+        margin-left: 2px;
+        padding: 2px 8px;
+        border-radius: 999px;
+        letter-spacing: .04em;
+    }
+
     .btn-submit {
         display: flex;
         align-items: center;

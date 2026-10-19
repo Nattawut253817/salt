@@ -77,6 +77,9 @@ class LogAdminActivity
                 return $response;
             }
 
+            // มีการเปลี่ยนแปลงข้อมูลโดยผู้ดูแล -> ล้างแคชหน้าสาธารณะ เพื่อให้หน้าแรก/รายงานแสดงข้อมูลล่าสุดทันที
+            PublicPageCache::bump();
+
             $route = $request->route();
             $name = $route ? (string) $route->getName() : '';
             if (! isset(self::ACTIONS[$name]) || $response->getStatusCode() >= 400) {

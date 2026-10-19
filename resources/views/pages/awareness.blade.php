@@ -1747,6 +1747,19 @@
         .awr-donut-legend { gap: 7px; }
         .awr-leg-item { max-height: 58px; padding: 7px 12px; gap: 11px; border-radius: 12px; background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .04); }
         .awr-leg-item:hover { background: color-mix(in srgb, var(--leg-c) 5%, #fff); }
+        /* ชี้ที่ส่วนของกราฟวงกลม = รายการจังหวัดนั้นเด่นขึ้นด้วยสีของจังหวัด ที่เหลือจางลง */
+        .awr-leg-item { transition: opacity .15s ease, box-shadow .15s ease, background-color .15s ease, transform .15s ease; }
+        .awr-leg-item.is-active {
+            background: color-mix(in srgb, var(--leg-c) 12%, #fff);
+            border-color: var(--leg-c);
+            box-shadow: inset 4px 0 0 var(--leg-c), 0 8px 18px -10px var(--leg-c);
+            transform: translateX(-3px);
+        }
+        .awr-leg-item.is-active .awr-leg-name,
+        .awr-leg-item.is-active .awr-leg-nums b { color: var(--leg-c); }
+        .awr-leg-item.is-active .awr-leg-dot { transform: scale(1.25); box-shadow: 0 0 0 4px color-mix(in srgb, var(--leg-c) 25%, transparent); }
+        .awr-leg-item.is-dim { opacity: .5; }
+        @media (prefers-reduced-motion: reduce) { .awr-leg-item { transition: none; } .awr-leg-item.is-active { transform: none; } }
         .awr-leg-dot { width: 12px; height: 12px; box-shadow: 0 0 0 3px color-mix(in srgb, var(--leg-c) 18%, #fff); }
         .awr-leg-main { gap: 6px; }
         .awr-leg-name { font-size: 14px; font-weight: 700; color: #0f172a; }
@@ -2758,10 +2771,23 @@
                     maintainAspectRatio: false,
                     cutout: '72%',
                     layout: { padding: 8 },
+                    // ชี้ส่วนไหน = แสดงชื่อจังหวัด/จำนวน/ร้อยละ "ในวง" แทน tooltip (ไม่บังกราฟ)
+                    onHover: function(event, elements, chart) {
+                        const idx = (elements && elements.length) ? elements[0].index : null;
+                        if (chart.$hoverIdx !== idx) {
+                            chart.$hoverIdx = idx;
+                            if (chart.$markLegend) chart.$markLegend(idx);
+                            chart.draw();
+                        }
+                        if (event && event.native && event.native.target) {
+                            event.native.target.style.cursor = idx === null ? 'default' : 'pointer';
+                        }
+                    },
                     plugins: {
                         legend: {
                             display: false
                         },
+                        tooltip: { enabled: false },
                         datalabels: {
                             display: false
                         } // Hide inner labels, use custom legend
@@ -2787,6 +2813,30 @@
 
                         var centerX = meta.data[0].x;
                         var centerY = meta.data[0].y;
+
+                        // ชี้ที่ส่วนใดส่วนหนึ่ง: แสดงชื่อจังหวัด + จำนวน + ร้อยละในวง
+                        var hi = chart.$hoverIdx;
+                        if (hi !== null && hi !== undefined && chart.config.data.datasets[0].data[hi] !== undefined) {
+                            var hv = chart.config.data.datasets[0].data[hi];
+                            var hn = chart.config.data.labels[hi];
+                            var hc = provinceColorMap[hn] || NEUTRAL_FALLBACK;
+                            var hf = (chartArea.height / 300);
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'bottom';
+                            ctx.font = '700 ' + (hf * 1.0).toFixed(2) + "em 'Sarabun'";
+                            ctx.fillStyle = '#475569';
+                            ctx.fillText(hn, centerX, centerY - hf * 30);
+                            ctx.font = '800 ' + (hf * 1.8).toFixed(2) + "em 'Sarabun'";
+                            ctx.fillStyle = hc;
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(hv.toLocaleString(), centerX, centerY - hf * 4);
+                            ctx.font = '600 ' + (hf * 0.9).toFixed(2) + "em 'Sarabun'";
+                            ctx.fillStyle = '#64748b';
+                            ctx.textBaseline = 'top';
+                            ctx.fillText('คน · ' + (total > 0 ? (hv * 100 / total).toFixed(1) : '0.0') + '%', centerX, centerY + hf * 14);
+                            ctx.restore();
+                            return;
+                        }
 
                         // 1. Draw Number (Large)
                         var fontSizeNum = (chartArea.height / 300).toFixed(2);
@@ -2816,6 +2866,14 @@
 
                         const items = chart.options.plugins.legend.labels.generateLabels(chart);
                         const total = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                        // ไฮไลต์รายการใน legend ที่ตรงกับส่วนที่ชี้ (idx = null = ปกติ)
+                        chart.$markLegend = function (idx) {
+                            dl.querySelectorAll('.awr-leg-item').forEach(function (el) {
+                                const on = idx !== null && idx !== undefined && Number(el.dataset.idx) === idx;
+                                el.classList.toggle('is-active', on);
+                                el.classList.toggle('is-dim', idx !== null && idx !== undefined && !on);
+                            });
+                        };
 
                         items.forEach(item => {
                             const val = chart.data.datasets[0].data[item.index] || 0;
@@ -2823,6 +2881,17 @@
 
                             const row = document.createElement('div');
                             row.className = 'awr-leg-item';
+                            row.dataset.idx = item.index;
+                            row.addEventListener('mouseenter', function () {
+                                chart.$hoverIdx = item.index;
+                                chart.$markLegend(item.index);
+                                chart.draw();
+                            });
+                            row.addEventListener('mouseleave', function () {
+                                chart.$hoverIdx = null;
+                                chart.$markLegend(null);
+                                chart.draw();
+                            });
                             row.style.setProperty('--leg-c', item.fillStyle && typeof item.fillStyle === 'string' ? item.fillStyle : (provinceColorMap[item.text] || NEUTRAL_FALLBACK));
                             row.style.setProperty('--leg-w', Math.max(pct, 2).toFixed(1) + '%');
                             row.title = item.text + ' ' + val.toLocaleString() + ' คน (' + pct.toFixed(1) + '%)';

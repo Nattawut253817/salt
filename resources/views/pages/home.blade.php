@@ -996,6 +996,8 @@
         .hm-tile-big { font-size: 1.95rem; font-weight: 800; line-height: 1.15; margin-top: 2px; color: #0f172a; }
         .hm-tile-big small { font-size: .92rem; font-weight: 800; color: #1e293b; }
         .hm-tile-sub { font-size: .8rem; font-weight: 600; color: #1e293b; margin-top: 2px; }
+        /* คำเด่นในการ์ดสรุป: ตัวหนา สีประจำการ์ด และแถบเน้นสีจางใต้ตัวอักษร */
+        .hm-em { font-weight: 800; color: var(--c); padding: 0 3px; border-radius: 3px; background: linear-gradient(transparent 58%, color-mix(in srgb, var(--c) 20%, transparent) 58%); }
         .hm-tile-st { margin-top: auto; padding-top: 10px; }
         .hm-chip {
             display: inline-flex; align-items: center; gap: 5px;
@@ -1540,7 +1542,7 @@
                 <div class="hm-tile-big">{{ $awarenessOverallRate }}%<small> ผ่านเกณฑ์</small></div>
                 <div class="hm-tile-sub">{{ number_format($awarenessOverallPass) }} จาก {{ number_format($awarenessOverallTotal) }} คนที่ตอบแบบประเมิน</div>
                 @if ($hmAwBest)
-                    <div class="hm-tile-sub"><i class="fas fa-trophy" style="color:#db2777;"></i> ผ่านเกณฑ์สูงสุด: <b>{{ $hmAwBest['name'] }}</b> {{ rtrim(rtrim(number_format($hmAwBest['passed_percentage'], 1), '0'), '.') }}%</div>
+                    <div class="hm-tile-sub"><i class="fas fa-trophy" style="color:#db2777;"></i> ผ่านเกณฑ์สูงสุด: <span class="hm-em">{{ $hmAwBest['name'] }} {{ rtrim(rtrim(number_format($hmAwBest['passed_percentage'], 1), '0'), '.') }}%</span></div>
                 @endif
                 <div class="hm-tile-st">
                     @if ($hmAwRate >= 80)
@@ -1555,9 +1557,17 @@
             <div class="hm-tile-name">พชอ.ไต - ผลการดำเนินงานพื้นที่</div>
             @if ($hmKd['pin_total'] > 0)
                 @php $hmKdPinPct = $hmKd['pin_total'] > 0 ? round($hmKd['answered_pins'] / $hmKd['pin_total'] * 100) : 0; @endphp
-                <div class="hm-tile-big">{{ number_format($hmKd['answered_pins']) }} / {{ number_format($hmKd['pin_total']) }}<small> หน่วยงานที่ดำเนินงาน</small></div>
-                <div class="hm-tile-sub">พื้นที่ที่ดำเนินงาน · ครบทั้ง 8 ข้อ {{ number_format($hmKd['complete_pins']) }} หน่วยงาน</div>
-                <div class="hm-tile-sub"><i class="fas fa-location-dot" style="color:#0a8bbe;"></i> ปักหมุดทั้งหมด <b>{{ number_format($hmKd['pin_all'] ?? $hmKd['pin_total']) }}</b> หมุด@if (($hmKd['display_pin_count'] ?? 0) > 0) (รวมหมุดแสดงผล {{ number_format($hmKd['display_pin_count']) }})@endif</div>
+                <div class="hm-tile-big">{{ number_format($hmKd['pin_all'] ?? $hmKd['pin_total']) }}<small> พื้นที่ที่ดำเนินงาน</small></div>
+                @if (($hmKd['display_pin_count'] ?? 0) > 0)
+                    <div class="hm-tile-sub">รวมหมุดแสดงผลบนแผนที่ <b>{{ number_format($hmKd['display_pin_count']) }}</b> หมุด</div>
+                @endif
+                @php
+                    $hmKdAreas = collect($hmKd['area_counts'] ?? [])->filter(fn($n) => $n > 0)->sortDesc();
+                    $hmKdTopName = $hmKdAreas->keys()->first();
+                @endphp
+                @if ($hmKdTopName)
+                    <div class="hm-tile-sub"><i class="fas fa-trophy" style="color:#0a8bbe;"></i> ดำเนินงานมากที่สุด: <span class="hm-em">{{ $hmKdTopName }} {{ number_format($hmKdAreas->first()) }} แห่ง</span></div>
+                @endif
                 <div class="hm-tile-st">
                     @if ($hmKdPinPct >= 80)
                         <span class="hm-chip ok"><i class="fas fa-circle-check"></i> ดำเนินงานแล้ว {{ $hmKdPinPct }}%</span>
@@ -1616,7 +1626,7 @@
                 <div class="hm-tile-big">{{ number_format($hmPdTile['total']) }}<small> รายการ</small></div>
                 <div class="hm-tile-sub">จาก {{ number_format($hmPdTileProv) }} จังหวัด · ได้รับรองมาตรฐาน {{ number_format($hmPdTile['certified']) }} รายการ</div>
                 @if ($hmPdTile['top_type'])
-                    <div class="hm-tile-sub"><i class="fas fa-tags" style="color:#6366f1;"></i> ยอดนิยม: <b>{{ $hmPdTile['top_type'] }}</b> ({{ number_format($hmPdTile['top_type_count']) }} รายการ)</div>
+                    <div class="hm-tile-sub"><i class="fas fa-tags" style="color:#6366f1;"></i> ยอดนิยม: <span class="hm-em">{{ $hmPdTile['top_type'] }}</span> ({{ number_format($hmPdTile['top_type_count']) }} รายการ)</div>
                 @endif
                 <div class="hm-tile-st">
                     @if (($hmPdTile['certified_percent'] ?? 0) >= 80)
@@ -3277,14 +3287,75 @@
                     const u = document.getElementById('donutSub'); if (u) u.innerText = 'คน';
                 }
 
-                new Chart(participantDonutCtx, {
+                // กราฟวงกลมผู้ตอบ: ทำให้เป็นท่อโค้งมีมิติ - ไล่เฉดตามรัศมี (ขอบในมืด กลางสว่าง ขอบนอกเข้ม)
+                // + เส้นสะท้อนแสงบนสันท่อ + เงาที่ขอบด้านใน (ขนาดกราฟไม่เปลี่ยน)
+                const rgbA = (rgb, a) => rgb.replace('rgb(', 'rgba(').replace(')', ', ' + a + ')');
+                function donutTubeFill(context, color) {
+                    const { chart } = context;
+                    const arc = chart.getDatasetMeta(0).data[context.dataIndex];
+                    if (!arc) return color;
+                    const ctx = chart.ctx;
+                    const inner = arc.innerRadius, outer = arc.outerRadius;
+                    if (!(outer > inner)) return color;
+                    const g = ctx.createRadialGradient(arc.x, arc.y, inner, arc.x, arc.y, outer);
+                    // โทนใส: ลดความเข้มของเฉดและลดความทึบ (alpha) ให้เห็นพื้นหลังรำไร
+                    g.addColorStop(0, rgbA(darkenHex(color, 0.1), 0.82));
+                    g.addColorStop(0.45, rgbA(lightenHex(color, 0.3), 0.77));
+                    g.addColorStop(0.75, rgbA(lightenHex(color, 0.08), 0.82));
+                    g.addColorStop(1, rgbA(darkenHex(color, 0.1), 0.87));
+                    return g;
+                }
+                const donutDepthPlugin = {
+                    id: 'donutDepth',
+                    beforeDatasetsDraw(chart) {
+                        // เงาพื้นนุ่มๆ ใต้วง ให้ดูลอยจากการ์ด
+                        const m = chart.getDatasetMeta(0).data[0];
+                        if (!m) return;
+                        const c = chart.ctx;
+                        c.save();
+                        c.beginPath();
+                        c.arc(m.x, m.y + 6, (m.outerRadius + m.innerRadius) / 2, 0, Math.PI * 2);
+                        c.lineWidth = (m.outerRadius - m.innerRadius) * 0.9;
+                        c.strokeStyle = 'rgba(15,23,42,0.05)';
+                        c.filter = 'blur(6px)';
+                        c.stroke();
+                        c.restore();
+                    },
+                    afterDatasetDraw(chart, args) {
+                        const c = chart.ctx;
+                        const arcs = chart.getDatasetMeta(0).data;
+                        arcs.forEach(function (arc) {
+                            const t = arc.outerRadius - arc.innerRadius;
+                            if (!(t > 0)) return;
+                            const pad = Math.min(0.06, (arc.endAngle - arc.startAngle) / 4);
+                            // เส้นสะท้อนแสงบนสันท่อ
+                            c.save();
+                            c.beginPath();
+                            c.arc(arc.x, arc.y, arc.outerRadius - t * 0.3, arc.startAngle + pad, arc.endAngle - pad);
+                            c.lineWidth = Math.max(1.5, t * 0.13);
+                            c.lineCap = 'round';
+                            c.strokeStyle = 'rgba(255,255,255,0.6)';
+                            c.stroke();
+                            // เงาขอบด้านใน
+                            c.beginPath();
+                            c.arc(arc.x, arc.y, arc.innerRadius + 1, arc.startAngle + pad, arc.endAngle - pad);
+                            c.lineWidth = Math.max(1.5, t * 0.1);
+                            c.lineCap = 'round';
+                            c.strokeStyle = 'rgba(15,23,42,0.08)';
+                            c.stroke();
+                            c.restore();
+                        });
+                    }
+                };
+
+                const participantDonut = new Chart(participantDonutCtx, {
                     type: 'doughnut',
                     data: {
                         labels: donutLabels,
                         datasets: [{
                             data: donutValues,
-                            backgroundColor: (context) => makeDepthGradient(context, donutColors[context.dataIndex]),
-                            hoverBackgroundColor: (context) => makeDepthGradient(context, donutColors[context.dataIndex]),
+                            backgroundColor: (context) => donutTubeFill(context, donutColors[context.dataIndex]),
+                            hoverBackgroundColor: (context) => donutTubeFill(context, donutColors[context.dataIndex]),
                             borderColor: '#ffffff',
                             borderWidth: 2,
                             borderRadius: 6,
@@ -3323,35 +3394,12 @@
                             datalabels: {
                                 display: false
                             },
-                            tooltip: {
-                                enabled: true,
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1e293b',
-                                titleFont: {
-                                    family: "'Sarabun', sans-serif",
-                                    size: 14,
-                                    weight: 'bold'
-                                },
-                                bodyColor: '#64748b',
-                                bodyFont: {
-                                    family: "'Sarabun', sans-serif",
-                                    size: 13
-                                },
-                                borderColor: '#e2e8f0',
-                                borderWidth: 1,
-                                padding: 12,
-                                callbacks: {
-                                    label: function(context) {
-                                        let label = context.label || '';
-                                        let value = context.parsed || 0;
-                                        let percentage = (value * 100 / totalParticipants).toFixed(1);
-                                        return ` ${label}: ${value.toLocaleString()} คน (${percentage}%)`;
-                                    }
-                                }
-                            }
+                            // ปิด tooltip: ตัวเลขตรงกลางวงแสดงชื่อจังหวัด จำนวนคน และร้อยละของส่วนที่ชี้อยู่แล้ว
+                            // tooltip ซ้ำจึงบังตัวเลข
+                            tooltip: { enabled: false }
                         }
                     },
-                    plugins: [ChartDataLabels, barShadowPlugin]
+                    plugins: [ChartDataLabels, barShadowPlugin, donutDepthPlugin]
                 });
 
                 // Belt-and-suspenders reset: onHover above already reverts
@@ -3394,7 +3442,39 @@
 
                         item.appendChild(left);
                         item.appendChild(right);
+                        item.style.transition = 'opacity .15s ease, box-shadow .15s ease, transform .15s ease';
+                        item.style.cursor = 'default';
+                        item.dataset.idx = i;
                         legendContainer.appendChild(item);
+
+                        // ชี้แถวล่าง = แสดงชื่อ/จำนวน/ร้อยละของจังหวัดนั้นในวงกลม + ขยายส่วนนั้นของวง
+                        item.addEventListener('mouseenter', function () {
+                            const totalEl = document.getElementById('donutTotal');
+                            const capEl = document.getElementById('donutCap');
+                            const subEl = document.getElementById('donutSub');
+                            if (totalEl) {
+                                totalEl.innerText = donutValues[i].toLocaleString();
+                                totalEl.style.color = donutColors[i];
+                            }
+                            if (capEl) capEl.innerText = label;
+                            if (subEl) subEl.innerText = 'คน · ' + (donutValues[i] * 100 / totalParticipants).toFixed(1) + '%';
+                            participantDonut.setActiveElements([{ datasetIndex: 0, index: i }]);
+                            participantDonut.update('none');
+                            legendContainer.querySelectorAll('[data-idx]').forEach(function (el) {
+                                const on = Number(el.dataset.idx) === i;
+                                el.style.opacity = on ? '1' : '.5';
+                                el.style.boxShadow = on ? ('inset 4px 0 0 ' + donutColors[i] + ', 0 8px 18px -10px ' + donutColors[i]) : 'none';
+                            });
+                        });
+                        item.addEventListener('mouseleave', function () {
+                            resetDonutCenter();
+                            participantDonut.setActiveElements([]);
+                            participantDonut.update('none');
+                            legendContainer.querySelectorAll('[data-idx]').forEach(function (el) {
+                                el.style.opacity = '';
+                                el.style.boxShadow = '';
+                            });
+                        });
                     });
                 }
             });

@@ -300,9 +300,13 @@
         .square-box.checked::after {
             content: "✓";
             position: absolute;
-            top: -4px;
-            left: 2px;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "DejaVu Sans", "Segoe UI Symbol", Arial, sans-serif;
             font-size: 13px;
+            line-height: 1;
             font-weight: bold;
         }
 

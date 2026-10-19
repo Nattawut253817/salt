@@ -14,7 +14,7 @@
         </div>
         {{-- ปุ่มเริ่มทำแบบประเมิน (กรณีทำครั้งแรก/ปีงบประมาณใหม่): สคร. (ระดับ 1) ใช้ดูติดตามเท่านั้น จึงไม่แสดง --}}
         @if(auth()->user()->User_rank_id != 1)
-        <a href="{{ route('admin.report-progress', ['new' => 1]) }}" id="btnStartAssess" class="header-start-btn{{ empty($allDoneYears) ? ' trigger-loader' : '' }}"
+        <a href="{{ route('admin.report-progress', ['new' => 1]) }}" id="btnStartAssess" class="header-start-btn{{ empty($allDoneYears) && empty($notOpenYear) ? ' trigger-loader' : '' }}"
             title="เปิดแบบฟอร์มเพื่อเริ่มทำแบบประเมินของหน่วยงานคุณ">
             <i class="fas fa-file-signature"></i> ทำแบบประเมิน
         </a>
@@ -381,9 +381,33 @@
                 }
             });
         }
+        // ป๊อปอัปแจ้ง "ปีงบประมาณ ยังไม่เปิดให้ทำการประเมิน" (ปีถูกซ่อนจาก "จัดการปีงบประมาณ")
+        function showNotOpenPopup(year) {
+            Swal.fire({
+                icon: 'info',
+                iconColor: '#4f46e5',
+                title: 'ปีงบประมาณ ' + year + ' ยังไม่เปิดให้ทำการประเมิน',
+                text: 'กรุณารอผู้ดูแลระบบเปิดให้ทำการประเมิน หรือติดต่อ สคร.',
+                confirmButtonText: 'รับทราบ',
+                confirmButtonColor: '#4f46e5',
+                customClass: { popup: 'not-open-popup' }
+            });
+        }
         (function () {
             const doneYears = @json($allDoneYears ?? []);
+            const notOpenYear = @json($notOpenYear ?? null);
             const btn = document.getElementById('btnStartAssess');
+            if (btn && notOpenYear) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    showNotOpenPopup(notOpenYear);
+                });
+            }
+            @if(session('salt_not_open_year'))
+            document.addEventListener('DOMContentLoaded', function () {
+                showNotOpenPopup(@json(session('salt_not_open_year')));
+            });
+            @endif
             if (btn && doneYears.length) {
                 btn.addEventListener('click', function (e) {
                     e.preventDefault();
@@ -425,7 +449,7 @@
         $(document).ready(function () {
             // Function to load table via AJAX
             function loadTable(url) {
-                $('#navLoadingOverlay').css('display', 'flex').animate({ opacity: 1 }, 200);
+                $('#navLoadingOverlay').css({ display: 'flex', opacity: 1 });
 
                 // Get current filter values
                 const fiscal_year = $('#fiscal_year').val();
@@ -448,13 +472,13 @@
                     },
                     success: function (data) {
                         $('#table-container').html(data);
-                        $('#navLoadingOverlay').animate({ opacity: 0 }, 200, function () {
+                        $('#navLoadingOverlay').animate({ opacity: 0 }, 60, function () {
                             $(this).css('display', 'none');
                         });
                     },
                     error: function () {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ef4444', confirmButtonText: 'ตกลง' });
-                        $('#navLoadingOverlay').animate({ opacity: 0 }, 200, function () {
+                        $('#navLoadingOverlay').animate({ opacity: 0 }, 60, function () {
                             $(this).css('display', 'none');
                         });
                     }
@@ -554,7 +578,7 @@
 
             // Trigger loader on view buttons (delegated for AJAX loaded content)
             $(document).on('click', '.trigger-loader', function () {
-                $('#navLoadingOverlay').css('display', 'flex').animate({ opacity: 1 }, 200);
+                $('#navLoadingOverlay').css({ display: 'flex', opacity: 1 });
             });
 
             // District Dropdown Logic

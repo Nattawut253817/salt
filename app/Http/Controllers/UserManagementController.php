@@ -45,10 +45,13 @@ class UserManagementController extends Controller
         }
 
         // Calculate Summary Statistics (on filtered results)
-        $statsQuery = clone $query;
-        $totalUsers = $statsQuery->count();
-        $approvedCount = (clone $statsQuery)->where('is_approved', 1)->count();
-        $pendingCount = (clone $statsQuery)->where('is_approved', 0)->count();
+        // 1 query แทน 3 (ทั้งหมด / อนุมัติแล้ว / รออนุมัติ)
+        $agg = (clone $query)->reorder()->selectRaw(
+            'COUNT(*) as total_users, SUM(CASE WHEN is_approved = 1 THEN 1 ELSE 0 END) as approved_users, SUM(CASE WHEN is_approved = 0 THEN 1 ELSE 0 END) as pending_users'
+        )->first();
+        $totalUsers = (int) ($agg->total_users ?? 0);
+        $approvedCount = (int) ($agg->approved_users ?? 0);
+        $pendingCount = (int) ($agg->pending_users ?? 0);
 
         $stats = [
             'total' => $totalUsers,
@@ -60,7 +63,7 @@ class UserManagementController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15)->appends($request->all());
 
-        $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
 
         if ($request->ajax()) {
             return view('admin.users.table', compact('users', 'stats'))->render();
@@ -185,7 +188,7 @@ class UserManagementController extends Controller
     {
         $user = User::findOrFail($id);
         $this->hideSuperAdminFromNonSuper($user);
-        $provinces = \App\Models\Province::orderBy('province_name', 'asc')->get();
+        $provinces = \App\Support\AdminCache::provinces();
         // Hardcoded user ranks as seen in index.blade.php
         $userRanks = [
             1 => 'สคร.',

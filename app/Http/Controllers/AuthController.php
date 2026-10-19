@@ -401,7 +401,9 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
+        // Named bag: a failed sign-in must not light up the register tab
+        // (which reads the default bag).
+        $request->validateWithBag('login', [
             'email' => 'required|email',
             'password' => 'required',
         ], [
@@ -419,15 +421,23 @@ class AuthController extends Controller
         if ($locked !== null) {
             $minutes = (int) ceil(\Illuminate\Support\Facades\RateLimiter::availableIn($locked) / 60);
             \App\Support\ActivityLog::record('login_failed', 'ถูกล็อกชั่วคราว: กรอกรหัสผ่านผิดเกินกำหนด', null, ['reason' => 'locked'], $request, strtolower($request->email));
-            return back()->with('error', 'กรอกรหัสผ่านผิดเกินจำนวนครั้งที่กำหนด กรุณาลองใหม่อีกครั้งใน ' . max(1, $minutes) . ' นาที')->withInput();
+            return back()->with('login_alert', [
+                'type' => 'lock',
+                'title' => 'ระบบล็อกการเข้าสู่ระบบชั่วคราว',
+                'message' => 'กรอกรหัสผ่านผิดเกินจำนวนครั้งที่กำหนด กรุณาลองใหม่อีกครั้งใน ' . max(1, $minutes) . ' นาที',
+                'tips' => [
+                    'การล็อกนี้ช่วยป้องกันบัญชีของท่านจากการเดารหัสผ่าน และจะปลดล็อกอัตโนมัติเมื่อครบเวลา',
+                    'หากจำรหัสผ่านไม่ได้ สามารถใช้เมนู "ลืมรหัสผ่าน" เพื่อตั้งรหัสใหม่',
+                ],
+            ])->withInput($request->only('email'));
         }
 
         // Single lookup, reused for both the existence check and the password
         // check (avoids Auth::attempt() re-querying the same row a second time).
         $user = User::where('email', $request->email)->first();
 
-        // One generic message + one bcrypt check for both "unknown email" and
-        // "wrong password": no email enumeration, no timing difference.
+        // One bcrypt check for both cases so response time stays the same
+        // whether or not the email exists.
         $passwordOk = Hash::check($request->password, $user ? $user->password : self::DUMMY_HASH);
         if (!$user || !$passwordOk) {
             \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
@@ -437,7 +447,39 @@ class AuthController extends Controller
             } else {
                 \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
             }
-            return back()->with('error', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง')->withInput($request->only('email'));
+            // Unknown email gets the combined message; a known email with a
+            // wrong password is told the password is wrong (product owner's
+            // decision). Attempt throttling above limits probing speed.
+            $remaining = \Illuminate\Support\Facades\RateLimiter::remaining($throttleKey, self::LOGIN_MAX_ATTEMPTS);
+            $lockMinutes = (int) (self::LOGIN_LOCK_SECONDS / 60);
+            if (!$user) {
+                $alert = [
+                    'type' => 'error',
+                    'title' => 'ไม่สามารถเข้าสู่ระบบได้',
+                    'message' => 'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+                    'tips' => [
+                        'ตรวจสอบการสะกดอีเมล และไม่มีช่องว่างเกินท้ายข้อความ',
+                        'รหัสผ่านแยกตัวพิมพ์เล็ก-ใหญ่ ตรวจสอบว่าไม่ได้เปิด Caps Lock',
+                        'หากยังไม่เคยสมัคร ให้เลือกแท็บ "สมัครสมาชิก" หรือใช้เมนู "ลืมรหัสผ่าน"',
+                    ],
+                ];
+            } else {
+                $alert = [
+                    'type' => 'error',
+                    'title' => 'รหัสผ่านไม่ถูกต้อง',
+                    'message' => '',
+                    'tips' => [
+                        'รหัสผ่านแยกตัวพิมพ์เล็ก-ใหญ่ ตรวจสอบว่าไม่ได้เปิด Caps Lock',
+                        'หากจำรหัสผ่านไม่ได้ ให้ใช้เมนู "ลืมรหัสผ่าน" เพื่อตั้งรหัสใหม่',
+                    ],
+                ];
+            }
+            if ($remaining <= 3) {
+                $alert['tips'][] = $remaining > 0
+                    ? 'เหลือโอกาสอีก ' . $remaining . ' ครั้ง ก่อนระบบล็อกการเข้าสู่ระบบชั่วคราว ' . $lockMinutes . ' นาที'
+                    : 'ระบบจะล็อกการเข้าสู่ระบบชั่วคราวในความพยายามครั้งถัดไป';
+            }
+            return back()->with('login_alert', $alert)->withInput($request->only('email'));
         }
 
         // Upgrade the stored hash when the configured cost has changed.
@@ -449,7 +491,15 @@ class AuthController extends Controller
         // Bypass approval check for Level 1 users
         if ($user->User_rank_id != 1 && !$user->is_approved) {
             \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: บัญชียังรอการอนุมัติ', $user, ['reason' => 'pending_approval'], $request);
-            return back()->with('error', 'บัญชีของคุณอยู่ระหว่างรอการอนุมัติจากผู้ดูแลระบบ')->withInput();
+            return back()->with('login_alert', [
+                'type' => 'warning',
+                'title' => 'บัญชีอยู่ระหว่างรอการอนุมัติ',
+                'message' => 'บัญชีของท่านอยู่ระหว่างรอการอนุมัติจากผู้ดูแลระบบ จึงยังไม่สามารถเข้าใช้งานได้',
+                'tips' => [
+                    'ผู้ดูแลระบบจะตรวจสอบข้อมูลการสมัครและอนุมัติสิทธิ์ให้ตามลำดับ',
+                    'หากรอนานเกินกำหนด กรุณาติดต่อผู้ดูแลระบบของหน่วยงาน',
+                ],
+            ])->withInput($request->only('email'));
         }
 
         // Credentials and approval check passed, but the account is not

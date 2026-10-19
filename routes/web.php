@@ -63,16 +63,16 @@ Route::get('/storage/{path}', function (string $path) {
     return response()->file($full);
 })->where('path', '.*')->name('storage.local-fallback');
 
-Route::get('/', [MainController::class, 'index'])->middleware('page.view')->name('home');
+Route::get('/', [MainController::class, 'index'])->middleware(['page.view', 'page.cache'])->name('home');
 Route::get('/api/ht-trend', [MainController::class, 'htTrendFeed'])->middleware('throttle:60,1')->name('api.ht-trend');
-Route::get('/awareness', [MainController::class, 'awareness'])->middleware('page.view')->name('awareness');
+Route::get('/awareness', [MainController::class, 'awareness'])->middleware(['page.view', 'page.cache'])->name('awareness');
 Route::get('/food-survey', [MainController::class, 'foodSurvey'])->name('food-survey');
-Route::get('/reduced-sodium-menu', [MainController::class, 'reducedSodiumMenu'])->middleware('page.view')->name('reduced-sodium-menu');
-Route::get('/reduced-sodium-products', [MainController::class, 'reducedSodiumProducts'])->middleware('page.view')->name('reduced-sodium-products');
+Route::get('/reduced-sodium-menu', [MainController::class, 'reducedSodiumMenu'])->middleware(['page.view', 'page.cache'])->name('reduced-sodium-menu');
+Route::get('/reduced-sodium-products', [MainController::class, 'reducedSodiumProducts'])->middleware(['page.view', 'page.cache'])->name('reduced-sodium-products');
 Route::get('/kidney-dhb', [MainController::class, 'kidneyDHB'])->name('kidney-dhb');
-Route::get('/kidney-dhb-report', [MainController::class, 'kidneyDHBReport'])->middleware('page.view')->name('kidney-dhb-report');
-Route::get('/new-ht-cases', [MainController::class, 'newHTCases'])->middleware('page.view')->name('new-ht-cases');
-Route::get('/consumption-report', [MainController::class, 'consumptionReport'])->middleware('page.view')->name('consumption-report');
+Route::get('/kidney-dhb-report', [MainController::class, 'kidneyDHBReport'])->middleware(['page.view', 'page.cache'])->name('kidney-dhb-report');
+Route::get('/new-ht-cases', [MainController::class, 'newHTCases'])->middleware(['page.view', 'page.cache'])->name('new-ht-cases');
+Route::get('/consumption-report', [MainController::class, 'consumptionReport'])->middleware(['page.view', 'page.cache'])->name('consumption-report');
 Route::get('/staff', [MainController::class, 'staff'])->name('staff');
 Route::get('/login', [MainController::class, 'staff'])->name('login');
 

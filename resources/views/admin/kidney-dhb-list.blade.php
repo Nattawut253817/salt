@@ -312,8 +312,15 @@
         }
 
         @media (max-width: 760px) {
-            .filter-cluster { flex-direction: column; gap: 8px; }
-            .filter-cluster-label { padding-bottom: 0; }
+            .filter-cluster { flex-direction: column; align-items: stretch; gap: 8px; }
+            /* flex-basis 128px was acting as a 128px HEIGHT once the cluster
+               stacked vertically, pushing the fields down and to the right. */
+            .filter-cluster-label { flex: none; width: 100%; padding-bottom: 0; }
+            .filter-cluster-fields { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 480px) {
+            .filter-cluster-fields { grid-template-columns: minmax(0, 1fr); }
         }
 
     </style>
@@ -342,6 +349,30 @@
                 confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i> ใช่, ยืนยันการลบ',
                 cancelButtonText: 'ยกเลิก',
                 reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+            return false;
+        }
+
+        // ปุ่มถังขยะในแถว "เลือกพื้นที่แล้ว · ยังไม่มีรายงานผล" - ยืนยันก่อนลบพื้นที่ออกจากรายการ
+        function confirmRemoveArea(e) {
+            e.preventDefault();
+            const form = e.currentTarget;
+            const area = form.getAttribute('data-area') || 'พื้นที่นี้';
+            Swal.fire({
+                title: 'ลบพื้นที่นี้?',
+                html: 'ต้องการลบพื้นที่ <b></b> ใช่หรือไม่?<br><small style="color:#64748b">ยังไม่มีรายงานผลในพื้นที่นี้ จึงไม่มีข้อมูลรายงานถูกลบ · ถ้าเป็น SuperAdmin พื้นที่จะถูกลบออกจากระบบและหน้าแผนที่ทั้งหมด</small>',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: '<i class="fas fa-trash-alt mr-2"></i> ใช่, ลบพื้นที่',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true,
+                didOpen: (el) => { const b = el.querySelector('#swal2-html-container b'); if (b) b.textContent = area; }
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
@@ -379,7 +410,7 @@
         $(document).ready(function () {
             // Function to load table via AJAX
             function loadTable(url) {
-                $('#navLoadingOverlay').css('display', 'flex').animate({ opacity: 1 }, 200);
+                $('#navLoadingOverlay').css({ display: 'flex', opacity: 1 });
 
                 // Get current filter values
                 const fiscal_year = $('#fiscal_year').val();
@@ -411,13 +442,13 @@
                     },
                     success: function (data) {
                         $('#table-container').html(data);
-                        $('#navLoadingOverlay').animate({ opacity: 0 }, 200, function () {
+                        $('#navLoadingOverlay').animate({ opacity: 0 }, 60, function () {
                             $(this).css('display', 'none');
                         });
                     },
                     error: function () {
                         Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถโหลดข้อมูลได้ กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ef4444', confirmButtonText: 'ตกลง' });
-                        $('#navLoadingOverlay').animate({ opacity: 0 }, 200, function () {
+                        $('#navLoadingOverlay').animate({ opacity: 0 }, 60, function () {
                             $(this).css('display', 'none');
                         });
                     }
@@ -524,7 +555,7 @@
 
             // Trigger loader on view buttons (delegated for AJAX loaded content)
             $(document).on('click', '.trigger-loader', function () {
-                $('#navLoadingOverlay').css('display', 'flex').animate({ opacity: 1 }, 200);
+                $('#navLoadingOverlay').css({ display: 'flex', opacity: 1 });
             });
 
             // District Dropdown Logic

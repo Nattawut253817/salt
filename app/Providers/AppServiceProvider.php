@@ -44,6 +44,11 @@ class AppServiceProvider extends ServiceProvider
             }
         });
 
+        // (เฉพาะ APP_DEBUG) วัดเวลา/จำนวน query ต่อหน้า -> header Server-Timing
+        if (config('app.debug')) {
+            $this->app['router']->pushMiddlewareToGroup('web', \App\Http\Middleware\ServerTiming::class);
+        }
+
         view()->composer('layouts.admin', function ($view) {
             // These badge counts render on every admin page, including the
             // page a user lands on right after logging in. They don't need
@@ -80,7 +85,8 @@ class AppServiceProvider extends ServiceProvider
                 $saltQuery = \App\Models\SaltAssessment::where('is_read', 0);
 
                 if ($currentUser->User_rank_id != 1) {
-                    $agencyUserIds = self::badgeAgencyUserIds($currentUser);
+                    // subquery แทนการ pluck id ทั้งหน่วยงานมาใส่ whereIn (ลดข้อมูลที่ส่งไป-กลับ DB ทุกหน้า)
+                    $agencyUserIds = self::badgeAgencyUsersQuery($currentUser)->select('id');
                     $kidneyQuery->whereIn('user_id', $agencyUserIds);
                     $saltQuery->whereIn('user_id', $agencyUserIds);
                 }
@@ -104,6 +110,21 @@ class AppServiceProvider extends ServiceProvider
      * before controllers are resolved and this is the only other place that
      * needs it.
      */
+    private static function badgeAgencyUsersQuery($user)
+    {
+        $query = \App\Models\User::query();
+
+        if ($user->User_rank_id == 2) {
+            $query->where('Province_id', $user->Province_id);
+        } elseif ($user->User_rank_id >= 3) {
+            $query->where('District_id', $user->District_id);
+        } else {
+            $query->where('id', $user->id);
+        }
+
+        return $query;
+    }
+
     private static function badgeAgencyUserIds($user): array
     {
         if (!$user) {

@@ -754,6 +754,34 @@
         .modern-alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
         .modern-alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 
+        /* Formal sign-in alert: icon tile + title + cause + checklist */
+        .auth-alert {
+            --aa: #b42318; --aa-bg: #fef3f2; --aa-bd: #fecdca; --aa-ic: #fee4e2;
+            display: flex; gap: 14px; align-items: flex-start;
+            padding: 16px 18px; margin-bottom: 22px;
+            border-radius: 16px; background: var(--aa-bg);
+            border: 1px solid var(--aa-bd);
+            box-shadow: 0 6px 18px -10px var(--aa);
+            animation: slideDown 0.4s ease;
+        }
+        .auth-alert-warning { --aa: #b54708; --aa-bg: #fffaeb; --aa-bd: #fedf89; --aa-ic: #fef0c7; }
+        .auth-alert-lock { --aa: #344054; --aa-bg: #f8fafc; --aa-bd: #d0d5dd; --aa-ic: #e4e7ec; }
+        .auth-alert-icon {
+            flex: none; width: 40px; height: 40px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: var(--aa); background: var(--aa-ic);
+        }
+        .auth-alert-body { min-width: 0; }
+        .auth-alert-title { font-size: 0.98rem; font-weight: 800; color: var(--aa); line-height: 1.35; }
+        .auth-alert-msg { margin-top: 2px; font-size: 0.9rem; font-weight: 600; color: #1f2937; line-height: 1.5; }
+        .auth-alert-tips {
+            margin: 10px 0 0; padding: 10px 0 0 18px;
+            border-top: 1px dashed var(--aa-bd);
+            font-size: 0.86rem; font-weight: 700; color: #1d2939; line-height: 1.65;
+        }
+        .auth-alert-tips li { margin-bottom: 2px; }
+        .auth-alert-tips li::marker { color: var(--aa); }
+
         /* "หรือเข้าใช้งานด้วย" divider between the email/password login and
            the Government SSO button below it. */
         .auth-divider {
@@ -1289,29 +1317,52 @@
             <div class="auth-main-panel">
             <div class="auth-byline">โดย สคร.10 อุบลราชธานี</div>
             <div class="auth-welcome">
-                <div class="auth-welcome-title" id="auth-welcome-title">{{ $errors->any() ? 'สร้างบัญชีใหม่' : '' }}</div>
-                <div class="auth-welcome-sub" id="auth-welcome-sub">{!! $errors->any() ? 'กรอกข้อมูลเพื่อขอสิทธิ์เข้าใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' : 'เข้าสู่ระบบเพื่อใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' !!}</div>
+                <div class="auth-welcome-title" id="auth-welcome-title">{{ $errors->default->any() ? 'สร้างบัญชีใหม่' : '' }}</div>
+                <div class="auth-welcome-sub" id="auth-welcome-sub">{!! $errors->default->any() ? 'กรอกข้อมูลเพื่อขอสิทธิ์เข้าใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' : 'เข้าสู่ระบบเพื่อใช้งาน '.'<span class="auth-brand-name">Smart Salt &amp; Sodium Monitor</span>' !!}</div>
             </div>
             <div class="auth-tabs-wrapper">
                 <div class="auth-tabs">
-                    <div class="auth-tab {{ session('success') || !$errors->any() ? 'active' : '' }}"
+                    <div class="auth-tab {{ session('success') || !$errors->default->any() ? 'active' : '' }}"
                         onclick="switchTab('login')">เข้าสู่ระบบ</div>
-                    <div class="auth-tab {{ $errors->any() ? 'active' : '' }}"
+                    <div class="auth-tab {{ $errors->default->any() ? 'active' : '' }}"
                         onclick="switchTab('register')">สมัครสมาชิก</div>
                 </div>
             </div>
 
             <div class="auth-form-container">
                 <!-- Login Form -->
-                <div id="login-section" class="form-section {{ session('success') || !$errors->any() ? 'active' : '' }}">
+                <div id="login-section" class="form-section {{ session('success') || !$errors->default->any() ? 'active' : '' }}">
                     @if (session('success'))
                         <div class="modern-alert modern-alert-success" id="login-success-alert">
                             <i class="fas fa-check-circle"></i> {{ session('success') }}
                         </div>
                     @endif
-                    @if (session('error'))
-                        <div class="modern-alert modern-alert-error">
-                            <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+                    @php
+                        $loginAlert = session('login_alert');
+                        if (!$loginAlert && session('error')) {
+                            $loginAlert = ['type' => 'error', 'title' => 'ไม่สามารถดำเนินการได้', 'message' => session('error'), 'tips' => []];
+                        }
+                        if (!$loginAlert && $errors->login->any()) {
+                            $loginAlert = ['type' => 'warning', 'title' => 'กรุณากรอกข้อมูลให้ครบถ้วน', 'message' => $errors->login->first(), 'tips' => []];
+                        }
+                        $alertIcon = ['error' => 'fa-circle-xmark', 'warning' => 'fa-hourglass-half', 'lock' => 'fa-lock'];
+                    @endphp
+                    @if ($loginAlert)
+                        <div class="auth-alert auth-alert-{{ $loginAlert['type'] }}" role="alert" aria-live="assertive">
+                            <div class="auth-alert-icon"><i class="fas {{ $alertIcon[$loginAlert['type']] ?? 'fa-circle-xmark' }}"></i></div>
+                            <div class="auth-alert-body">
+                                <div class="auth-alert-title">{{ $loginAlert['title'] }}</div>
+                                @if (!empty($loginAlert['message']))
+                                    <div class="auth-alert-msg">{{ $loginAlert['message'] }}</div>
+                                @endif
+                                @if (!empty($loginAlert['tips']))
+                                    <ul class="auth-alert-tips">
+                                        @foreach ($loginAlert['tips'] as $tip)
+                                            <li>{{ $tip }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
                         </div>
                     @endif
                     <form action="{{ route('login.post') }}" method="POST" id="login-form" onsubmit="showLoginLoading(event)">
@@ -1320,7 +1371,7 @@
                             <label class="form-label">อีเมล</label>
                             <div class="input-wrapper">
                                 <i class="fas fa-envelope"></i>
-                                <input type="email" name="email" class="form-control" placeholder="ชื่อผู้ใช้งานของคุณ" value="{{ old('email') }}" required>
+                                <input type="email" name="email" class="form-control" placeholder="อีเมลผู้ใช้งานของคุณ" value="{{ old('email') }}" required>
                             </div>
                         </div>
                         <div class="form-group">
@@ -1364,12 +1415,12 @@
                 </div>
 
                 <!-- Registration Form -->
-                <div id="register-section" class="form-section {{ $errors->any() ? 'active' : '' }}">
-                    @if ($errors->any())
+                <div id="register-section" class="form-section {{ $errors->default->any() ? 'active' : '' }}">
+                    @if ($errors->default->any())
                         <div class="modern-alert modern-alert-error">
                             <i class="fas fa-exclamation-circle"></i>
                             <ul style="margin: 0; padding-left: 20px; list-style: none;">
-                                @foreach ($errors->all() as $error)
+                                @foreach ($errors->default->all() as $error)
                                     <li>{{ $error }}</li>
                                 @endforeach
                             </ul>

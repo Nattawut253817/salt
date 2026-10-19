@@ -13,7 +13,7 @@ class HiController extends Controller
 {
     public function index(Request $request)
     {
-        $provinces = Province::orderBy('province_name')->get();
+        $provinces = \App\Support\AdminCache::provinces();
 
         $query = Hi::with('province');
 
@@ -45,28 +45,28 @@ class HiController extends Controller
         }
 
         // Calculate Summary Statistics (on filtered results)
+        // รวมผลรวม/ค่าเฉลี่ย/ยอดรายเดือน เป็น query เดียว (เดิม 3 query) และนับรายจังหวัดด้วย GROUP BY เดียว (เดิม 5 query + whereHas)
         $statsQuery = clone $query;
-        $totalTarget = $statsQuery->sum('target_b');
-        $totalNewCases = $statsQuery->sum('total_a');
-        $avgRate = $statsQuery->avg('rate_per_100k') ?: 0;
+        $agg = (clone $statsQuery)->without('province')->reorder()->selectRaw(
+            'SUM(target_b) as agg_target, SUM(total_a) as agg_cases, AVG(rate_per_100k) as agg_rate, '
+            . implode(', ', array_map(fn ($col) => "SUM($col) as $col", $validMonthColumns))
+        )->first();
+        $totalTarget = $agg->agg_target ?? 0;
+        $totalNewCases = $agg->agg_cases ?? 0;
+        $avgRate = $agg->agg_rate ?: 0;
 
         // Province-wise counts for the 5 target provinces
         $targetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
+        $countByProvinceId = (clone $statsQuery)->without('province')->reorder()
+            ->groupBy('Province_id')->selectRaw('Province_id, COUNT(*) as c')->pluck('c', 'Province_id');
         $provinceCounts = [];
         foreach ($targetProvinces as $pName) {
-            $provinceCounts[$pName] = (clone $statsQuery)->whereHas('province', function ($q) use ($pName) {
-                $q->where('province_name', $pName);
-            })->count();
+            $ids = $provinces->where('province_name', $pName)->pluck('province_id');
+            $provinceCounts[$pName] = (int) $ids->sum(fn ($id) => (int) ($countByProvinceId[$id] ?? 0));
         }
 
-        // Monthly totals across every filtered row (not just the current
-        // page), used to render an "overview" summary row on the table with
-        // the same high/low + month-over-month highlighting as individual
-        // district rows. Cloned from $statsQuery the same way the counts
-        // above are, so it reflects the exact same filtered scope.
-        $monthlyTotals = (clone $statsQuery)->without('province')->selectRaw(
-            implode(', ', array_map(fn ($col) => "SUM($col) as $col", $validMonthColumns))
-        )->first();
+        // Monthly totals across every filtered row (not just the current page) - มาจาก query รวมด้านบน
+        $monthlyTotals = $agg;
 
         $stats = [
             'total_target' => $totalTarget,

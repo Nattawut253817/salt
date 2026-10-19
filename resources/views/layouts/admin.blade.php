@@ -8,10 +8,13 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Panel - Salt & Sodium Smart Monitor')</title>
     <!-- Fonts -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://code.jquery.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=IBM+Plex+Sans+Thai:wght@100;200;300;400;500;600;700&family=Sarabun:wght@100;200;300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700;800&family=K2D:wght@400;500;600;700&family=Kodchasan:wght@500;600;700;800&family=Pridi:wght@400;500;600;700&family=Itim&display=swap"
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700;800&family=K2D:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <!-- ฟอนต์หลักของระบบหลังบ้าน: Noto Sans Thai Looped -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai+Looped:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1685,9 +1688,7 @@
                     if (!href || href === '#' || href === 'javascript:void(0);') return;
 
                     // Show overlay with smooth fade
-                    $('#navLoadingOverlay').css('display', 'flex').animate({
-                        opacity: 1
-                    }, 400);
+                    $('#navLoadingOverlay').css({display: 'flex', opacity: 1});
                 });
 
             // Confirm before signing out, so an accidental click on the

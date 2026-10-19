@@ -710,10 +710,10 @@
         <colgroup>
             <col style="width:9.2%">
             <col style="width:10.6%">
-            <col style="width:18.2%">
+            <col style="width:15.4%">
             <col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%"><col style="width:3.8%">
             <col style="width:3.1%"><col style="width:3.1%"><col style="width:3.1%"><col style="width:3.1%">
-            <col style="width:11.6%">
+            <col style="width:14.4%">
         </colgroup>
         <thead class="kd-thead">
             {{-- แถวบน: หัวกลุ่มคอลัมน์ (ข้อมูลทั่วไป / ข้อ 1-7 / ข้อ 8 / ยืนยันรายไตรมาส / จัดการ) --}}
@@ -748,6 +748,7 @@
             @php
                 $pendingAreas = $pendingAreas ?? collect();
                 $pendingTail = $pendingTail ?? collect();
+                $pendingHead = $pendingHead ?? collect();
                 // หน่วยงาน level 1 (สคร.) ใช้ปุ่ม "ติดตามแบบรายงาน" แทน "รายงานผลการดำเนินงาน"
                 $isLevel1 = auth()->user()->User_rank_id == 1;
                 // แถวของหน่วยงานอื่น (ไม่ใช่หน่วยงานของตัวเอง) = ดูได้อย่างเดียว ปุ่มเป็น "ติดตาม" สีม่วง ไม่มีปุ่มลบ
@@ -781,6 +782,10 @@
                     return $name;
                 };
             @endphp
+            {{-- สสจ.: พื้นที่ที่หน่วยงานเลือกไว้เองแล้วแต่ยังไม่รายงาน แสดงเป็นแถวแรกของตาราง (หน้าแรก) --}}
+            @foreach($pendingHead as $pt)
+                @include('admin.partials.kidney-pending-row', ['pt' => $pt])
+            @endforeach
             @foreach($pendingAreas as $pa)
                 @php $paUser = auth()->user(); @endphp
                 <tr class="row-pending-area{{ (int) session('highlight_pin') === (int) $pa['id'] ? ' row-just-saved' : '' }}">
@@ -969,7 +974,7 @@
                     </td>
                 </tr>
             @empty
-                @if($pendingAreas->isEmpty() && $pendingTail->isEmpty())
+                @if($pendingAreas->isEmpty() && $pendingTail->isEmpty() && $pendingHead->isEmpty())
                 <tr>
                     <td colspan="18" class="text-center py-5 text-muted kd-empty">
                         <i class="fas fa-inbox fa-3x mb-3" style="opacity: 0.5;"></i><br>
@@ -985,63 +990,7 @@
             @endforelse
             {{-- สคร./สสจ.: พื้นที่ที่ยังไม่มีรายงานผล (เลือกแล้วแต่ยังไม่รายงาน / ยังไม่มีผู้เลือก / หมุดแสดงผล) ต่อท้ายแถวที่มีข้อมูล --}}
             @foreach($pendingTail as $pt)
-                <tr class="row-pending-area row-pending-{{ $pt['status'] }}">
-                    <td class="text-center align-middle"><div class="fy-cell"><span class="fy-year">{{ $pt['fiscal_year'] }}</span></div></td>
-                    <td class="align-middle">
-                        @if($pt['status'] === 'selected')
-                            <div class="org-name" title="{{ implode(', ', $pt['agencies']) }}">{{ implode(', ', $pt['agencies']) }}</div>
-                        @elseif($pt['status'] === 'display')
-                            <div class="org-name" title="หน่วยงานที่ดำเนินงาน (พิมพ์เอง)">{{ $pt['agency_label'] ?: '-' }}</div>
-                        @else
-                            <span class="text-muted">&mdash;</span>
-                        @endif
-                    </td>
-                    <td class="align-middle area-name">
-                        @if(count($pt['areas'] ?? []) > 1)
-                            <span class="area-count" title="ปักพร้อมกัน - รายงานเป็นแบบประเมินเดียว"><i class="fas fa-layer-group"></i> {{ count($pt['areas']) }} พื้นที่</span>
-                            <div class="area-grid">
-                            @foreach($pt['areas'] as $ar)
-                                <div class="area-row">
-                                    <div class="area-place">{{ $ar['place_name'] ?: '-' }}</div>
-                                    @if(!empty($ar['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $ar['issue'] }}</div>@endif
-                                    @if(!empty($ar['breadcrumb']))<div class="pa-note" style="color:#64748b;font-weight:400;">{{ $ar['breadcrumb'] }}</div>@endif
-                                </div>
-                            @endforeach
-                            </div>
-                        @else
-                        <span class="area-count" title="รายงานนี้มี 1 พื้นที่"><i class="fas fa-location-dot"></i> 1 พื้นที่</span>
-                        <div class="area-grid"><div class="area-row">
-                        <div class="area-place">{{ ($pt['place_name'] ?? $pt['display_name']) ?: '-' }}</div>
-                        @if(!empty($pt['issue']))<div class="area-issue" title="หน่วยงาน / ประเด็น">หน่วยงาน / ประเด็น: {{ $pt['issue'] }}</div>@endif
-                        @if($pt['breadcrumb'])<div class="pa-note" style="color:#64748b;font-weight:400;">{{ $pt['breadcrumb'] }}</div>@endif
-                        </div></div>
-                        @endif
-                        <div class="pa-note">
-                            @if($pt['status'] === 'selected') เลือกพื้นที่แล้ว · ยังไม่มีรายงานผล
-                            @elseif($pt['status'] === 'display') หมุดแสดงผล · ดำเนินงานโดย {{ $pt['agency_label'] ?: 'หน่วยงานอื่น' }}
-                            @else ยังไม่มีผู้เลือก · ยังไม่มีข้อมูล
-                            @endif
-                        </div>
-                    </td>
-                    <td class="text-center align-middle text-muted grp-start pa-msg" colspan="14"><small>
-                        @if($pt['status'] === 'selected') ยังไม่มีข้อมูล &mdash; รอหน่วยงานที่เลือกรายงานผลการดำเนินงาน
-                        @elseif($pt['status'] === 'display') ไม่มีรายงานในระบบ &mdash; แสดงเฉพาะว่าพื้นที่นี้มีการดำเนินงาน พชอ.ไต
-                        @else ยังไม่มีข้อมูล &mdash; ยังไม่มีหน่วยงานเลือกพื้นที่นี้
-                        @endif
-                    </small></td>
-                    <td class="text-center align-middle grp-start col-actions">
-                        @if($pt['own'])
-                            <div class="row-actions">
-                                <a href="{{ route('admin.kidney-dhb', ['pin' => $pt['id'], 'fiscal_year' => $pt['fiscal_year']]) }}"
-                                    class="btn-action btn-view btn-report trigger-loader" title="รายงานผลการดำเนินงาน" aria-label="รายงานผลการดำเนินงาน">
-                                    <i class="fas fa-file-lines"></i><span>รายงานผล</span>
-                                </a>
-                            </div>
-                        @else
-                            <span class="text-muted">&mdash;</span>
-                        @endif
-                    </td>
-                </tr>
+                @include('admin.partials.kidney-pending-row', ['pt' => $pt])
             @endforeach
         </tbody>
     </table>

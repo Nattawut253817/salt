@@ -103,8 +103,8 @@ class AwarenessAssessmentController extends Controller
         // modal - real distinct years already in the data, plus any
         // admin-enabled years and minus any admin-hidden years from
         // "จัดการปีงบประมาณ" (FiscalYearController).
-        $years = FiscalYear::selectableYearsFor('awareness', SodiumSurvey::query()->distinct()->pluck('fiscal_year'));
-        $provinces = Province::orderBy('province_name')->pluck('province_name');
+        $years = FiscalYear::selectableYearsFor('awareness', \App\Support\AdminCache::distinct(\App\Models\SodiumSurvey::class, 'fiscal_year'));
+        $provinces = \App\Support\AdminCache::provinces()->pluck('province_name');
 
         return view('admin.awareness.import', compact('assessments', 'years', 'provinces', 'questionLabels'));
     }

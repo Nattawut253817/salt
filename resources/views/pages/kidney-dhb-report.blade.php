@@ -274,6 +274,10 @@
             width: 100%;
         }
 
+        /* pins map fills whatever height the row gives the card */
+        #oaPinsMap.chart-canvas { height: auto; flex: 1 1 auto; min-height: 400px; }
+        @media (max-width: 1200px) { #oaPinsMap.chart-canvas { min-height: 300px; } }
+
         /* Province comparison card (third card in .chart-row) - a compact
            2-column list: province name + one bar/percent. The panel is
            exactly as tall as the maps/chart beside it (.chart-canvas =
@@ -282,7 +286,8 @@
         .po-panel {
             display: flex;
             flex-direction: column;
-            height: 400px;
+            flex: 1 1 auto;
+            min-height: 400px;
         }
 
         .po-table {
@@ -293,9 +298,9 @@
 
         .po-table thead th {
             height: 1%;
-            padding: 0 6px 10px;
+            padding: 0 10px 10px;
             text-align: left;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 800;
             color: #1e3a5f;
             white-space: nowrap;
@@ -304,9 +309,15 @@
 
         .po-table tbody th,
         .po-table tbody td {
-            padding: 0 6px;
+            padding: 0 10px;
             border-bottom: 1px solid #eef2f6;
             vertical-align: middle;
+            transition: background .15s;
+        }
+
+        .po-table tbody tr:hover th,
+        .po-table tbody tr:hover td {
+            background: #f4fafc;
         }
 
         .po-table tbody tr:last-child th,
@@ -316,10 +327,22 @@
 
         .po-province {
             text-align: left;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: #1e3a5f;
             white-space: nowrap;
+        }
+
+        .po-province::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            margin-right: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3bb4cf, #1c8aa8);
+            box-shadow: 0 0 0 3px #e0f2f7;
+            vertical-align: 1px;
         }
 
         .po-bar-wrap {
@@ -331,9 +354,9 @@
 
         .po-bar-track {
             flex: 1 1 auto;
-            height: 10px;
+            height: 12px;
             border-radius: 999px;
-            background: #e2e8f0;
+            background: #e6eef3;
             overflow: hidden;
         }
 
@@ -358,11 +381,14 @@
         }
 
         .po-footnote {
-            padding-top: 10px;
-            font-size: 0.7rem;
+            margin-top: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #f5f9fb;
+            font-size: 0.72rem;
             font-weight: 600;
-            line-height: 1.5;
-            color: #94a3b8;
+            line-height: 1.6;
+            color: #64748b;
         }
 
         .po-th-status,
@@ -431,19 +457,22 @@
            so the legend itself carries a little of the same color
            identity the dots already do. */
         .oa-pins-legend {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px 16px;
+            flex: 1 1 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+            align-content: center;
+            gap: 10px;
             margin-top: 14px;
         }
 
         .oa-pins-legend-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 11px 4px 8px;
-            border-radius: 999px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2px;
+            padding: 10px 12px;
+            border-radius: 14px;
             border: 1px solid transparent;
             font-size: 0.8rem;
             font-weight: 600;
@@ -451,6 +480,10 @@
             color: #334155;
             line-height: 1.3;
         }
+
+        .oa-pins-legend-name { display: flex; align-items: center; gap: 6px; }
+        .oa-pins-legend-num { font-size: 1.35rem; font-weight: 800; line-height: 1.15; color: #0f172a; }
+        .oa-pins-legend-num small { margin-left: 3px; font-size: .72rem; font-weight: 600; color: #64748b; }
 
         .oa-pins-legend-dot {
             width: 9px;
@@ -471,67 +504,127 @@
            badge, progress bar and button all read as "this province",
            not one fixed blue for every popup. */
         .oa-pin-popup {
-            min-width: 196px;
-            font-size: 0.8rem;
+            min-width: 232px;
+            max-width: 280px;
+            font-size: 0.82rem;
+            line-height: 1.45;
             color: #1e293b;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .oa-pin-popup-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 8px;
+            gap: 10px;
+            padding: 0 20px 8px 0;
+            border-bottom: 1px solid #eef2f6;
         }
 
         .oa-pin-popup-province {
-            font-size: 0.86rem;
+            font-size: 1.02rem;
             font-weight: 800;
+            letter-spacing: -.1px;
             color: var(--pin-accent, #1e293b);
         }
 
         .oa-pin-popup-year {
             flex: none;
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            padding: 2px 8px;
+            padding: 2px 10px;
             border-radius: 999px;
             white-space: nowrap;
         }
 
+        /* ที่ตั้ง: อำเภอ › ตำบล › ... แยกเป็นชิปเล็ก ๆ อ่านง่ายกว่าบรรทัดยาว */
         .oa-pin-popup-breadcrumb {
-            margin-top: 3px;
-            font-size: 0.72rem;
-            color: #64748b;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px 3px;
+            margin-top: 9px;
+            font-size: 0.76rem;
+            color: #475569;
+        }
+
+        .oa-pin-popup-breadcrumb > i.fa-location-dot {
+            color: var(--pin-accent, #64748b);
+            margin-right: 2px;
+        }
+
+        .oa-pin-popup-breadcrumb .oa-bc {
+            padding: 1px 8px;
+            border-radius: 999px;
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+
+        .oa-pin-popup-breadcrumb .oa-bc-sep {
+            color: #cbd5e1;
+            font-size: 0.7rem;
         }
 
         .oa-pin-popup-label {
-            margin-top: 4px;
-            font-size: 0.74rem;
-            font-style: italic;
+            margin-top: 6px;
+            font-size: 0.76rem;
             color: #64748b;
         }
 
+        /* บล็อกบอกหน่วยงานที่ดำเนินงาน (หมุดแสดงผล) */
+        .oa-pin-popup-agency {
+            margin-top: 10px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: color-mix(in srgb, var(--pin-accent, #0369a1) 8%, #fff);
+        }
+
+        .oa-pin-popup-agency small {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--pin-accent, #0369a1);
+        }
+
+        .oa-pin-popup-agency b {
+            display: block;
+            margin-top: 1px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
         .oa-pin-popup-progress {
-            margin-top: 9px;
+            margin-top: 10px;
+            padding: 9px 10px 10px;
+            border-radius: 10px;
+            background: #f8fafc;
         }
 
         .oa-pin-popup-progress-row {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
-            font-size: 0.72rem;
+            font-size: 0.76rem;
             color: #64748b;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
         }
 
         .oa-pin-popup-progress-row strong {
-            font-size: 0.78rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: #1e293b;
         }
 
+        .oa-pin-popup-progress-row strong small {
+            margin-left: 3px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #64748b;
+        }
+
         .oa-pin-popup-progress-track {
-            height: 6px;
+            height: 8px;
             border-radius: 999px;
             background: #e2e8f0;
             overflow: hidden;
@@ -540,26 +633,38 @@
         .oa-pin-popup-progress-fill {
             height: 100%;
             border-radius: 999px;
-            background: var(--pin-accent, #0369a1);
+            background: linear-gradient(90deg, color-mix(in srgb, var(--pin-accent, #0369a1) 70%, #fff), var(--pin-accent, #0369a1));
         }
 
-        /* "Filter the table below" button inside a pin's popup. */
+        /* ปุ่ม "กรองตาราง" ในป๊อปอัป */
         .oa-pin-filter-btn {
             margin-top: 10px;
             width: 100%;
             border: none;
             background: var(--pin-accent, #0369a1);
             color: #fff;
-            font-size: 0.72rem;
+            font-family: inherit;
+            font-size: 0.78rem;
             font-weight: 700;
-            padding: 6px 10px;
-            border-radius: 7px;
+            padding: 8px 12px;
+            border-radius: 9px;
             cursor: pointer;
+            box-shadow: 0 6px 12px -6px var(--pin-accent, #0369a1);
+            transition: transform .12s ease, filter .12s ease;
         }
 
-        .oa-pin-filter-btn:hover {
-            filter: brightness(0.9);
+        .oa-pin-filter-btn i { margin-right: 5px; }
+        .oa-pin-filter-btn:hover { filter: brightness(0.92); transform: translateY(-1px); }
+
+        /* กรอบป๊อปอัปของ Leaflet: มุมมนขึ้น เงานุ่ม ปุ่มปิดชัดขึ้น */
+        #oaPinsMap .leaflet-popup-content-wrapper {
+            border-radius: 14px;
+            padding: 2px;
+            box-shadow: 0 14px 30px -10px rgba(15, 23, 42, .35);
         }
+        #oaPinsMap .leaflet-popup-content { margin: 12px 14px 12px; }
+        #oaPinsMap .leaflet-popup-close-button { top: 8px; right: 8px; font-size: 18px; color: #94a3b8; }
+        #oaPinsMap .leaflet-popup-close-button:hover { color: #1e293b; }
 
         /* Choropleth map labels (ด้านบน): province name reads as the
            primary line, the operating-area count as a smaller, slightly
@@ -570,6 +675,25 @@
            per-line size/weight hierarchy is split out here. */
         /* ป้ายจังหวัดบนแผนที่: กล่องขาวทึบ - ชื่อจังหวัดเป็นบรรทัดหลัก, จำนวนพื้นที่เป็นตัวเลขใหญ่สีเดียวกับจังหวัด
            (สีเข้มของจังหวัดนั้น จึงอ่านชัดบนทุกพื้นสี) */
+        /* แถบสัดส่วนพื้นที่ใต้แผนที่ */
+        .oa-share { margin: auto 18px 18px; padding: 6px 4px 0; }
+        .oa-sh-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .oa-sh-title { font-size: .84rem; font-weight: 800; color: #0f4c5c; }
+        .oa-sh-total { font-size: .78rem; color: #64748b; }
+        .oa-sh-total b { font-size: 1.05rem; font-weight: 800; color: #0f172a; }
+        .oa-sh-bar { display: flex; gap: 3px; height: 26px; }
+        .oa-sh-seg { display: flex; align-items: center; justify-content: center; min-width: 6px; border-radius: 7px; color: #fff; font-size: .72rem; font-weight: 800; text-shadow: 0 1px 2px rgba(15,23,42,.35); box-shadow: inset 0 -3px 0 rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.3); }
+        .oa-sh-legend { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: 1fr; gap: 6px; }
+        .oa-sh-legend li { display: grid; grid-template-columns: 12px 1fr auto 40px; align-items: baseline; gap: 8px; font-size: .82rem; color: #334155; }
+        .oa-sh-legend li i { width: 10px; height: 10px; border-radius: 50%; align-self: center; }
+        .oa-sh-legend li b { font-weight: 800; color: #0f172a; }
+        .oa-sh-legend li small { text-align: right; color: #64748b; font-size: .74rem; }
+        .oa-sh-line { display: flex; align-items: center; gap: 8px; margin-top: 11px; font-size: .86rem; color: #334155; }
+        .oa-sh-line i { color: #0a8bbe; }
+        .oa-sh-line b { font-weight: 800; color: #0f172a; }
+        .oa-sh-note { margin-top: 10px; padding-top: 8px; border-top: 1px dashed #d5e3e6; font-size: .72rem; color: #64748b; }
+        .oa-pin-icon svg { display: block; transform-origin: 50% 92%; transition: transform .16s ease; filter: drop-shadow(0 2px 2px rgba(15,23,42,.25)); }
+        .oa-pin-icon:hover svg { transform: translateY(-3px) scale(1.14); }
         #map-container .oa-map-label {
             text-align: center;
             line-height: 1.15;
@@ -1671,6 +1795,18 @@
         .am-note-list li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; padding: 8px 10px; border-radius: 8px; background: color-mix(in srgb, var(--nc) 6%, #fff); }
         .am-note-no { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .78rem; font-weight: 800; color: #fff; background: var(--nc); }
         .am-note-tx { font-size: .86rem; line-height: 1.6; color: #1e293b; }
+
+        /* ===== polish: ตารางความก้าวหน้าผลการดำเนินงาน ===== */
+        #kdProgressTable > div:nth-child(2) { background: #fff !important; padding: 14px 22px !important; gap: 16px !important; }
+        #kdProgressTable > div:nth-child(2) > div:last-child > div { padding: 3px 12px 3px 4px; border-radius: 999px; background: #f4f8f9; border: 1px solid #e3edf0; }
+        #kdProgressTable .report-table th { font-size: .8rem; line-height: 1.35; padding: 12px 10px; }
+        #kdProgressTable .report-table th.indicator-th { min-width: 118px; vertical-align: middle; border-left: 1px solid #dbe7ea; }
+        #kdProgressTable .report-table td { padding: 12px 8px; }
+        #kdProgressTable .report-table .agency-name-cell { font-size: .9rem; line-height: 1.45; padding: 12px 14px 12px 18px !important; }
+        #kdProgressTable .report-table tbody tr:nth-child(even) { background-color: #f9fcfc; }
+        #kdProgressTable .report-table tbody tr:hover { background-color: #eef7f8; }
+        #kdProgressTable .quarter-cell .status-dot { width: 32px !important; height: 32px !important; border-radius: 10px !important; box-shadow: 0 2px 6px -2px rgba(15, 118, 110, .35); }
+        #kdProgressTable .quarter-cell .status-dot.incomplete { box-shadow: none; opacity: .75; }
 </style>
 @endsection
 
@@ -1867,7 +2003,6 @@
                     </div>
                 </div>
                 <div id="oaPinsMap" class="chart-canvas"></div>
-                <div id="oaPinsLegend" class="oa-pins-legend"></div>
             </div>
 
             <!-- Map (choropleth) - the province-level rollup, now the
@@ -2034,7 +2169,7 @@
         </div>
 
         <!-- Table Section -->
-        <div class="report-table-container">
+        <div class="report-table-container" id="kdProgressTable" style="scroll-margin-top: 90px;">
             <div style="padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-tasks" style="color: #a1671e; font-size: 1.1rem;"></i>
@@ -2609,6 +2744,27 @@
             credits: { enabled: false }
         });
 
+        // แถบสัดส่วนพื้นที่ดำเนินงานรายจังหวัด (ใต้แผนที่): เติมพื้นที่ว่างด้วยภาพรวมการกระจาย
+        (function () {
+            const host = document.getElementById('map-container');
+            if (!host || oaMapTotal <= 0) return;
+            const rows = Object.keys(hcMapKeys).map(n => ({ n: n, v: mapDataRaw[n] || 0 })).filter(r => r.v > 0).sort((a, b) => b.v - a.v);
+            const colorOf = n => (oaProvinceColors[n] || oaColorForProvinceDefault).fill;
+            const displayPins = {{ count($displayOnlyPins ?? []) }};
+            const pct = v => v / oaMapTotal * 100;
+            const seg = rows.map(r => '<span class="oa-sh-seg" style="flex:' + r.v + ' 1 0;background:' + colorOf(r.n) + ';" title="' + r.n + ' ' + r.v + ' พื้นที่ (' + pct(r.v).toFixed(0) + '%)">' + (pct(r.v) >= 9 ? pct(r.v).toFixed(0) + '%' : '') + '</span>').join('');
+            const legend = rows.map(r => '<li><i style="background:' + colorOf(r.n) + ';"></i><span>' + r.n + '</span><b>' + r.v + '</b><small>' + pct(r.v).toFixed(0) + '%</small></li>').join('');
+            const box = document.createElement('div');
+            box.className = 'oa-share';
+            const top = rows[0];
+            box.innerHTML =
+                
+                '<div class="oa-sh-line"><i class="fas fa-trophy"></i><span><b>' + top.n + '</b> ดำเนินงานมากที่สุด <b>' + top.v + '</b> จาก <b>' + oaMapTotal + '</b> พื้นที่ (' + pct(top.v).toFixed(0) + '%)</span></div>';
+            host.parentNode.insertBefore(box, host.nextSibling);
+            const card = host.closest('.chart-card');
+            if (card) { card.style.display = 'flex'; card.style.flexDirection = 'column'; }
+        })();
+
         // 1b. Operating-Area Pins Map (Leaflet) - individual pin
         // locations, colored per province, shown on the card between the
         // choropleth above and the stacked bar chart below. Uses the
@@ -2621,18 +2777,29 @@
         const oaPinIconCache = {};
 
         function oaPinIcon(fill, stroke) {
-            const svg = '<svg width="30" height="40" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg">' +
-                '<ellipse cx="17" cy="41" rx="8" ry="2.6" fill="#1d4ed8" opacity="0.28"/>' +
-                '<path d="M17 2C9.8 2 4 7.8 4 15c0 10.2 13 27 13 27s13-16.8 13-27C30 7.8 24.2 2 17 2z" ' +
-                'fill="' + fill + '" stroke="' + stroke + '" stroke-width="1.5" stroke-linejoin="round"/>' +
-                '<circle cx="17" cy="15" r="5.5" fill="#fff"/>' +
+            // หมุดทรงหยดน้ำแบบมีมิติ: ไล่เฉดสี + ประกายแสงมุมซ้ายบน + วงกลางเว้าลึก + เงาตกพื้น
+            const id = 'oapin' + String(fill).replace(/[^0-9a-z]/gi, '');
+            const svg = '<svg width="32" height="42" viewBox="0 0 34 46" xmlns="http://www.w3.org/2000/svg" overflow="visible">' +
+                '<defs>' +
+                '<linearGradient id="' + id + 'b" x1="0.15" y1="0" x2="0.85" y2="1">' +
+                '<stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".28" stop-color="' + fill + '"/><stop offset="1" stop-color="' + stroke + '"/></linearGradient>' +
+                '<radialGradient id="' + id + 'c" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#e2e8f0"/></radialGradient>' +
+                '<linearGradient id="' + id + 'g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+                '<filter id="' + id + 's" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter>' +
+                '</defs>' +
+                '<ellipse cx="18.5" cy="42.5" rx="8.5" ry="2.6" fill="#0f172a" opacity=".38" filter="url(#' + id + 's)"/>' +
+                '<path d="M17 2C9.8 2 4 7.8 4 15c0 10.2 13 27 13 27s13-16.8 13-27C30 7.8 24.2 2 17 2z" fill="url(#' + id + 'b)" stroke="' + stroke + '" stroke-width="1.4" stroke-linejoin="round"/>' +
+                '<path d="M8.2 11.5C9.6 6.8 13.4 4.2 17 4.2c2.2 0 4.2.7 5.8 2C20.2 5.6 15.4 6 12.2 9.2 10.2 11.2 9.4 14 9.2 16.6 8.2 15.2 7.8 13.4 8.2 11.5z" fill="url(#' + id + 'g)"/>' +
+                '<circle cx="17" cy="15" r="6.4" fill="' + stroke + '" opacity=".35"/>' +
+                '<circle cx="17" cy="15" r="5.6" fill="url(#' + id + 'c)" stroke="#fff" stroke-width="1"/>' +
+                '<circle cx="17" cy="15" r="2.1" fill="' + fill + '"/>' +
                 '</svg>';
             return L.divIcon({
                 html: svg,
                 className: 'oa-pin-icon',
-                iconSize: [30, 40],
-                iconAnchor: [15, 38],
-                popupAnchor: [0, -34]
+                iconSize: [32, 42],
+                iconAnchor: [16, 40],
+                popupAnchor: [0, -36]
             });
         }
 
@@ -2654,8 +2821,8 @@
             const params = new URLSearchParams(window.location.search);
             params.set('province', provinceName);
             params.delete('district');
-            params.set('show_area_table', '1');
-            window.location.href = window.location.pathname + '?' + params.toString();
+            // กรองตารางอย่างเดียว ไม่เปิดป๊อปอัป แล้วเลื่อนลงไปที่ตารางความก้าวหน้า
+            window.location.href = window.location.pathname + '?' + params.toString() + '#kdProgressTable';
         }
 
         const oaPinsData = @json($operatingAreaPins);
@@ -2686,6 +2853,14 @@
             const oaPinsBounds = [];
             const oaPinsProvincesSeen = {};
 
+            // ที่ตั้ง "อำเภอ › ตำบล › ..." -> ชิปแยกคำ
+            function oaBreadcrumbHtml(text) {
+                if (!text) return '';
+                const parts = String(text).split(/\s*[›>\/]\s*/).filter(Boolean);
+                return '<div class="oa-pin-popup-breadcrumb"><i class="fas fa-location-dot"></i>' +
+                    parts.map(function (t) { return '<span class="oa-bc">' + escapeHtml(t) + '</span>'; }).join('<span class="oa-bc-sep">›</span>') + '</div>';
+            }
+
             oaPinsData.forEach(function (p) {
                 const lat = parseFloat(p.lat);
                 const lng = parseFloat(p.lng);
@@ -2712,13 +2887,13 @@
                             '<span class="oa-pin-popup-province">' + escapeHtml(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
                             (p.fiscal_year ? ('<span class="oa-pin-popup-year" style="background:' + yearBg + ';color:' + c.stroke + ';">ปีงบ ' + escapeHtml(String(p.fiscal_year)) + '</span>') : '') +
                         '</div>' +
-                        (p.breadcrumb ? ('<div class="oa-pin-popup-breadcrumb">' + escapeHtml(p.breadcrumb) + '</div>') : '') +
+                        oaBreadcrumbHtml(p.breadcrumb) +
                         (p.label ? ('<div class="oa-pin-popup-label">' + escapeHtml(p.label) + '</div>') : '') +
                         '<div class="oa-pin-popup-progress">' +
-                            '<div class="oa-pin-popup-progress-row"><span>ความก้าวหน้า</span><strong>' + progress + '/' + progressTotal + ' ข้อ</strong></div>' +
+                            '<div class="oa-pin-popup-progress-row"><span>ความก้าวหน้า</span><strong>' + progress + '/' + progressTotal + '<small>ข้อ</small></strong></div>' +
                             '<div class="oa-pin-popup-progress-track"><div class="oa-pin-popup-progress-fill" style="width:' + progressPct + '%;"></div></div>' +
                         '</div>' +
-                        '<button type="button" class="oa-pin-filter-btn"><i class="fas fa-filter"></i> กรองตารางด้านล่างเฉพาะจังหวัดนี้</button>' +
+                        '<button type="button" class="oa-pin-filter-btn"><i class="fas fa-filter"></i>กรองตารางเฉพาะจังหวัดนี้</button>' +
                     '</div>';
 
                 marker.bindPopup(popupHtml);
@@ -2749,9 +2924,9 @@
                             '<span class="oa-pin-popup-province">' + escapeHtml(p.province_name || 'พื้นที่ดำเนินงาน') + '</span>' +
                             (p.fiscal_year ? ('<span class="oa-pin-popup-year" style="background:' + yearBg + ';color:' + c.stroke + ';">ปีงบ ' + escapeHtml(String(p.fiscal_year)) + '</span>') : '') +
                         '</div>' +
-                        (p.breadcrumb ? ('<div class="oa-pin-popup-breadcrumb">' + escapeHtml(p.breadcrumb) + '</div>') : '') +
+                        oaBreadcrumbHtml(p.breadcrumb) +
                         (p.label ? ('<div class="oa-pin-popup-label">' + escapeHtml(p.label) + '</div>') : '') +
-                        '<div class="oa-pin-popup-label" style="font-style:normal;"><strong>ดำเนินงาน พชอ.ไต</strong> โดย ' + escapeHtml(p.agency_label || '-') + '</div>' +
+                        '<div class="oa-pin-popup-agency"><small>ดำเนินงาน พชอ.ไต โดย</small><b>' + escapeHtml(p.agency_label || '-') + '</b></div>' +
                     '</div>'
                 );
                 oaPinsBounds.push([lat, lng]);
@@ -2782,9 +2957,11 @@
                     // one flat gray outline reused for every province.
                     const borderColor = Highcharts.color(c.stroke).setOpacity(0.35).get('rgba');
                     const bgColor = Highcharts.color(c.fill).setOpacity(0.1).get('rgba');
+                    const cnt = (typeof mapDataRaw !== 'undefined' && mapDataRaw[name]) ? mapDataRaw[name] : 0;
                     return '<span class="oa-pins-legend-item" style="border-color:' + borderColor + ';background:' + bgColor + ';">' +
-                        '<span class="oa-pins-legend-dot" style="background:' + c.fill + '"></span>' +
-                        escapeHtml(name) +
+                        '<span class="oa-pins-legend-name"><span class="oa-pins-legend-dot" style="background:' + c.fill + '"></span>' +
+                        escapeHtml(name) + '</span>' +
+                        (cnt ? '<span class="oa-pins-legend-num">' + cnt + '<small>พื้นที่</small></span>' : '') +
                         '</span>';
                 }).join('');
             }
