@@ -544,7 +544,7 @@
 
             <div class="summary-grid">
                 <div class="summary-card total">
-                    <span class="label">จำนวนผู้เข้าร่วมทั้งหมด</span>
+                    <span class="label">ผู้ตอบแบบประเมินทั้งหมด</span>
                     <span class="value" id="summaryTotalValue">{{ number_format($total) }}</span>
                     <span class="sub">ปีงบฯ {{ $fiscalYear }}</span>
                 </div>

@@ -1661,7 +1661,7 @@
         <div class="kpi-summary-card kpi-total">
             <div class="kpi-summary-icon"><i class="fas fa-users"></i></div>
             <div class="kpi-summary-body">
-                <span class="kpi-summary-label">จำนวนผู้เข้าร่วมทั้งหมด</span>
+                <span class="kpi-summary-label">ผู้ตอบแบบประเมินทั้งหมด</span>
                 <span class="kpi-summary-value">{{ number_format($awarenessOverallTotal) }}</span>
                 <span class="kpi-summary-sub">คน · ปีงบฯ {{ $fiscalYearLabel }}</span>
             </div>
