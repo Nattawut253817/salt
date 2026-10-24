@@ -1369,7 +1369,7 @@
                     </ul>
                 </li>
                 @php
-                    $saltActive = request()->routeIs('admin.salt-assessment-list', 'admin.report-progress');
+                    $saltActive = request()->routeIs('admin.salt-assessment-list');
                 @endphp
                 <li class="nav-group">
                     <div class="nav-group-header {{ $saltActive ? 'group-active' : '' }} {{ $saltActive ? '' : 'open' }}"
@@ -1391,14 +1391,7 @@
                                 <span>รายการประเมิน</span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a href="{{ route('admin.report-progress') }}"
-                                class="nav-link {{ request()->routeIs('admin.report-progress') ? 'active' : '' }}"
-                                data-tooltip="รายงานความก้าวหน้า">
-                                <i class="fas fa-chart-bar"></i>
-                                <span>รายงานความก้าวหน้า</span>
-                            </a>
-                        </li>
+
                     </ul>
                 </li>
 
