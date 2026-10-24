@@ -388,16 +388,16 @@
            horizontal scroll needed since overflow simply wraps to a new
            line. Matches the same treatment used on kidney-dhb-report.blade.php. */
         .cr-filter-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
             margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 8px;
-            padding: 10px 12px 10px 22px;
+            padding: 4px 0 4px 0;
         }
 
         .cr-filter-title {
