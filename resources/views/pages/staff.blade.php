@@ -21,21 +21,9 @@
             align-items: center;
             padding: 24px 20px;
             min-height: 88vh;
-            background: #f6f0f3;
             --pink-gradient-btn: linear-gradient(110deg, #e11d48 0%, #be185d 55%, #db2777 100%);
             --pink-gradient: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
             --primary-color: #e11d48;
-        }
-
-        /* subtle dot-grid watermark behind the card */
-        .auth-container::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: radial-gradient(circle, rgba(225,29,72,.06) 1px, transparent 1px);
-            background-size: 28px 28px;
-            pointer-events: none;
-            z-index: 0;
         }
 
         .auth-card {
@@ -344,7 +332,7 @@
             text-align: center;
             cursor: pointer;
             font-weight: 700;
-            font-family: 'Kodchasan', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #8a6070;
             transition: all .28s cubic-bezier(.23,1,.32,1);
             border-radius: 8px;
@@ -384,7 +372,7 @@
             gap: 10px;
             margin: 16px 0 10px;
             font-weight: 800;
-            font-family: 'Kodchasan', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.78rem;
             color: var(--primary-color);
             letter-spacing: .03em;
@@ -405,7 +393,7 @@
             margin-bottom: 5px;
             margin-left: 2px;
             font-weight: 700;
-            font-family: 'Kodchasan', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #1e1b2e;
             font-size: 0.83rem;
         }
@@ -447,7 +435,7 @@
             border-radius: 14px;
             border: 1.5px solid #ede4ea;
             background: #fdf9fb;
-            font-family: 'Trirong', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.83rem;
             color: #1e293b;
             box-sizing: border-box;
@@ -500,7 +488,7 @@
             align-items: center;
             gap: 8px;
             font-size: 0.87rem;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #475569;
             font-weight: 600;
             cursor: pointer;
@@ -513,7 +501,7 @@
         .forgot-link {
             color: var(--primary-color);
             font-size: 0.87rem;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 700;
             text-decoration: none;
             opacity: .85;
@@ -534,7 +522,7 @@
             color: #fff;
             font-weight: 800;
             font-size: 0.9rem;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -638,7 +626,7 @@
             font-weight: 700;
             font-size: 0.85rem;
             cursor: pointer;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -657,7 +645,7 @@
             margin-top: 28px;
             text-align: center;
             color: #64748b;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.87rem;
         }
         .form-footer a {
@@ -917,7 +905,7 @@
             box-shadow: 0 6px 16px rgba(225,29,72,.3);
         }
         .pdpa-title {
-            font-family: 'Kodchasan','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 800;
             font-size: 1.05rem;
             line-height: 1.35;
@@ -934,7 +922,7 @@
         .pdpa-body {
             padding: 20px 24px;
             overflow-y: auto;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #334155;
             font-size: 0.84rem;
             line-height: 1.72;
@@ -960,7 +948,7 @@
         .pdpa-section:last-child { margin-bottom: 0; }
         .pdpa-section-title {
             display: flex; align-items: center; gap: 8px;
-            font-family: 'Kodchasan','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 800; font-size: 0.84rem;
             color: #1e293b; margin-bottom: 6px;
         }
@@ -979,7 +967,7 @@
             padding: 12px;
             border-radius: 12px;
             border: 1.5px solid transparent;
-            font-family: 'Trirong','Sarabun',sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 800;
             font-size: 0.84rem;
             cursor: pointer;
