@@ -155,23 +155,22 @@
         }
 
         /* ═══════════════════════════════════════════════════════════
-           Header: Single-row layout
-           .header-brand-bar — pink gradient: logo+name LEFT | nav CENTER | CTA RIGHT
+           Header: Two-row layout
+           Row 1 (.header-brand-bar) — green-mint gradient: logo + title + divider + CTA
+           Row 2 (.header-nav-bar)   — lighter mint strip: icon-left tab nav
            ═══════════════════════════════════════════════════════════ */
 
         /* ── Palette tokens ── */
         :root {
-            --pk-1: #f9a8d4;   /* pink light */
-            --pk-2: #f472b6;   /* pink mid */
-            --pk-3: #ec4899;   /* pink deep */
-            --pk-4: #fce7f3;   /* pink very light */
-            --pk-5: #fbcfe8;   /* pink soft */
-            --pk-text: #831843; /* dark pink text */
-            --pk-text-light: #be185d;
-            --pk-white: rgba(255,255,255,0.92);
-            --pk-white-dim: rgba(255,255,255,0.65);
-            --pk-active-bg: rgba(255,255,255,0.88);
-            --pk-divider: rgba(190,24,93,0.18);
+            --mint-1: #a8e6c3;   /* deepest — logo ring */
+            --mint-2: #b8f0cc;   /* brand bar left */
+            --mint-3: #ccf0a8;   /* brand bar mid */
+            --mint-4: #dff5b0;   /* brand bar right */
+            --mint-5: #e8f8c8;   /* nav bar */
+            --green-deep: #1a4d32;
+            --green-mid:  #2d6a4f;
+            --green-text: #236040;
+            --divider-c:  rgba(45,106,79,0.22);
         }
 
         .site-header {
@@ -179,23 +178,27 @@
             top: 0;
             z-index: 11500;
             width: 100%;
-            box-shadow: 0 3px 14px rgba(236,72,153,0.18);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.10);
         }
 
-        /* ── Single row: brand + nav + CTA ── */
+        /* ── Row 1: Brand bar ── */
         .header-brand-bar {
             display: flex;
             align-items: center;
-            width: 100%;
-            min-height: 60px;
-            padding: 0 2%;
-            background: linear-gradient(120deg, #f9a8d4 0%, #f472b6 45%, #ec4899 100%);
+            justify-content: space-between;
             gap: 0;
+            width: 100%;
+            min-height: 64px;
+            padding: 0 3%;
+            background: linear-gradient(120deg, var(--mint-2) 0%, var(--mint-3) 55%, var(--mint-4) 100%);
         }
 
-        /* hide the old nav-bar row */
+        /* ── Row 2: Nav strip — slightly lighter ── */
         .header-nav-bar {
-            display: none;
+            width: 100%;
+            background: linear-gradient(120deg, var(--mint-3) 0%, var(--mint-5) 100%);
+            border-top: 1px solid rgba(45,106,79,0.08);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
         }
 
         /* ── Brand left cluster ── */
@@ -216,17 +219,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.12), 0 0 0 3px rgba(255,255,255,0.5);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.10), 0 0 0 3px var(--mint-1);
             border: none;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             flex-shrink: 0;
         }
 
         .brand-logo-wrapper:hover {
             transform: translateY(-1px) rotate(4deg);
-            box-shadow: 0 6px 18px rgba(0,0,0,0.14), 0 0 0 3px rgba(255,255,255,0.7);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.14), 0 0 0 3px var(--mint-1);
         }
 
         .brand-container img {
@@ -235,7 +238,7 @@
         }
 
         .brand-logo-wrapper--sss img {
-            height: 28px;
+            height: 30px;
             width: auto;
         }
 
@@ -250,37 +253,40 @@
 
         .brand-text-main {
             font-family: 'Sarabun', 'Itim', sans-serif;
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--green-deep);
             letter-spacing: 0.1px;
             white-space: nowrap;
             line-height: 1.25;
-            text-shadow: 0 1px 3px rgba(131,24,67,0.25);
         }
 
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.58rem;
-            color: rgba(255,255,255,0.80);
+            font-size: 0.60rem;
+            color: var(--green-mid);
             font-weight: 500;
             letter-spacing: 0.8px;
             text-transform: uppercase;
+            opacity: 0.85;
         }
 
-        /* ── remove old pseudo-element divider ── */
+        /* ── Smooth gradient divider between text and CTA ── */
         .header-brand-bar::after {
-            display: none;
-        }
-
-        /* ── Nav centered in single row ── */
-        .header-nav-inline {
+            content: '';
+            display: block;
             flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 0;
-            padding: 0 8px;
+            height: 1px;
+            /* fade in from transparent, hold green, fade back out */
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                var(--divider-c) 20%,
+                var(--divider-c) 80%,
+                transparent 100%
+            );
+            margin: 0 24px;
+            align-self: center;
         }
 
         /* ── Staff CTA ── */
@@ -288,33 +294,33 @@
             display: flex;
             align-items: center;
             flex-shrink: 0;
+            padding: 10px 0;
         }
 
         .header-cta {
             display: flex;
             align-items: center;
             gap: 7px;
-            height: 34px;
-            padding: 0 14px 0 8px;
+            height: 36px;
+            padding: 0 16px 0 8px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.88);
-            border: 1.5px solid rgba(255,255,255,0.6);
-            color: var(--pk-text);
+            background: rgba(255,255,255,0.70);
+            border: 1.5px solid rgba(45,106,79,0.25);
+            color: var(--green-deep);
             text-decoration: none;
             font-family: 'Sarabun', 'Itim', sans-serif;
-            font-weight: 700;
-            font-size: 0.80rem;
+            font-weight: 600;
+            font-size: 0.82rem;
             white-space: nowrap;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+            box-shadow: 0 1px 6px rgba(0,0,0,0.08);
             transition: background 0.16s ease, box-shadow 0.16s ease, transform 0.14s ease;
             backdrop-filter: blur(4px);
         }
 
         .header-cta:hover {
-            background: rgba(255,255,255,1);
-            box-shadow: 0 3px 12px rgba(0,0,0,0.14);
+            background: rgba(255,255,255,0.92);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
             transform: translateY(-1px);
-            color: var(--pk-text);
         }
 
         .header-cta-icon {
@@ -322,15 +328,15 @@
             height: 22px;
             min-width: 22px;
             border-radius: 50%;
-            background: rgba(131,24,67,0.10);
-            color: var(--pk-text);
+            background: rgba(26,77,50,0.12);
+            color: var(--green-deep);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 0.68rem;
         }
 
-        /* ── Tab nav inline (single row) ── */
+        /* ── Tab nav (Row 2) — icon-left, centered ── */
         .main-navbar {
             display: flex;
             align-items: center;
@@ -344,28 +350,18 @@
             justify-content: center;
             list-style: none;
             margin: 0;
-            padding: 0 6px;
-            gap: 0;
+            padding: 6px 12px;
+            gap: 2px;
             overflow-x: auto;
             scrollbar-width: none;
         }
 
         .main-navbar .nav-links::-webkit-scrollbar { display: none; }
 
-        /* Divider between nav items */
         .main-navbar .nav-item {
             flex-shrink: 0;
             display: flex;
             align-items: center;
-        }
-
-        .main-navbar .nav-item + .nav-item::before {
-            content: '';
-            display: block;
-            width: 1px;
-            height: 20px;
-            background: rgba(255,255,255,0.35);
-            flex-shrink: 0;
         }
 
         .main-navbar .nav-link {
@@ -374,41 +370,41 @@
             align-items: center;
             gap: 6px;
             height: 36px;
-            padding: 0 14px;
-            border-radius: 999px;
-            border: 1.5px solid transparent;
-            color: #ffffff;
+            padding: 0 13px;
+            border-radius: 8px;
+            color: var(--green-text);
             text-decoration: none;
-            font-family: 'Sarabun', sans-serif;
-            font-weight: 600;
-            font-size: 0.84rem;
+            font-family: 'Sarabun', 'Itim', sans-serif;
+            font-weight: 500;
+            font-size: 0.82rem;
             white-space: nowrap;
-            transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
+            transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
         }
 
         .main-navbar .nav-link i {
-            font-size: 0.84rem;
+            font-size: 0.88rem;
+            opacity: 0.80;
             flex-shrink: 0;
+            transition: opacity 0.14s ease;
         }
 
         .main-navbar .nav-link:hover {
-            background: rgba(255,255,255,0.18);
-            color: #fff;
+            background: rgba(255,255,255,0.60);
+            color: var(--green-deep);
         }
 
         .main-navbar .nav-link:hover i { opacity: 1; }
 
-        /* Active: white bg + pink border + deep-pink text */
+        /* Active: clean white pill */
         .main-navbar .nav-link.active {
-            color: #be185d;
-            background: #ffffff;
-            border-color: #f472b6;
+            color: var(--green-deep);
+            background: rgba(255,255,255,0.88);
             font-weight: 700;
-            box-shadow: 0 2px 8px rgba(131,24,67,0.15);
+            box-shadow: 0 1px 5px rgba(0,0,0,0.09);
         }
 
         .main-navbar .nav-link.active i {
-            color: #ec4899;
+            opacity: 1;
         }
 
         .user-profile {
@@ -1226,10 +1222,8 @@
     <div class="overlay" id="sidebar-overlay"></div>
 
     <header class="site-header">
-        {{-- Single row: logo+name LEFT | nav CENTER | CTA RIGHT --}}
+        {{-- Row 1: Brand bar (pink gradient) --}}
         <div class="header-brand-bar">
-
-            {{-- LEFT: brand cluster --}}
             <div class="brand-container">
                 <div class="brand-logo-wrapper brand-logo-wrapper--sss" title="Smart Salt &amp; Sodium Monitor">
                     <img src="{{ asset('images/logo-sss-icon.png') }}" alt="SSS Logo">
@@ -1239,79 +1233,76 @@
                     <span class="brand-text-sub">Smart Salt &amp; Sodium Monitor</span>
                 </div>
             </div>
-
-            {{-- CENTER: nav tabs --}}
-            <div class="header-nav-inline">
-                <nav class="main-navbar">
-                    <ul class="nav-links">
-                        <li class="nav-item">
-                            <a href="{{ route('home') }}" title="หน้าหลัก"
-                                class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
-                                <i class="fas fa-chart-line"></i>
-                                <span>หน้าหลัก</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('awareness') }}" title="ความตระหนักรู้"
-                                class="nav-link {{ request()->routeIs('awareness') ? 'active' : '' }}">
-                                <i class="fas fa-brain"></i>
-                                <span>ความตระหนักรู้</span>
-                            </a>
-                        </li>
-                        {{-- <li class="nav-item">
-                            <a href="{{ route('food-survey') }}"
-                                class="nav-link {{ request()->routeIs('food-survey') ? 'active' : '' }}">
-                                <i class="fas fa-utensils"></i>
-                                <span>สำรวจอาหาร</span>
-                            </a>
-                        </li> --}}
-                        <li class="nav-item">
-                            <a href="{{ route('reduced-sodium-menu') }}" title="เมนูลดโซเดียม"
-                                class="nav-link {{ request()->routeIs('reduced-sodium-menu') ? 'active' : '' }}">
-                                <i class="fas fa-bowl-food"></i>
-                                <span>เมนูลดโซเดียม</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('reduced-sodium-products') }}" title="ผลิตภัณฑ์ลดโซเดียม"
-                                class="nav-link {{ request()->routeIs('reduced-sodium-products') ? 'active' : '' }}">
-                                <i class="fas fa-bottle-droplet"></i>
-                                <span>ผลิตภัณฑ์ลดโซเดียม</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('new-ht-cases') }}" title="ผู้ป่วยใหม่ HT"
-                                class="nav-link {{ request()->routeIs('new-ht-cases') ? 'active' : '' }}">
-                                <i class="fas fa-heart-pulse"></i>
-                                <span>ผู้ป่วยใหม่ HT</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('kidney-dhb-report') }}" title="พชอ.ไต"
-                                class="nav-link {{ request()->routeIs('kidney-dhb-report') ? 'active' : '' }}">
-                                <i class="fas fa-hospital-user"></i>
-                                <span>พชอ.ไต</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{{ route('consumption-report') }}" title="แบบรายงานบริโภคเกลือ"
-                                class="nav-link {{ request()->routeIs('consumption-report') ? 'active' : '' }}">
-                                <i class="fas fa-file-contract"></i>
-                                <span>แบบรายงานบริโภคเกลือ</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-
-            {{-- RIGHT: staff CTA --}}
             <div class="header-actions">
                 <a href="{{ route('staff') }}" class="header-cta">
                     <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
                     <span>สำหรับเจ้าหน้าที่</span>
                 </a>
             </div>
+        </div>
 
+        {{-- Row 2: Nav tab strip (white card style) --}}
+        <div class="header-nav-bar">
+            <nav class="main-navbar">
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="{{ route('home') }}" title="หน้าหลัก"
+                            class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('awareness') }}" title="ความตระหนักรู้"
+                            class="nav-link {{ request()->routeIs('awareness') ? 'active' : '' }}">
+                            <i class="fas fa-brain"></i>
+                            <span>ความตระหนักรู้</span>
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a href="{{ route('food-survey') }}"
+                            class="nav-link {{ request()->routeIs('food-survey') ? 'active' : '' }}">
+                            <i class="fas fa-utensils"></i>
+                            <span>สำรวจอาหาร</span>
+                        </a>
+                    </li> --}}
+                    <li class="nav-item">
+                        <a href="{{ route('reduced-sodium-menu') }}" title="เมนูลดโซเดียม"
+                            class="nav-link {{ request()->routeIs('reduced-sodium-menu') ? 'active' : '' }}">
+                            <i class="fas fa-bowl-food"></i>
+                            <span>เมนูลดโซเดียม</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('reduced-sodium-products') }}" title="ผลิตภัณฑ์ลดโซเดียม"
+                            class="nav-link {{ request()->routeIs('reduced-sodium-products') ? 'active' : '' }}">
+                            <i class="fas fa-bottle-droplet"></i>
+                            <span>ผลิตภัณฑ์ลดโซเดียม</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('new-ht-cases') }}" title="ผู้ป่วยใหม่ HT"
+                            class="nav-link {{ request()->routeIs('new-ht-cases') ? 'active' : '' }}">
+                            <i class="fas fa-heart-pulse"></i>
+                            <span>ผู้ป่วยใหม่ HT</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kidney-dhb-report') }}" title="พชอ.ไต"
+                            class="nav-link {{ request()->routeIs('kidney-dhb-report') ? 'active' : '' }}">
+                            <i class="fas fa-hospital-user"></i>
+                            <span>พชอ.ไต</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('consumption-report') }}" title="แบบรายงานบริโภคเกลือ"
+                            class="nav-link {{ request()->routeIs('consumption-report') ? 'active' : '' }}">
+                            <i class="fas fa-file-contract"></i>
+                            <span>แบบรายงานบริโภคเกลือ</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </header>
 
