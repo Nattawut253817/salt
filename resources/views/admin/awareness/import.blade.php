@@ -1203,6 +1203,7 @@
 
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', form.action, true);
+                xhr.timeout = 30 * 60 * 1000; // 30 นาที — ไฟล์ใหญ่อาจใช้เวลานาน
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
                 xhr.upload.addEventListener('progress', function(evt) {
@@ -1271,6 +1272,20 @@
                         text: 'ไม่สามารถอัปโหลดไฟล์ได้ กรุณาลองใหม่อีกครั้ง',
                         confirmButtonColor: '#ef4444'
                     });
+                };
+
+                xhr.ontimeout = function() {
+                    setUploadIndeterminate(false);
+                    hideLoadingOverlay();
+                    // หมดเวลา 30 นาที — ข้อมูลอาจถูกบันทึกสำเร็จแล้ว ให้ผู้ใช้รีโหลดตรวจสอบ
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'ใช้เวลานานเกินคาด',
+                        html: '<div style="font-size:1rem;">การบันทึกข้อมูลใช้เวลานานเกิน 30 นาที<br>' +
+                              'ข้อมูลอาจถูกบันทึกสำเร็จแล้ว กรุณารีโหลดหน้าเพื่อตรวจสอบ</div>',
+                        confirmButtonText: 'รีโหลดหน้า',
+                        confirmButtonColor: '#f59e0b',
+                    }).then(() => { window.location.reload(); });
                 };
 
                 xhr.send(formData);

@@ -1900,6 +1900,9 @@
                     <div class="awr-kpi-text">
                         <div class="awr-kpi-value">{{ $kpiPassRate !== null ? $kpiPassRate . '%' : '-' }}</div>
                         <div class="awr-kpi-label">อัตราผ่านเกณฑ์ความตระหนักรู้{{ $hasPendingCriteria ? ' *' : '' }}</div>
+                        @if (!empty($effectiveFiscalYear) && \App\Services\AwarenessPassResolver::methodFor($effectiveFiscalYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE)
+                            <div style="font-size:11px;color:#64748b;margin-top:2px;">คะแนนรวม &ge; 19.2/32 (ร้อยละ 60)</div>
+                        @endif
                     </div>
                 </div>
                 <div class="awr-kpi-item" style="--kpi-accent:#f59e0b;">
@@ -1950,7 +1953,10 @@
                     @endif
                 </div>
                 <div class="chart-figure-footer">
-                    <p class="chart-caption">เกณฑ์ผ่าน: ร้อยละความตระหนักรู้ตั้งแต่ 80% ขึ้นไป</p>
+                    <p class="chart-caption">เกณฑ์ผ่านระดับจังหวัด: ร้อยละความตระหนักรู้ตั้งแต่ 80% ขึ้นไป</p>
+                    @if (!empty($effectiveFiscalYear) && \App\Services\AwarenessPassResolver::methodFor($effectiveFiscalYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE)
+                        <p class="chart-caption" style="margin-top:2px;">เกณฑ์ผ่านรายบุคคล: คะแนนรวม &ge; 19.2 / 32 (ร้อยละ 60)</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -3778,6 +3784,10 @@
                 const targetKeys = Object.values(hcMapKeys);
                 const regionMap = { ...thMap, features: thMap.features.filter(f => targetKeys.includes(f.properties['hc-key'])) };
 
+                // threshold สีแผนที่: METHOD_SCORE ใช้ 60%, อื่น ๆ ใช้ 80%
+                const awPassThreshold = {{ !empty($effectiveFiscalYear) && \App\Services\AwarenessPassResolver::methodFor($effectiveFiscalYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE ? 60 : 80 }};
+                const awPassLabel = awPassThreshold === 60 ? '60%' : '80%';
+
                 Highcharts.mapChart('awarenessMap', {
                     chart: { map: regionMap, backgroundColor: 'transparent', spacing: [4, 4, 4, 4] },
                     title: { text: '' },
@@ -3785,8 +3795,8 @@
                     mapNavigation: { enabled: false },
                     colorAxis: {
                         dataClasses: [
-                            { to: 79.99, color: '#eb7a72', name: 'ไม่ผ่านเกณฑ์ ( < 80% )' },
-                            { from: 80, color: '#4dbd98', name: 'ผ่านเกณฑ์ ( ≥ 80% )' }
+                            { to: awPassThreshold - 0.01, color: '#eb7a72', name: 'ไม่ผ่านเกณฑ์ ( < ' + awPassLabel + ' )' },
+                            { from: awPassThreshold, color: '#4dbd98', name: 'ผ่านเกณฑ์ ( ≥ ' + awPassLabel + ' )' }
                         ]
                     },
                     legend: {
@@ -3797,7 +3807,7 @@
                         useHTML: true, outside: true, padding: 0, borderWidth: 0, shadow: true,
                         backgroundColor: 'rgba(255, 255, 255, 0.98)', headerFormat: '',
                         pointFormatter: function () {
-                            const ok = this.value >= 80;
+                            const ok = this.value >= awPassThreshold;
                             const color = ok ? '#10b981' : '#ef4444';
                             const row = (label, val, strong) =>
                                 '<tr><td style="color:#64748b; padding:4px 0;">' + label + '</td>' +
@@ -3810,7 +3820,7 @@
                                 row('ร้อยละความตระหนักรู้:', this.value.toLocaleString() + '%', true) +
                                 '</table>' +
                                 '<div style="margin-top:12px; padding:8px; border-radius:6px; text-align:center; background:' + (ok ? '#f0fdf4' : '#fef2f2') + '; border:1px solid ' + color + '20;">' +
-                                '<span style="color:' + color + '; font-weight:800; font-size:12px;">สถานะ: ' + (ok ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์') + ' (เป้าหมาย 80%)</span></div></div>';
+                                '<span style="color:' + color + '; font-weight:800; font-size:12px;">สถานะ: ' + (ok ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์') + ' (เป้าหมาย ' + awPassLabel + ')</span></div></div>';
                         }
                     },
                     plotOptions: {
@@ -3820,7 +3830,7 @@
                             dataLabels: {
                                 enabled: true, useHTML: true, allowOverlap: true, crop: false, overflow: 'allow',
                                 formatter: function () {
-                                    const pctColor = (this.point.value || 0) >= 80 ? '#047857' : '#b91c1c';
+                                    const pctColor = (this.point.value || 0) >= awPassThreshold ? '#047857' : '#b91c1c';
                                     return '<div style="text-align:center; line-height:1.15; font-family:\'Sarabun\', sans-serif; pointer-events:none; ' +
                                         'background:rgba(255,255,255,0.93); border-radius:9px; padding:1px 6px 2px; box-shadow:0 1px 4px rgba(15,23,42,0.25); white-space:nowrap;">' +
                                         '<div style="font-weight:700; font-size:11px; color:#1e293b;">' + this.point.name + '</div>' +

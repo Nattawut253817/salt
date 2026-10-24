@@ -169,21 +169,7 @@
             box-shadow: var(--header-shadow);
         }
 
-        /* Gradient bridge: a translucent pink-to-transparent strip that
-           sits just below the navbar, creating a visual flow from the
-           crimson header into the page content without a hard seam. */
-        .site-header::after {
-            content: '';
-            display: block;
-            width: 100%;
-            height: 18px;
-            background: linear-gradient(
-                to bottom,
-                rgba(216, 30, 74, 0.11) 0%,
-                rgba(216, 30, 74, 0) 100%
-            );
-            pointer-events: none;
-        }
+        /* Gradient bridge removed — no strip below the header. */
 
         .header-container {
             display: flex;

@@ -105,7 +105,9 @@ class SodiumSurveyImport implements ToCollection, WithChunkReading, WithCustomCs
     protected int $updatedCount = 0;
 
     // จำนวนแถวที่บันทึกต่อ 1 รอบ (INSERT หลายแถวใน 1 คำสั่ง)
-    const BATCH_SIZE = 1000; // 1,000 แถว x ~22 คอลัมน์ ยังต่ำกว่าเพดาน 65,535 พารามิเตอร์ของ MySQL
+    // ลดจาก 1000 → 100 เพราะแต่ละแถวมี JSON ขนาดใหญ่ใน survey_data
+    // packet 1000 แถว × ~2KB/แถว ≈ 2MB เกิน max_allowed_packet ของ MySQL (default 4MB)
+    const BATCH_SIZE = 100;
 
     /** @var array<string, int> คีย์แถวซ้ำ => id ของแถวที่มีอยู่แล้วในฐานข้อมูล (แถวแรกสุดของคีย์นั้น) - โหลดครั้งเดียวตอนเริ่มนำเข้า */
     protected array $knownRowIds = [];
@@ -593,7 +595,21 @@ class SodiumSurveyImport implements ToCollection, WithChunkReading, WithCustomCs
             'updated_at' => $now,
         ]), $rows);
 
-        DB::table((new SodiumSurvey)->getTable())->insert($records);
+        // Reconnect อัตโนมัติถ้า connection ตายระหว่างการอ่านไฟล์ (MySQL 2006 gone away)
+        // ไม่ใช้ transaction ระดับนี้ — controller ไม่ได้ครอบ transaction ไว้แล้ว
+        // เพื่อหลีกเลี่ยง rollBack() บน connection ที่ตายซึ่งจะ throw อีก error
+        try {
+            DB::table((new SodiumSurvey)->getTable())->insert($records);
+        } catch (\Illuminate\Database\QueryException $e) {
+            $msg = $e->getMessage();
+            if (str_contains($msg, '2006') || str_contains($msg, 'gone away') || str_contains($msg, 'Lost connection')) {
+                \Log::warning('MySQL gone away during import — reconnecting and retrying batch insert');
+                DB::reconnect();
+                DB::table((new SodiumSurvey)->getTable())->insert($records);
+            } else {
+                throw $e;
+            }
+        }
     }
 
     /** โหลดคีย์ของแถวที่มีอยู่แล้วในปีงบนี้ (เฉพาะคอลัมน์ที่ใช้เทียบ) - ทำครั้งเดียวต่อการนำเข้า */

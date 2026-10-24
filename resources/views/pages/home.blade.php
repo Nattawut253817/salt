@@ -1691,7 +1691,7 @@
                     @if ($awarenessMethod === 'mixed')
                         ตามเกณฑ์ของแต่ละปีงบฯ
                     @elseif ($awarenessMethod === \App\Models\AwarenessPassSetting::METHOD_SCORE)
-                        เกณฑ์ผ่าน &ge; 19.2 / 32 คะแนน
+                        เกณฑ์ผ่าน &ge; 19.2 / 32 คะแนน (ร้อยละ 60)
                     @else
                         ผ่านเกณฑ์ข้อ 1 และข้อ 2
                     @endif
@@ -1745,6 +1745,11 @@
                         </div>
                     @endif
                 </div>
+                @if ($awarenessMethod === \App\Models\AwarenessPassSetting::METHOD_SCORE)
+                    <p style="font-size:11px;color:#64748b;margin:6px 0 0;text-align:center;">
+                        เกณฑ์รายบุคคล: คะแนนรวม &ge; 19.2 / 32 (ร้อยละ 60)
+                    </p>
+                @endif
             </div>
         </div>
 
@@ -2993,6 +2998,10 @@
                     features: filteredFeatures
                 };
 
+                // เกณฑ์ผ่านของแผนที่ (ระดับจังหวัด): METHOD_SCORE ใช้ 60%, อื่น ๆ ใช้ 80%
+                const awMapPassThreshold = {{ $awarenessMethod === \App\Models\AwarenessPassSetting::METHOD_SCORE ? 60 : 80 }};
+                const awMapPassLabel = awMapPassThreshold === 60 ? '60%' : '80%';
+
                 if (document.getElementById('map-container')) {
                     const awMapChart = Highcharts.mapChart('map-container', {
                         chart: {
@@ -3013,9 +3022,9 @@
                             padding: 0,
                             headerFormat: '',
                             pointFormatter: function() {
-                                const status = this.value >= 80 ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์';
-                                const statusColor = this.value >= 80 ? '#10b981' : '#ef4444';
-                                const badgeBg = this.value >= 80 ? '#f0fdf4' : '#fef2f2';
+                                const status = this.value >= awMapPassThreshold ? 'ผ่านเกณฑ์' : 'ไม่ผ่านเกณฑ์';
+                                const statusColor = this.value >= awMapPassThreshold ? '#10b981' : '#ef4444';
+                                const badgeBg = this.value >= awMapPassThreshold ? '#f0fdf4' : '#fef2f2';
 
                                 return '<div style="padding: 15px; min-width: 220px; font-family: \'Sarabun\', sans-serif;">' +
                                     '<div style="font-size: 16px; font-weight: 800; color: #1e293b; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">' +
@@ -3056,13 +3065,13 @@
                         },
                         colorAxis: {
                             dataClasses: [{
-                                to: 79.99,
-                                color: '#eb7a72', // Reference image Red
-                                name: 'ไม่ผ่านเกณฑ์ ( < 80% )'
+                                to: awMapPassThreshold - 0.01,
+                                color: '#eb7a72', // Red
+                                name: 'ไม่ผ่านเกณฑ์ ( < ' + awMapPassLabel + ' )'
                             }, {
-                                from: 80,
-                                color: '#4dbd98', // Reference image Green
-                                name: 'ผ่านเกณฑ์ ( ≥ 80% )'
+                                from: awMapPassThreshold,
+                                color: '#4dbd98', // Green
+                                name: 'ผ่านเกณฑ์ ( ≥ ' + awMapPassLabel + ' )'
                             }]
                         },
                         legend: {
@@ -3097,7 +3106,7 @@
                                     crop: false,
                                     overflow: 'allow',
                                     formatter: function() {
-                                        const ok = (this.point.value || 0) >= 80;
+                                        const ok = (this.point.value || 0) >= awMapPassThreshold;
                                         const pctColor = ok ? '#047857' : '#b91c1c';
                                         return '<div style="text-align:center; line-height:1.15; font-family: \'Sarabun\', sans-serif; pointer-events:none; ' +
                                             'background: rgba(255,255,255,0.93); border-radius: 9px; padding: 1px 6px 2px; ' +
@@ -3164,11 +3173,13 @@
                             label: 'จำนวนผลิตภัณฑ์',
                             data: productCountData.map(d => d.count),
                             backgroundColor: (context) => {
-                                const c = provinceColorMap[productCountData[context.dataIndex].province] || '#2563eb';
+                                const row = productCountData[context.dataIndex];
+                                const c = row ? (provinceColorMap[row.province] || '#2563eb') : '#2563eb';
                                 return makeBarGradient(context, lightenHex(c, 0.5), c);
                             },
                             hoverBackgroundColor: (context) => {
-                                const c = provinceColorMap[productCountData[context.dataIndex].province] || '#2563eb';
+                                const row = productCountData[context.dataIndex];
+                                const c = row ? (provinceColorMap[row.province] || '#2563eb') : '#2563eb';
                                 return makeBarGradient(context, lightenHex(c, 0.65), darkenHex(c, 0.1));
                             },
                             borderRadius: 10,

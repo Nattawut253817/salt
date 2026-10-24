@@ -61,6 +61,11 @@ return [
             'engine' => null,
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                // ป้องกัน "MySQL server has gone away" ระหว่างนำเข้าไฟล์ใหญ่
+                // หมายเหตุ: max_allowed_packet ตั้งผ่าน SESSION ไม่ได้ (read-only) ต้องใช้ SET GLOBAL
+                // แก้ที่ BATCH_SIZE=100 แทน เพื่อลดขนาด packet ต่อ INSERT
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET SESSION wait_timeout=28800, interactive_timeout=28800",
+                PDO::MYSQL_ATTR_COMPRESS => true,
             ]) : [],
         ],
 

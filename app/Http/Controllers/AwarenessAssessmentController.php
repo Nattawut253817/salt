@@ -199,7 +199,11 @@ class AwarenessAssessmentController extends Controller
         // internal redirect the browser never actually shows.
         $wantsJson = $request->ajax() || $request->wantsJson();
 
-        \Illuminate\Support\Facades\DB::beginTransaction();
+        // Reconnect ก่อนเริ่ม — ป้องกันกรณี connection เก่าหมดอายุระหว่าง request ก่อนหน้า
+        \Illuminate\Support\Facades\DB::reconnect();
+
+        // ไม่ใช้ transaction ระดับ controller — importer insert ทีละ batch อยู่แล้ว
+        // transaction ครอบทั้งไฟล์ทำให้ reconnect() ระหว่างทางทำให้ commit() ล้มเหลว (error 2006)
         try {
             $import = new SodiumSurveyImport($request->fiscal_year, $request->duplicate_action);
 
@@ -211,7 +215,6 @@ class AwarenessAssessmentController extends Controller
                 Excel::import($import, $uploaded);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
 
             Cache::forget("scoring_distinct_answers:{$request->fiscal_year}");
 
@@ -230,7 +233,7 @@ class AwarenessAssessmentController extends Controller
             return redirect()->back()->with('import_result', $result);
 
         } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            // ไม่มี transaction ระดับ controller แล้ว — ไม่ต้อง rollBack()
             $failures = $e->failures();
             foreach ($failures as $failure) {
                 Log::warning("Import Validation Failure - Row {$failure->row()}: " . implode(', ', $failure->errors()));
@@ -240,7 +243,7 @@ class AwarenessAssessmentController extends Controller
             }
             return redirect()->back()->with('error', 'ไม่สามารถบันทึกข้อมูลได้');
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            // ไม่มี transaction ระดับ controller แล้ว — ไม่ต้อง rollBack()
             Log::error('Sodium Survey Import Error: ' . $e->getMessage());
             if ($wantsJson) {
                 return response()->json(['success' => false, 'message' => 'ไม่สามารถบันทึกข้อมูลได้: ' . $e->getMessage()], 500);
