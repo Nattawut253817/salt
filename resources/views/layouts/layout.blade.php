@@ -154,30 +154,38 @@
             background-attachment: fixed !important;
         }
 
-        /* ══════════════════════════════════════════════════════════════
-           Header — Two-row layout
-           Row 1 (.header-brand-row): pink gradient — logo + name + CTA
-           Row 2 (.header-nav-row):  darker pink strip — page nav tabs
-           ══════════════════════════════════════════════════════════════ */
+        /* ═══════════════════════════════════════════════════════════
+           Header: Two-row layout
+           Row 1 (.header-brand-bar) — pink gradient: logo + title + CTA
+           Row 2 (.header-nav-bar)   — white card strip: tab-style nav
+           ═══════════════════════════════════════════════════════════ */
         .site-header {
             position: sticky;
             top: 0;
             z-index: 11500;
             width: 100%;
-            box-shadow: 0 4px 18px -4px rgba(180, 10, 50, 0.28);
+            box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0,0,0,0.06);
         }
 
         /* ── Row 1: Brand bar ── */
-        .header-container {
+        .header-brand-bar {
             display: flex;
             align-items: center;
-            gap: 18px;
+            justify-content: space-between;
+            gap: 16px;
             width: 100%;
-            min-height: 60px;
-            padding: 8px 4%;
+            min-height: 62px;
+            padding: 10px 4%;
             background:
                 radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
                 var(--pink-gradient);
+        }
+
+        /* ── Row 2: Nav tab strip ── */
+        .header-nav-bar {
+            width: 100%;
+            background: #ffffff;
+            border-top: 1px solid rgba(216, 30, 74, 0.10);
         }
 
         .brand-container {
@@ -199,8 +207,8 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
             border: 2px solid rgba(255, 255, 255, 0.6);
             transition: all 0.3s ease;
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             flex-shrink: 0;
         }
 
@@ -210,7 +218,7 @@
         }
 
         .brand-container img {
-            height: 26px;
+            height: 28px;
             width: auto;
             transition: transform 0.3s ease;
         }
@@ -232,7 +240,7 @@
 
         .brand-text-main {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.96rem;
+            font-size: 0.95rem;
             font-weight: 400;
             color: #ffffff;
             letter-spacing: 0.2px;
@@ -244,22 +252,18 @@
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-size: 0.62rem;
-            color: rgba(255, 255, 255, 0.82);
+            color: rgba(255,255,255,0.82);
             font-weight: 400;
             letter-spacing: 1px;
             text-transform: uppercase;
-            white-space: nowrap;
+            white-space: normal;
         }
 
-        /* Push CTA to the right */
-        .main-navbar { display: none; }
-
-        /* ── Row 1 CTA ── */
+        /* ── Staff CTA (inside brand bar) ── */
         .header-actions {
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            margin-left: auto;
         }
 
         .header-cta {
@@ -269,24 +273,23 @@
             height: 34px;
             padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.18);
-            border: 1.5px solid rgba(255, 255, 255, 0.55);
+            background: rgba(255,255,255,0.18);
+            border: 1.5px solid rgba(255,255,255,0.55);
             color: #ffffff;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 700;
+            font-weight: 600;
             font-size: 0.80rem;
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25);
             transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
         }
 
         .header-cta:hover {
-            background: rgba(255, 255, 255, 0.28);
-            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+            background: rgba(255,255,255,0.30);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
             transform: translateY(-1px);
-            color: #ffffff;
         }
 
         .header-cta-icon {
@@ -294,99 +297,89 @@
             height: 22px;
             min-width: 22px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.28);
+            background: rgba(255,255,255,0.25);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.68rem;
+            font-size: 0.70rem;
         }
 
-        /* ── Row 2: Nav tab strip ── */
-        .header-nav-row {
+        /* ── Tab-style nav (Row 2) ── */
+        .main-navbar {
             display: flex;
             align-items: stretch;
             width: 100%;
-            /* Slightly darker / deeper pink — creates visual weight below brand */
-            background: linear-gradient(90deg, #c0183e 0%, #d9375f 100%);
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 0 4%;
-            min-height: 44px;
-            overflow-x: auto;
-            scrollbar-width: none;
         }
 
-        .header-nav-row::-webkit-scrollbar { display: none; }
-
-        .header-nav-row .nav-links {
+        .main-navbar .nav-links {
             display: flex;
             align-items: stretch;
             list-style: none;
             margin: 0;
-            padding: 0;
-            gap: 0;
-            height: 44px;
+            padding: 0 2%;
+            gap: 2px;
+            width: 100%;
+            overflow-x: auto;
+            scrollbar-width: none;
         }
 
-        .header-nav-row .nav-item {
+        .main-navbar .nav-links::-webkit-scrollbar {
+            display: none;
+        }
+
+        .main-navbar .nav-item {
             flex-shrink: 0;
             display: flex;
             align-items: stretch;
         }
 
-        /* Thin divider between items */
-        .header-nav-row .nav-item + .nav-item::before {
-            content: '';
-            display: block;
-            width: 1px;
-            align-self: center;
-            height: 18px;
-            background: rgba(255, 255, 255, 0.20);
-            flex-shrink: 0;
-        }
-
-        .header-nav-row .nav-link {
+        /* Tab link: icon stacked above label */
+        .main-navbar .nav-link {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 6px;
-            padding: 0 14px;
-            color: rgba(255, 255, 255, 0.82);
+            justify-content: center;
+            gap: 3px;
+            min-height: 52px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            color: #64748b;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-weight: 500;
-            font-size: 0.83rem;
+            font-size: 0.72rem;
             white-space: nowrap;
+            transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
             position: relative;
-            transition: color 0.15s ease, background 0.15s ease;
-            /* Bottom indicator — hidden by default */
-            border-bottom: 2.5px solid transparent;
+            margin: 5px 0;
         }
 
-        .header-nav-row .nav-link i {
-            font-size: 0.88rem;
-            opacity: 0.75;
-            transition: opacity 0.15s ease;
+        .main-navbar .nav-link i {
+            font-size: 1.05rem;
+            transition: color 0.16s ease, transform 0.16s ease;
         }
 
-        .header-nav-row .nav-link:hover {
+        .main-navbar .nav-link:hover {
+            color: var(--primary-color);
+            background: rgba(225, 29, 72, 0.06);
+        }
+
+        .main-navbar .nav-link:hover i {
+            transform: translateY(-1px);
+        }
+
+        /* Active tab: pink pill background */
+        .main-navbar .nav-link.active {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.10);
-        }
-
-        .header-nav-row .nav-link:hover i {
-            opacity: 1;
-        }
-
-        /* Active tab: white underline + bright text + subtle bg lift */
-        .header-nav-row .nav-link.active {
-            color: #ffffff;
+            background: linear-gradient(135deg, #d81e4a 0%, #f0527f 100%);
             font-weight: 700;
-            background: rgba(255, 255, 255, 0.14);
-            border-bottom-color: #ffffff;
+            box-shadow: 0 3px 12px rgba(216, 30, 74, 0.35), 0 1px 4px rgba(216, 30, 74, 0.20);
         }
 
-        .header-nav-row .nav-link.active i {
-            opacity: 1;
+        .main-navbar .nav-link.active i {
+            color: #ffffff;
+            transform: none;
         }
 
         .user-profile {
@@ -582,54 +575,73 @@
             margin-right: 15px;
         }
 
-        /* ── Responsive: two-row header ── */
+        /* ── Responsive: Two-row header ── */
+
+        /* 1500px: tighten brand bar a bit */
         @media (max-width: 1500px) {
-            .header-container { gap: 10px; }
-
-            .brand-text-group { max-width: 195px; }
-            .brand-text-main  { white-space: normal; }
-
-            .header-nav-row .nav-link {
-                gap: 4px;
-                padding: 0 10px;
-                font-size: 0.78rem;
+            .header-brand-bar {
+                gap: 10px;
+                padding: 8px 3%;
+            }
+            .brand-text-group {
+                max-width: 200px;
+            }
+            .brand-text-main {
+                white-space: normal;
+            }
+            .main-navbar .nav-link {
+                padding: 8px 10px;
+                font-size: 0.68rem;
             }
         }
 
+        /* 992px: hide sub-text, compact tabs */
         @media (max-width: 992px) {
-            .header-container { padding: 8px 3%; }
-            .brand-text-sub   { display: none; }
-
-            /* Icon-only tabs on medium screens */
-            .header-nav-row .nav-link span { display: none; }
-            .header-nav-row .nav-link {
-                padding: 0 13px;
-                gap: 0;
+            .header-brand-bar {
+                padding: 8px 3%;
             }
-            .header-nav-row .nav-link i { font-size: 1rem; opacity: 0.9; }
-            .header-nav-row .nav-item + .nav-item::before { height: 14px; }
+            .brand-text-sub {
+                display: none;
+            }
+            .main-navbar .nav-links {
+                padding: 0 1%;
+            }
+            .main-navbar .nav-link {
+                padding: 8px 8px;
+                font-size: 0.65rem;
+                min-height: 48px;
+            }
+            .main-navbar .nav-link i {
+                font-size: 0.98rem;
+            }
         }
 
+        /* 768px: hide desktop nav → show mobile bottom bar */
         @media (max-width: 768px) {
-            .site-header { position: relative; }
-
-            .brand-text-main { font-size: 0.9rem; }
-            .brand-text-sub  { display: none; }
-
+            .site-header {
+                position: relative;
+            }
+            .brand-text-main {
+                font-size: 0.88rem;
+            }
+            .brand-text-sub {
+                display: none;
+            }
             .brand-logo-wrapper {
-                width: 42px;
-                height: 42px;
+                width: 44px;
+                height: 44px;
                 padding: 6px;
             }
-
-            .brand-container img       { height: 20px; }
-            .brand-logo-wrapper--sss img { height: 24px; }
-
-            /* Hide nav row + CTA on mobile — bottom tab bar takes over */
-            .header-nav-row,
-            .header-actions { display: none; }
-
-            .main-content { padding: 20px 15px 80px 15px; }
+            .brand-logo-wrapper--sss img {
+                height: 26px;
+            }
+            .header-nav-bar,
+            .header-actions {
+                display: none;
+            }
+            .main-content {
+                padding: 20px 15px 80px 15px;
+            }
         }
 
         /* Small-phone fine-tuning (~480px and below): the content-header
@@ -1184,8 +1196,8 @@
     <div class="overlay" id="sidebar-overlay"></div>
 
     <header class="site-header">
-        {{-- Row 1: Brand + CTA --}}
-        <div class="header-container">
+        {{-- Row 1: Brand bar (pink gradient) --}}
+        <div class="header-brand-bar">
             <div class="brand-container">
                 <div class="brand-logo-wrapper brand-logo-wrapper--sss" title="Smart Salt &amp; Sodium Monitor">
                     <img src="{{ asset('images/logo-sss-icon.png') }}" alt="SSS Logo">
@@ -1195,7 +1207,6 @@
                     <span class="brand-text-sub">Smart Salt &amp; Sodium Monitor</span>
                 </div>
             </div>
-
             <div class="header-actions">
                 <a href="{{ route('staff') }}" class="header-cta">
                     <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
@@ -1204,67 +1215,69 @@
             </div>
         </div>
 
-        {{-- Row 2: Navigation tabs --}}
-        <nav class="header-nav-row">
-            <ul class="nav-links">
-                <li class="nav-item">
-                    <a href="{{ route('home') }}" title="หน้าหลัก"
-                        class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
-                        <i class="fas fa-chart-line"></i>
-                        <span>หน้าหลัก</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('awareness') }}" title="ความตระหนักรู้"
-                        class="nav-link {{ request()->routeIs('awareness') ? 'active' : '' }}">
-                        <i class="fas fa-brain"></i>
-                        <span>ความตระหนักรู้</span>
-                    </a>
-                </li>
-                {{-- <li class="nav-item">
-                    <a href="{{ route('food-survey') }}"
-                        class="nav-link {{ request()->routeIs('food-survey') ? 'active' : '' }}">
-                        <i class="fas fa-utensils"></i>
-                        <span>สำรวจอาหาร</span>
-                    </a>
-                </li> --}}
-                <li class="nav-item">
-                    <a href="{{ route('reduced-sodium-menu') }}" title="เมนูลดโซเดียม"
-                        class="nav-link {{ request()->routeIs('reduced-sodium-menu') ? 'active' : '' }}">
-                        <i class="fas fa-bowl-food"></i>
-                        <span>เมนูลดโซเดียม</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('reduced-sodium-products') }}" title="ผลิตภัณฑ์ลดโซเดียม"
-                        class="nav-link {{ request()->routeIs('reduced-sodium-products') ? 'active' : '' }}">
-                        <i class="fas fa-bottle-droplet"></i>
-                        <span>ผลิตภัณฑ์ลดโซเดียม</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('new-ht-cases') }}" title="ผู้ป่วยใหม่ HT"
-                        class="nav-link {{ request()->routeIs('new-ht-cases') ? 'active' : '' }}">
-                        <i class="fas fa-heart-pulse"></i>
-                        <span>ผู้ป่วยใหม่ HT</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('kidney-dhb-report') }}" title="พชอ.ไต"
-                        class="nav-link {{ request()->routeIs('kidney-dhb-report') ? 'active' : '' }}">
-                        <i class="fas fa-hospital-user"></i>
-                        <span>พชอ.ไต</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('consumption-report') }}" title="แบบรายงานบริโภคเกลือ"
-                        class="nav-link {{ request()->routeIs('consumption-report') ? 'active' : '' }}">
-                        <i class="fas fa-file-contract"></i>
-                        <span>แบบรายงานบริโภคเกลือ</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
+        {{-- Row 2: Nav tab strip (white card style) --}}
+        <div class="header-nav-bar">
+            <nav class="main-navbar">
+                <ul class="nav-links">
+                    <li class="nav-item">
+                        <a href="{{ route('home') }}" title="หน้าหลัก"
+                            class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>หน้าหลัก</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('awareness') }}" title="ความตระหนักรู้"
+                            class="nav-link {{ request()->routeIs('awareness') ? 'active' : '' }}">
+                            <i class="fas fa-brain"></i>
+                            <span>ความตระหนักรู้</span>
+                        </a>
+                    </li>
+                    {{-- <li class="nav-item">
+                        <a href="{{ route('food-survey') }}"
+                            class="nav-link {{ request()->routeIs('food-survey') ? 'active' : '' }}">
+                            <i class="fas fa-utensils"></i>
+                            <span>สำรวจอาหาร</span>
+                        </a>
+                    </li> --}}
+                    <li class="nav-item">
+                        <a href="{{ route('reduced-sodium-menu') }}" title="เมนูลดโซเดียม"
+                            class="nav-link {{ request()->routeIs('reduced-sodium-menu') ? 'active' : '' }}">
+                            <i class="fas fa-bowl-food"></i>
+                            <span>เมนูลดโซเดียม</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('reduced-sodium-products') }}" title="ผลิตภัณฑ์ลดโซเดียม"
+                            class="nav-link {{ request()->routeIs('reduced-sodium-products') ? 'active' : '' }}">
+                            <i class="fas fa-bottle-droplet"></i>
+                            <span>ผลิตภัณฑ์ลดโซเดียม</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('new-ht-cases') }}" title="ผู้ป่วยใหม่ HT"
+                            class="nav-link {{ request()->routeIs('new-ht-cases') ? 'active' : '' }}">
+                            <i class="fas fa-heart-pulse"></i>
+                            <span>ผู้ป่วยใหม่ HT</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('kidney-dhb-report') }}" title="พชอ.ไต"
+                            class="nav-link {{ request()->routeIs('kidney-dhb-report') ? 'active' : '' }}">
+                            <i class="fas fa-hospital-user"></i>
+                            <span>พชอ.ไต</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('consumption-report') }}" title="แบบรายงานบริโภคเกลือ"
+                            class="nav-link {{ request()->routeIs('consumption-report') ? 'active' : '' }}">
+                            <i class="fas fa-file-contract"></i>
+                            <span>แบบรายงานบริโภคเกลือ</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
     </header>
 
     <main class="main-content">
