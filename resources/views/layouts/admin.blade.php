@@ -40,8 +40,8 @@
             /* Lighter background */
             --sidebar-bg: #ffffff;
             /* White sidebar */
-            --sidebar-text: #64748b;
-            /* Slate 500 */
+            --sidebar-text: #334155;
+            /* Slate 700 */
             --sidebar-active-bg: #4f46e5;
             --sidebar-active-text: #ffffff;
             --sidebar-width: 280px;
