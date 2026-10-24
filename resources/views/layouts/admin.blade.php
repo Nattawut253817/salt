@@ -535,7 +535,7 @@
         }
 
         .nav-item {
-            margin-bottom: 1px;
+            margin-bottom: 0;
         }
 
         .nav-link {
