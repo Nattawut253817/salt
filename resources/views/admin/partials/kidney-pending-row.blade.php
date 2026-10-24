@@ -69,6 +69,7 @@
                                     @csrf
                                     <input type="hidden" name="back" value="list">
                                     @if(auth()->user()->isSuperAdmin())<input type="hidden" name="delete_pin" value="1">@endif
+                                    @if(count($pt['group_ids'] ?? []) > 1)<input type="hidden" name="also" value="{{ implode(',', $pt['group_ids']) }}">@endif
                                     <button type="submit" class="btn-action btn-delete" title="ลบพื้นที่นี้" aria-label="ลบพื้นที่นี้">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>

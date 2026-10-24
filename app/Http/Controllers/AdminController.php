@@ -6144,6 +6144,23 @@ class AdminController extends Controller
                 ->whereIn('user_id', $this->getAgencyUserIds($user))
                 ->whereIn('pin_id', $ids)
                 ->delete();
+
+            // หลังลบ selection แล้ว: pin ที่กลายเป็น orphan (ไม่มี selection เหลือ + ไม่มี report)
+            // → ลบออกจาก kidney_operating_area_pins ด้วย เพื่อไม่ให้แสดงแถว 'ยังไม่มีผู้เลือก' ค้างอยู่
+            foreach ($ids as $pinId) {
+                $pin = \App\Models\OperatingAreaPin::find($pinId);
+                if (!$pin || !empty($pin->display_only)) {
+                    continue; // ไม่ลบหมุดแสดงผล
+                }
+                if (DB::table('kidney_operating_area_selections')->where('pin_id', $pinId)->exists()) {
+                    continue; // ยังมีหน่วยงานอื่นเลือกอยู่ → ไม่ลบ
+                }
+                if (DB::table('kidney_assessments')->where('operating_area_pin_id', $pinId)->exists()) {
+                    continue; // มีรายงานอยู่แล้ว → ไม่ลบ
+                }
+                $pin->delete();
+            }
+            $this->pinListMemo = [];
         }
 
         if ($request->input('back') === 'list') {
@@ -6185,11 +6202,24 @@ class AdminController extends Controller
         $labels = $ownership['selectors'][(int) $pin->id] ?? [];
 
         // ลบพื้นที่ทั้งหมด (ปุ่มถังขยะหน้ารายการ พชอ.ไต): ปลดการเลือก + ลบหมุดออกจากระบบ (ยังไม่มีรายงาน)
+        // รองรับทั้ง status='selected' และ 'free' (ไม่มีผู้เลือก แต่ pin ค้างอยู่ใน DB)
+        // รองรับ also = รหัสหมุดอื่นในกลุ่มเดียวกัน (group_ids) เพื่อลบพร้อมกัน
         if ($request->boolean('delete_pin') && empty($pin->display_only)) {
-            DB::table('kidney_operating_area_selections')->where('pin_id', $pin->id)->delete();
-            $pin->delete();
+            $alsoIds = collect(explode(',', (string) $request->input('also', '')))
+                ->map(fn($v) => (int) $v)->filter()->push((int) $pin->id)->unique()->values()->all();
+            $alsoPins = OperatingAreaPin::whereIn('id', $alsoIds)->where('display_only', false)->get();
+            $deletedCount = 0;
+            foreach ($alsoPins as $p) {
+                $hasReport = DB::table('kidney_assessments')->where('operating_area_pin_id', $p->id)->exists();
+                if ($hasReport) {
+                    continue; // มีรายงานอยู่แล้ว → ข้ามไป ไม่ลบ
+                }
+                DB::table('kidney_operating_area_selections')->where('pin_id', $p->id)->delete();
+                $p->delete();
+                $deletedCount++;
+            }
             $this->pinListMemo = [];
-            $msg = 'ลบพื้นที่ดำเนินงานออกจากระบบทั้งหมดเรียบร้อยแล้ว';
+            $msg = 'ลบพื้นที่ดำเนินงานออกจากระบบทั้งหมดเรียบร้อยแล้ว' . ($deletedCount > 1 ? " ({$deletedCount} พื้นที่)" : '');
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json(['success' => true, 'message' => $msg]);
             }
