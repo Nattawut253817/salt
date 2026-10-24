@@ -1113,9 +1113,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px;
+            padding: 9px 12px 8px 12px;
             border-radius: 12px;
-            margin-bottom: 2px;
             cursor: pointer;
             color: var(--sidebar-text);
             font-weight: 600;
@@ -1188,7 +1187,7 @@
         /* Submenu list */
         .nav-submenu {
             list-style: none;
-            padding: 4px 0 6px 0;
+            padding: 1px 0 3px 0;
             margin: 0;
             overflow: hidden;
             max-height: 0;
@@ -1198,10 +1197,10 @@
             max-height: 300px;
         }
         .nav-submenu .nav-link {
-            padding: 7px 12px 7px 20px;
+            padding: 6px 12px 6px 20px;
             font-size: 0.81rem;
             border-radius: 10px;
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
         .nav-submenu .nav-link i {
             width: 24px;
