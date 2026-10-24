@@ -1113,7 +1113,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
+            padding: 9px 12px 8px 12px;
             border-radius: 12px;
             cursor: pointer;
             color: var(--sidebar-text);
@@ -1187,7 +1187,7 @@
         /* Submenu list */
         .nav-submenu {
             list-style: none;
-            padding: 2px 0 4px 0;
+            padding: 1px 0 3px 0;
             margin: 0;
             overflow: hidden;
             max-height: 0;
@@ -1197,25 +1197,17 @@
             max-height: 300px;
         }
         .nav-submenu .nav-link {
-            padding: 8px 12px 8px 20px;
+            padding: 6px 12px 6px 20px;
             font-size: 0.81rem;
             border-radius: 10px;
+            margin-bottom: 1px;
         }
         .nav-submenu .nav-link i {
             width: 24px;
             height: 24px;
             font-size: 0.78rem;
         }
-        /* Vertical connector line for sub-items */
-        .nav-submenu::before {
-            content: '';
-            position: absolute;
-            left: 32px;
-            top: 0; bottom: 0;
-            width: 1px;
-            background: #e2e8f0;
-            border-radius: 1px;
-        }
+        /* Connector line removed */
         .nav-group {
             position: relative;
         }
