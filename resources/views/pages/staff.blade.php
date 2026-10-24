@@ -451,11 +451,12 @@
             background: #fdf9fb;
             font-family: 'Sarabun', sans-serif;
             font-size: 0.83rem;
-            color: #1e293b;
+            font-weight: 600;
+            color: #1e1b2e;
             box-sizing: border-box;
             transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
         }
-        .form-control::placeholder { color: #b0a0a8; }
+        .form-control::placeholder { color: #b8a8b2; font-weight: 400; }
         .form-control:focus {
             border-color: rgba(225,29,72,.45);
             background: #fff;
