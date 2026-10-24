@@ -264,11 +264,16 @@
             align-items: center;
             list-style: none;
             margin: 0;
-            padding: 0;
-            gap: 4px;
+            padding: 0 4px;
+            gap: 0;
             overflow-x: auto;
             scrollbar-width: none;
             /* Firefox */
+            /* Subtle inner container: slight inset look */
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255,255,255,0.08);
         }
 
         .main-navbar .nav-links::-webkit-scrollbar {
@@ -278,42 +283,59 @@
 
         .main-navbar .nav-item {
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
         }
 
-        /* Each link sits inline on the gradient bar - the CURRENT page
-           fills a solid white pill (icon + text switch to the brand red),
-           everything else stays translucent white until hovered. */
+        /* Divider between nav items */
+        .main-navbar .nav-item + .nav-item::before {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.22);
+            flex-shrink: 0;
+        }
+
+        /* Each link sits inline on the gradient bar */
         .main-navbar .nav-link {
             display: flex;
             align-items: center;
             gap: 5px;
-            height: 34px;
-            padding: 0 10px;
+            height: 36px;
+            padding: 0 12px;
             border-radius: 999px;
-            color: #ffffff;
+            color: rgba(255, 255, 255, 0.88);
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-weight: 400;
             font-size: 0.82rem;
             white-space: nowrap;
             transition: all 0.2s ease;
+            margin: 3px 0;
         }
 
         .main-navbar .nav-link i {
-            font-size: 0.95rem;
-            opacity: 1;
+            font-size: 0.92rem;
+            opacity: 0.85;
+            transition: opacity 0.2s ease;
         }
 
         .main-navbar .nav-link:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .main-navbar .nav-link:hover i {
+            opacity: 1;
         }
 
         .main-navbar .nav-link.active {
             color: var(--primary-color);
             background: #ffffff;
-            font-weight: 600;
-            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.18);
+            font-weight: 700;
+            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0,0,0,0.12);
+            letter-spacing: 0.01em;
         }
 
         .main-navbar .nav-link.active i {
@@ -587,12 +609,12 @@
             }
 
             .main-navbar .nav-links {
-                gap: 1px;
+                gap: 0;
             }
 
             .main-navbar .nav-link {
                 gap: 3px;
-                padding: 0 7px;
+                padding: 0 8px;
                 font-size: 0.72rem;
             }
 
@@ -623,7 +645,7 @@
                all 7 items still fit without the nav row silently
                scroll-clipping any of them. */
             .main-navbar .nav-links {
-                gap: 2px;
+                gap: 0;
             }
 
             .main-navbar .nav-link span {
@@ -631,12 +653,16 @@
             }
 
             .main-navbar .nav-link {
-                padding: 0 8px;
+                padding: 0 10px;
                 gap: 0;
             }
 
             .main-navbar .nav-link i {
                 font-size: 1.05rem;
+            }
+
+            .main-navbar .nav-item + .nav-item::before {
+                height: 14px;
             }
         }
 
