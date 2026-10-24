@@ -1618,7 +1618,7 @@
             <div class="loader-text" style="font-size: 0.8rem; margin-top: 10px;">กำลังนำเข้าข้อมูล...</div>
         </div>
 
-        <form action="{{ route('admin.kidney-dhb.store') }}" method="POST" enctype="multipart/form-data" id="kidneyForm">
+        <form action="{{ route('admin.kidney-dhb.store') }}" method="POST" enctype="multipart/form-data" id="kidneyForm" onsubmit="kdhbBtnLoading(this)">
             @csrf
             <input type="hidden" name="target_user_id" id="target_user_id" value="">
             {{-- Word-import reporter attribution: filled in from the
@@ -4749,4 +4749,21 @@
             loadKidneyData(false);
         });
     })();
+
+    // Loading state for the "บันทึกรายการ พชอ.ไต" submit button.
+    // Respects applyQuarterLock(): if the form is locked we do nothing
+    // (the lock guard already calls e.preventDefault()).
+    function kdhbBtnLoading(form) {
+        if (form.classList.contains('is-quarter-locked')) return;
+        const btn = form.querySelector('.btn-submit');
+        if (!btn || btn.disabled) return;
+        btn.disabled = true;
+        const origHTML = btn.dataset.html || btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+        // Restore after 30 s in case the browser never redirects (network error)
+        setTimeout(function () {
+            btn.disabled = false;
+            btn.innerHTML = origHTML;
+        }, 30000);
+    }
 </script>
