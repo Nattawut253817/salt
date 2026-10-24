@@ -1173,6 +1173,13 @@
         .nav-group-header.group-active .submenu-arrow {
             color: rgba(255,255,255,0.7);
         }
+
+        /* When group is active AND submenu is open: soften the header so the
+           active child item can stand out more clearly (parent recedes slightly) */
+        .nav-group-header.group-active.open {
+            background: linear-gradient(135deg, rgba(79,70,229,0.82) 0%, rgba(99,102,241,0.82) 100%);
+            box-shadow: 0 4px 10px rgba(79,70,229,0.18);
+        }
         /* Open state: rotate arrow */
         .nav-group-header.open .submenu-arrow {
             transform: rotate(90deg);
@@ -1211,6 +1218,23 @@
         }
         .nav-group {
             position: relative;
+        }
+
+        /* ── Submenu active item: lighter tint (not full gradient) ─────────────────
+           The group-header already carries the full indigo gradient to anchor the
+           section; the child item should recede — a translucent indigo pill keeps
+           hierarchy clear without fighting the parent for attention.
+        ──────────────────────────────────────────────────────────────────────────── */
+        .nav-submenu .nav-link.active {
+            background: rgba(79, 70, 229, 0.10);
+            color: var(--admin-primary);
+            box-shadow: none;
+            border-left: 2.5px solid var(--admin-primary);
+            padding-left: 17px; /* compensate for border */
+        }
+        .nav-submenu .nav-link.active i {
+            color: var(--admin-primary);
+            background: rgba(79, 70, 229, 0.14);
         }
         /* Nav-badge inside group header */
         .nav-group-header .nav-badge {
