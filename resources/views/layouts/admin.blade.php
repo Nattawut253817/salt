@@ -930,44 +930,48 @@
            ======================================================== */
         .sidebar-toggle-btn {
             position: fixed;
-            top: calc(var(--admin-banner-height) + 10px);
-            left: calc(var(--sidebar-width) - 16px);
+            top: calc(var(--admin-banner-height) + 14px);
+            left: calc(var(--sidebar-width) - 14px);
             z-index: 1100;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.10);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: left 0.3s ease, transform 0.3s ease, background 0.2s;
-            color: #64748b;
-            font-size: 0.75rem;
+            transition: left 0.3s ease, background 0.2s, border-color 0.2s;
+            color: #94a3b8;
+            font-size: 0.68rem;
+            line-height: 1;
         }
         .sidebar-toggle-btn:hover {
             background: #f1f5f9;
             color: var(--admin-primary);
             border-color: #c7d2fe;
         }
-        /* When sidebar is collapsed */
+
+        /* ---- Collapsed state ---- */
+        body.sidebar-collapsed .admin-sidebar {
+            width: 68px;
+            overflow: visible;
+        }
+        body.sidebar-collapsed .admin-main {
+            margin-left: 68px;
+        }
         body.sidebar-collapsed .sidebar-toggle-btn {
-            left: calc(80px - 16px);
+            left: calc(68px - 14px);
         }
         body.sidebar-collapsed .sidebar-toggle-btn i {
             transform: rotate(180deg);
         }
-        body.sidebar-collapsed .admin-sidebar {
-            width: 80px;
-            overflow: visible;
-        }
-        body.sidebar-collapsed .admin-main {
-            margin-left: 80px;
-        }
-        /* hides text in collapsed mode (desktop manual collapse) */
+
+        /* hide text labels, section titles, arrows, submenus */
         body.sidebar-collapsed .admin-sidebar .nav-link span:not(.nav-badge),
+        body.sidebar-collapsed .admin-sidebar .nav-group-header .group-label,
         body.sidebar-collapsed .admin-sidebar .nav-section-title,
         body.sidebar-collapsed .admin-sidebar .sidebar-brand span,
         body.sidebar-collapsed .admin-sidebar .btn-logout span,
@@ -975,19 +979,95 @@
         body.sidebar-collapsed .admin-sidebar .nav-submenu {
             display: none !important;
         }
-        body.sidebar-collapsed .admin-sidebar .nav-link {
+
+        /* uniform icon pill — both regular nav-link AND group headers */
+        body.sidebar-collapsed .admin-sidebar .nav-link,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header {
             justify-content: center;
-            padding: 12px 0;
-        }
-        body.sidebar-collapsed .admin-sidebar .sidebar-brand {
-            justify-content: center;
-            padding: 20px 0;
-        }
-        /* Tooltip for collapsed icons */
-        body.sidebar-collapsed .admin-sidebar .nav-link {
+            padding: 8px 0;
+            margin: 0 10px;
+            border-radius: 12px;
             position: relative;
         }
-        body.sidebar-collapsed .admin-sidebar .nav-link::after {
+
+        /* icon box: same size, same shape, same background */
+        body.sidebar-collapsed .admin-sidebar .nav-link i,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header i.group-icon {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 0.9rem !important;
+            border-radius: 10px !important;
+            background: #f1f5f9 !important;
+            color: #64748b !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            flex-shrink: 0;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        /* active state icon */
+        body.sidebar-collapsed .admin-sidebar .nav-link.active i,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header.group-active i.group-icon {
+            background: var(--admin-primary) !important;
+            color: #fff !important;
+            box-shadow: 0 4px 10px rgba(79,70,229,0.3);
+        }
+
+        /* hover icon */
+        body.sidebar-collapsed .admin-sidebar .nav-link:hover i,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header:hover i.group-icon {
+            background: #e0e7ff !important;
+            color: var(--admin-primary) !important;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link:hover,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header:hover {
+            background: transparent;
+            transform: none;
+        }
+
+        /* badge stays visible on group header */
+        body.sidebar-collapsed .admin-sidebar .nav-group-header .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            min-width: 16px;
+            height: 16px;
+            font-size: 0.6rem;
+            padding: 0 4px;
+            line-height: 16px;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link .nav-badge {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            min-width: 16px;
+            height: 16px;
+            font-size: 0.6rem;
+            padding: 0 4px;
+            line-height: 16px;
+        }
+
+        /* brand logo centred */
+        body.sidebar-collapsed .admin-sidebar .sidebar-brand {
+            justify-content: center;
+            padding: 18px 0;
+        }
+
+        /* logout button */
+        body.sidebar-collapsed .admin-sidebar .btn-logout {
+            justify-content: center;
+            padding: 8px 0;
+            margin: 0 10px;
+        }
+
+        /* Tooltip on hover */
+        body.sidebar-collapsed .admin-sidebar .nav-link,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header {
+            position: relative;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link::after,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header::after {
             content: attr(data-tooltip);
             position: absolute;
             left: calc(100% + 10px);
@@ -997,28 +1077,31 @@
             color: #fff;
             padding: 5px 10px;
             border-radius: 8px;
-            font-size: 0.78rem;
+            font-size: 0.76rem;
+            font-family: 'K2D', 'Sarabun', sans-serif;
             white-space: nowrap;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.15s ease;
             z-index: 9999;
         }
-        body.sidebar-collapsed .admin-sidebar .nav-link:hover::after {
+        body.sidebar-collapsed .admin-sidebar .nav-link:hover::after,
+        body.sidebar-collapsed .admin-sidebar .nav-group-header:hover::after {
             opacity: 1;
         }
-        /* Sync with @media collapse width if using responsive only  */
+
+        /* responsive: at 1024px, sidebar is already icon-only via media query */
         @media (max-width: 1024px) {
             .sidebar-toggle-btn {
-                left: calc(80px - 16px);
+                left: calc(80px - 14px);
             }
             body.sidebar-collapsed .sidebar-toggle-btn {
-                left: calc(80px - 16px);
+                left: calc(68px - 14px);
             }
         }
         @media (max-width: 768px) {
             .sidebar-toggle-btn {
-                left: calc(100% - 16px) !important;
+                left: calc(100% - 14px) !important;
                 top: calc(var(--admin-banner-height) + 8px);
             }
         }
@@ -1312,21 +1395,21 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.sodium-menus') }}"
-                        class="nav-link {{ request()->routeIs('admin.sodium-menus', 'admin.reduced-sodium-menu-dashboard') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.sodium-menus', 'admin.reduced-sodium-menu-dashboard') ? 'active' : '' }}" data-tooltip="เมนูลดโซเดียม">
                         <i class="fas fa-poll"></i>
                         <span>เมนูลดโซเดียม</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.sodium-products') }}"
-                        class="nav-link {{ request()->routeIs('admin.sodium-products', 'admin.reduced-sodium-products-dashboard') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.sodium-products', 'admin.reduced-sodium-products-dashboard') ? 'active' : '' }}" data-tooltip="ผลิตภัณฑ์โซเดียม">
                         <i class="fas fa-bottle-droplet"></i>
                         <span>ผลิตภัณฑ์ลดโซเดียม</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.hi.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.hi.index', 'admin.new-ht-cases-dashboard') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.hi.index', 'admin.new-ht-cases-dashboard') ? 'active' : '' }}" data-tooltip="HI ความดันโลหิต">
                         <i class="fas fa-chart-line"></i>
                         <span>อัตราป่วยรายใหม่ HT</span>
                     </a>
@@ -1398,7 +1481,7 @@
                 <div class="nav-section-title">จัดการระบบ</div>
                 <li class="nav-item">
                     <a href="{{ route('admin.users.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.users.index') ? 'active' : '' }}" data-tooltip="ผู้ใช้งาน">
                         <i class="fas fa-users-cog"></i>
                         <span>จัดการผู้ใช้งาน</span>
                         @if (isset($pendingUserCount) && $pendingUserCount > 0)
@@ -1408,14 +1491,14 @@
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.fiscal-years.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.fiscal-years.index') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.fiscal-years.index') ? 'active' : '' }}" data-tooltip="ปีงบประมาณ">
                         <i class="fas fa-calendar-alt"></i>
                         <span>จัดการปีงบประมาณ</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.excel-templates.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.excel-templates.index') ? 'active' : '' }}">
+                        class="nav-link {{ request()->routeIs('admin.excel-templates.index') ? 'active' : '' }}" data-tooltip="เทมเพลต Excel">
                         <i class="fas fa-file-excel"></i>
                         <span>จัดการแบบฟอร์ม Excel</span>
                     </a>
