@@ -369,20 +369,30 @@
         .form-section-title {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin: 16px 0 10px;
-            font-weight: 800;
+            gap: 8px;
+            margin: 20px 0 11px;
+            font-weight: 700;
             font-family: 'Sarabun', sans-serif;
-            font-size: 0.78rem;
-            color: var(--primary-color);
-            letter-spacing: .03em;
+            font-size: 0.76rem;
+            color: #b5244a;
+            letter-spacing: .06em;
+            text-transform: uppercase;
         }
-        .form-section-title:first-of-type { margin-top: 0; }
+        .form-section-title:first-of-type { margin-top: 2px; }
+        .form-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px;
+            height: 13px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, #e11d48, #be185d);
+            flex-shrink: 0;
+        }
         .form-section-title::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: linear-gradient(90deg, rgba(225,29,72,.22), transparent);
+            background: linear-gradient(90deg, rgba(225,29,72,.18), transparent);
         }
 
         /* ── Form fields ────────────────────────────────────── */
@@ -390,12 +400,13 @@
 
         .form-label {
             display: block;
-            margin-bottom: 5px;
-            margin-left: 2px;
-            font-weight: 700;
+            margin-bottom: 6px;
+            margin-left: 1px;
+            font-weight: 600;
             font-family: 'Sarabun', sans-serif;
-            color: #1e1b2e;
-            font-size: 0.83rem;
+            color: #5a3d52;
+            font-size: 0.82rem;
+            letter-spacing: .012em;
         }
 
         .form-row   { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
