@@ -23,7 +23,7 @@ class AuthController extends Controller
     /** Per-IP cap (any email) so one address cannot spray many accounts. */
     private const LOGIN_IP_MAX_ATTEMPTS = 20;
     /** Valid-format bcrypt hash that matches nothing; burns the same time as a real check. */
-    private const DUMMY_HASH = '$2y$12$voH8blGXAmxevKbHhgE3PMBG41Qr7zN3rKouaQFupT1gtMQz7OYMQ';
+    private const DUMMY_HASH = '$2y$10$UrRrIF7sqaFI4.B16nSGJ.O6s/u2A34YsM07gyQ0vtWnov1LZTnc.';
     private const LOGIN_OTP_TTL_SECONDS = 300;
 
     /** Cache key holding the wrong-guess counter for a forgot-password OTP. */
