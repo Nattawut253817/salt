@@ -326,19 +326,21 @@
         .rules-panel {
             width: 220px;
             flex-shrink: 0;
-            background: #fff7f9;
-            border: 1px solid #fde3ec;
-            border-radius: 18px;
+            background: #fff;
+            border: 1px solid #f1f5f9;
+            border-radius: 14px;
             padding: 16px 18px;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
         }
 
         .rules-panel-title {
             display: flex;
             align-items: center;
             gap: 7px;
-            font-size: 0.78rem;
-            font-weight: 800;
+            font-size: 0.77rem;
+            font-weight: 700;
             color: #1e293b;
+            letter-spacing: 0.01em;
             margin-bottom: 12px;
         }
 
@@ -354,10 +356,10 @@
 
         .pw-strength-bar span {
             flex: 1;
-            height: 5px;
-            border-radius: 3px;
+            height: 4px;
+            border-radius: 2px;
             background: #e2e8f0;
-            transition: background-color 0.25s ease;
+            transition: background-color 0.3s ease;
         }
 
         .pw-strength-bar span.weak {
@@ -373,8 +375,9 @@
         }
 
         .pw-strength-label {
-            font-size: 0.68rem;
-            font-weight: 700;
+            font-size: 0.70rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
             color: #94a3b8;
             margin-bottom: 10px;
         }
@@ -385,34 +388,34 @@
             padding: 0;
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 8px;
         }
 
         .pw-rules li {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 7px;
-            font-size: 0.74rem;
+            font-size: 0.78rem;
             color: #94a3b8;
-            transition: color 0.2s ease;
-            line-height: 1.35;
+            transition: color 0.2s ease, opacity 0.2s ease;
+            line-height: 1.45;
         }
 
         .pw-rules li i {
-            font-size: 0.7rem;
-            color: #cbd5e1;
-            margin-top: 2px;
+            font-size: 0.73rem;
+            color: #d1d9e3;
             flex-shrink: 0;
-            transition: color 0.2s ease;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
 
         .pw-rules li.met {
-            color: #166534;
+            color: #059669;
             font-weight: 600;
         }
 
         .pw-rules li.met i {
             color: #10b981;
+            transform: scale(1.1);
         }
 
         @media (max-width: 640px) {

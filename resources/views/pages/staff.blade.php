@@ -400,19 +400,19 @@
            password field and shown while it's focused. */
         .password-checklist {
             position: absolute;
-            top: calc(100% + 10px);
+            top: calc(100% + 8px);
             left: 0;
             right: 0;
-            background: white;
-            border: 1px solid #fce7ef;
-            border-radius: 16px;
-            padding: 14px 18px;
-            box-shadow: 0 14px 30px rgba(225, 29, 72, 0.16);
+            background: #fff;
+            border: 1px solid #f1f5f9;
+            border-radius: 14px;
+            padding: 14px 16px 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.10), 0 2px 6px rgba(15, 23, 42, 0.05);
             z-index: 20;
             opacity: 0;
-            transform: translateY(-6px);
+            transform: translateY(-5px);
             pointer-events: none;
-            transition: opacity 0.2s ease, transform 0.2s ease;
+            transition: opacity 0.18s ease, transform 0.18s ease;
         }
 
         .password-checklist.visible {
@@ -429,10 +429,10 @@
 
         .pw-strength-bar span {
             flex: 1;
-            height: 5px;
-            border-radius: 3px;
+            height: 4px;
+            border-radius: 2px;
             background: #e2e8f0;
-            transition: background-color 0.25s ease;
+            transition: background-color 0.3s ease;
         }
 
         .pw-strength-bar span.weak { background: #ef4444; }
@@ -440,8 +440,9 @@
         .pw-strength-bar span.strong { background: #10b981; }
 
         .pw-strength-label {
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.71rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
             color: #94a3b8;
             margin-bottom: 10px;
         }
@@ -459,24 +460,27 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.78rem;
+            font-size: 0.79rem;
             color: #94a3b8;
-            transition: color 0.2s ease;
+            line-height: 1.4;
+            transition: color 0.2s, opacity 0.2s;
         }
 
         .pw-rules li i {
-            font-size: 0.72rem;
-            color: #cbd5e1;
-            transition: color 0.2s ease;
+            font-size: 0.73rem;
+            color: #d1d9e3;
+            flex-shrink: 0;
+            transition: color 0.2s ease, transform 0.2s ease;
         }
 
         .pw-rules li.met {
-            color: #10b981;
+            color: #059669;
             font-weight: 600;
         }
 
         .pw-rules li.met i {
             color: #10b981;
+            transform: scale(1.1);
         }
 
         /* Confirm-password live match feedback */
@@ -493,8 +497,15 @@
         }
 
         .pw-match-feedback.match {
-            display: flex;
-            color: #10b981;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #059669;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 4px 10px 4px 8px;
+            font-size: 0.73rem;
             transition: opacity 0.4s ease;
         }
 
@@ -503,8 +514,15 @@
         }
 
         .pw-match-feedback.mismatch {
-            display: flex;
-            color: #ef4444;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: #dc2626;
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 4px 10px 4px 8px;
+            font-size: 0.73rem;
         }
 
         .input-wrapper { position: relative; }
