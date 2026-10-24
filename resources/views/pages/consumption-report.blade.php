@@ -1432,7 +1432,7 @@
              truncated. Clicking a row renders it here via
              selectStepOverviewRow() in extra_js - same click-to-select
              principle as the agency detail panel on kidney-dhb-report. --}}
-        <div class="cr-card" id="stepOverviewCard">
+        <div class="cr-card" id="stepOverviewCard" style="display:none;">
             <div class="cr-step-panel-head">
                 <div class="cr-step-panel-head-main">
                     <div class="cr-card-icon" style="--cr-accent:#0ea5e9;"><i class="fas fa-shoe-prints"></i></div>
@@ -1618,9 +1618,11 @@
         });
 
         function revealStepOverview() {
+            const card = document.getElementById('stepOverviewCard');
             const placeholder = document.getElementById('stepOverviewPlaceholder');
             const body = document.getElementById('stepOverviewBody');
             const btn = document.getElementById('stepOverviewToggleBtn');
+            if (card) card.style.display = '';
             if (placeholder) placeholder.style.display = 'none';
             if (body) body.style.display = '';
             if (btn) btn.style.display = '';
@@ -1629,9 +1631,11 @@
         // Reverse of revealStepOverview() - back to the placeholder, used
         // when the open row is clicked again to close the panel.
         function hideStepOverview() {
+            const card = document.getElementById('stepOverviewCard');
             const placeholder = document.getElementById('stepOverviewPlaceholder');
             const body = document.getElementById('stepOverviewBody');
             const btn = document.getElementById('stepOverviewToggleBtn');
+            if (card) card.style.display = 'none';
             if (body) body.style.display = 'none';
             if (placeholder) placeholder.style.display = '';
             if (btn) btn.style.display = 'none';
