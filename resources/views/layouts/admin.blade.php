@@ -588,7 +588,6 @@
         .nav-link.active {
             background: linear-gradient(135deg, var(--admin-primary) 0%, #6366f1 100%);
             color: white;
-            box-shadow: 0 6px 14px rgba(79, 70, 229, 0.28);
         }
 
         .nav-link.active i {
