@@ -181,11 +181,12 @@
                 var(--pink-gradient);
         }
 
-        /* ── Row 2: Nav tab strip ── */
+        /* ── Row 2: Nav tab strip — green-mint gradient ── */
         .header-nav-bar {
             width: 100%;
-            background: #ffffff;
-            border-top: 1px solid rgba(216, 30, 74, 0.10);
+            background: linear-gradient(135deg, #c8f5d8 0%, #d8f5c0 50%, #e8f8c8 100%);
+            border-top: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
         }
 
         .brand-container {
@@ -247,6 +248,9 @@
             text-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
             white-space: nowrap;
             line-height: 1.2;
+            background: rgba(180, 240, 200, 0.18);
+            padding: 2px 10px;
+            border-radius: 6px;
         }
 
         .brand-text-sub {
@@ -305,10 +309,11 @@
             font-size: 0.70rem;
         }
 
-        /* ── Tab-style nav (Row 2) — centered, green active card ── */
+        /* ── Tab-style nav (Row 2) — centered, icon-left row layout ── */
         .main-navbar {
             display: flex;
-            align-items: stretch;
+            align-items: center;
+            justify-content: center;
             width: 100%;
         }
 
@@ -317,10 +322,9 @@
             align-items: center;
             justify-content: center;
             list-style: none;
-            margin: 0 auto;
+            margin: 0;
             padding: 5px 16px;
             gap: 4px;
-            width: 100%;
             overflow-x: auto;
             scrollbar-width: none;
         }
@@ -335,41 +339,41 @@
             align-items: center;
         }
 
-        /* Tab link: icon stacked above label — centered */
+        /* Tab link: icon LEFT of label, same row */
         .main-navbar .nav-link {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             align-items: center;
-            justify-content: center;
-            gap: 3px;
-            min-height: 48px;
+            gap: 6px;
+            min-height: 40px;
             padding: 6px 14px;
             border-radius: 10px;
-            color: #94a3b8;
+            color: #2d6a4f;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-weight: 500;
-            font-size: 0.70rem;
+            font-size: 0.82rem;
             white-space: nowrap;
             transition: background 0.16s ease, color 0.16s ease;
-            position: relative;
         }
 
         .main-navbar .nav-link i {
-            font-size: 1.0rem;
+            font-size: 0.92rem;
             transition: color 0.16s ease;
+            flex-shrink: 0;
         }
 
         .main-navbar .nav-link:hover {
-            color: #475569;
-            background: rgba(0, 0, 0, 0.04);
+            color: #1a6b4a;
+            background: rgba(255,255,255,0.55);
         }
 
-        /* Active tab: light green card (ตามภาพ 2) */
+        /* Active tab: white card with green text */
         .main-navbar .nav-link.active {
             color: #1a6b4a;
-            background: #d4f0e2;
+            background: rgba(255, 255, 255, 0.80);
             font-weight: 700;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.10);
         }
 
         .main-navbar .nav-link.active i {
