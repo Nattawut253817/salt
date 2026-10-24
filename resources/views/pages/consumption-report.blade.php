@@ -400,19 +400,16 @@
             padding: 4px 0 4px 0;
         }
 
-        /* "ตัวกรอง" label pill — matches the image: icon + text, pill border */
+        /* "ตัวกรอง" — plain inline label, no border, no bg */
         .cr-filter-title {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            padding: 7px 14px;
+            padding: 7px 4px 7px 0;
             white-space: nowrap;
             font-weight: 700;
-            font-size: 0.82rem;
-            color: #475569;
-            background: #fff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 999px;
+            font-size: 0.84rem;
+            color: #334155;
             flex-shrink: 0;
         }
 
@@ -421,24 +418,25 @@
             font-size: 0.78rem;
         }
 
-        /* Each filter chip — natural width, white bg, crisp border */
+        /* Each filter chip — stretch evenly, white bg, crisp border */
         .cr-filter-item {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            padding: 7px 14px;
+            padding: 8px 14px;
             white-space: nowrap;
             background: #fff;
-            border: 1.5px solid #cbd5e1;
+            border: 1px solid #e2e8f0;
             border-radius: 999px;
             cursor: pointer;
             transition: border-color 0.15s, box-shadow 0.15s;
-            flex: 0 0 auto;
+            flex: 1 1 160px;
+            min-width: 0;
         }
 
         .cr-filter-item:hover {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+            border-color: #a5b4fc;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.07);
         }
 
         .cr-filter-item-icon {
@@ -465,8 +463,9 @@
             color: #1e293b;
             cursor: pointer;
             padding: 0;
-            /* cap width so long agency lists don't blow chip wide */
-            max-width: 130px;
+            /* flex:1 lets select absorb leftover chip width */
+            flex: 1 1 auto;
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -493,7 +492,7 @@
             color: #475569;
             font-weight: 700;
             font-size: 0.82rem;
-            border: 1.5px solid #cbd5e1;
+            border: 1px solid #e2e8f0;
             cursor: pointer;
             text-decoration: none !important;
             transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -1153,7 +1152,7 @@
 
             {{-- ปีงบประมาณ --}}
             <label class="cr-filter-item">
-                <i class="fas fa-calendar-alt cr-filter-item-icon"></i>
+                <i class="fas fa-calendar-days cr-filter-item-icon"></i>
                 <span class="cr-filter-item-label">ปีงบประมาณ</span>
                 <select name="fiscal_year" class="cr-select" onchange="this.form.submit()">
                     <option value="ทั้งหมด" {{ (string) $fiscalYear == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด</option>
@@ -1166,7 +1165,7 @@
 
             {{-- จังหวัด --}}
             <label class="cr-filter-item">
-                <i class="fas fa-map-marker-alt cr-filter-item-icon"></i>
+                <i class="fas fa-map cr-filter-item-icon"></i>
                 <span class="cr-filter-item-label">จังหวัด</span>
                 <select name="province_search" class="cr-select" onchange="this.form.submit()">
                     <option value="ทั้งหมด" {{ (string) $selectedProvince == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด
@@ -1181,7 +1180,7 @@
 
             {{-- ประเภทหน่วยงาน --}}
             <label class="cr-filter-item">
-                <i class="fas fa-sitemap cr-filter-item-icon"></i>
+                <i class="fas fa-th-list cr-filter-item-icon"></i>
                 <span class="cr-filter-item-label">ประเภทหน่วยงาน</span>
                 <select name="agency_rank" class="cr-select" onchange="this.form.submit()">
                     <option value="ทั้งหมด" {{ request('agency_rank', 'ทั้งหมด') == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด</option>
@@ -1195,7 +1194,7 @@
 
             {{-- หน่วยงาน --}}
             <label class="cr-filter-item">
-                <i class="fas fa-building cr-filter-item-icon"></i>
+                <i class="fas fa-location-dot cr-filter-item-icon"></i>
                 <span class="cr-filter-item-label">หน่วยงาน</span>
                 <select name="agency_search" class="cr-select" onchange="this.form.submit()">
                     <option value="ทั้งหมด" {{ (string) $selectedAgency == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด</option>
@@ -1221,7 +1220,7 @@
 
             {{-- ไตรมาส --}}
             <label class="cr-filter-item">
-                <i class="fas fa-clock cr-filter-item-icon"></i>
+                <i class="fas fa-layer-group cr-filter-item-icon"></i>
                 <span class="cr-filter-item-label">ไตรมาส</span>
                 <select name="quarter" class="cr-select" onchange="this.form.submit()">
                     <option value="ทั้งหมด" {{ (string) $selectedQuarter == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด</option>
@@ -1235,7 +1234,7 @@
 
             {{-- ปุ่มล้าง --}}
             <a href="{{ route('consumption-report') }}" class="cr-btn-reset">
-                <i class="fas fa-sync-alt"></i> ล้างตัวกรอง
+                <i class="fas fa-rotate-right"></i> ล้างตัวกรอง
             </a>
         </form>
         <div class="filter-under-line" style="height:1px;background:#e2e8f0;margin:14px 0 18px;"></div>
