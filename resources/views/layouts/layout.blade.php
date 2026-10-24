@@ -293,7 +293,7 @@
             display: block;
             width: 1px;
             height: 18px;
-            background: rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.35);
             flex-shrink: 0;
         }
 
@@ -305,19 +305,20 @@
             height: 36px;
             padding: 0 12px;
             border-radius: 999px;
-            color: rgba(255, 255, 255, 0.88);
+            color: #ffffff;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 400;
+            font-weight: 600;
             font-size: 0.82rem;
             white-space: nowrap;
             transition: all 0.2s ease;
             margin: 3px 0;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.18);
         }
 
         .main-navbar .nav-link i {
             font-size: 0.92rem;
-            opacity: 0.85;
+            opacity: 1;
             transition: opacity 0.2s ease;
         }
 
