@@ -1438,10 +1438,6 @@
             </nav>
 
             <div class="header-actions">
-                <button class="theme-toggle" id="theme-toggle" aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง/มืด">
-                    <i class="fas fa-sun icon-sun"></i>
-                    <i class="fas fa-moon icon-moon"></i>
-                </button>
                 <a href="{{ route('staff') }}" class="header-cta">
                     <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
                     <span>สำหรับเจ้าหน้าที่</span>
