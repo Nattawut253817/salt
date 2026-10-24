@@ -22,12 +22,14 @@ class OperatingAreaPin extends Model
         'longitude',
         'label',
         'display_only',
+        'no_cluster',
         'agency_label',
         'created_by',
     ];
 
     protected $casts = [
         'display_only' => 'boolean',
+        'no_cluster' => 'boolean',
     ];
 
     /** true เมื่อรัน migration เพิ่มคอลัมน์ display_only แล้ว (กันหน้าเว็บพังถ้ายังไม่ได้ migrate) */
@@ -36,6 +38,16 @@ class OperatingAreaPin extends Model
         static $has = null;
         if ($has === null) {
             $has = \App\Support\SchemaProbe::hasColumn('kidney_operating_area_pins', 'display_only');
+        }
+        return $has;
+    }
+
+    /** true เมื่อรัน migration เพิ่มคอลัมน์ no_cluster แล้ว */
+    public static function hasNoClusterColumn(): bool
+    {
+        static $has = null;
+        if ($has === null) {
+            $has = \App\Support\SchemaProbe::hasColumn('kidney_operating_area_pins', 'no_cluster');
         }
         return $has;
     }

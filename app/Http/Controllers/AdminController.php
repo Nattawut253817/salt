@@ -5147,6 +5147,7 @@ class AdminController extends Controller
                 'agency_label' => $pin->agency_label ?? null,
                 'created_ts' => $pin->created_at ? $pin->created_at->getTimestamp() : null,
                 'created_by' => $pin->created_by,
+                'no_cluster' => OperatingAreaPin::hasNoClusterColumn() ? (bool) ($pin->no_cluster ?? false) : false,
             ];
         })->values();
 
@@ -5171,7 +5172,7 @@ class AdminController extends Controller
         $members = [];
         $last = [];
         $sorted = collect($pins)
-            ->filter(fn($p) => empty($p['view_only']) && !empty($p['created_ts']))
+            ->filter(fn($p) => empty($p['view_only']) && !empty($p['created_ts']) && empty($p['no_cluster'] ?? false))
             ->sortBy('created_ts');
         foreach ($sorted as $p) {
             $k = ($p['created_by'] ?? 0) . '|' . $p['fiscal_year'];
@@ -5992,6 +5993,7 @@ class AdminController extends Controller
             }
 
             $validated['created_by'] = $user->id;
+            $validated['no_cluster'] = $isMulti && OperatingAreaPin::hasNoClusterColumn(); // ปักหลายพื้นที่พร้อมกัน → แยกแบบประเมิน
             $items[] = $validated;
         }
 
@@ -6096,7 +6098,8 @@ class AdminController extends Controller
 
         $chosen = [];
         $skipped = 0;
-        DB::transaction(function () use ($ids, $visible, $locked, $user, &$chosen, &$skipped) {
+        $markNoCluster = count($ids) > 1; // ติ๊กหลายพื้นที่พร้อมกัน → แต่ละพื้นที่มีแบบประเมินแยก
+        DB::transaction(function () use ($ids, $visible, $locked, $user, $markNoCluster, &$chosen, &$skipped) {
             foreach ($ids as $pinId) {
                 if (!$visible->contains($pinId) || isset($locked[$pinId])) {
                     $skipped++;
@@ -6104,6 +6107,12 @@ class AdminController extends Controller
                 }
                 $this->choosePinForUser($user, $pinId);
                 $chosen[] = $pinId;
+            }
+            // mark no_cluster บน pins ที่เพิ่งเลือก (ไม่กระทบ pins ที่ no_cluster=true อยู่แล้ว)
+            if ($markNoCluster && !empty($chosen) && OperatingAreaPin::hasNoClusterColumn()) {
+                OperatingAreaPin::whereIn('id', $chosen)
+                    ->where('no_cluster', false)
+                    ->update(['no_cluster' => true]);
             }
         });
 
