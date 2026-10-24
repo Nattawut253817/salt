@@ -388,68 +388,57 @@
            horizontal scroll needed since overflow simply wraps to a new
            line. Matches the same treatment used on kidney-dhb-report.blade.php. */
         .cr-filter-card {
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: 8px;
-            padding: 4px 0 4px 0;
+            padding: 10px 12px 10px 22px;
         }
 
-        /* "ตัวกรอง" — plain inline label, no border, no bg */
         .cr-filter-title {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 4px 7px 0;
+            gap: 8px;
+            padding: 8px 10px;
             white-space: nowrap;
-            font-weight: 700;
-            font-size: 0.84rem;
+            font-weight: 800;
+            font-size: 0.88rem;
             color: #334155;
-            flex-shrink: 0;
         }
 
         .cr-filter-title i {
-            color: #6366f1;
-            font-size: 0.78rem;
+            color: #94a3b8;
+            font-size: 0.82rem;
         }
 
-        /* Each filter chip — stretch evenly, white bg, crisp border */
         .cr-filter-item {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 7px;
-            padding: 8px 14px;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px 16px;
             white-space: nowrap;
-            background: #fff;
-            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            border: 1px solid #eef1f6;
             border-radius: 999px;
             cursor: pointer;
-            transition: border-color 0.15s, box-shadow 0.15s;
-            flex: 1 1 160px;
-            min-width: 0;
-        }
-
-        .cr-filter-item:hover {
-            border-color: #a5b4fc;
-            box-shadow: 0 0 0 3px rgba(99,102,241,0.07);
+            flex: 1 1 200px;
         }
 
         .cr-filter-item-icon {
-            color: #6366f1;
-            font-size: 0.78rem;
-            flex-shrink: 0;
+            color: #94a3b8;
+            font-size: 0.82rem;
         }
 
         .cr-filter-item-label {
-            font-weight: 600;
-            font-size: 0.80rem;
+            font-weight: 700;
+            font-size: 0.85rem;
             color: #64748b;
-            flex-shrink: 0;
         }
 
         .cr-select {
@@ -459,13 +448,11 @@
             background: transparent;
             font-family: 'Sarabun', sans-serif;
             font-weight: 700;
-            font-size: 0.82rem;
-            color: #1e293b;
+            font-size: 0.85rem;
+            color: #1a202c;
             cursor: pointer;
             padding: 0;
-            /* flex:1 lets select absorb leftover chip width */
-            flex: 1 1 auto;
-            min-width: 0;
+            max-width: 130px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -477,37 +464,30 @@
 
         .cr-filter-chevron {
             color: #94a3b8;
-            font-size: 0.60rem;
+            font-size: 0.65rem;
             pointer-events: none;
-            flex-shrink: 0;
         }
 
         .cr-btn-reset {
-            display: inline-flex;
+            display: flex;
             align-items: center;
-            gap: 7px;
-            padding: 7px 16px;
+            gap: 8px;
+            padding: 9px 18px;
             border-radius: 999px;
-            background: #fff;
+            background: #f1f5f9;
             color: #475569;
             font-weight: 700;
-            font-size: 0.82rem;
-            border: 1px solid #e2e8f0;
+            font-size: 0.85rem;
+            border: none;
             cursor: pointer;
             text-decoration: none !important;
-            transition: border-color 0.15s, background 0.15s, color 0.15s;
+            transition: all 0.2s ease;
             white-space: nowrap;
             flex-shrink: 0;
         }
 
-        .cr-btn-reset i {
-            color: #6366f1;
-            font-size: 0.78rem;
-        }
-
         .cr-btn-reset:hover {
-            background: #6366f1;
-            border-color: #6366f1;
+            background: #55707a;
             color: #fff;
         }
 
