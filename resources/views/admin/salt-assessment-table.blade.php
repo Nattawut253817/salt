@@ -769,8 +769,9 @@
                                 $saltIsL1 = auth()->user()->User_rank_id == 1;
                             @endphp
                             @if($saltIsL1)
-                                {{-- สคร.: ติดตาม = ดูรายละเอียดอย่างเดียว; SuperAdmin มีปุ่มแก้ไข (ไอคอนดินสอ) เพิ่มอีกปุ่ม --}}
-                                <a href="{{ $saltIsSuper ? route('admin.salt-assessment.show', $item->id) : $saltFormUrl }}"
+                                {{-- สคร. ทุกคน (ทั้ง SuperAdmin และไม่ใช่): ปุ่มติดตาม → salt-assessment.show เพื่อให้ mark-as-read ทำงาน --}}
+                                {{-- SuperAdmin จะมีปุ่มดินสอ (แก้ไข → report-progress) เพิ่มอีกปุ่มด้านล่าง --}}
+                                <a href="{{ route('admin.salt-assessment.show', $item->id) }}"
                                     class="btn-do-assess btn-follow trigger-loader" title="ติดตามผลการประเมิน">
                                     <i class="fas fa-magnifying-glass-chart"></i>
                                     <span>ติดตาม</span>

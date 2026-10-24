@@ -3511,10 +3511,12 @@ class AdminController extends Controller
         // Available quarters for the CURRENT selected year in the view
         $availableQuarters = [1, 2, 3, 4];
 
-        if (!$isNew) {
-            // Mark ALL records for this agency as read (not just the clicked quarter).
-            // A group row in kidney-dhb-table shows "ใหม่" if ANY record in the
-            // group is unread, so we must clear all of them at once.
+        if (!$isNew && (int) auth()->user()->User_rank_id === 1) {
+            // Mark ALL records for this agency as read ONLY when rank-1 (สคร.) opens the record.
+            // rank 2/3 redirects here after saving (is_read just set to 0) — they must NOT
+            // mark as read, otherwise the badge never appears to rank-1 after an update.
+            // A group row in kidney-dhb-table shows "ใหม่" if ANY record in the agency is
+            // unread, so we clear all of them at once when rank-1 actually views the page.
             KidneyAssessment::whereIn('user_id', $agencyUserIds)
                 ->where('is_read', 0)
                 ->update(['is_read' => 1]);
@@ -4637,8 +4639,10 @@ class AdminController extends Controller
 
         $availableQuarters = [1, 2, 3, 4];
 
-        if (!$assessment->is_read) {
-            // Mark ALL quarters for this user as read (same logic as kidney-dhb).
+        if (!$assessment->is_read && (int) auth()->user()->User_rank_id === 1) {
+            // Mark ALL quarters for this user as read ONLY when rank-1 (สคร.) opens the record.
+            // rank 2/3 redirects here after saving — they must NOT mark as read, otherwise
+            // the badge never appears to rank-1 after an update.
             SaltAssessment::where('user_id', $assessment->user_id)
                 ->where('is_read', 0)
                 ->update(['is_read' => 1]);
@@ -4762,7 +4766,7 @@ class AdminController extends Controller
     public function markAllSaltAssessmentsRead()
     {
         $user = auth()->user();
-        if ((int) $user->User_rank_id !== 1) {
+        if ($user->User_rank_id !== 1) {
             abort(403);
         }
 
@@ -4779,7 +4783,7 @@ class AdminController extends Controller
     public function markAllKidneyAssessmentsRead()
     {
         $user = auth()->user();
-        if ((int) $user->User_rank_id !== 1) {
+        if ($user->User_rank_id !== 1) {
             abort(403);
         }
 

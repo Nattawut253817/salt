@@ -2119,7 +2119,7 @@
 
             <div class="hm-card hm-fly-card">
                 <h4>ค่าเฉลี่ยโซเดียมก่อน-หลังปรับสูตร รายจังหวัด</h4>
-                <div class="hm-cap">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมดของจังหวัด</div>
+                <div class="hm-cap">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมด</div>
                 @php
                     $flyRows = collect($hmMn['provinces']);
                     $flyMax = max(1, (float) $flyRows->max(fn($r) => max($r['avg_before'] ?? 0, $r['avg_after'] ?? 0)), (float) ($hmMn['avg_before'] ?? 0), (float) ($hmMn['avg_after'] ?? 0));

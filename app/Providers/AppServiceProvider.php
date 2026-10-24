@@ -81,18 +81,12 @@ class AppServiceProvider extends ServiceProvider
                 // key that could be safely invalidated at that moment. Running two
                 // plain COUNT queries per admin page load is cheap enough here
                 // that it isn't worth trading accuracy for it.
-                $kidneyQuery = \App\Models\KidneyAssessment::where('is_read', 0);
-                $saltQuery = \App\Models\SaltAssessment::where('is_read', 0);
-
-                if ($currentUser->User_rank_id != 1) {
-                    // subquery แทนการ pluck id ทั้งหน่วยงานมาใส่ whereIn (ลดข้อมูลที่ส่งไป-กลับ DB ทุกหน้า)
-                    $agencyUserIds = self::badgeAgencyUsersQuery($currentUser)->select('id');
-                    $kidneyQuery->whereIn('user_id', $agencyUserIds);
-                    $saltQuery->whereIn('user_id', $agencyUserIds);
+                // Badges are shown only to rank-1 users (SuperAdmin / สคร.),
+                // so skip the COUNT queries entirely for everyone else.
+                if ($currentUser->User_rank_id == 1) {
+                    $unreadKidneyCount = \App\Models\KidneyAssessment::where('is_read', 0)->count();
+                    $unreadSaltCount   = \App\Models\SaltAssessment::where('is_read', 0)->count();
                 }
-
-                $unreadKidneyCount = $kidneyQuery->count();
-                $unreadSaltCount = $saltQuery->count();
             }
 
             $view->with([

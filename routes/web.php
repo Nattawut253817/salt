@@ -112,6 +112,7 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     })->name('admin.dashboard');
     Route::get('/report-progress', [AdminController::class, 'reportProgress'])->name('admin.report-progress');
     Route::get('/salt-assessment-list', [AdminController::class, 'saltAssessmentList'])->name('admin.salt-assessment-list');
+    Route::post('/salt-assessment-list/mark-all-read', [AdminController::class, 'markAllSaltAssessmentsRead'])->name('admin.salt-assessment.mark-all-read');
     Route::get('/salt-assessment/{id}', [AdminController::class, 'showSaltAssessment'])->name('admin.salt-assessment.show');
     Route::post('/salt-assessment/{id}/confirm', [AdminController::class, 'confirmSaltAssessment'])->name('admin.salt-assessment.confirm');
     Route::get('/salt-assessment/{id}/export-excel', [AdminController::class, 'exportSaltAssessmentExcel'])->name('admin.salt-assessment.export-excel');
@@ -126,6 +127,7 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
 
     // Kidney DHB (พชอ.ไต)
     Route::get('/kidney-dhb-list', [AdminController::class, 'kidneyDHBList'])->name('admin.kidney-dhb-list');
+    Route::post('/kidney-dhb-list/mark-all-read', [AdminController::class, 'markAllKidneyAssessmentsRead'])->name('admin.kidney-dhb.mark-all-read');
     Route::get('/kidney-dhb-export', [AdminController::class, 'exportKidneyDHBExcel'])->name('admin.kidney-dhb.export-excel');
     // เลือกพื้นที่ดำเนินงาน (ปักหมุดพื้นที่ล่วงหน้า) - ทุกระดับบันทึกได้ ก่อนไปทำแบบประเมิน
     Route::get('/kidney-dhb-areas', [AdminController::class, 'kidneyDhbAreas'])->name('admin.kidney-dhb.areas');
