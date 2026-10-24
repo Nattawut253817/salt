@@ -50,7 +50,7 @@
                above, which has no side padding of its own, so the two
                edges never lined up. */
             padding: 4px 0 24px;
-            background: #ffffff;
+            background: #f8fafc;
             min-height: 100vh;
         }
 
