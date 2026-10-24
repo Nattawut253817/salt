@@ -225,21 +225,24 @@
         .auth-side-features {
             margin-top: 36px;
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            flex-direction: row;
+            gap: 10px;
         }
         .auth-side-feature {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 12px;
-            font-size: 0.78rem;
+            text-align: center;
+            gap: 8px;
+            font-size: 0.72rem;
             font-weight: 600;
             line-height: 1.3;
             color: rgba(255,255,255,.88);
+            flex: 1;
         }
         .auth-side-feature-icon {
             flex-shrink: 0;
-            width: 38px; height: 38px;
+            width: 40px; height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
