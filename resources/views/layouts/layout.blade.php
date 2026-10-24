@@ -305,10 +305,10 @@
             height: 36px;
             padding: 0 12px;
             border-radius: 999px;
-            color: rgba(255, 255, 255, 0.92);
+            color: #ffffff;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 0.82rem;
             white-space: nowrap;
             transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
@@ -360,20 +360,21 @@
             height: 34px;
             padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            color: #ffffff;
+            background: #ffffff;
+            border: none;
+            color: var(--primary-color);
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 600;
-            font-size: 0.78rem;
+            font-weight: 700;
+            font-size: 0.80rem;
             white-space: nowrap;
-            transition: background 0.18s ease, border-color 0.18s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.10);
+            transition: box-shadow 0.18s ease, transform 0.15s ease;
         }
 
         .header-cta:hover {
-            background: rgba(255, 255, 255, 0.26);
-            border-color: rgba(255, 255, 255, 0.85);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.22), 0 2px 5px rgba(0,0,0,0.12);
+            transform: translateY(-1px);
         }
 
         .header-cta-icon {
@@ -381,8 +382,8 @@
             height: 22px;
             min-width: 22px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            color: var(--primary-color);
+            background: var(--pink-gradient);
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
