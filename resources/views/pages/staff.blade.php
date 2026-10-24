@@ -504,11 +504,20 @@
             padding: 4px 10px 4px 8px;
             font-size: 0.73rem;
             font-weight: 600;
+            max-height: 40px;
+            overflow: hidden;
             transition: opacity 0.4s ease;
         }
 
         .pw-match-feedback.match.fading-out {
             opacity: 0;
+            margin: 0;
+            padding: 0;
+            max-height: 0;
+            border-width: 0;
+            overflow: hidden;
+            transition: opacity 0.4s ease, max-height 0.4s ease 0.35s,
+                        margin 0s ease 0.75s, padding 0s ease 0.75s, border-width 0s ease 0.75s;
         }
 
         .pw-match-feedback.mismatch {
@@ -2151,6 +2160,14 @@
                 // user keeps editing before that, restart the timer below.
                 pwMatchHideTimer = setTimeout(() => {
                     feedback.classList.add('fading-out');
+                    // After CSS transition finishes, remove .match so the
+                    // element goes back to display:none and takes no space.
+                    setTimeout(() => {
+                        if (feedback.classList.contains('fading-out')) {
+                            feedback.classList.remove('match', 'fading-out');
+                            feedback.innerHTML = '';
+                        }
+                    }, 800);
                 }, 5000);
             } else {
                 confirmInput.classList.add('pw-mismatch');
