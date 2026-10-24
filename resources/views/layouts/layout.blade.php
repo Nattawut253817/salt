@@ -372,43 +372,43 @@
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             height: 36px;
-            padding: 0 12px;
+            padding: 0 14px;
             border-radius: 999px;
-            color: rgba(255,255,255,0.95);
+            border: 1.5px solid transparent;
+            color: #ffffff;
             text-decoration: none;
-            font-family: 'Sarabun', 'Itim', sans-serif;
-            font-weight: 500;
-            font-size: 0.80rem;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 600;
+            font-size: 0.84rem;
             white-space: nowrap;
-            transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+            transition: background 0.14s ease, color 0.14s ease, border-color 0.14s ease;
         }
 
         .main-navbar .nav-link i {
-            font-size: 0.82rem;
-            opacity: 0.90;
+            font-size: 0.84rem;
             flex-shrink: 0;
-            transition: opacity 0.14s ease;
         }
 
         .main-navbar .nav-link:hover {
-            background: rgba(255,255,255,0.20);
+            background: rgba(255,255,255,0.18);
             color: #fff;
         }
 
         .main-navbar .nav-link:hover i { opacity: 1; }
 
-        /* Active: solid white pill with deep-pink text */
+        /* Active: white bg + pink border + deep-pink text */
         .main-navbar .nav-link.active {
-            color: var(--pk-text);
+            color: #be185d;
             background: #ffffff;
+            border-color: #f472b6;
             font-weight: 700;
-            box-shadow: 0 2px 8px rgba(131,24,67,0.20);
+            box-shadow: 0 2px 8px rgba(131,24,67,0.15);
         }
 
         .main-navbar .nav-link.active i {
-            opacity: 1;
+            color: #ec4899;
         }
 
         .user-profile {
