@@ -382,6 +382,105 @@
             transform: translateY(-1px);
         }
 
+        /* ── Theme toggle ── */
+        .theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            border: 1.5px solid rgba(255,255,255,0.45);
+            color: #fff;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            transition: background 0.18s ease, transform 0.14s ease, box-shadow 0.18s ease;
+            margin-right: 8px;
+            backdrop-filter: blur(4px);
+        }
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.45);
+            transform: scale(1.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .theme-toggle .icon-sun  { display: none; }
+        .theme-toggle .icon-moon { display: inline; }
+        [data-theme="dark"] .theme-toggle .icon-sun  { display: inline; }
+        [data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+        /* ── Dark mode overrides ── */
+        [data-theme="dark"] body {
+            background-color: #0f172a !important;
+            color: #f1f5f9 !important;
+        }
+        [data-theme="dark"] .main-content,
+        [data-theme="dark"] .page-content,
+        [data-theme="dark"] .content-wrapper {
+            background: #0f172a !important;
+        }
+        [data-theme="dark"] .card,
+        [data-theme="dark"] .content-card,
+        [data-theme="dark"] .stat-card,
+        [data-theme="dark"] .info-card,
+        [data-theme="dark"] .filter-card,
+        [data-theme="dark"] .filter-section,
+        [data-theme="dark"] .table-card {
+            background: #1e293b !important;
+            border-color: rgba(255,255,255,0.07) !important;
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] .content-header:not(.content-header-themed) {
+            background: #1e293b !important;
+            border-color: rgba(255,255,255,0.07) !important;
+        }
+        [data-theme="dark"] table,
+        [data-theme="dark"] .table { color: #f1f5f9 !important; }
+        [data-theme="dark"] .table thead th,
+        [data-theme="dark"] thead th {
+            background: #0f172a !important;
+            color: #94a3b8 !important;
+            border-color: rgba(255,255,255,0.08) !important;
+        }
+        [data-theme="dark"] .table td,
+        [data-theme="dark"] td { border-color: rgba(255,255,255,0.06) !important; }
+        [data-theme="dark"] .table tbody tr:hover td,
+        [data-theme="dark"] tbody tr:hover td {
+            background: rgba(255,255,255,0.04) !important;
+        }
+        [data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255,255,255,0.03) !important;
+        }
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea,
+        [data-theme="dark"] .form-control {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f1f5f9 !important;
+        }
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] .form-control::placeholder { color: #64748b !important; }
+        [data-theme="dark"] h1,[data-theme="dark"] h2,[data-theme="dark"] h3,
+        [data-theme="dark"] h4,[data-theme="dark"] h5,[data-theme="dark"] h6 {
+            color: #f1f5f9;
+        }
+        [data-theme="dark"] .text-muted { color: #64748b !important; }
+        [data-theme="dark"] .dropdown-menu {
+            background: #1e293b !important;
+            border-color: rgba(255,255,255,0.08) !important;
+        }
+        [data-theme="dark"] .dropdown-item { color: #e2e8f0 !important; }
+        [data-theme="dark"] .dropdown-item:hover { background: rgba(255,255,255,0.06) !important; }
+        [data-theme="dark"] hr { border-color: rgba(255,255,255,0.08) !important; }
+        [data-theme="dark"] footer,
+        [data-theme="dark"] .site-footer {
+            background: #0f172a !important;
+            border-color: rgba(255,255,255,0.07) !important;
+            color: #64748b !important;
+        }
+
         .header-cta-icon {
             width: 22px;
             height: 22px;
@@ -1339,6 +1438,10 @@
             </nav>
 
             <div class="header-actions">
+                <button class="theme-toggle" id="theme-toggle" aria-label="สลับโหมดสว่าง/มืด" title="สลับโหมดสว่าง/มืด">
+                    <i class="fas fa-sun icon-sun"></i>
+                    <i class="fas fa-moon icon-moon"></i>
+                </button>
                 <a href="{{ route('staff') }}" class="header-cta">
                     <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
                     <span>สำหรับเจ้าหน้าที่</span>
@@ -1578,4 +1681,24 @@
     </script>
 </body>
 
+    <script>
+    /* ── Theme toggle: light / dark ── */
+    (function () {
+        var root = document.documentElement;
+        var saved = localStorage.getItem('site-theme') || 'light';
+        root.setAttribute('data-theme', saved);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var btn = document.getElementById('theme-toggle');
+            if (!btn) return;
+
+            btn.addEventListener('click', function () {
+                var current = root.getAttribute('data-theme') || 'light';
+                var next = current === 'dark' ? 'light' : 'dark';
+                root.setAttribute('data-theme', next);
+                try { localStorage.setItem('site-theme', next); } catch (e) {}
+            });
+        });
+    })();
+    </script>
 </html>
