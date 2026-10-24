@@ -3086,15 +3086,25 @@ class AdminController extends Controller
         // สคร. (1) / สสจ. (2): ตารางแสดงทุกพื้นที่ในขอบเขต - มีข้อมูล (แถวรายงาน) แล้วต่อด้วยพื้นที่ที่
         // ยังไม่มีข้อมูล (เลือกแล้วแต่ยังไม่รายงาน / ยังไม่มีผู้เลือก / หมุดแสดงผล) แบ่งหน้าร่วมกัน
         // รายงานมาก่อน แถวยังไม่มีข้อมูลต่อท้าย - ใช้ตัวกรอง "สถานะข้อมูล" เพื่อดูเฉพาะกลุ่มได้
-        $status = in_array($request->input('status'), ['has', 'selected', 'free', 'display'], true) ? $request->input('status') : '';
+        $statusRaw = $request->input('status', '');
+        // 'has' (legacy alias for any report) is still supported for backward compatibility
+        $validStatuses = ['has', 'unconfirmed', 'confirmed', 'selected', 'free', 'display'];
+        $status = in_array($statusRaw, $validStatuses, true) ? $statusRaw : '';
+        // แปลง unconfirmed/confirmed → 'has' (แสดงรายงาน) แล้วกรอง confirmed_at เพิ่มเติม
+        $statusGroup = in_array($status, ['unconfirmed', 'confirmed'], true) ? 'has' : $status;
+        if ($status === 'unconfirmed') {
+            $query->whereNull('kidney_assessments.confirmed_at');
+        } elseif ($status === 'confirmed') {
+            $query->whereNotNull('kidney_assessments.confirmed_at');
+        }
         $pendingTail = collect();
         $pendingHead = collect();
         if (in_array((int) $user->User_rank_id, [1, 2], true)) {
             $perPage = 15;
             $page = max(1, (int) $request->input('page', 1));
             $offset = ($page - 1) * $perPage;
-            $pendingAll = $this->pendingAreasForOverview($user, $request, $status);
-            $reportTotal = in_array($status, ['selected', 'free', 'display'], true)
+            $pendingAll = $this->pendingAreasForOverview($user, $request, $statusGroup);
+            $reportTotal = in_array($statusGroup, ['selected', 'free', 'display'], true)
                 ? 0
                 : (clone $assessments)->toBase()->getCountForPagination();
 
@@ -4083,9 +4093,13 @@ class AdminController extends Controller
         abort_unless($user && $user->isSuperAdmin(), 404);
 
         $query = KidneyAssessment::query();
-        $status = $request->input('status');
-        if (in_array($status, ['selected', 'free', 'display'], true)) {
+        $statusRaw = $request->input('status', '');
+        if (in_array($statusRaw, ['selected', 'free', 'display'], true)) {
             $query->whereRaw('1 = 0'); // แถวกลุ่มนี้ยังไม่มีรายงาน - ไม่มีข้อมูลให้ลบ
+        } elseif ($statusRaw === 'unconfirmed') {
+            $query->whereNull('confirmed_at');
+        } elseif ($statusRaw === 'confirmed') {
+            $query->whereNotNull('confirmed_at');
         }
         if ($request->filled('fiscal_year')) {
             $query->where('fiscal_year', $request->fiscal_year);

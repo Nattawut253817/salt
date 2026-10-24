@@ -68,10 +68,10 @@
                         <label>สถานะข้อมูล</label>
                         <select class="filter-input" name="status" id="status">
                             <option value="">ทั้งหมด</option>
-                            <option value="has" {{ request('status') === 'has' ? 'selected' : '' }}>มีข้อมูล (มีรายงาน)</option>
-                            <option value="selected" {{ request('status') === 'selected' ? 'selected' : '' }}>เลือกพื้นที่แล้ว · ยังไม่รายงาน</option>
-                            <option value="free" {{ request('status') === 'free' ? 'selected' : '' }}>ยังไม่มีผู้เลือก</option>
-                            <option value="display" {{ request('status') === 'display' ? 'selected' : '' }}>หมุดแสดงผล</option>
+                            <option value="unconfirmed" {{ request('status') === 'unconfirmed' ? 'selected' : '' }}>รายงานแล้ว (ยังไม่ยืนยัน)</option>
+                            <option value="confirmed" {{ request('status') === 'confirmed' ? 'selected' : '' }}>รายงานแล้ว (ยืนยันเรียบร้อย)</option>
+                            <option value="selected" {{ request('status') === 'selected' ? 'selected' : '' }}>เลือกพื้นที่แล้ว (ยังไม่รายงาน)</option>
+                            <option value="display" {{ request('status') === 'display' ? 'selected' : '' }}>พื้นที่ (หมุดแสดงผล)</option>
                         </select>
                     </div>
                     @endif
