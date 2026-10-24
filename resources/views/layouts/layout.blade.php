@@ -305,15 +305,14 @@
             height: 36px;
             padding: 0 12px;
             border-radius: 999px;
-            color: #ffffff;
+            color: rgba(255, 255, 255, 0.92);
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 0.82rem;
             white-space: nowrap;
-            transition: all 0.2s ease;
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
             margin: 3px 0;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.18);
         }
 
         .main-navbar .nav-link i {
@@ -324,7 +323,7 @@
 
         .main-navbar .nav-link:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .main-navbar .nav-link:hover i {
@@ -335,8 +334,7 @@
             color: var(--primary-color);
             background: #ffffff;
             font-weight: 700;
-            box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22), 0 1px 4px rgba(0,0,0,0.12);
-            letter-spacing: 0.01em;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0,0,0,0.10);
         }
 
         .main-navbar .nav-link.active i {
@@ -358,37 +356,37 @@
         .header-cta {
             display: flex;
             align-items: center;
-            gap: 7px;
+            gap: 6px;
             height: 34px;
-            padding: 0 14px 0 7px;
+            padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: #ffffff;
-            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            color: #ffffff;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 400;
+            font-weight: 600;
             font-size: 0.78rem;
             white-space: nowrap;
-            box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.2);
-            transition: all 0.2s ease;
+            transition: background 0.18s ease, border-color 0.18s ease;
         }
 
         .header-cta:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px -2px rgba(0, 0, 0, 0.26);
+            background: rgba(255, 255, 255, 0.26);
+            border-color: rgba(255, 255, 255, 0.85);
         }
 
         .header-cta-icon {
-            width: 21px;
-            height: 21px;
-            min-width: 21px;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
             border-radius: 50%;
-            background: var(--pink-gradient);
-            color: #ffffff;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
         }
 
         .user-profile {
