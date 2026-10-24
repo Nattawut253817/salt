@@ -2590,6 +2590,7 @@ class MainController extends Controller
         $selectedQuarter = $request->get('quarter', 'ทั้งหมด');
         $selectedProvince = $request->get('province_search', 'ทั้งหมด');
         $selectedAgency = $request->get('agency_search');
+        $selectedRank = $request->get('agency_rank', 'ทั้งหมด');
 
         $dbProvinces = Province::whereIn('province_name', $targetProvinces)->get();
 
@@ -2607,6 +2608,10 @@ class MainController extends Controller
                     $q->where('fiscal_year', $fiscalYear);
                 }
             });
+
+        if ($selectedRank && $selectedRank !== 'ทั้งหมด') {
+            $agenciesQuery->where('User_rank_id', $selectedRank);
+        }
 
         $dbAgencies = $agenciesQuery->get()
             ->map(function ($u) {
@@ -2658,6 +2663,10 @@ class MainController extends Controller
                     }
                 });
             }
+        }
+
+        if ($selectedRank && $selectedRank !== 'ทั้งหมด') {
+            $baseQuery->where('User_rank_id', $selectedRank);
         }
 
         $allReporters = $baseQuery->get();

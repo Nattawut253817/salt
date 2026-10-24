@@ -400,51 +400,58 @@
             padding: 4px 0 4px 0;
         }
 
+        /* "ตัวกรอง" label pill — matches the image: icon + text, pill border */
         .cr-filter-title {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
+            gap: 6px;
+            padding: 7px 14px;
             white-space: nowrap;
-            font-weight: 800;
-            font-size: 0.85rem;
-            color: #334155;
-        }
-
-        .cr-filter-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 9px 16px;
-            white-space: nowrap;
-            background: #f8fafc;
-            border: 1px solid #eef1f6;
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #475569;
+            background: #fff;
+            border: 1.5px solid #cbd5e1;
             border-radius: 999px;
-            /* Grow to share the bar's width evenly (balanced left-to-
-               right) instead of sitting at its own natural size with
-               empty space trailing after the last chip. The min-width is
-               what still lets flex-wrap fall back to multiple rows once
-               the REAL container (not just the viewport - the side nav
-               narrows it) gets too tight, rather than squeezing chips
-               down to nothing. */
-            flex: 1 1 200px;
-        }
-
-        .cr-btn-reset {
             flex-shrink: 0;
         }
 
-        .cr-filter-title i,
+        .cr-filter-title i {
+            color: #6366f1;
+            font-size: 0.78rem;
+        }
+
+        /* Each filter chip — natural width, white bg, crisp border */
+        .cr-filter-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            white-space: nowrap;
+            background: #fff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            flex: 0 0 auto;
+        }
+
+        .cr-filter-item:hover {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+        }
+
         .cr-filter-item-icon {
-            color: #94a3b8;
-            font-size: 0.8rem;
+            color: #6366f1;
+            font-size: 0.78rem;
+            flex-shrink: 0;
         }
 
         .cr-filter-item-label {
-            font-weight: 700;
-            font-size: 0.82rem;
+            font-weight: 600;
+            font-size: 0.80rem;
             color: #64748b;
+            flex-shrink: 0;
         }
 
         .cr-select {
@@ -454,15 +461,11 @@
             background: transparent;
             font-family: 'Sarabun', sans-serif;
             font-weight: 700;
-            font-size: 0.83rem;
+            font-size: 0.82rem;
             color: #1e293b;
             cursor: pointer;
             padding: 0;
-            /* Not just any width: a native <select> sizes itself to fit
-               its WIDEST <option> (the หน่วยงาน/agency list runs long),
-               not the currently shown value. A capped max-width plus
-               ellipsis keeps one long option list from blowing up its
-               chip's width. */
+            /* cap width so long agency lists don't blow chip wide */
             max-width: 130px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -475,29 +478,41 @@
 
         .cr-filter-chevron {
             color: #94a3b8;
-            font-size: 0.65rem;
+            font-size: 0.60rem;
             pointer-events: none;
+            flex-shrink: 0;
         }
 
         .cr-btn-reset {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 8px;
-            padding: 9px 18px;
+            gap: 7px;
+            padding: 7px 16px;
             border-radius: 999px;
-            background: #eef1f6;
+            background: #fff;
             color: #475569;
             font-weight: 700;
-            font-size: 0.83rem;
-            border: none;
+            font-size: 0.82rem;
+            border: 1.5px solid #cbd5e1;
             cursor: pointer;
             text-decoration: none !important;
-            transition: all 0.2s ease;
+            transition: border-color 0.15s, background 0.15s, color 0.15s;
             white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cr-btn-reset i {
+            color: #6366f1;
+            font-size: 0.78rem;
         }
 
         .cr-btn-reset:hover {
-            background: #475569;
+            background: #6366f1;
+            border-color: #6366f1;
+            color: #fff;
+        }
+
+        .cr-btn-reset:hover i {
             color: #fff;
         }
 
@@ -1160,6 +1175,20 @@
                         <option value="{{ $prov->province_name }}" {{ (string) $selectedProvince == $prov->province_name ? 'selected' : '' }}>{{ $prov->province_name }}
                         </option>
                     @endforeach
+                </select>
+                <i class="fas fa-chevron-down cr-filter-chevron"></i>
+            </label>
+
+            {{-- ประเภทหน่วยงาน --}}
+            <label class="cr-filter-item">
+                <i class="fas fa-sitemap cr-filter-item-icon"></i>
+                <span class="cr-filter-item-label">ประเภทหน่วยงาน</span>
+                <select name="agency_rank" class="cr-select" onchange="this.form.submit()">
+                    <option value="ทั้งหมด" {{ request('agency_rank', 'ทั้งหมด') == 'ทั้งหมด' ? 'selected' : '' }}>ทั้งหมด</option>
+                    <option value="2" {{ request('agency_rank') == '2' ? 'selected' : '' }}>สสจ.</option>
+                    <option value="3" {{ request('agency_rank') == '3' ? 'selected' : '' }}>สสอ.</option>
+                    <option value="4" {{ request('agency_rank') == '4' ? 'selected' : '' }}>รพ.สต.</option>
+                    <option value="5" {{ request('agency_rank') == '5' ? 'selected' : '' }}>รพ.</option>
                 </select>
                 <i class="fas fa-chevron-down cr-filter-chevron"></i>
             </label>
