@@ -147,6 +147,9 @@
         body.page-aurora {
             background-color: #fafafa !important;
             background-image:
+                /* Full-width pink bloom at the very top — bridges the pink
+                   navbar into the page body so there is no abrupt color cut */
+                radial-gradient(ellipse 100% 160px at 50% 0%, rgba(225, 29, 72, 0.09) 0%, rgba(225, 29, 72, 0) 100%),
                 radial-gradient(ellipse 560px 440px at 6% 4%, rgba(248, 113, 113, 0.16) 0%, rgba(248, 113, 113, 0) 62%),
                 radial-gradient(ellipse 500px 400px at 95% 6%, rgba(167, 139, 250, 0.15) 0%, rgba(167, 139, 250, 0) 62%),
                 radial-gradient(ellipse 640px 540px at 50% 46%, rgba(244, 63, 94, 0.05) 0%, rgba(244, 63, 94, 0) 58%) !important;
@@ -164,6 +167,22 @@
             z-index: 11500;
             width: 100%;
             box-shadow: var(--header-shadow);
+        }
+
+        /* Gradient bridge: a translucent pink-to-transparent strip that
+           sits just below the navbar, creating a visual flow from the
+           crimson header into the page content without a hard seam. */
+        .site-header::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 18px;
+            background: linear-gradient(
+                to bottom,
+                rgba(216, 30, 74, 0.11) 0%,
+                rgba(216, 30, 74, 0) 100%
+            );
+            pointer-events: none;
         }
 
         .header-container {
@@ -513,7 +532,13 @@
             overflow: hidden;
             padding: 18px 28px;
             gap: 18px;
-            border: 1px solid rgba(255, 255, 255, .8);
+            /* Subtle pink top-edge connects this accent card back to the
+               crimson navbar above — the rest of the border stays light
+               white/transparent so the card itself still reads clearly. */
+            border-top: 1.5px solid rgba(225, 29, 72, 0.14);
+            border-left: 1px solid rgba(255, 255, 255, .8);
+            border-right: 1px solid rgba(255, 255, 255, .8);
+            border-bottom: 1px solid rgba(255, 255, 255, .8);
             background:
                 radial-gradient(circle at 92% 20%, rgba(255, 255, 255, .85) 0, rgba(255, 255, 255, 0) 38%),
                 linear-gradient(105deg,
