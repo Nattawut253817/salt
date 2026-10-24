@@ -1251,8 +1251,6 @@
             background: rgba(79, 70, 229, 0.10);
             color: var(--admin-primary);
             box-shadow: none;
-            border-left: 2.5px solid var(--admin-primary);
-            padding-left: 17px; /* compensate for border */
         }
         .nav-submenu .nav-link.active i {
             color: var(--admin-primary);
