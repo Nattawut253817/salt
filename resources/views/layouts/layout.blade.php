@@ -154,38 +154,28 @@
             background-attachment: fixed !important;
         }
 
-        /* ═══════════════════════════════════════════════════════════
-           Header: Two-row layout
-           Row 1 (.header-brand-bar) — pink gradient: logo + title + CTA
-           Row 2 (.header-nav-bar)   — white card strip: tab-style nav
-           ═══════════════════════════════════════════════════════════ */
+        /* Header / Navbar Styling - one continuous bar: brand mark on the
+           left, icon+text nav inline in the middle, staff sign-in as its
+           own pill on the right past a hairline divider. Matches the
+           reference screenshot. */
         .site-header {
             position: sticky;
             top: 0;
             z-index: 11500;
             width: 100%;
-            box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0,0,0,0.06);
+            box-shadow: var(--header-shadow);
         }
 
-        /* ── Row 1: Brand bar ── */
-        .header-brand-bar {
+        .header-container {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+            gap: 18px;
             width: 100%;
-            min-height: 62px;
+            min-height: 68px;
             padding: 10px 4%;
             background:
                 radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
                 var(--pink-gradient);
-        }
-
-        /* ── Row 2: Nav tab strip ── */
-        .header-nav-bar {
-            width: 100%;
-            background: #ffffff;
-            border-top: 1px solid rgba(216, 30, 74, 0.10);
         }
 
         .brand-container {
@@ -207,8 +197,8 @@
             box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
             border: 2px solid rgba(255, 255, 255, 0.6);
             transition: all 0.3s ease;
-            width: 50px;
-            height: 50px;
+            width: 54px;
+            height: 54px;
             flex-shrink: 0;
         }
 
@@ -223,8 +213,10 @@
             transition: transform 0.3s ease;
         }
 
+        /* The header's sole mark: the SSS icon, sized to fill its round
+           badge with a clear, confident presence now that it stands alone. */
         .brand-logo-wrapper--sss img {
-            height: 30px;
+            height: 32px;
             width: auto;
         }
 
@@ -240,7 +232,7 @@
 
         .brand-text-main {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             font-weight: 400;
             color: #ffffff;
             letter-spacing: 0.2px;
@@ -251,19 +243,114 @@
 
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.62rem;
-            color: rgba(255,255,255,0.82);
+            font-size: 0.64rem;
+            color: #ffffff;
             font-weight: 400;
             letter-spacing: 1px;
             text-transform: uppercase;
             white-space: normal;
         }
 
-        /* ── Staff CTA (inside brand bar) ── */
+        .main-navbar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .main-navbar .nav-links {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            margin: 0;
+            padding: 0 4px;
+            gap: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+            /* Firefox */
+            /* Subtle inner container: slight inset look */
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255,255,255,0.08);
+        }
+
+        .main-navbar .nav-links::-webkit-scrollbar {
+            display: none;
+            /* Chrome/Safari */
+        }
+
+        .main-navbar .nav-item {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Divider between nav items */
+        .main-navbar .nav-item + .nav-item::before {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.35);
+            flex-shrink: 0;
+        }
+
+        /* Each link sits inline on the gradient bar */
+        .main-navbar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 999px;
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'Itim', 'Sarabun', sans-serif;
+            font-weight: 600;
+            font-size: 0.82rem;
+            white-space: nowrap;
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            margin: 3px 0;
+        }
+
+        .main-navbar .nav-link i {
+            font-size: 0.92rem;
+            opacity: 1;
+            transition: opacity 0.2s ease;
+        }
+
+        .main-navbar .nav-link:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .main-navbar .nav-link:hover i {
+            opacity: 1;
+        }
+
+        .main-navbar .nav-link.active {
+            color: var(--primary-color);
+            background: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0,0,0,0.10);
+        }
+
+        .main-navbar .nav-link.active i {
+            opacity: 1;
+        }
+
+        /* The staff sign-in, set apart from the wayfinding list by a
+           hairline divider and its own solid-white pill - reads as "an
+           action" rather than "another page to browse to". */
         .header-actions {
             display: flex;
             align-items: center;
             flex-shrink: 0;
+            padding-left: 14px;
+            margin-left: 2px;
+            border-left: 1px solid rgba(255, 255, 255, 0.28);
         }
 
         .header-cta {
@@ -273,22 +360,20 @@
             height: 34px;
             padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.18);
-            border: 1.5px solid rgba(255,255,255,0.55);
-            color: #ffffff;
+            background: #ffffff;
+            border: none;
+            color: var(--primary-color);
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.80rem;
             white-space: nowrap;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25);
-            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.10);
+            transition: box-shadow 0.18s ease, transform 0.15s ease;
         }
 
         .header-cta:hover {
-            background: rgba(255,255,255,0.30);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.22), 0 2px 5px rgba(0,0,0,0.12);
             transform: translateY(-1px);
         }
 
@@ -297,89 +382,12 @@
             height: 22px;
             min-width: 22px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.25);
+            background: var(--pink-gradient);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.70rem;
-        }
-
-        /* ── Tab-style nav (Row 2) ── */
-        .main-navbar {
-            display: flex;
-            align-items: stretch;
-            width: 100%;
-        }
-
-        .main-navbar .nav-links {
-            display: flex;
-            align-items: stretch;
-            list-style: none;
-            margin: 0;
-            padding: 0 2%;
-            gap: 2px;
-            width: 100%;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .main-navbar .nav-links::-webkit-scrollbar {
-            display: none;
-        }
-
-        .main-navbar .nav-item {
-            flex-shrink: 0;
-            display: flex;
-            align-items: stretch;
-        }
-
-        /* Tab link: icon stacked above label */
-        .main-navbar .nav-link {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 3px;
-            min-height: 52px;
-            padding: 8px 14px;
-            border-radius: 10px;
-            color: #64748b;
-            text-decoration: none;
-            font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 500;
-            font-size: 0.72rem;
-            white-space: nowrap;
-            transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
-            position: relative;
-            margin: 5px 0;
-        }
-
-        .main-navbar .nav-link i {
-            font-size: 1.05rem;
-            transition: color 0.16s ease, transform 0.16s ease;
-        }
-
-        .main-navbar .nav-link:hover {
-            color: var(--primary-color);
-            background: rgba(225, 29, 72, 0.06);
-        }
-
-        .main-navbar .nav-link:hover i {
-            transform: translateY(-1px);
-        }
-
-        /* Active tab: pink pill background */
-        .main-navbar .nav-link.active {
-            color: #ffffff;
-            background: linear-gradient(135deg, #d81e4a 0%, #f0527f 100%);
-            font-weight: 700;
-            box-shadow: 0 3px 12px rgba(216, 30, 74, 0.35), 0 1px 4px rgba(216, 30, 74, 0.20);
-        }
-
-        .main-navbar .nav-link.active i {
-            color: #ffffff;
-            transform: none;
+            font-size: 0.68rem;
         }
 
         .user-profile {
@@ -575,70 +583,121 @@
             margin-right: 15px;
         }
 
-        /* ── Responsive: Two-row header ── */
-
-        /* 1500px: tighten brand bar a bit */
+        /* Responsive Adjustment for Top Nav - the bar stays a single row
+           all the way down to the 768px handoff to the mobile bottom tab
+           bar; the nav list also scrolls horizontally
+           (.main-navbar .nav-links) as a last-resort fallback, but every
+           rule below is sized/verified so that fallback is never actually
+           needed at any common desktop or laptop width - all 7 items plus
+           the staff link stay on screen. */
         @media (max-width: 1500px) {
-            .header-brand-bar {
+            .header-container {
                 gap: 10px;
-                padding: 8px 3%;
             }
+
+            /* Below this width the title no longer fits on one line
+               alongside every nav item and the staff link - wrapping it
+               to two lines here (rather than at every width) frees the
+               room those need, while keeping the reference layout's
+               single-line title at ordinary desktop widths. */
             .brand-text-group {
-                max-width: 200px;
+                max-width: 195px;
             }
+
             .brand-text-main {
                 white-space: normal;
             }
+
+            .main-navbar .nav-links {
+                gap: 0;
+            }
+
             .main-navbar .nav-link {
-                padding: 8px 10px;
-                font-size: 0.68rem;
+                gap: 3px;
+                padding: 0 8px;
+                font-size: 0.72rem;
+            }
+
+            .main-navbar .nav-link i {
+                font-size: 0.86rem;
+            }
+
+            .header-cta > span:not(.header-cta-icon) {
+                display: none;
+            }
+
+            .header-cta {
+                padding: 0 7px;
             }
         }
 
-        /* 992px: hide sub-text, compact tabs */
         @media (max-width: 992px) {
-            .header-brand-bar {
-                padding: 8px 3%;
+            .header-container {
+                padding: 10px 3%;
             }
+
             .brand-text-sub {
                 display: none;
             }
+
+            /* Text labels no longer fit next to every icon in this range -
+               drop to icon-only pills (title attribute keeps a tooltip) so
+               all 7 items still fit without the nav row silently
+               scroll-clipping any of them. */
             .main-navbar .nav-links {
-                padding: 0 1%;
+                gap: 0;
             }
+
+            .main-navbar .nav-link span {
+                display: none;
+            }
+
             .main-navbar .nav-link {
-                padding: 8px 8px;
-                font-size: 0.65rem;
-                min-height: 48px;
+                padding: 0 10px;
+                gap: 0;
             }
+
             .main-navbar .nav-link i {
-                font-size: 0.98rem;
+                font-size: 1.05rem;
+            }
+
+            .main-navbar .nav-item + .nav-item::before {
+                height: 14px;
             }
         }
 
-        /* 768px: hide desktop nav → show mobile bottom bar */
         @media (max-width: 768px) {
             .site-header {
                 position: relative;
             }
+
             .brand-text-main {
-                font-size: 0.88rem;
+                font-size: 0.9rem;
             }
+
             .brand-text-sub {
                 display: none;
             }
+
             .brand-logo-wrapper {
-                width: 44px;
-                height: 44px;
+                width: 46px;
+                height: 46px;
                 padding: 6px;
             }
+
+            .brand-container img {
+                height: 22px;
+            }
+
             .brand-logo-wrapper--sss img {
                 height: 26px;
             }
-            .header-nav-bar,
+
+            .main-navbar,
             .header-actions {
                 display: none;
             }
+
             .main-content {
                 padding: 20px 15px 80px 15px;
             }
@@ -1196,8 +1255,7 @@
     <div class="overlay" id="sidebar-overlay"></div>
 
     <header class="site-header">
-        {{-- Row 1: Brand bar (pink gradient) --}}
-        <div class="header-brand-bar">
+        <div class="header-container">
             <div class="brand-container">
                 <div class="brand-logo-wrapper brand-logo-wrapper--sss" title="Smart Salt &amp; Sodium Monitor">
                     <img src="{{ asset('images/logo-sss-icon.png') }}" alt="SSS Logo">
@@ -1207,16 +1265,7 @@
                     <span class="brand-text-sub">Smart Salt &amp; Sodium Monitor</span>
                 </div>
             </div>
-            <div class="header-actions">
-                <a href="{{ route('staff') }}" class="header-cta">
-                    <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
-                    <span>สำหรับเจ้าหน้าที่</span>
-                </a>
-            </div>
-        </div>
 
-        {{-- Row 2: Nav tab strip (white card style) --}}
-        <div class="header-nav-bar">
             <nav class="main-navbar">
                 <ul class="nav-links">
                     <li class="nav-item">
@@ -1277,6 +1326,13 @@
                     </li>
                 </ul>
             </nav>
+
+            <div class="header-actions">
+                <a href="{{ route('staff') }}" class="header-cta">
+                    <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
+                    <span>สำหรับเจ้าหน้าที่</span>
+                </a>
+            </div>
         </div>
     </header>
 
