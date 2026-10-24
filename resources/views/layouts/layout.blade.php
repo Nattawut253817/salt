@@ -344,18 +344,28 @@
             justify-content: center;
             list-style: none;
             margin: 0;
-            padding: 0 4px;
-            gap: 2px;
+            padding: 0 6px;
+            gap: 0;
             overflow-x: auto;
             scrollbar-width: none;
         }
 
         .main-navbar .nav-links::-webkit-scrollbar { display: none; }
 
+        /* Divider between nav items */
         .main-navbar .nav-item {
             flex-shrink: 0;
             display: flex;
             align-items: center;
+        }
+
+        .main-navbar .nav-item + .nav-item::before {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 20px;
+            background: rgba(255,255,255,0.35);
+            flex-shrink: 0;
         }
 
         .main-navbar .nav-link {
@@ -363,38 +373,38 @@
             flex-direction: row;
             align-items: center;
             gap: 5px;
-            height: 34px;
-            padding: 0 10px;
-            border-radius: 8px;
-            color: rgba(255,255,255,0.92);
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 999px;
+            color: rgba(255,255,255,0.95);
             text-decoration: none;
             font-family: 'Sarabun', 'Itim', sans-serif;
             font-weight: 500;
-            font-size: 0.79rem;
+            font-size: 0.80rem;
             white-space: nowrap;
             transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
         }
 
         .main-navbar .nav-link i {
             font-size: 0.82rem;
-            opacity: 0.85;
+            opacity: 0.90;
             flex-shrink: 0;
             transition: opacity 0.14s ease;
         }
 
         .main-navbar .nav-link:hover {
-            background: rgba(255,255,255,0.22);
+            background: rgba(255,255,255,0.20);
             color: #fff;
         }
 
         .main-navbar .nav-link:hover i { opacity: 1; }
 
-        /* Active: white pill with pink text */
+        /* Active: solid white pill with deep-pink text */
         .main-navbar .nav-link.active {
             color: var(--pk-text);
-            background: rgba(255,255,255,0.88);
+            background: #ffffff;
             font-weight: 700;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 8px rgba(131,24,67,0.20);
         }
 
         .main-navbar .nav-link.active i {
