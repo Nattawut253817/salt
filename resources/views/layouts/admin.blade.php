@@ -535,7 +535,7 @@
         }
 
         .nav-item {
-            margin-bottom: 2px;
+            margin-bottom: 1px;
         }
 
         .nav-link {
@@ -1218,7 +1218,7 @@
         .nav-submenu {
             list-style: none;
             padding: 4px 0 6px 0;
-            margin: 5px 0 0 0;   /* gap below group header, only for groups with submenus */
+            margin: 8px 0 0 0;   /* gap below group header, only for groups with submenus */
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.3s ease;
@@ -1240,6 +1240,7 @@
         /* No connector line */
         .nav-group {
             position: relative;
+            margin-bottom: 4px;  /* extra gap after a group-with-submenu block */
         }
 
         /* ── Submenu active item: lighter tint (not full gradient) ─────────────────
