@@ -167,7 +167,7 @@
             box-shadow: 0 4px 14px -2px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0,0,0,0.06);
         }
 
-        /* ── Row 1: Brand bar ── */
+        /* ── Row 1: Brand bar — green-mint gradient ── */
         .header-brand-bar {
             display: flex;
             align-items: center;
@@ -176,9 +176,7 @@
             width: 100%;
             min-height: 62px;
             padding: 10px 4%;
-            background:
-                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
-                var(--pink-gradient);
+            background: linear-gradient(135deg, #b8f0cc 0%, #ccf0a8 50%, #dff5b0 100%);
         }
 
         /* ── Row 2: Nav tab strip — green-mint gradient ── */
@@ -205,8 +203,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+            border: 2px solid rgba(45, 106, 79, 0.20);
             transition: all 0.3s ease;
             width: 50px;
             height: 50px;
@@ -242,21 +240,18 @@
         .brand-text-main {
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-size: 0.95rem;
-            font-weight: 400;
-            color: #ffffff;
+            font-weight: 600;
+            color: #1a4d32;
             letter-spacing: 0.2px;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+            text-shadow: none;
             white-space: nowrap;
             line-height: 1.2;
-            background: rgba(180, 240, 200, 0.18);
-            padding: 2px 10px;
-            border-radius: 6px;
         }
 
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-size: 0.62rem;
-            color: rgba(255,255,255,0.82);
+            color: #2d6a4f;
             font-weight: 400;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -277,22 +272,21 @@
             height: 34px;
             padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: rgba(255,255,255,0.18);
-            border: 1.5px solid rgba(255,255,255,0.55);
-            color: #ffffff;
+            background: rgba(255,255,255,0.60);
+            border: 1.5px solid rgba(45, 106, 79, 0.30);
+            color: #1a4d32;
             text-decoration: none;
             font-family: 'Itim', 'Sarabun', sans-serif;
             font-weight: 600;
             font-size: 0.80rem;
             white-space: nowrap;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.25);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
             transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
-            backdrop-filter: blur(6px);
         }
 
         .header-cta:hover {
-            background: rgba(255,255,255,0.30);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 4px 14px rgba(0,0,0,0.14);
             transform: translateY(-1px);
         }
 
@@ -301,8 +295,8 @@
             height: 22px;
             min-width: 22px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.25);
-            color: #ffffff;
+            background: rgba(45, 106, 79, 0.15);
+            color: #1a4d32;
             display: flex;
             align-items: center;
             justify-content: center;
