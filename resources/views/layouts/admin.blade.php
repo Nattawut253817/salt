@@ -780,15 +780,45 @@
             transform: translateY(0);
         }
 
+        /* ปุ่ม "อ่านแล้วทั้งหมด" - สีเขียวอมน้ำเงิน ชัดเจนว่าเป็น action ที่ต่างจากปุ่มนำทาง */
+        .btn-mark-read {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: #fff;
+            font-family: 'Noto Serif Thai', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 11px 24px;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 6px 16px rgba(4, 120, 87, 0.35);
+            text-decoration: none !important;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+        }
+        .btn-mark-read i { font-size: 0.95rem; }
+        .btn-mark-read:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(4, 120, 87, 0.45);
+            filter: brightness(1.08);
+            color: #fff;
+        }
+        .btn-mark-read:active { transform: translateY(0); }
+
         @media (max-width: 576px) {
 
             .btn-take-assessment span,
-            .btn-back-home span {
+            .btn-back-home span,
+            .btn-mark-read span {
                 display: none;
             }
 
             .btn-take-assessment,
-            .btn-back-home {
+            .btn-back-home,
+            .btn-mark-read {
                 padding: 11px 14px;
             }
         }
@@ -894,6 +924,216 @@
                 padding: 20px;
             }
         }
+
+        /* ========================================================
+           Sidebar collapse toggle button
+           ======================================================== */
+        .sidebar-toggle-btn {
+            position: fixed;
+            top: calc(var(--admin-banner-height) + 10px);
+            left: calc(var(--sidebar-width) - 16px);
+            z-index: 1100;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: left 0.3s ease, transform 0.3s ease, background 0.2s;
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+        .sidebar-toggle-btn:hover {
+            background: #f1f5f9;
+            color: var(--admin-primary);
+            border-color: #c7d2fe;
+        }
+        /* When sidebar is collapsed */
+        body.sidebar-collapsed .sidebar-toggle-btn {
+            left: calc(80px - 16px);
+        }
+        body.sidebar-collapsed .sidebar-toggle-btn i {
+            transform: rotate(180deg);
+        }
+        body.sidebar-collapsed .admin-sidebar {
+            width: 80px;
+            overflow: visible;
+        }
+        body.sidebar-collapsed .admin-main {
+            margin-left: 80px;
+        }
+        /* hides text in collapsed mode (desktop manual collapse) */
+        body.sidebar-collapsed .admin-sidebar .nav-link span:not(.nav-badge),
+        body.sidebar-collapsed .admin-sidebar .nav-section-title,
+        body.sidebar-collapsed .admin-sidebar .sidebar-brand span,
+        body.sidebar-collapsed .admin-sidebar .btn-logout span,
+        body.sidebar-collapsed .admin-sidebar .submenu-arrow,
+        body.sidebar-collapsed .admin-sidebar .nav-submenu {
+            display: none !important;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link {
+            justify-content: center;
+            padding: 12px 0;
+        }
+        body.sidebar-collapsed .admin-sidebar .sidebar-brand {
+            justify-content: center;
+            padding: 20px 0;
+        }
+        /* Tooltip for collapsed icons */
+        body.sidebar-collapsed .admin-sidebar .nav-link {
+            position: relative;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: calc(100% + 10px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: #1e293b;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            z-index: 9999;
+        }
+        body.sidebar-collapsed .admin-sidebar .nav-link:hover::after {
+            opacity: 1;
+        }
+        /* Sync with @media collapse width if using responsive only  */
+        @media (max-width: 1024px) {
+            .sidebar-toggle-btn {
+                left: calc(80px - 16px);
+            }
+            body.sidebar-collapsed .sidebar-toggle-btn {
+                left: calc(80px - 16px);
+            }
+        }
+        @media (max-width: 768px) {
+            .sidebar-toggle-btn {
+                left: calc(100% - 16px) !important;
+                top: calc(var(--admin-banner-height) + 8px);
+            }
+        }
+
+        /* ========================================================
+           Collapsible submenu group
+           ======================================================== */
+        .nav-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--sidebar-text);
+            font-weight: 600;
+            font-family: 'K2D', 'Sarabun', sans-serif;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+            position: relative;
+            user-select: none;
+            text-decoration: none !important;
+        }
+        .nav-group-header i.group-icon {
+            font-size: 0.86rem;
+            width: 29px;
+            height: 29px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            background: #f1f5f9;
+            border-radius: 9px;
+            transition: color 0.2s, background 0.2s;
+        }
+        .nav-group-header .group-label {
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: 0;
+        }
+        .nav-group-header .nav-badge {
+            flex-shrink: 0;
+        }
+        .submenu-arrow {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            transition: transform 0.25s ease;
+            flex-shrink: 0;
+            margin-left: 2px;
+        }
+        .nav-group-header:hover {
+            background: #f1f5f9;
+            color: var(--admin-primary);
+            transform: translateX(2px);
+        }
+        .nav-group-header:hover i.group-icon {
+            color: var(--admin-primary);
+            background: #e0e7ff;
+        }
+        .nav-group-header.group-active {
+            background: linear-gradient(135deg, var(--admin-primary) 0%, #6366f1 100%);
+            color: white;
+            box-shadow: 0 6px 14px rgba(79, 70, 229, 0.28);
+        }
+        .nav-group-header.group-active i.group-icon {
+            color: white;
+            background: rgba(255,255,255,0.18);
+        }
+        .nav-group-header.group-active .submenu-arrow {
+            color: rgba(255,255,255,0.7);
+        }
+        /* Open state: rotate arrow */
+        .nav-group-header.open .submenu-arrow {
+            transform: rotate(90deg);
+        }
+        /* Submenu list */
+        .nav-submenu {
+            list-style: none;
+            padding: 2px 0 4px 0;
+            margin: 0;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        .nav-submenu.submenu-open {
+            max-height: 300px;
+        }
+        .nav-submenu .nav-link {
+            padding: 8px 12px 8px 20px;
+            font-size: 0.81rem;
+            border-radius: 10px;
+        }
+        .nav-submenu .nav-link i {
+            width: 24px;
+            height: 24px;
+            font-size: 0.78rem;
+        }
+        /* Vertical connector line for sub-items */
+        .nav-submenu::before {
+            content: '';
+            position: absolute;
+            left: 32px;
+            top: 0; bottom: 0;
+            width: 1px;
+            background: #e2e8f0;
+            border-radius: 1px;
+        }
+        .nav-group {
+            position: relative;
+        }
+        /* Nav-badge inside group header */
+        .nav-group-header .nav-badge {
+            margin-left: 0;
+        }
+
     </style>
     @yield('extra_css')
     <style>
@@ -1008,6 +1248,11 @@
         </div>
     </div>
 
+    <!-- Sidebar collapse/expand button -->
+    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" title="ย่อ/ขยายเมนู" aria-label="ย่อ/ขยายเมนู">
+        <i class="fas fa-chevron-left"></i>
+    </button>
+
     <aside class="admin-sidebar" id="sidebar">
         <div class="sidebar-brand">
             <div class="brand-logo-frame">
@@ -1019,36 +1264,51 @@
             @if (auth()->user()->User_rank_id == 1)
                 <!-- Admin Only Menus -->
                 <div class="nav-section-title">จัดการข้อมูล</div>
-                <li class="nav-item">
-                    <a href="{{ route('admin.awareness') }}"
-                        class="nav-link {{ request()->routeIs('admin.awareness') ? 'active' : '' }}">
-                        <i class="fas fa-file-signature"></i>
-                        <span>การประเมินความตระหนักรู้</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.awareness.settings.criteria') }}"
-                        class="nav-link {{ request()->routeIs('admin.awareness.settings.criteria') ? 'active' : '' }}"
-                        style="padding-left: 40px;">
-                        <i class="fas fa-sliders"></i>
-                        <span style="font-size: 0.78rem; font-style: italic;">ตั้งค่าเกณฑ์ความตระหนักรู้</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.awareness.settings.dashboard') }}"
-                        class="nav-link {{ request()->routeIs('admin.awareness.settings.dashboard') ? 'active' : '' }}"
-                        style="padding-left: 40px;">
-                        <i class="fas fa-table-cells"></i>
-                        <span style="font-style: italic;">ตั้งค่าแดชบอร์ด</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('admin.awareness.settings.scoring') }}"
-                        class="nav-link {{ request()->routeIs('admin.awareness.settings.scoring') ? 'active' : '' }}"
-                        style="padding-left: 40px;">
-                        <i class="fas fa-calculator"></i>
-                        <span style="font-style: italic;">ตั้งค่าคะแนนความตระหนักรู้</span>
-                    </a>
+                @php
+                    $awarenessActive = request()->routeIs('admin.awareness', 'admin.awareness.settings.criteria', 'admin.awareness.settings.dashboard', 'admin.awareness.settings.scoring');
+                @endphp
+                <li class="nav-group">
+                    <div class="nav-group-header {{ $awarenessActive ? 'group-active' : '' }} {{ $awarenessActive ? '' : 'open' }}"
+                         data-target="submenu-awareness"
+                         data-tooltip="ความตระหนักรู้">
+                        <i class="fas fa-file-signature group-icon"></i>
+                        <span class="group-label">การประเมินความตระหนักรู้</span>
+                        <i class="fas fa-chevron-right submenu-arrow"></i>
+                    </div>
+                    <ul class="nav-submenu {{ $awarenessActive ? 'submenu-open' : '' }}" id="submenu-awareness">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.awareness') }}"
+                                class="nav-link {{ request()->routeIs('admin.awareness') ? 'active' : '' }}"
+                                data-tooltip="ดูผลการประเมิน">
+                                <i class="fas fa-eye"></i>
+                                <span>ดูผลการประเมิน</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.awareness.settings.criteria') }}"
+                                class="nav-link {{ request()->routeIs('admin.awareness.settings.criteria') ? 'active' : '' }}"
+                                data-tooltip="ตั้งค่าเกณฑ์">
+                                <i class="fas fa-sliders"></i>
+                                <span>ตั้งค่าเกณฑ์</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.awareness.settings.dashboard') }}"
+                                class="nav-link {{ request()->routeIs('admin.awareness.settings.dashboard') ? 'active' : '' }}"
+                                data-tooltip="ตั้งค่าแดชบอร์ด">
+                                <i class="fas fa-table-cells"></i>
+                                <span>ตั้งค่าแดชบอร์ด</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.awareness.settings.scoring') }}"
+                                class="nav-link {{ request()->routeIs('admin.awareness.settings.scoring') ? 'active' : '' }}"
+                                data-tooltip="ตั้งค่าคะแนน">
+                                <i class="fas fa-calculator"></i>
+                                <span>ตั้งค่าคะแนน</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nav-item">
                     <a href="{{ route('admin.sodium-menus') }}"
@@ -1073,35 +1333,73 @@
                 </li>
 
                 <div class="nav-section-title">จัดการแบบประเมิน</div>
-                <li class="nav-item">
-                    <a href="{{ route('admin.kidney-dhb-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas') ? 'active' : '' }}">
-                        <i class="fas fa-file-medical"></i>
-                        <span>แบบประเมินพชอ.ไต</span>
-                        @if (isset($unreadKidneyCount) && $unreadKidneyCount > 0)
+                @php
+                    $kidneyActive = request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show', 'admin.kidney-dhb.areas', 'admin.operating-areas.index');
+                @endphp
+                <li class="nav-group">
+                    <div class="nav-group-header {{ $kidneyActive ? 'group-active' : '' }} {{ $kidneyActive ? '' : 'open' }}"
+                         data-target="submenu-kidney"
+                         data-tooltip="พชอ.ไต">
+                        <i class="fas fa-file-medical group-icon"></i>
+                        <span class="group-label">แบบประเมินพชอ.ไต</span>
+                        @if (isset($unreadKidneyCount) && $unreadKidneyCount > 0 && auth()->user()->User_rank_id == 1)
                             <span class="nav-badge">{{ $unreadKidneyCount }}</span>
                         @endif
-                    </a>
+                        <i class="fas fa-chevron-right submenu-arrow"></i>
+                    </div>
+                    <ul class="nav-submenu {{ $kidneyActive ? 'submenu-open' : '' }}" id="submenu-kidney">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.kidney-dhb-list') }}"
+                                class="nav-link {{ request()->routeIs('admin.kidney-dhb-list', 'admin.kidney-dhb', 'admin.kidney-dhb.show') ? 'active' : '' }}"
+                                data-tooltip="รายการประเมิน">
+                                <i class="fas fa-list-check"></i>
+                                <span>รายการประเมิน</span>
+                            </a>
+                        </li>
+                        @if (auth()->user()->isSuperAdmin())
+                        <li class="nav-item">
+                            <a href="{{ route('admin.operating-areas.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.operating-areas.index') ? 'active' : '' }}"
+                                data-tooltip="จัดการพื้นที่">
+                                <i class="fas fa-map-location-dot"></i>
+                                <span>จัดการพื้นที่</span>
+                            </a>
+                        </li>
+                        @endif
+                    </ul>
                 </li>
-                @if (auth()->user()->isSuperAdmin())
-                <li class="nav-item">
-                    <a href="{{ route('admin.operating-areas.index') }}"
-                        class="nav-link {{ request()->routeIs('admin.operating-areas.index') ? 'active' : '' }}"
-                        style="padding-left: 40px;">
-                        <i class="fas fa-map-location-dot"></i>
-                        <span style="font-style: italic;">จัดการพื้นที่ดำเนินงาน</span>
-                    </a>
-                </li>
-                @endif
-                <li class="nav-item">
-                    <a href="{{ route('admin.salt-assessment-list') }}"
-                        class="nav-link {{ request()->routeIs('admin.salt-assessment-list', 'admin.report-progress') ? 'active' : '' }}">
-                        <i class="fas fa-clipboard-check"></i>
-                        <span>แบบประเมินลดการบริโภคเกลือ</span>
-                        @if (isset($unreadSaltCount) && $unreadSaltCount > 0)
+                @php
+                    $saltActive = request()->routeIs('admin.salt-assessment-list', 'admin.report-progress');
+                @endphp
+                <li class="nav-group">
+                    <div class="nav-group-header {{ $saltActive ? 'group-active' : '' }} {{ $saltActive ? '' : 'open' }}"
+                         data-target="submenu-salt"
+                         data-tooltip="ลดการบริโภคเกลือ">
+                        <i class="fas fa-clipboard-check group-icon"></i>
+                        <span class="group-label">แบบประเมินลดการบริโภคเกลือ</span>
+                        @if (isset($unreadSaltCount) && $unreadSaltCount > 0 && auth()->user()->User_rank_id == 1)
                             <span class="nav-badge">{{ $unreadSaltCount }}</span>
                         @endif
-                    </a>
+                        <i class="fas fa-chevron-right submenu-arrow"></i>
+                    </div>
+                    <ul class="nav-submenu {{ $saltActive ? 'submenu-open' : '' }}" id="submenu-salt">
+                        <li class="nav-item">
+                            <a href="{{ route('admin.salt-assessment-list') }}"
+                                class="nav-link {{ request()->routeIs('admin.salt-assessment-list') ? 'active' : '' }}"
+                                data-tooltip="รายการประเมิน">
+                                <i class="fas fa-list-check"></i>
+                                <span>รายการประเมิน</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('admin.report-progress') }}"
+                                class="nav-link {{ request()->routeIs('admin.report-progress') ? 'active' : '' }}"
+                                data-tooltip="รายงานความก้าวหน้า">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>รายงานความก้าวหน้า</span>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
 
                 <div class="nav-section-title">จัดการระบบ</div>
@@ -1287,6 +1585,22 @@
                         <i class="fas fa-arrow-left"></i>
                         <span>กลับหน้าหลัก</span>
                     </a>
+                @elseif(auth()->user()->User_rank_id == 1 && request()->routeIs('admin.kidney-dhb-list') && isset($unreadKidneyCount) && $unreadKidneyCount > 0)
+                    <form method="POST" action="{{ route('admin.kidney-dhb.mark-all-read') }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn-mark-read">
+                            <i class="fas fa-check-double"></i>
+                            <span>อ่านแล้วทั้งหมด</span>
+                        </button>
+                    </form>
+                @elseif(auth()->user()->User_rank_id == 1 && request()->routeIs('admin.salt-assessment-list') && isset($unreadSaltCount) && $unreadSaltCount > 0)
+                    <form method="POST" action="{{ route('admin.salt-assessment.mark-all-read') }}" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="btn-mark-read">
+                            <i class="fas fa-check-double"></i>
+                            <span>อ่านแล้วทั้งหมด</span>
+                        </button>
+                    </form>
                 @endif
             </div>
         </header>
@@ -1959,6 +2273,70 @@
                 timer = setTimeout(markAll, 60);
             }).observe(document.body, { childList: true, subtree: true });
         })();
+
+        /* ============================================================
+           Sidebar collapse toggle
+           ============================================================ */
+        (function () {
+            const body   = document.body;
+            const btn    = document.getElementById('sidebarToggleBtn');
+
+            // Restore saved state
+            try {
+                if (localStorage.getItem('sidebarCollapsed') === '1') {
+                    body.classList.add('sidebar-collapsed');
+                }
+            } catch(e) {}
+
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    body.classList.toggle('sidebar-collapsed');
+                    try {
+                        localStorage.setItem('sidebarCollapsed',
+                            body.classList.contains('sidebar-collapsed') ? '1' : '0');
+                    } catch(e) {}
+                });
+            }
+        })();
+
+        /* ============================================================
+           Collapsible submenu groups
+           ============================================================ */
+        (function () {
+            document.querySelectorAll('.nav-group-header').forEach(function (header) {
+                var targetId = header.getAttribute('data-target');
+                if (!targetId) return;
+                var submenu  = document.getElementById(targetId);
+                if (!submenu) return;
+
+                // Restore saved state — override Blade's default open/close
+                try {
+                    var saved = localStorage.getItem('submenu_' + targetId);
+                    if (saved === '1') {
+                        header.classList.add('open');
+                        submenu.classList.add('submenu-open');
+                    } else if (saved === '0') {
+                        header.classList.remove('open');
+                        submenu.classList.remove('submenu-open');
+                    }
+                    // if null → keep Blade's rendered class (active page auto-opens)
+                } catch(e) {}
+
+                header.addEventListener('click', function () {
+                    var isOpen = submenu.classList.contains('submenu-open');
+                    if (isOpen) {
+                        submenu.classList.remove('submenu-open');
+                        header.classList.remove('open');
+                        try { localStorage.setItem('submenu_' + targetId, '0'); } catch(e) {}
+                    } else {
+                        submenu.classList.add('submenu-open');
+                        header.classList.add('open');
+                        try { localStorage.setItem('submenu_' + targetId, '1'); } catch(e) {}
+                    }
+                });
+            });
+        })();
+
     </script>
 </body>
 
