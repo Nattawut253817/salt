@@ -154,72 +154,70 @@
             background-attachment: fixed !important;
         }
 
-        /* ══════════════════════════════════════════════════════════════
-           Header / Navbar — Classic Corporate style
-           White background, 3px pink top-accent bar, single row:
-           [Logo + Brand] ─── [Nav links] ─── [Staff CTA]
-           Nav items use underline indicator on active (not full bg),
-           so the header reads "official" rather than "marketing".
-           ══════════════════════════════════════════════════════════════ */
+        /* Header / Navbar Styling - one continuous bar: brand mark on the
+           left, icon+text nav inline in the middle, staff sign-in as its
+           own pill on the right past a hairline divider. Matches the
+           reference screenshot. */
         .site-header {
             position: sticky;
             top: 0;
             z-index: 11500;
             width: 100%;
-            background: #ffffff;
-            /* Top accent: 3px pink bar that echoes the brand color */
-            border-top: 3px solid var(--primary-color);
-            box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 4px 16px -4px rgba(0,0,0,0.08);
+            box-shadow: var(--header-shadow);
         }
 
         .header-container {
             display: flex;
             align-items: center;
-            gap: 20px;
+            gap: 18px;
             width: 100%;
-            min-height: 64px;
-            padding: 0 4%;
-            background: #ffffff;
+            min-height: 68px;
+            padding: 10px 4%;
+            background:
+                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
+                var(--pink-gradient);
         }
 
-        /* ── Brand ── */
         .brand-container {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 11px;
+            gap: 12px;
             text-decoration: none;
             flex-shrink: 0;
         }
 
         .brand-logo-wrapper {
-            background: var(--pink-gradient);
-            padding: 0;
-            border-radius: 12px;
+            background: #ffffff;
+            padding: 7px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.28);
-            transition: box-shadow 0.22s ease, transform 0.22s ease;
-            width: 44px;
-            height: 44px;
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            width: 54px;
+            height: 54px;
             flex-shrink: 0;
         }
 
         .brand-logo-wrapper:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(225, 29, 72, 0.36);
+            transform: translateY(-2px) rotate(5deg);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22);
         }
 
         .brand-container img {
-            height: 26px;
-            width: auto;
-        }
-
-        .brand-logo-wrapper--sss img {
             height: 28px;
             width: auto;
-            filter: brightness(0) invert(1);
+            transition: transform 0.3s ease;
+        }
+
+        /* The header's sole mark: the SSS icon, sized to fill its round
+           badge with a clear, confident presence now that it stands alone. */
+        .brand-logo-wrapper--sss img {
+            height: 32px;
+            width: auto;
         }
 
         .brand-text-group {
@@ -227,32 +225,32 @@
             flex-direction: column;
             line-height: 1.25;
             align-items: flex-start;
-            gap: 1px;
+            text-align: left;
+            gap: 2px;
             min-width: 0;
         }
 
         .brand-text-main {
-            font-family: 'Kanit', 'Sarabun', sans-serif;
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: #1e2a3a;
-            letter-spacing: 0.1px;
+            font-family: 'Itim', 'Sarabun', sans-serif;
+            font-size: 0.98rem;
+            font-weight: 400;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
             white-space: nowrap;
-            line-height: 1.3;
+            line-height: 1.2;
         }
 
         .brand-text-sub {
-            font-family: 'Kanit', 'Sarabun', sans-serif;
-            font-size: 0.62rem;
-            color: var(--primary-color);
-            font-weight: 500;
-            letter-spacing: 1.2px;
+            font-family: 'Itim', 'Sarabun', sans-serif;
+            font-size: 0.64rem;
+            color: #ffffff;
+            font-weight: 400;
+            letter-spacing: 1px;
             text-transform: uppercase;
-            white-space: nowrap;
-            opacity: 0.85;
+            white-space: normal;
         }
 
-        /* ── Nav links ── */
         .main-navbar {
             display: flex;
             align-items: center;
@@ -263,125 +261,128 @@
 
         .main-navbar .nav-links {
             display: flex;
-            align-items: stretch;
+            align-items: center;
             list-style: none;
             margin: 0;
-            padding: 0;
+            padding: 0 4px;
             gap: 0;
             overflow-x: auto;
             scrollbar-width: none;
-            /* No pill container — links float directly in the white bar */
-            background: transparent;
-            border-radius: 0;
-            border: none;
-            box-shadow: none;
-            height: 64px;
+            /* Firefox */
+            /* Subtle inner container: slight inset look */
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255,255,255,0.08);
         }
 
         .main-navbar .nav-links::-webkit-scrollbar {
             display: none;
+            /* Chrome/Safari */
         }
 
         .main-navbar .nav-item {
             flex-shrink: 0;
             display: flex;
-            align-items: stretch;
+            align-items: center;
         }
 
-        /* No divider pseudo-elements in the new style */
+        /* Divider between nav items */
         .main-navbar .nav-item + .nav-item::before {
-            display: none;
+            content: '';
+            display: block;
+            width: 1px;
+            height: 18px;
+            background: rgba(255, 255, 255, 0.35);
+            flex-shrink: 0;
         }
 
-        /* Each link: full header height, underline indicator on active */
+        /* Each link sits inline on the gradient bar */
         .main-navbar .nav-link {
             display: flex;
             align-items: center;
             gap: 5px;
-            height: 100%;
-            padding: 0 13px;
-            border-radius: 0;
-            color: #475569;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 999px;
+            color: #ffffff;
             text-decoration: none;
-            font-family: 'Kanit', 'Sarabun', sans-serif;
-            font-weight: 500;
+            font-family: 'Itim', 'Sarabun', sans-serif;
+            font-weight: 600;
             font-size: 0.82rem;
             white-space: nowrap;
-            position: relative;
-            transition: color 0.15s ease, background 0.15s ease;
-            /* Bottom indicator line: hidden by default */
-            border-bottom: 2.5px solid transparent;
-            margin-bottom: -3px; /* aligns with header border-top offset */
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+            margin: 3px 0;
         }
 
         .main-navbar .nav-link i {
-            font-size: 0.88rem;
-            color: #94a3b8;
-            transition: color 0.15s ease;
+            font-size: 0.92rem;
+            opacity: 1;
+            transition: opacity 0.2s ease;
         }
 
         .main-navbar .nav-link:hover {
-            color: var(--primary-color);
-            background: rgba(225, 29, 72, 0.04);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .main-navbar .nav-link:hover i {
-            color: var(--primary-color);
+            opacity: 1;
         }
 
         .main-navbar .nav-link.active {
             color: var(--primary-color);
-            font-weight: 600;
-            background: rgba(225, 29, 72, 0.05);
-            border-bottom-color: var(--primary-color);
+            background: #ffffff;
+            font-weight: 700;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0,0,0,0.10);
         }
 
         .main-navbar .nav-link.active i {
-            color: var(--primary-color);
+            opacity: 1;
         }
 
-        /* ── Header divider before CTA ── */
+        /* The staff sign-in, set apart from the wayfinding list by a
+           hairline divider and its own solid-white pill - reads as "an
+           action" rather than "another page to browse to". */
         .header-actions {
             display: flex;
             align-items: center;
             flex-shrink: 0;
-            padding-left: 16px;
-            margin-left: 4px;
-            border-left: 1px solid #e2e8f0;
+            padding-left: 14px;
+            margin-left: 2px;
+            border-left: 1px solid rgba(255, 255, 255, 0.28);
         }
 
-        /* ── Staff CTA: solid pink pill ── */
         .header-cta {
             display: flex;
             align-items: center;
-            gap: 7px;
-            height: 36px;
-            padding: 0 16px 0 10px;
+            gap: 6px;
+            height: 34px;
+            padding: 0 14px 0 6px;
             border-radius: 999px;
-            background: var(--primary-color);
+            background: #ffffff;
             border: none;
-            color: #ffffff;
+            color: var(--primary-color);
             text-decoration: none;
-            font-family: 'Kanit', 'Sarabun', sans-serif;
-            font-weight: 600;
+            font-family: 'Itim', 'Sarabun', sans-serif;
+            font-weight: 700;
             font-size: 0.80rem;
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.30);
-            transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.10);
+            transition: box-shadow 0.18s ease, transform 0.15s ease;
         }
 
         .header-cta:hover {
-            background: #c81040;
-            box-shadow: 0 4px 14px rgba(225, 29, 72, 0.42);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.22), 0 2px 5px rgba(0,0,0,0.12);
             transform: translateY(-1px);
         }
 
         .header-cta-icon {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.22);
+            background: var(--pink-gradient);
             color: #ffffff;
             display: flex;
             align-items: center;
@@ -394,13 +395,13 @@
             align-items: center;
             gap: 12px;
             padding-left: 20px;
-            border-left: 1px solid #e2e8f0;
+            border-left: 1px solid #fce4ec;
             margin-left: 10px;
         }
 
         .avatar {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             background: var(--pink-gradient);
             color: white;
             border-radius: 50%;
@@ -408,7 +409,7 @@
             align-items: center;
             justify-content: center;
             font-size: 1rem;
-            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.28);
+            box-shadow: 0 2px 8px rgba(225, 29, 72, 0.3);
         }
 
         .main-content {
