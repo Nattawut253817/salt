@@ -489,23 +489,21 @@
 
         .pw-match-feedback {
             display: none;
-            align-items: center;
-            gap: 6px;
-            margin: 6px 4px 0;
-            font-size: 0.72rem;
-            font-weight: 700;
+            /* margin intentionally omitted here so hidden state takes no space */
         }
 
         .pw-match-feedback.match {
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            margin: 6px 4px 0;
             color: #059669;
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
             border-radius: 8px;
             padding: 4px 10px 4px 8px;
             font-size: 0.73rem;
+            font-weight: 600;
             transition: opacity 0.4s ease;
         }
 
@@ -517,12 +515,14 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
+            margin: 6px 4px 0;
             color: #dc2626;
             background: #fef2f2;
             border: 1px solid #fecaca;
             border-radius: 8px;
             padding: 4px 10px 4px 8px;
             font-size: 0.73rem;
+            font-weight: 600;
         }
 
         .input-wrapper { position: relative; }
