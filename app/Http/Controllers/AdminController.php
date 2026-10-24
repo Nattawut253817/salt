@@ -3188,24 +3188,9 @@ class AdminController extends Controller
             $item->flowFilled = $this->kidneyFlowFilled($item, $flowCache);
         }
 
-        // Landing on this list is treated as "reviewed": mark every record this
-        // user is allowed to see as read, so the sidebar unread badge clears
-        // immediately rather than requiring each row to be opened individually.
-        // Scoped to the same visibility rule as above, ignoring the fiscal
-        // year/quarter/province filters (those only affect what's displayed on
-        // this page, not what counts as "reviewed" for the badge).
-        $markReadQuery = KidneyAssessment::where('is_read', 0);
-        if ($user->User_rank_id == 2) {
-            $markReadQuery->whereHas('user', function ($q) use ($user) {
-                $q->where('Province_id', $user->Province_id);
-            });
-        } elseif ($user->User_rank_id >= 3) {
-            $markReadQuery->whereIn('user_id', $this->getAgencyUserIds($user));
-        }
-        $unreadIds = $markReadQuery->pluck('id');
-        if ($unreadIds->isNotEmpty()) {
-            \DB::table('kidney_assessments')->whereIn('id', $unreadIds)->update(['is_read' => 1]);
-        }
+        // Badge clears only when a specific record is opened (see showKidneyDHB).
+        // Bulk mark-as-read removed — sidebar badge now persists until the admin
+        // actually opens each individual assessment record.
 
         // พื้นที่ที่หน่วยงานเลือก/ปักไว้แล้ว แต่ยังไม่เคยรายงานผล - แสดงเป็นแถวในตารางด้วย
         // (สคร./สสจ. ใช้แถวต่อท้าย $pendingTail ด้านบนแทน)
@@ -3526,9 +3511,14 @@ class AdminController extends Controller
         // Available quarters for the CURRENT selected year in the view
         $availableQuarters = [1, 2, 3, 4];
 
-        if (!$isNew && !$assessment->is_read) {
-            $assessment->is_read = true;
-            $assessment->save();
+        if (!$isNew) {
+            // Mark ALL records for this agency as read (not just the clicked quarter).
+            // A group row in kidney-dhb-table shows "ใหม่" if ANY record in the
+            // group is unread, so we must clear all of them at once.
+            KidneyAssessment::whereIn('user_id', $agencyUserIds)
+                ->where('is_read', 0)
+                ->update(['is_read' => 1]);
+            $assessment->is_read = true; // keep the in-memory object consistent
         }
 
         // ผู้ที่แก้ไขได้ = ผู้ที่มองเห็นรายการนี้ในหน้ารายการ (ขอบเขตเดียวกับ
@@ -4454,20 +4444,9 @@ class AdminController extends Controller
             ->paginate(15);
         $assessments->appends($request->all());
 
-        // Landing on this list is treated as "reviewed": mark every record this
-        // user is allowed to see as read, so the sidebar unread badge clears
-        // immediately rather than requiring each row to be opened individually.
-        // Scoped to the same visibility rule as above, ignoring the fiscal
-        // year/quarter/province filters (those only affect what's displayed on
-        // this page, not what counts as "reviewed" for the badge).
-        $markReadQuery = SaltAssessment::where('is_read', 0);
-        if (auth()->user()->User_rank_id != 1) {
-            $markReadQuery->whereIn('user_id', $agencyUserIds);
-        }
-        $unreadIds = $markReadQuery->pluck('id');
-        if ($unreadIds->isNotEmpty()) {
-            \DB::table('salt_assessments')->whereIn('id', $unreadIds)->update(['is_read' => 1]);
-        }
+        // Badge clears only when a specific record is opened (see showSaltAssessment).
+        // Bulk mark-as-read removed — sidebar badge now persists until the admin
+        // actually opens each individual assessment record.
 
         // When showing the aggregate "latest record per agency" view (no specific
         // quarter selected), the base row is just whichever quarter happens to be
@@ -4659,8 +4638,11 @@ class AdminController extends Controller
         $availableQuarters = [1, 2, 3, 4];
 
         if (!$assessment->is_read) {
-            $assessment->is_read = true;
-            $assessment->save();
+            // Mark ALL quarters for this user as read (same logic as kidney-dhb).
+            SaltAssessment::where('user_id', $assessment->user_id)
+                ->where('is_read', 0)
+                ->update(['is_read' => 1]);
+            $assessment->is_read = true; // keep the in-memory object consistent
         }
 
         return view('admin.salt-assessment-detail', compact('assessment', 'availableYears', 'availableQuarters'));
@@ -4771,6 +4753,40 @@ class AdminController extends Controller
         $assessment->delete();
 
         return redirect()->route('admin.salt-assessment-list')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
+    }
+
+    /**
+     * Mark all unread salt assessments as read (rank-1 only).
+     * Clears the sidebar badge for แบบประเมินลดการบริโภคเกลือ.
+     */
+    public function markAllSaltAssessmentsRead()
+    {
+        $user = auth()->user();
+        if ((int) $user->User_rank_id !== 1) {
+            abort(403);
+        }
+
+        SaltAssessment::where('is_read', 0)->update(['is_read' => 1]);
+
+        return redirect()->route('admin.salt-assessment-list')
+            ->with('success', 'อ่านแบบประเมินทั้งหมดแล้ว');
+    }
+
+    /**
+     * Mark all unread kidney assessments as read (rank-1 only).
+     * Clears the sidebar badge for แบบประเมินพชอ.ไต.
+     */
+    public function markAllKidneyAssessmentsRead()
+    {
+        $user = auth()->user();
+        if ((int) $user->User_rank_id !== 1) {
+            abort(403);
+        }
+
+        KidneyAssessment::where('is_read', 0)->update(['is_read' => 1]);
+
+        return redirect()->route('admin.kidney-dhb-list')
+            ->with('success', 'อ่านแบบประเมินทั้งหมดแล้ว');
     }
 
     /**
