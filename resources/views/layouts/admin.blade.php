@@ -217,6 +217,30 @@
             object-position: center;
         }
 
+        /* Collapsed sidebar: show a compact icon instead of the full logo */
+        .brand-logo-collapsed {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: linear-gradient(145deg, #f0527f 0%, #d81e4a 100%);
+            box-shadow: 0 6px 18px -4px rgba(216, 30, 74, 0.55),
+                        0 2px 6px -2px rgba(216, 30, 74, 0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.25);
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .brand-logo-collapsed span {
+            font-family: 'Prompt', 'Noto Sans Thai Looped', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.02em;
+            line-height: 1;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
         /* Full-width pink brand banner, spanning above the sidebar (matches
            the public site's pink header - see layouts/layout.blade.php's
            .header-brand-row - but left-aligned instead of centered, and
@@ -1048,10 +1072,16 @@
             line-height: 16px;
         }
 
-        /* brand logo centred */
+        /* brand logo centred + swap to icon */
         body.sidebar-collapsed .admin-sidebar .sidebar-brand {
             justify-content: center;
             padding: 18px 0;
+        }
+        body.sidebar-collapsed .admin-sidebar .brand-logo-frame {
+            display: none !important;
+        }
+        body.sidebar-collapsed .admin-sidebar .brand-logo-collapsed {
+            display: flex !important;
         }
 
         /* logout button */
@@ -1356,6 +1386,9 @@
         <div class="sidebar-brand">
             <div class="brand-logo-frame">
                 <img src="{{ asset('images/logo-login.jpg') }}" alt="Smart Salt Sodium Monitor">
+            </div>
+            <div class="brand-logo-collapsed" aria-hidden="true">
+                <span>S</span>
             </div>
         </div>
 
