@@ -1187,8 +1187,8 @@
         /* Submenu list */
         .nav-submenu {
             list-style: none;
-            padding: 1px 0 3px 0;
-            margin: 0;
+            padding: 4px 0 6px 0;
+            margin: 5px 0 0 0;   /* gap below group header, only for groups with submenus */
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.3s ease;
@@ -1197,17 +1197,17 @@
             max-height: 300px;
         }
         .nav-submenu .nav-link {
-            padding: 6px 12px 6px 20px;
+            padding: 7px 12px 7px 20px;
             font-size: 0.81rem;
             border-radius: 10px;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
         .nav-submenu .nav-link i {
             width: 24px;
             height: 24px;
             font-size: 0.78rem;
         }
-        /* Connector line removed */
+        /* No connector line */
         .nav-group {
             position: relative;
         }
