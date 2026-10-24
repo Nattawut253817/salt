@@ -1973,7 +1973,7 @@
         </div>
 
         <form action="{{ route('admin.report-progress.store') }}" method="POST" enctype="multipart/form-data"
-            id="assessmentForm">
+            id="assessmentForm" onsubmit="rpSubmitLoading(this)">
             @csrf
             <input type="hidden" name="target_user_id" id="target_user_id" value="{{ $presetTargetId ?? '' }}">
             {{-- Word-import reporter attribution: filled in from the
@@ -3554,4 +3554,15 @@
             loadExistingData(false);
         });
     })();
-</script>
+
+        // loading state เมื่อกด บันทึกแบบรายงาน (ป้องกัน double-submit)
+        function rpSubmitLoading(form) {
+            if (form.classList.contains('is-locked')) return;
+            const btn = form.querySelector('.btn-submit');
+            if (!btn || btn.disabled) return;
+            btn.disabled = true;
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
+            setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; }, 20000);
+        }
+    </script>

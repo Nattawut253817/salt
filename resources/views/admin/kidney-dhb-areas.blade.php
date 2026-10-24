@@ -77,13 +77,13 @@
             </p>
             {{-- Shown once a saved area is picked: save it for the agency (stays on this page). --}}
             <div class="ka-pick" id="kaPickRow" style="display:none;">
-                <form id="kaPickForm" method="POST" action="">
+                <form id="kaPickForm" method="POST" action="" onsubmit="kaBtnLoading(this.querySelector('button[type=submit]'))">
                     @csrf
                     <button type="submit" class="ka-btn">
                         <i class="fas fa-floppy-disk"></i> <span id="kaPickLabel">บันทึกพื้นที่นี้ให้หน่วยงาน</span>
                     </button>
                 </form>
-                <form id="kaDropForm" method="POST" action="" style="display:none;">
+                <form id="kaDropForm" method="POST" action="" style="display:none;" onsubmit="kaBtnLoading(this.querySelector('button[type=submit]'))">
                     @csrf
                     <button type="submit" class="ka-btn ka-btn-ghost">
                         <i class="fas fa-circle-minus"></i> ยกเลิกการเลือกพื้นที่นี้
@@ -102,7 +102,7 @@
                     </div>
                 </div>
                 <ul class="ka-multi-list" id="kaMultiList"></ul>
-                <form class="ka-multi-foot" id="kaMultiForm" method="POST" action="{{ route('admin.kidney-dhb.areas.select-many') }}">
+                <form class="ka-multi-foot" id="kaMultiForm" method="POST" action="{{ route('admin.kidney-dhb.areas.select-many') }}" onsubmit="kaBtnLoading(document.getElementById('kaMultiBtn'))">
                     @csrf
                     <span id="kaMultiInputs"></span>
                     <button type="submit" class="ka-btn" id="kaMultiBtn" disabled>
@@ -119,7 +119,7 @@
 
         {{-- Tab 2: pin a new area and save it --}}
         <form id="kaForm" action="{{ route('admin.kidney-dhb.areas.store') }}" method="POST"
-            style="{{ $kaDefaultMode === 'new' ? '' : 'display:none;' }}">
+            style="{{ $kaDefaultMode === 'new' ? '' : 'display:none;' }}" onsubmit="kaBtnLoading(document.getElementById('ka_save_btn'))">
             @csrf
             <input type="hidden" name="province_id" id="ka_in_province">
             <input type="hidden" name="district_id" id="ka_in_district">
@@ -715,10 +715,15 @@
                 s.appendChild(o);
             });
             s.disabled = false;
+            s.style.opacity = '';
         }
-        const loadDistricts = pid => getJson(APP_BASE + '/admin/operating-areas/get-districts/' + pid).then(r => fillOptions(sel.d, r, 'district_id', 'district_name', '-- เลือกอำเภอ --', 'lat', 'lng'));
-        const loadTambons = (pid, did) => getJson(APP_BASE + '/admin/operating-areas/get-tambons/' + pid + '/' + did).then(r => fillOptions(sel.t, r, 'tambon_id', 'tambon_name', '-- เลือกตำบล --', 'lat', 'lng'));
-        const loadVillages = (pid, did, tid) => getJson(APP_BASE + '/admin/operating-areas/get-villages/' + pid + '/' + did + '/' + tid).then(r => fillOptions(sel.v, r, 'village_id', 'village_name', '-- เลือกชุมชน/หมู่บ้าน --', 'latitude', 'longitude'));
+        function kaSetLoading(sel, loading) {
+            sel.disabled = loading;
+            sel.style.opacity = loading ? '0.5' : '';
+        }
+        const loadDistricts = pid => { kaSetLoading(sel.d, true); return getJson(APP_BASE + '/admin/operating-areas/get-districts/' + pid).then(r => fillOptions(sel.d, r, 'district_id', 'district_name', '-- เลือกอำเภอ --', 'lat', 'lng')).catch(() => kaSetLoading(sel.d, false)); };
+        const loadTambons = (pid, did) => { kaSetLoading(sel.t, true); return getJson(APP_BASE + '/admin/operating-areas/get-tambons/' + pid + '/' + did).then(r => fillOptions(sel.t, r, 'tambon_id', 'tambon_name', '-- เลือกตำบล --', 'lat', 'lng')).catch(() => kaSetLoading(sel.t, false)); };
+        const loadVillages = (pid, did, tid) => { kaSetLoading(sel.v, true); return getJson(APP_BASE + '/admin/operating-areas/get-villages/' + pid + '/' + did + '/' + tid).then(r => fillOptions(sel.v, r, 'village_id', 'village_name', '-- เลือกชุมชน/หมู่บ้าน --', 'latitude', 'longitude')).catch(() => kaSetLoading(sel.v, false)); };
 
         sel.p.addEventListener('change', function () {
             prefillToken++;
@@ -828,5 +833,14 @@
         else { map.removeLayer(savedLayer); $('ka_legend').style.display = 'none'; prefillOwnLocation(); }
         updateSave();
     })();
+        // helper: disable button + show spinner on form submit
+        function kaBtnLoading(btn) {
+            if (!btn) return;
+            btn.disabled = true;
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>' + btn.innerText.trim() + '</span>';
+            // guard: re-enable after 15s (network timeout / back button)
+            setTimeout(() => { btn.disabled = false; btn.innerHTML = origHTML; }, 15000);
+        }
     </script>
 @endsection

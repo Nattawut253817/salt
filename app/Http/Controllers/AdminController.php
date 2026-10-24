@@ -5057,6 +5057,10 @@ class AdminController extends Controller
      */
     /** แคชในคำขอเดียว: รายการหมุดทั้งหมดของผู้ใช้ (ไม่รวมกรณี onlySelected) - ฟังก์ชันนี้ถูกเรียกหลายรอบต่อหน้า */
     private array $pinListMemo = [];
+    /** แคชในคำขอเดียว: ผลลัพธ์ reportedPinIdsByOwner per user+pins */
+    private array $reportedMemo = [];
+    /** แคชในคำขอเดียว: ผลลัพธ์ lockedPinMap per user+pins */
+    private array $lockedMemo = [];
 
     private function operatingAreaPinsForUser($forUser, bool $onlySelected = false)
     {
@@ -5762,6 +5766,12 @@ class AdminController extends Controller
             return ['own' => [], 'other' => []];
         }
 
+        // memo cache: คีย์รวม user_id + pin IDs (เรียงลำดับ) เพื่อให้ชุดเดิมได้ผลเดิมในคำขอเดียว
+        $memoKey = $user->id . '|' . implode(',', $pins->pluck('id')->map(fn($v) => (int)$v)->sort()->values()->all());
+        if (isset($this->reportedMemo[$memoKey])) {
+            return $this->reportedMemo[$memoKey];
+        }
+
         $ownUserIds = array_map('intval', $this->ownAgencyUserIds($user));
 
         $pinIds = $pins->pluck('id')->map(fn($v) => (int) $v)->all();
@@ -5795,7 +5805,9 @@ class AdminController extends Controller
             }
         }
 
-        return ['own' => array_values($own), 'other' => array_values($other)];
+        $result = ['own' => array_values($own), 'other' => array_values($other)];
+        $this->reportedMemo[$memoKey] = $result;
+        return $result;
     }
 
     /**
@@ -5847,6 +5859,12 @@ class AdminController extends Controller
             return [];
         }
 
+        // memo cache per request
+        $memoKey = $user->id . '|' . implode(',', $pins->pluck('id')->map(fn($v) => (int)$v)->sort()->values()->all());
+        if (isset($this->lockedMemo[$memoKey])) {
+            return $this->lockedMemo[$memoKey];
+        }
+
         $pinIds = $pins->pluck('id')->map(fn($v) => (int) $v)->all();
         $ownChosen = $this->ownPinIds($user);
         // เฉพาะรายงานของ "หน่วยงานอื่น" เท่านั้นที่ทำให้พื้นที่เป็นดูอย่างเดียว
@@ -5885,6 +5903,7 @@ class AdminController extends Controller
             }
         }
 
+        $this->lockedMemo[$memoKey] = $locked;
         return $locked;
     }
 
