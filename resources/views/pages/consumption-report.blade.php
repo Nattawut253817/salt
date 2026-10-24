@@ -1456,10 +1456,9 @@
 @endsection
 
 @section('extra_js')
-    {{-- SweetAlert2 --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    {{-- SweetAlert2 โหลดใน layout แล้ว ไม่ต้องโหลดซ้ำ --}}
+    <script src="{{ asset('vendor/chartjs/chart.min.js') }}" defer></script>
+    <script src="{{ asset('vendor/chartjs/chartjs-plugin-datalabels.min.js') }}" defer></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const ctx = document.getElementById('progressChart').getContext('2d');

@@ -12,9 +12,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    {{-- Prefetch heavy scripts for nav pages (browser loads them in idle time) --}}
+    @unless(request()->routeIs('home'))
+    <link rel="prefetch" href="{{ asset('vendor/highcharts/highmaps.js') }}" as="script">
+    <link rel="prefetch" href="{{ asset('vendor/highcharts/th-all.js') }}" as="script">
+    <link rel="prefetch" href="{{ asset('vendor/chartjs/chart.min.js') }}" as="script">
+    <link rel="prefetch" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" as="script">
+    @endunless
+    @if(request()->routeIs('home'))
+    <link rel="prefetch" href="{{ route('awareness') }}">
+    <link rel="prefetch" href="{{ route('reduced-sodium-menu') }}">
+    <link rel="prefetch" href="{{ route('reduced-sodium-products') }}">
+    @endif
 
     <!-- Sarabun (Google Fonts) -->
     <!-- Loaded non-blocking: the fallback sans-serif font paints immediately
@@ -1447,6 +1461,84 @@
     </style>
 
     @yield('extra_js')
+
+    {{-- ===== Page Transition Overlay =====
+         แสดง spinner ทันทีที่ user คลิก nav-link เพื่อให้รู้สึกว่า UI ตอบสนอง
+         แม้ server ยังประมวลผลอยู่  ซ่อนอัตโนมัติเมื่อหน้าโหลดเสร็จ (pageshow)
+         หรือ popstate (กด Back) --}}
+    <style>
+        #page-transition-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.72);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
+            z-index: 99998;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 14px;
+        }
+        #page-transition-overlay.active { display: flex; }
+        .pt-spinner {
+            width: 44px; height: 44px;
+            border: 4px solid rgba(14,116,144,0.18);
+            border-top-color: #0e7490;
+            border-radius: 50%;
+            animation: pt-spin 0.7s linear infinite;
+        }
+        @keyframes pt-spin { to { transform: rotate(360deg); } }
+        .pt-label {
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.9rem;
+            color: #0e7490;
+            font-weight: 500;
+        }
+    </style>
+    <div id="page-transition-overlay" aria-hidden="true" role="status">
+        <div class="pt-spinner"></div>
+        <span class="pt-label">กำลังโหลด…</span>
+    </div>
+    <script>
+    (function () {
+        var overlay = document.getElementById('page-transition-overlay');
+        // แสดง overlay เมื่อคลิก link ที่ไปหน้าอื่นในไซต์เดียวกัน
+        document.addEventListener('click', function (e) {
+            var a = e.target.closest('a[href]');
+            if (!a) return;
+            var href = a.getAttribute('href');
+            // ข้ามถ้า: external, anchor, javascript:, target=_blank, หรือมี modifier key
+            if (!href || href.startsWith('http') || href.startsWith('//') ||
+                href.startsWith('#') || href.startsWith('javascript') ||
+                a.getAttribute('target') === '_blank' ||
+                e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
+            // ข้ามถ้าเป็น same page (ป้องกัน anchor jump)
+            try {
+                var dest = new URL(href, location.href);
+                if (dest.pathname === location.pathname && dest.search === location.search) return;
+            } catch(ex) {}
+            overlay.classList.add('active');
+        });
+        // ซ่อน overlay เมื่อหน้าโหลดเสร็จ (รวมกด Back/Forward)
+        window.addEventListener('pageshow', function () {
+            overlay.classList.remove('active');
+        });
+        window.addEventListener('popstate', function () {
+            overlay.classList.remove('active');
+        });
+        // กันกรณี browser รอนาน: ซ่อน overlay อัตโนมัติถ้าเกิน 8 วินาที
+        var _timer;
+        document.addEventListener('click', function (e) {
+            if (e.target.closest('a[href]')) {
+                clearTimeout(_timer);
+                _timer = setTimeout(function () {
+                    overlay.classList.remove('active');
+                }, 8000);
+            }
+        });
+    })();
+    </script>
 </body>
 
 </html>
