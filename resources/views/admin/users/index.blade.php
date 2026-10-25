@@ -644,6 +644,11 @@
         }
 
         /* Password hint */
+        /* select2 dropdown inside modal must sit above the modal backdrop */
+        .select2-container--open .select2-dropdown {
+            z-index: 9999 !important;
+        }
+
         #editUserModal .password-hint {
             font-size: 0.71rem;
             color: #94a3b8;
@@ -1226,6 +1231,7 @@
                     '<div class="text-center py-5 text-muted" id="editUserModalLoading">' +
                     '<i class="fas fa-spinner fa-spin fa-2x"></i></div>'
                 );
+                $('#editUserModal').modal({ backdrop: 'static', keyboard: false });
                 $('#editUserModal').modal('show');
 
                 fetch(`{{ url('/admin/users') }}/${userId}/edit`, {
