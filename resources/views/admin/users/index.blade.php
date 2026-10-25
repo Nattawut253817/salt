@@ -548,134 +548,164 @@
             box-shadow: 0 10px 22px rgba(239, 68, 68, 0.4) !important;
         }
 
-        /* Edit User modal form styling (namespaced so it never affects the
-           rest of the page's inputs/buttons). */
+        /* ── Edit User modal – polished redesign ─────────────────────────── */
+        /* Header icon badge */
         .user-icon-wrapper {
-            width: 38px;
-            height: 38px;
-            background: var(--secondary-indigo);
-            border-radius: 14px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--primary-indigo);
-            font-size: 1.2rem;
+            color: #ffffff;
+            font-size: 1rem;
             flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
         }
 
+        /* Section title: pill style */
         #editUserModal .section-title {
-            font-size: 0.85rem;
-            font-weight: 800;
-            color: var(--primary-indigo);
-            margin-bottom: 7px;
-            padding-bottom: 5px;
-            border-bottom: 1.5px solid var(--secondary-indigo);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        #editUserModal .form-label {
-            font-weight: 600;
-            color: #475569;
-            font-size: 0.77rem;
-            margin-bottom: 3px;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #4338ca;
+            background: #eef2ff;
+            border-radius: 20px;
+            padding: 3px 10px 3px 8px;
+            margin-bottom: 10px;
+            letter-spacing: 0.01em;
+        }
+        #editUserModal .section-title i {
+            font-size: 0.7rem;
+            opacity: 0.85;
         }
 
+        /* Field label */
+        #editUserModal .form-label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.76rem;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         #editUserModal .form-label i {
-            color: var(--primary-indigo);
-            font-size: 0.85rem;
+            width: 14px;
+            text-align: center;
+            color: #6366f1;
+            font-size: 0.75rem;
         }
 
+        /* Input / select base */
         #editUserModal .form-control,
         #editUserModal .select2-container--default .select2-selection--single {
-            border-radius: 12px !important;
-            border: 1.5px solid #e2e8f0 !important;
+            border-radius: 8px !important;
+            border: 1.5px solid #dde3ef !important;
             padding: 7px 12px !important;
             font-size: 0.86rem !important;
-            background-color: #fbfcfe !important;
-            transition: all 0.2s;
-            height: auto !important;
+            background-color: #ffffff !important;
             color: #1e293b !important;
             font-weight: 500 !important;
+            height: auto !important;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        #editUserModal .form-control::placeholder {
+            color: #b0bac9 !important;
+            font-weight: 400 !important;
         }
 
+        /* Select2 internals */
         #editUserModal .select2-container--default .select2-selection--single .select2-selection__rendered {
             padding-left: 0 !important;
             line-height: normal !important;
+            color: #1e293b !important;
         }
-
         #editUserModal .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 100% !important;
             right: 10px !important;
         }
 
-        #editUserModal .form-control:focus,
+        /* Focus state: left-accent bar + subtle ring */
+        #editUserModal .form-control:focus {
+            border-color: #6366f1 !important;
+            box-shadow: inset 3px 0 0 #6366f1, 0 0 0 3px rgba(99,102,241,0.1) !important;
+            background-color: #fafbff !important;
+            outline: none !important;
+        }
         #editUserModal .select2-container--default.select2-container--focus .select2-selection--single {
-            border-color: var(--primary-indigo) !important;
-            box-shadow: 0 0 0 3px rgba(67, 56, 202, 0.1) !important;
-            background-color: #ffffff !important;
+            border-color: #6366f1 !important;
+            box-shadow: inset 3px 0 0 #6366f1, 0 0 0 3px rgba(99,102,241,0.1) !important;
+            background-color: #fafbff !important;
             outline: none !important;
         }
 
+        /* Password hint */
         #editUserModal .password-hint {
-            font-size: 0.72rem;
+            font-size: 0.71rem;
             color: #94a3b8;
-            margin-top: 6px;
+            margin-top: 4px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
+        /* Field error */
         #editUserModal .field-error {
-            font-size: 0.72rem;
+            font-size: 0.71rem;
             font-weight: 600;
-            margin-top: 4px;
+            margin-top: 3px;
             min-height: 0;
         }
 
+        /* Save button */
         #editUserModal .btn-save {
-            background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 8px 20px;
             font-weight: 700;
-            font-size: 0.86rem;
-            box-shadow: 0 4px 10px -4px rgba(79, 70, 229, 0.28);
-            transition: all 0.2s;
+            font-size: 0.85rem;
+            letter-spacing: 0.01em;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+            transition: transform 0.15s, box-shadow 0.15s;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 7px;
         }
-
         #editUserModal .btn-save:hover {
             transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.45);
             color: white;
         }
-
+        #editUserModal .btn-save:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 4px rgba(79, 70, 229, 0.3);
+        }
         #editUserModal .btn-save:disabled {
-            opacity: 0.7;
+            opacity: 0.65;
             transform: none;
+            box-shadow: none;
         }
 
+        /* Cancel button */
         #editUserModal .btn-cancel {
-            background: #ffffff;
-            color: #475569;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 8px 20px;
-            font-weight: 700;
-            font-size: 0.86rem;
-            transition: all 0.2s;
-        }
-
-        #editUserModal .btn-cancel:hover {
             background: #f8fafc;
-            border-color: #cbd5e1;
+            color: #475569;
+            border: 1.5px solid #dde3ef;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+        }
+        #editUserModal .btn-cancel:hover {
+            background: #f1f5f9;
+            border-color: #b8c5d6;
             color: #1e293b;
         }
 
@@ -1045,8 +1075,8 @@
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-            <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden;">
-                <div class="modal-header border-0" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 14px 22px;">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: 0 8px 32px rgba(67,56,202,0.12), 0 1px 4px rgba(0,0,0,0.06); overflow: hidden;">
+                <div class="modal-header border-0" style="background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%); padding: 14px 22px; border-bottom: 1px solid #e0e7ff;">
                     <div class="d-flex align-items-center">
                         <div class="user-icon-wrapper mr-3">
                             <i class="fas fa-user-edit"></i>
@@ -1061,7 +1091,7 @@
                         <span aria-hidden="true" style="color: #64748b; font-size: 1.1rem; line-height: 1;">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" id="editUserModalBody" style="padding: 18px 24px;">
+                <div class="modal-body" id="editUserModalBody" style="padding: 16px 22px 20px;">
                     <div class="text-center py-5 text-muted" id="editUserModalLoading">
                         <i class="fas fa-spinner fa-spin fa-2x"></i>
                     </div>
