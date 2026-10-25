@@ -2119,7 +2119,7 @@
 
             <div class="hm-card hm-fly-card">
                 <h4>ค่าเฉลี่ยโซเดียมก่อน-หลังปรับสูตร รายจังหวัด</h4>
-                <div class="hm-cap">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมด</div>
+                <div class="hm-cap">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมดของจังหวัด</div>
                 @php
                     $flyRows = collect($hmMn['provinces']);
                     $flyMax = max(1, (float) $flyRows->max(fn($r) => max($r['avg_before'] ?? 0, $r['avg_after'] ?? 0)), (float) ($hmMn['avg_before'] ?? 0), (float) ($hmMn['avg_after'] ?? 0));
@@ -3173,13 +3173,11 @@
                             label: 'จำนวนผลิตภัณฑ์',
                             data: productCountData.map(d => d.count),
                             backgroundColor: (context) => {
-                                const row = productCountData[context.dataIndex];
-                                const c = row ? (provinceColorMap[row.province] || '#2563eb') : '#2563eb';
+                                const c = provinceColorMap[productCountData[context.dataIndex].province] || '#2563eb';
                                 return makeBarGradient(context, lightenHex(c, 0.5), c);
                             },
                             hoverBackgroundColor: (context) => {
-                                const row = productCountData[context.dataIndex];
-                                const c = row ? (provinceColorMap[row.province] || '#2563eb') : '#2563eb';
+                                const c = provinceColorMap[productCountData[context.dataIndex].province] || '#2563eb';
                                 return makeBarGradient(context, lightenHex(c, 0.65), darkenHex(c, 0.1));
                             },
                             borderRadius: 10,
