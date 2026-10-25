@@ -1142,7 +1142,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 9px 12px 8px 12px;
+            padding: 7px 12px;
             border-radius: 12px;
             cursor: pointer;
             color: var(--sidebar-text);
@@ -1217,7 +1217,7 @@
         .nav-submenu {
             list-style: none;
             padding: 4px 0 6px 0;
-            margin: 8px 0 0 0;   /* gap below group header, only for groups with submenus */
+            margin: 2px 0 0 0;   /* gap below group header, only for groups with submenus */
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.3s ease;
@@ -1239,7 +1239,7 @@
         /* No connector line */
         .nav-group {
             position: relative;
-            margin-bottom: 4px;  /* extra gap after a group-with-submenu block */
+            margin-bottom: 0;  /* extra gap after a group-with-submenu block */
         }
 
         /* ── Submenu active item: lighter tint (not full gradient) ─────────────────
