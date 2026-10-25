@@ -66,14 +66,14 @@ Route::get('/storage/{path}', function (string $path) {
 Route::get('/', [MainController::class, 'index'])->middleware(['page.view', 'page.cache'])->name('home');
 Route::get('/api/ht-trend', [MainController::class, 'htTrendFeed'])->middleware('throttle:60,1')->name('api.ht-trend');
 Route::get('/awareness', [MainController::class, 'awareness'])->middleware(['page.view', 'page.cache'])->name('awareness');
-Route::get('/food-survey', [MainController::class, 'foodSurvey'])->name('food-survey');
+Route::get('/food-survey', [MainController::class, 'foodSurvey'])->middleware(['page.view', 'page.cache'])->name('food-survey');
 Route::get('/reduced-sodium-menu', [MainController::class, 'reducedSodiumMenu'])->middleware(['page.view', 'page.cache'])->name('reduced-sodium-menu');
 Route::get('/reduced-sodium-products', [MainController::class, 'reducedSodiumProducts'])->middleware(['page.view', 'page.cache'])->name('reduced-sodium-products');
-Route::get('/kidney-dhb', [MainController::class, 'kidneyDHB'])->name('kidney-dhb');
+Route::get('/kidney-dhb', [MainController::class, 'kidneyDHB'])->middleware(['page.view', 'page.cache'])->name('kidney-dhb');
 Route::get('/kidney-dhb-report', [MainController::class, 'kidneyDHBReport'])->middleware(['page.view', 'page.cache'])->name('kidney-dhb-report');
 Route::get('/new-ht-cases', [MainController::class, 'newHTCases'])->middleware(['page.view', 'page.cache'])->name('new-ht-cases');
 Route::get('/consumption-report', [MainController::class, 'consumptionReport'])->middleware(['page.view', 'page.cache'])->name('consumption-report');
-Route::get('/staff', [MainController::class, 'staff'])->name('staff');
+Route::get('/staff', [MainController::class, 'staff'])->middleware(['page.view', 'page.cache'])->name('staff');
 Route::get('/login', [MainController::class, 'staff'])->name('login');
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -97,7 +97,7 @@ Route::get('/reset-password/{token}', [AuthController::class, 'showResetPassword
 Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('password.update');
 
 //เกลือ
-Route::get('/report-progress', [MainController::class, 'reportProgress'])->name('report-progress');
+Route::get('/report-progress', [MainController::class, 'reportProgress'])->middleware(['page.view', 'page.cache'])->name('report-progress');
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
