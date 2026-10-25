@@ -567,19 +567,19 @@
             font-size: 0.85rem;
             font-weight: 800;
             color: var(--primary-indigo);
-            margin-bottom: 14px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--secondary-indigo);
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid var(--secondary-indigo);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         #editUserModal .form-label {
-            font-weight: 700;
+            font-weight: 600;
             color: #475569;
             font-size: 0.78rem;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -594,8 +594,8 @@
         #editUserModal .select2-container--default .select2-selection--single {
             border-radius: 12px !important;
             border: 1.5px solid #e2e8f0 !important;
-            padding: 10px 15px !important;
-            font-size: 0.88rem !important;
+            padding: 8px 13px !important;
+            font-size: 0.87rem !important;
             background-color: #fbfcfe !important;
             transition: all 0.2s;
             height: auto !important;
@@ -642,10 +642,10 @@
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 11px 28px;
+            padding: 9px 22px;
             font-weight: 700;
-            font-size: 0.9rem;
-            box-shadow: 0 8px 14px -4px rgba(79, 70, 229, 0.35);
+            font-size: 0.88rem;
+            box-shadow: 0 6px 12px -4px rgba(79, 70, 229, 0.3);
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
@@ -667,9 +667,9 @@
             color: #475569;
             border: 1.5px solid #e2e8f0;
             border-radius: 12px;
-            padding: 11px 28px;
+            padding: 9px 22px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             transition: all 0.2s;
         }
 

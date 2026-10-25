@@ -17,7 +17,7 @@
         }
 
         .edit-user-container {
-            padding: 20px 20px 40px;
+            padding: 16px 16px 24px;
             max-width: 900px;
             margin: 0 auto;
             font-family: 'Noto Serif Thai', sans-serif;
@@ -33,24 +33,24 @@
 
         .card-header-gradient {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            padding: 30px;
+            padding: 18px 24px;
             border-bottom: 1px solid #e2e8f0;
         }
 
         .card-body-content {
-            padding: 40px;
+            padding: 24px 28px;
         }
 
         .form-label {
-            font-weight: 700;
+            font-weight: 600;
             color: var(--slate-700);
-            font-size: 0.82rem;
-            margin-bottom: 10px;
+            font-size: 0.78rem;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.4px;
         }
 
         .form-label i {
@@ -60,12 +60,12 @@
 
         .form-control,
         .select2-container--default .select2-selection--single {
-            border-radius: 14px !important;
+            border-radius: 10px !important;
             border: 1.5px solid #e2e8f0 !important;
-            padding: 12px 18px !important;
-            font-size: 0.95rem !important;
+            padding: 9px 14px !important;
+            font-size: 0.9rem !important;
             background-color: #fbfcfe !important;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            transition: all 0.2s ease !important;
             height: auto !important;
             color: #1e293b !important;
             font-weight: 500 !important;
@@ -90,27 +90,27 @@
         }
 
         .section-title {
-            font-size: 0.9rem;
-            font-weight: 800;
+            font-size: 0.875rem;
+            font-weight: 700;
             color: var(--primary-indigo);
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--secondary-indigo);
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 1.5px solid var(--secondary-indigo);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-save {
             background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
             color: white;
             border: none;
-            border-radius: 16px;
-            padding: 14px 35px;
+            border-radius: 12px;
+            padding: 10px 24px;
             font-weight: 700;
-            font-size: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.9rem;
+            box-shadow: 0 6px 12px -2px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             gap: 10px;
@@ -126,11 +126,11 @@
             background: #ffffff;
             color: var(--slate-600);
             border: 1.5px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 14px 35px;
+            border-radius: 12px;
+            padding: 10px 24px;
             font-weight: 700;
-            font-size: 1rem;
-            transition: all 0.3s;
+            font-size: 0.9rem;
+            transition: all 0.2s;
         }
 
         .btn-cancel:hover {
@@ -147,15 +147,15 @@
         }
 
         .user-icon-wrapper {
-            width: 60px;
-            height: 60px;
+            width: 44px;
+            height: 44px;
             background: var(--secondary-indigo);
-            border-radius: 18px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--primary-indigo);
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.1);
         }
 
@@ -243,7 +243,7 @@
                         <i class="fas fa-id-card"></i> ข้อมูลส่วนตัวพื้นฐาน
                     </div>
 
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-3 mb-3">
                             <label class="form-label"><i class="fas fa-user-tag"></i> คำนำหน้า</label>
                             <select name="prefix" class="form-control select2">
@@ -265,7 +265,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><i class="fas fa-envelope"></i> อีเมล (Username)</label>
                             <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}"
@@ -279,7 +279,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><i class="fas fa-phone"></i> เบอร์โทรศัพท์ <small class="text-muted">(ประเทศไทย +66)</small></label>
                             <input type="tel" name="phone" id="edit_page_phone" class="form-control"
@@ -292,11 +292,11 @@
                     </div>
 
                     <!-- Section 2: Account Settings & Security -->
-                    <div class="section-title mt-5">
+                    <div class="section-title mt-3">
                         <i class="fas fa-shield-alt"></i> การตั้งค่าหน่วยงานและความปลอดภัย
                     </div>
 
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><i class="fas fa-sitemap"></i> ประเภทหน่วยงาน</label>
                             <select name="User_rank_id" id="User_rank_id" class="form-control select2">
@@ -315,7 +315,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-4">
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3">
                             <label class="form-label"><i class="fas fa-map-marker-alt"></i> จังหวัด</label>
                             <select name="Province_id" id="Province_id" class="form-control select2">
@@ -339,7 +339,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 pt-3 d-flex justify-content-end gap-3">
+                    <div class="mt-3 pt-2 d-flex justify-content-end gap-3">
                         <a href="{{ route('admin.users.index') }}" class="btn btn-cancel">
                             ยกเลิก
                         </a>
