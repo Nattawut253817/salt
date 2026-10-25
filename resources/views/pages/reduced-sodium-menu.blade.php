@@ -2182,7 +2182,7 @@
         @media (prefers-reduced-motion: reduce) { .hm-fly-bar { animation: none !important; } }
 
         /* ปรับการแสดงผลสัดส่วนสถานที่จำหน่าย: จำนวนเมนูตัวใหญ่ชัด + แถบสัดส่วนใต้ชื่อ + ป้ายร้อยละ */
-        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 14%, #fff) var(--tp-w), #f9fafb var(--tp-w)); border-radius: 10px; padding: 11px 14px; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 14%, #fff) var(--tp-w), #f9fafb var(--tp-w)); border-radius: 10px; padding: 7px 14px; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
         .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 22%, #fff) var(--tp-w), #fff var(--tp-w)); box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--tp-c) 35%, transparent); }
         .tp-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .tp-name { flex: none; font-size: .9rem; }
@@ -2251,8 +2251,8 @@
         /* ให้รายการสถานที่จำหน่ายขยายเต็มความสูงการ์ด: แต่ละแถวแบ่งพื้นที่เท่าๆ กัน */
         .tp-card { display: flex; flex-direction: column; }
         .tp-card .tp-body { flex: 1 1 auto; justify-content: stretch; min-height: 0; }
-        .tp-card .tp-list { flex: 1 1 auto; justify-content: stretch; gap: 8px; }
-        .tp-card .tp-item { flex: 1 1 0; min-height: 58px; }
+        .tp-card .tp-list { flex: 1 1 auto; justify-content: stretch; gap: 5px; }
+        .tp-card .tp-item { flex: 1 1 0; min-height: 44px; }
         .tp-card .tp-mid { gap: 8px; }
         .tp-card .tp-track { height: 9px; }
     </style>
