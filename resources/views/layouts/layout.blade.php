@@ -1294,6 +1294,96 @@
             .footer-view-num b { animation: none; }
         }
 
+        /* ตัวนับการเข้าชม — badge ใน content-header */
+        .header-view-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+            padding: 6px 12px 6px 8px;
+            border-radius: 12px;
+            background:
+                radial-gradient(circle at 10% 0%, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 55%),
+                linear-gradient(135deg, #fff0f7 0%, #ffd9ea 100%);
+            border: 1.5px solid #f9a8d4;
+            box-shadow:
+                0 0 0 3px rgba(244,114,182,0.12),
+                0 0 14px rgba(236,72,153,0.28),
+                inset 0 1px 0 rgba(255,255,255,0.85);
+            flex-shrink: 0;
+        }
+
+        .header-view-badge-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #db2777 0%, #9d174d 100%);
+            color: #fff;
+            font-size: 0.8rem;
+            box-shadow: 0 0 10px rgba(219,39,119,0.45), 0 2px 5px rgba(157,23,77,0.25);
+            flex-shrink: 0;
+        }
+
+        .header-view-badge-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.25;
+        }
+
+        .header-view-badge-label {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #9d174d;
+            white-space: nowrap;
+        }
+
+        .header-view-badge-since {
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: #be4a85;
+            white-space: nowrap;
+        }
+
+        .header-view-badge-num {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #9d174d;
+            white-space: nowrap;
+        }
+
+        .header-view-badge-num b {
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 800;
+            line-height: 1.2;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 1px 2px rgba(76,5,38,0.35);
+            box-shadow: 0 0 12px rgba(236,72,153,0.6), 0 2px 6px rgba(157,23,77,0.25);
+            animation: headerViewGlow 3.2s ease-in-out infinite;
+        }
+
+        @keyframes headerViewGlow {
+            0%, 100% { box-shadow: 0 0 8px rgba(236,72,153,0.45), 0 2px 6px rgba(157,23,77,0.25); }
+            50%       { box-shadow: 0 0 18px rgba(236,72,153,0.8), 0 2px 6px rgba(157,23,77,0.25); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .header-view-badge-num b { animation: none; }
+        }
+
+        @media (max-width: 600px) {
+            .header-view-badge { display: none; }
+        }
+
         .footer-bottom {
             display: flex;
             flex-wrap: wrap;
@@ -1460,6 +1550,21 @@
                     <p class="content-header-subtitle">{{ $headerSubtitle }}</p>
                 @endif
             </div>
+            @if (!empty($pageViewStat))
+                @php
+                    $hdrPvSince = $pageViewStat['since'];
+                    $hdrPvMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+                    $hdrPvSinceText = $hdrPvSince->day . ' ' . $hdrPvMonths[$hdrPvSince->month - 1] . ' ' . ($hdrPvSince->year + 543);
+                @endphp
+                <div class="header-view-badge" role="status" aria-label="จำนวนการเข้าชมหน้านี้ {{ number_format($pageViewStat['views']) }} ครั้ง">
+                    <span class="header-view-badge-icon" aria-hidden="true"><i class="fa-solid fa-chart-simple"></i></span>
+                    <span class="header-view-badge-text">
+                        <span class="header-view-badge-label">จำนวนการเข้าชม</span>
+                        <span class="header-view-badge-since">เริ่มนับ {{ $hdrPvSinceText }}</span>
+                    </span>
+                    <span class="header-view-badge-num"><b>{{ number_format($pageViewStat['views']) }}</b> ครั้ง</span>
+                </div>
+            @endif
         </div>
 
         <section class="content">
