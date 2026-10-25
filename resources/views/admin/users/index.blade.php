@@ -120,6 +120,8 @@
         .custom-table {
             border-collapse: separate;
             border-spacing: 0;
+            width: 100%;
+            table-layout: auto;
         }
 
         .custom-table th {
@@ -130,13 +132,13 @@
             background: var(--table-header-bg);
             border-bottom: 2px solid #e2e8f0;
             border-top: none;
-            padding: 16px 12px;
+            padding: 12px 10px;
         }
 
         .custom-table td {
             font-size: 0.82rem;
             /* Smaller text as requested */
-            padding: 18px 12px;
+            padding: 12px 10px;
             color: #1e293b;
             border-top: 1px solid #f1f5f9;
             vertical-align: middle;
@@ -167,7 +169,7 @@
         }
 
         /* คอลัมน์อีเมล: ไอคอนซองจดหมาย + อีเมลตัวหนาเข้มทั้งหมด เบอร์โทรเป็นบรรทัดรองพร้อมไอคอน */
-        .col-email { min-width: 270px; }
+        .col-email { min-width: 180px; }
         .user-email {
             display: flex;
             align-items: center;

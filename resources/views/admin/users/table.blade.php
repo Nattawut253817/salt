@@ -64,16 +64,16 @@
         <thead>
             <tr>
                 @if ($canBulk)
-                    <th class="pl-4 py-3 bulk-col"><input type="checkbox" class="bulk-check" id="bulk-all" title="เลือกทั้งหน้า" aria-label="เลือกทั้งหน้า"></th>
+                    <th class="pl-2 py-2 bulk-col"><input type="checkbox" class="bulk-check" id="bulk-all" title="เลือกทั้งหน้า" aria-label="เลือกทั้งหน้า"></th>
                 @endif
-                <th class="px-4 py-3">ลำดับ</th>
-                <th class="px-4 py-3">ชื่อ-นามสกุล</th>
-                <th class="px-4 py-3">อีเมล</th>
-                <th class="px-4 py-3">หน่วยงาน</th>
-                <th class="px-4 py-3">จังหวัด/อำเภอ</th>
-                <th class="px-4 py-3 text-center" style="min-width: 120px;">สถานะ</th>
-                <th class="px-4 py-3 text-center">ดำเนินการ</th>
-                <th class="px-4 py-3 text-center">จัดการ</th>
+                <th class="px-2 py-2">ลำดับ</th>
+                <th class="px-2 py-2">ชื่อ-นามสกุล</th>
+                <th class="px-2 py-2">อีเมล</th>
+                <th class="px-2 py-2">หน่วยงาน</th>
+                <th class="px-2 py-2">จังหวัด/อำเภอ</th>
+                <th class="px-2 py-2 text-center">สถานะ</th>
+                <th class="px-2 py-2 text-center">ดำเนินการ</th>
+                <th class="px-2 py-2 text-center">จัดการ</th>
             </tr>
         </thead>
         <tbody>
@@ -84,15 +84,15 @@
             @forelse($users as $index => $user)
                 <tr>
                     @if ($canBulk)
-                        <td class="pl-4 py-3 bulk-col">
+                        <td class="pl-2 py-2 bulk-col">
                             @if ($user->id !== auth()->id() && ! $user->isSuperAdmin())
                                 <input type="checkbox" class="bulk-check bulk-row" value="{{ $user->id }}"
                                     aria-label="เลือก {{ $user->User_firstname }} {{ $user->User_lastname }}">
                             @endif
                         </td>
                     @endif
-                    <td class="px-4 py-3 text-muted font-weight-500">{{ $start + $index }}</td>
-                    <td class="px-4 py-3">
+                    <td class="px-2 py-2 text-muted font-weight-500">{{ $start + $index }}</td>
+                    <td class="px-2 py-2">
                         <div class="d-flex align-items-center">
                             <div class="rounded-circle mr-2 d-flex align-items-center justify-content-center user-avatar">
                                 {{ mb_substr($user->User_firstname ?? $user->name, 0, 1) }}
@@ -108,7 +108,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-4 py-3 col-email">
+                    <td class="px-2 py-2 col-email">
                         @php
                             // บัญชี สคร. (ระดับ 1) แสดงอีเมลแบบปิดบังบางส่วน เช่น ta***@gmail.com
                             $shownEmail = (string) $user->email;
@@ -130,7 +130,7 @@
                             <div class="ue-phone"><i class="fas fa-phone"></i>{{ $user->phone }}</div>
                         @endif
                     </td>
-                    <td class="px-4 py-3">
+                    <td class="px-2 py-2">
                         @php
                             $agency = '-';
                             if ($user->User_rank_id == 1) {
@@ -147,16 +147,16 @@
                         @endphp
                         <span class="agency-text">{{ $agency }}</span>
                     </td>
-                    <td class="px-4 py-3 text-muted">
+                    <td class="px-2 py-2 text-muted">
                         <div class="text-xs">{{ $user->province->province_name ?? '-' }}</div>
                         <div class="text-xs text-secondary">{{ $user->district->district_name ?? '-' }}</div>
                     </td>
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-2 text-center">
                         <span class="status-badge {{ $user->is_approved ? 'status-approved' : 'status-pending' }}">
                             <i class="fas {{ $user->is_approved ? 'fa-check-circle' : 'fa-clock' }}"></i>{{ $user->is_approved ? 'อนุมัติแล้ว' : 'รอการอนุมัติ' }}
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-2 text-center">
                         <label class="switch mb-0">
                             <input type="checkbox" 
                                 class="toggle-approval" 
@@ -166,7 +166,7 @@
                             <span class="slider"></span>
                         </label>
                     </td>
-                    <td class="px-4 py-3 text-center">
+                    <td class="px-2 py-2 text-center">
                         <div class="d-flex justify-content-center action-buttons-group">
                             @if ($viewerIsSuperAdmin && (int) $user->User_rank_id === 1 && $user->id !== auth()->id())
                                 @php $rowIsSuper = $user->isSuperAdmin(); @endphp
