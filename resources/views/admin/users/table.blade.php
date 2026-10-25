@@ -168,18 +168,6 @@
                     </td>
                     <td class="px-2 py-2 text-center">
                         <div class="d-flex justify-content-center action-buttons-group">
-                            @if ($viewerIsSuperAdmin && (int) $user->User_rank_id === 1 && $user->id !== auth()->id())
-                                @php $rowIsSuper = $user->isSuperAdmin(); @endphp
-                                <button type="button"
-                                    class="btn-action btn-super {{ $rowIsSuper ? 'is-super' : '' }} toggle-super-admin"
-                                    data-id="{{ $user->id }}"
-                                    data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
-                                    data-super="{{ $rowIsSuper ? 1 : 0 }}"
-                                    {{ $user->isRootSuperAdmin() ? 'disabled' : '' }}
-                                    title="{{ $user->isRootSuperAdmin() ? 'SuperAdmin หลัก (ถอนสิทธิ์ไม่ได้)' : ($rowIsSuper ? 'ถอนสิทธิ์ SuperAdmin' : 'ตั้งเป็น SuperAdmin') }}">
-                                    <i class="fas fa-crown"></i> {{ $rowIsSuper ? 'ถอน SuperAdmin' : 'ตั้งเป็น SuperAdmin' }}
-                                </button>
-                            @endif
                             <button type="button" class="btn-action btn-edit edit-user" data-id="{{ $user->id }}"
                                 data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
                                 title="แก้ไข">
@@ -192,6 +180,18 @@
                                 <i class="fas fa-trash-alt"></i> ลบ
                             </button>
             @endif
+                            @if ($viewerIsSuperAdmin && (int) $user->User_rank_id === 1 && $user->id !== auth()->id())
+                                @php $rowIsSuper = $user->isSuperAdmin(); @endphp
+                                <button type="button"
+                                    class="btn-action btn-super {{ $rowIsSuper ? 'is-super' : '' }} toggle-super-admin"
+                                    data-id="{{ $user->id }}"
+                                    data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
+                                    data-super="{{ $rowIsSuper ? 1 : 0 }}"
+                                    {{ $user->isRootSuperAdmin() ? 'disabled' : '' }}
+                                    title="{{ $user->isRootSuperAdmin() ? 'SuperAdmin หลัก (ถอนสิทธิ์ไม่ได้)' : ($rowIsSuper ? 'ถอนสิทธิ์ SuperAdmin' : 'ตั้งเป็น SuperAdmin') }}">
+                                    <i class="fas fa-crown"></i>
+                                </button>
+                            @endif
                         </div>
                     </td>
                 </tr>

@@ -357,11 +357,15 @@
             box-shadow: 0 3px 8px rgba(225, 29, 72, 0.35);
         }
 
-        /* ปุ่มมอบ/ถอนสิทธิ์ SuperAdmin (เห็นเฉพาะ SuperAdmin) */
+        /* ปุ่มมอบ/ถอนสิทธิ์ SuperAdmin (เห็นเฉพาะ SuperAdmin) — icon-only */
         .btn-super {
             background: #fffbeb;
             color: #b45309;
             border-color: #fde68a;
+            padding: 7px 10px;
+            gap: 0;
+            min-width: 34px;
+            justify-content: center;
         }
 
         .btn-super:hover:not(:disabled) {
