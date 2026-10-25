@@ -551,8 +551,8 @@
         /* Edit User modal form styling (namespaced so it never affects the
            rest of the page's inputs/buttons). */
         .user-icon-wrapper {
-            width: 46px;
-            height: 46px;
+            width: 38px;
+            height: 38px;
             background: var(--secondary-indigo);
             border-radius: 14px;
             display: flex;
@@ -567,8 +567,8 @@
             font-size: 0.85rem;
             font-weight: 800;
             color: var(--primary-indigo);
-            margin-bottom: 10px;
-            padding-bottom: 6px;
+            margin-bottom: 7px;
+            padding-bottom: 5px;
             border-bottom: 1.5px solid var(--secondary-indigo);
             display: flex;
             align-items: center;
@@ -578,8 +578,8 @@
         #editUserModal .form-label {
             font-weight: 600;
             color: #475569;
-            font-size: 0.78rem;
-            margin-bottom: 5px;
+            font-size: 0.77rem;
+            margin-bottom: 3px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -594,8 +594,8 @@
         #editUserModal .select2-container--default .select2-selection--single {
             border-radius: 12px !important;
             border: 1.5px solid #e2e8f0 !important;
-            padding: 8px 13px !important;
-            font-size: 0.87rem !important;
+            padding: 7px 12px !important;
+            font-size: 0.86rem !important;
             background-color: #fbfcfe !important;
             transition: all 0.2s;
             height: auto !important;
@@ -642,10 +642,10 @@
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 9px 22px;
+            padding: 8px 20px;
             font-weight: 700;
-            font-size: 0.88rem;
-            box-shadow: 0 6px 12px -4px rgba(79, 70, 229, 0.3);
+            font-size: 0.86rem;
+            box-shadow: 0 4px 10px -4px rgba(79, 70, 229, 0.28);
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
@@ -667,9 +667,9 @@
             color: #475569;
             border: 1.5px solid #e2e8f0;
             border-radius: 12px;
-            padding: 9px 22px;
+            padding: 8px 20px;
             font-weight: 700;
-            font-size: 0.88rem;
+            font-size: 0.86rem;
             transition: all 0.2s;
         }
 
@@ -1046,14 +1046,14 @@
     <div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
             <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.15); overflow: hidden;">
-                <div class="modal-header border-0" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 22px 28px;">
+                <div class="modal-header border-0" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding: 14px 22px;">
                     <div class="d-flex align-items-center">
                         <div class="user-icon-wrapper mr-3">
                             <i class="fas fa-user-edit"></i>
                         </div>
                         <div>
-                            <h5 class="mb-0 font-weight-bold" style="color:#1e293b; font-size: 1.1rem;">แก้ไขข้อมูลผู้ใช้งาน</h5>
-                            <p class="mb-0 text-muted" id="editUserModalSubtitle" style="font-size:0.85rem; font-weight: 500;"></p>
+                            <h5 class="mb-0 font-weight-bold" style="color:#1e293b; font-size: 1rem;">แก้ไขข้อมูลผู้ใช้งาน</h5>
+                            <p class="mb-0 text-muted" id="editUserModalSubtitle" style="font-size:0.8rem; font-weight: 500;"></p>
                         </div>
                     </div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"
@@ -1061,7 +1061,7 @@
                         <span aria-hidden="true" style="color: #64748b; font-size: 1.1rem; line-height: 1;">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" id="editUserModalBody" style="padding: 26px 28px;">
+                <div class="modal-body" id="editUserModalBody" style="padding: 18px 24px;">
                     <div class="text-center py-5 text-muted" id="editUserModalLoading">
                         <i class="fas fa-spinner fa-spin fa-2x"></i>
                     </div>
