@@ -421,7 +421,7 @@
         .tp-list { flex: 1 1 100%; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
         .tp-item { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-radius: 12px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 13%, #fff) var(--tp-w, 0%), #f8fafc var(--tp-w, 0%)); border: 1px solid #eef1f6; cursor: default; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
         .tp-item:hover, .tp-item.is-hover { background: #ffffff; border-color: var(--tp-c); box-shadow: 0 6px 16px -8px var(--tp-c); }
-        .tp-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--tp-c); flex: 0 0 auto; }
+        .tp-dot { display: none; }
         .tp-name { flex: 1; min-width: 0; font-size: .86rem; font-weight: 700; color: #1e293b; line-height: 1.25; }
         .tp-val { display: block; text-align: right; line-height: 1.2; white-space: nowrap; }
         .tp-pct { display: block; font-size: 1rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
@@ -2182,8 +2182,8 @@
         @media (prefers-reduced-motion: reduce) { .hm-fly-bar { animation: none !important; } }
 
         /* ปรับการแสดงผลสัดส่วนสถานที่จำหน่าย: จำนวนเมนูตัวใหญ่ชัด + แถบสัดส่วนใต้ชื่อ + ป้ายร้อยละ */
-        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 14%, #fff) var(--tp-w), #f9fafb var(--tp-w)); border-left: 3px solid var(--tp-c); border-radius: 10px; padding: 11px 14px; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
-        .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 22%, #fff) var(--tp-w), #fff var(--tp-w)); box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--tp-c) 35%, transparent); border-left-width: 4px; }
+        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 14%, #fff) var(--tp-w), #f9fafb var(--tp-w)); border-radius: 10px; padding: 11px 14px; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 22%, #fff) var(--tp-w), #fff var(--tp-w)); box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--tp-c) 35%, transparent); }
         .tp-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .tp-name { flex: none; font-size: .9rem; }
         .tp-track { display: block; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 8%, #e8edf4); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
@@ -3115,7 +3115,6 @@
                 pieListEl.innerHTML = pieData.map(d => {
                     const pct = pieTotal > 0 ? d.y / pieTotal * 100 : 0;
                     return '<div class="tp-item" style="--tp-c:' + d.color + '; --tp-w:' + Math.max(pct, 2.5).toFixed(1) + '%;">'
-                        + '<span class="tp-dot"></span>'
                         + '<span class="tp-mid"><span class="tp-name">' + escPie(d.name) + '</span>'
                         + '<span class="tp-track"><i></i></span></span>'
                         + '<span class="tp-val"><span class="tp-cnt"><b>' + Highcharts.numberFormat(d.y, 0) + '</b> เมนู</span>'
