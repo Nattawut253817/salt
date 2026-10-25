@@ -1294,95 +1294,6 @@
             .footer-view-num b { animation: none; }
         }
 
-        /* ตัวนับการเข้าชม — bottom stats bar (แสดงเฉพาะหน้าที่มี $pageViewStat) */
-        .page-view-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            z-index: 1200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 8px 20px;
-            background:
-                radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 70%),
-                linear-gradient(90deg, #be185d 0%, #db2777 35%, #ec4899 65%, #be185d 100%);
-            border-top: 1px solid rgba(255,255,255,0.25);
-            box-shadow: 0 -2px 16px rgba(190,24,93,0.30), 0 -1px 4px rgba(0,0,0,0.12);
-            font-family: 'Sarabun', sans-serif;
-            color: #fff;
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.01em;
-            margin-bottom: 0;
-        }
-
-        @media (max-width: 768px) {
-            .page-view-bar { bottom: 56px; }
-        }
-
-        .pvb-icon {
-            width: 26px;
-            height: 26px;
-            border-radius: 7px;
-            background: rgba(255,255,255,0.22);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.75rem;
-            flex-shrink: 0;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
-        }
-
-        .pvb-label {
-            opacity: 0.92;
-            white-space: nowrap;
-        }
-
-        .pvb-since {
-            opacity: 0.75;
-            font-size: 0.74rem;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .pvb-sep {
-            width: 1px;
-            height: 14px;
-            background: rgba(255,255,255,0.35);
-            flex-shrink: 0;
-        }
-
-        .pvb-count {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            white-space: nowrap;
-        }
-
-        .pvb-count b {
-            font-size: 1.05rem;
-            font-weight: 800;
-            font-variant-numeric: tabular-nums;
-            text-shadow: 0 1px 3px rgba(76,5,38,0.40);
-            background: rgba(255,255,255,0.22);
-            padding: 2px 10px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.30);
-            animation: pvbGlow 3.2s ease-in-out infinite;
-        }
-
-        @keyframes pvbGlow {
-            0%, 100% { box-shadow: 0 0 6px rgba(255,255,255,0.25); }
-            50%       { box-shadow: 0 0 16px rgba(255,255,255,0.55); }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            .pvb-count b { animation: none; }
-        }
-
         .footer-bottom {
             display: flex;
             flex-wrap: wrap;
@@ -1765,24 +1676,6 @@
     })();
     </script>
 
-    {{-- ===== Page View Bar =====
-         แสดงเฉพาะหน้าที่มี $pageViewStat (awareness, reduced-sodium-menu, reduced-sodium-products)
-         วางที่ด้านล่างสุดของหน้าเป็น fixed bar --}}
-    @if (!empty($pageViewStat))
-        @php
-            $pvBarSince = $pageViewStat['since'];
-            $pvBarMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-            $pvBarSinceText = $pvBarSince->day . ' ' . $pvBarMonths[$pvBarSince->month - 1] . ' ' . ($pvBarSince->year + 543);
-        @endphp
-        <div class="page-view-bar" role="status" aria-label="จำนวนการเข้าชมหน้านี้ {{ number_format($pageViewStat['views']) }} ครั้ง">
-            <span class="pvb-icon" aria-hidden="true"><i class="fa-solid fa-chart-simple"></i></span>
-            <span class="pvb-label">จำนวนการเข้าชมหน้านี้</span>
-            <span class="pvb-sep"></span>
-            <span class="pvb-since">เริ่มนับ {{ $pvBarSinceText }}</span>
-            <span class="pvb-sep"></span>
-            <span class="pvb-count"><b>{{ number_format($pageViewStat['views']) }}</b> ครั้ง</span>
-        </div>
-    @endif
 </body>
 
     <script>
