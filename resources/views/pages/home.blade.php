@@ -3287,7 +3287,9 @@
 
                 const donutColors = donutLabels.map(name => provinceColorMap[name] || '#64748b');
 
-                // resetDonutCenter is redefined by the legend block below (shows "N รายการ" by default)
+                // Declare donutActiveIdx early so resetDonutCenter (and onHover) can reference it safely
+                let donutActiveIdx = -1; // -1 = none selected
+
                 function resetDonutCenter() {
                     const t = document.getElementById('donutTotal');
                     if (!t) return;
@@ -3379,7 +3381,7 @@
 
                 // Custom Legend for Donut (right side, new design)
                 const legendContainer = document.getElementById('donutLegend');
-                let donutActiveIdx = -1; // -1 = none selected
+                // (donutActiveIdx already declared above, before the Chart constructor)
 
                 // Update center text helper
                 function setDonutCenter(idx) {
