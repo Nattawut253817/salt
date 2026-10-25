@@ -635,8 +635,8 @@
             animation: fadeIn 0.3s ease;
             align-items: center;
             justify-content: center;
-            padding-top: 24px;
-            padding-bottom: 24px;
+            padding-top: 12px;
+            padding-bottom: 12px;
             box-sizing: border-box;
         }
 
@@ -660,7 +660,7 @@
         }
 
         .modal-header-new {
-            padding: 20px 30px;
+            padding: 14px 24px;
             background: linear-gradient(to right, #3b82f6 0%, #2563eb 100%);
             color: white;
             display: flex;
@@ -670,7 +670,7 @@
 
         .modal-header-new h3 {
             margin: 0;
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 800;
             letter-spacing: -0.025em;
             display: flex;
@@ -705,22 +705,22 @@
         }
 
         .modal-body-new {
-            padding: 35px;
+            padding: 20px;
             display: grid;
             grid-template-columns: 280px 1fr;
-            gap: 35px;
+            gap: 20px;
             background: #f8fafc;
         }
 
         .detail-two-col {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 12px;
         }
 
         .detail-image-box {
             width: 100%;
-            height: 280px;
+            height: 200px;
             border-radius: 24px;
             overflow: hidden;
             background: white;
@@ -747,25 +747,25 @@
         .detail-info {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
         }
 
         .info-card-new {
             background: white;
-            padding: 20px;
-            border-radius: 20px;
+            padding: 14px 16px;
+            border-radius: 16px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             display: flex;
             flex-direction: column;
-            gap: 18px;
+            gap: 12px;
         }
 
         .info-row {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            padding-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #f1f5f9;
         }
 
