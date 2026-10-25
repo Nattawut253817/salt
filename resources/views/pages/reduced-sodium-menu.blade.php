@@ -2186,7 +2186,7 @@
         .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 22%, #fff) var(--tp-w), #fff var(--tp-w)); box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--tp-c) 35%, transparent); }
         .tp-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .tp-name { flex: none; font-size: .9rem; }
-        .tp-track { display: block; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 8%, #e8edf4); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
+        .tp-track { display: block; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 22%, #d0d7e4); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.10); }
         .tp-track i { display: block; width: var(--tp-w); height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 60%, #fff) 0%, var(--tp-c) 70%, color-mix(in srgb, var(--tp-c) 85%, #000) 100%); position: relative; box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 2px 4px -2px color-mix(in srgb, var(--tp-c) 50%, transparent); }
         .tp-val { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
         .tp-val .tp-cnt { min-width: 74px; text-align: right; white-space: nowrap; }
