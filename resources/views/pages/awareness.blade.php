@@ -1953,8 +1953,11 @@
                     @endif
                 </div>
                 <div class="chart-figure-footer">
-                    <p class="chart-caption">เกณฑ์ผ่านระดับจังหวัด: ร้อยละความตระหนักรู้ตั้งแต่ 80% ขึ้นไป</p>
-                    @if (!empty($effectiveFiscalYear) && \App\Services\AwarenessPassResolver::methodFor($effectiveFiscalYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE)
+                    @php
+                        $mapPassThreshold = (!empty($effectiveFiscalYear) && \App\Services\AwarenessPassResolver::methodFor($effectiveFiscalYear) === \App\Models\AwarenessPassSetting::METHOD_SCORE) ? 60 : 80;
+                    @endphp
+                    <p class="chart-caption">เกณฑ์ผ่านระดับจังหวัด: ร้อยละความตระหนักรู้ตั้งแต่ {{ $mapPassThreshold }}% ขึ้นไป</p>
+                    @if ($mapPassThreshold === 60)
                         <p class="chart-caption" style="margin-top:2px;">เกณฑ์ผ่านรายบุคคล: คะแนนรวม &ge; 19.2 / 32 (ร้อยละ 60)</p>
                     @endif
                 </div>
