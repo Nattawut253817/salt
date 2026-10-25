@@ -2200,7 +2200,7 @@
         @media (max-width: 575px) { .mnu-cmp-card .chart-card-head { flex-wrap: wrap; } .mnu-cmp-card .chart-card-head .hm-fly-legend { width: 100%; margin-top: 4px; } }
 
         /* ปรับให้อ่านง่าย สบายตา (คงรูปแบบกราฟเดิม): เว้นระยะ ลดความเงา ตัวเลขชัด แยกแถวชัดขึ้น */
-        .mnu-cmp-card .hm-fly-row { grid-template-columns: 120px minmax(0, 1fr) 50px minmax(0, 1fr) 68px; gap: 10px; padding: 7px 8px; border-bottom: 1px solid #f1f5f9; border-radius: 8px; margin: 1px 0; }
+        .mnu-cmp-card .hm-fly-row { grid-template-columns: 110px minmax(0, 1fr) 48px minmax(0, 1fr) 60px; gap: 8px; padding: 7px 8px; border-bottom: 1px solid #f1f5f9; border-radius: 8px; margin: 1px 0; }
         .mnu-cmp-card .hm-fly-prov { font-size: .83rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 7px; }
         .mnu-cmp-card .hm-fly-side { gap: 8px; height: 26px; }
         .mnu-cmp-card .hm-fly-side::before { height: 14px; border-radius: 99px; background: linear-gradient(180deg, #e8edf4, #f1f5f9); box-shadow: inset 0 1px 2px rgba(15, 23, 42, .08); }
@@ -2214,10 +2214,12 @@
         .mnu-cmp-card .hm-fly-core { width: 42px; height: 42px; box-shadow: 0 -2px 3px rgba(10, 18, 60, .28) inset, 0 5px 10px -4px rgba(23, 37, 84, .55), 0 0 0 2px #fff, 0 0 0 4px #dbe4f5; }
         .mnu-cmp-card .hm-fly-core b { font-size: .8rem; }
         .mnu-cmp-card .hm-fly-core span { font-size: .5rem; }
-        .mnu-cmp-card .hm-fly-pct .hm-chip { font-size: .74rem; font-weight: 800; padding: 3px 10px; border-radius: 99px; min-width: 58px; text-align: center; }
+        .mnu-cmp-card .hm-fly-pct { display: flex; align-items: center; justify-content: flex-end; }
+        .mnu-cmp-card .hm-fly-pct .hm-chip { font-size: .72rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; min-width: 52px; text-align: center; white-space: nowrap; }
         .mnu-cmp-card .hm-fly-none { font-size: .76rem; color: #94a3b8; }
         .mnu-cmp-card .hm-fly-total { margin-top: 8px; padding: 10px 8px 8px; border-top: 2px solid #0d9488; border-bottom: none; background: linear-gradient(180deg, #f0fdf9 0%, #ecfdf5 100%); border-radius: 0 0 14px 14px; box-shadow: 0 -1px 0 #d1fae5; }
         .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0d9488; font-weight: 800; font-size: .86rem; }
+        .hm-pct-badge { font-size: .68rem; font-weight: 800; padding: 1px 7px; border-radius: 99px; }
         .mnu-cmp-card .hm-fly-row:last-child { border-bottom: none; }
         /* ลดมิติ: แท่งสีเรียบ ไม่มีเงา/ไฮไลต์ คงโครงสร้างเดิม */
         .mnu-cmp-card .hm-fly-before { background: #ef6a82 !important; box-shadow: none !important; }
