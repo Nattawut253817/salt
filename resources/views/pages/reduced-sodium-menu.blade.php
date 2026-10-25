@@ -2182,42 +2182,42 @@
         @media (prefers-reduced-motion: reduce) { .hm-fly-bar { animation: none !important; } }
 
         /* ปรับการแสดงผลสัดส่วนสถานที่จำหน่าย: จำนวนเมนูตัวใหญ่ชัด + แถบสัดส่วนใต้ชื่อ + ป้ายร้อยละ */
-        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 16%, #fff) var(--tp-w), #fff var(--tp-w)); border-left: 1px solid #eef1f6; padding: 10px 14px; gap: 12px; }
-        .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 24%, #fff) var(--tp-w), #fff var(--tp-w)); }
+        .tp-item { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 14%, #fff) var(--tp-w), #f9fafb var(--tp-w)); border-left: 3px solid var(--tp-c); border-radius: 10px; padding: 11px 14px; gap: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+        .tp-item:hover, .tp-item.is-hover { background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 22%, #fff) var(--tp-w), #fff var(--tp-w)); box-shadow: 0 4px 12px -4px color-mix(in srgb, var(--tp-c) 35%, transparent); border-left-width: 4px; }
         .tp-mid { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
         .tp-name { flex: none; font-size: .9rem; }
-        .tp-track { display: block; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 10%, #eef1f6); overflow: hidden; }
-        .tp-track i { display: block; width: var(--tp-w); height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 70%, #fff), var(--tp-c)); }
+        .tp-track { display: block; height: 10px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 8%, #e8edf4); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,.06); }
+        .tp-track i { display: block; width: var(--tp-w); height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--tp-c) 60%, #fff) 0%, var(--tp-c) 70%, color-mix(in srgb, var(--tp-c) 85%, #000) 100%); position: relative; box-shadow: 0 1px 0 rgba(255,255,255,.4) inset, 0 2px 4px -2px color-mix(in srgb, var(--tp-c) 50%, transparent); }
         .tp-val { display: flex; flex-direction: row; align-items: center; justify-content: flex-end; gap: 10px; min-width: 0; }
         .tp-val .tp-cnt { min-width: 74px; text-align: right; white-space: nowrap; }
         .tp-val .tp-pct { min-width: 56px; text-align: center; }
-        .tp-cnt { margin: 0; font-size: .78rem; font-weight: 700; color: #475569; }
-        .tp-cnt b { font-size: 1.15rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; }
-        .tp-pct { display: inline-block; padding: 1px 9px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 12%, #fff); color: color-mix(in srgb, var(--tp-c) 80%, #0f172a); font-size: .76rem; font-weight: 800; }
+        .tp-cnt { margin: 0; font-size: .78rem; font-weight: 600; color: #64748b; }
+        .tp-cnt b { font-size: 1.1rem; font-weight: 800; color: #0f172a; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+        .tp-pct { display: inline-block; padding: 3px 10px; border-radius: 99px; background: color-mix(in srgb, var(--tp-c) 15%, #fff); color: color-mix(in srgb, var(--tp-c) 90%, #0f172a); font-size: .76rem; font-weight: 800; border: 1px solid color-mix(in srgb, var(--tp-c) 20%, transparent); min-width: 52px; text-align: center; }
 
         /* คำอธิบายสี ก่อน/หลัง อยู่แถวเดียวกับหัวข้อ มุมขวา */
         .mnu-cmp-card .chart-card-head .hm-fly-legend { margin: 2px 0 0; flex: 0 0 auto; align-self: flex-start; white-space: nowrap; }
         @media (max-width: 575px) { .mnu-cmp-card .chart-card-head { flex-wrap: wrap; } .mnu-cmp-card .chart-card-head .hm-fly-legend { width: 100%; margin-top: 4px; } }
 
         /* ปรับให้อ่านง่าย สบายตา (คงรูปแบบกราฟเดิม): เว้นระยะ ลดความเงา ตัวเลขชัด แยกแถวชัดขึ้น */
-        .mnu-cmp-card .hm-fly-row { grid-template-columns: 122px minmax(0, 1fr) 46px minmax(0, 1fr) 70px; gap: 12px; padding: 5px 6px; border-bottom: 1px solid #eef2f7; }
-        .mnu-cmp-card .hm-fly-prov { font-size: .84rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 7px; }
-        .mnu-cmp-card .hm-fly-side { gap: 8px; height: 24px; }
-        .mnu-cmp-card .hm-fly-side::before { height: 16px; background: #f1f5f9; box-shadow: inset 0 1px 1px rgba(15, 23, 42, .05); }
-        .mnu-cmp-card .hm-fly-val { min-width: 38px; font-size: .8rem; font-weight: 800; color: #334155; }
+        .mnu-cmp-card .hm-fly-row { grid-template-columns: 120px minmax(0, 1fr) 50px minmax(0, 1fr) 68px; gap: 10px; padding: 7px 8px; border-bottom: 1px solid #f1f5f9; border-radius: 8px; margin: 1px 0; }
+        .mnu-cmp-card .hm-fly-prov { font-size: .83rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 7px; }
+        .mnu-cmp-card .hm-fly-side { gap: 8px; height: 26px; }
+        .mnu-cmp-card .hm-fly-side::before { height: 14px; border-radius: 99px; background: linear-gradient(180deg, #e8edf4, #f1f5f9); box-shadow: inset 0 1px 2px rgba(15, 23, 42, .08); }
+        .mnu-cmp-card .hm-fly-val { min-width: 38px; font-size: .8rem; font-weight: 800; color: #1e293b; font-variant-numeric: tabular-nums; }
         .mnu-cmp-card .hm-fly-left .hm-fly-val { text-align: right; }
         .mnu-cmp-card .hm-fly-right .hm-fly-val { text-align: left; }
-        .mnu-cmp-card .hm-fly-bar { height: 12px; }
-        .mnu-cmp-card .hm-fly-before { background: linear-gradient(180deg, #fb8da0 0%, #f0476a 55%, #dc2650 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(225, 29, 72, .45); }
-        .mnu-cmp-card .hm-fly-after { background: linear-gradient(180deg, #7de3a5 0%, #2fc16a 55%, #1a9a4f 100%); box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 3px 6px -3px rgba(21, 128, 61, .45); }
+        .mnu-cmp-card .hm-fly-bar { height: 14px; border-radius: 99px !important; }
+        .mnu-cmp-card .hm-fly-before { background: linear-gradient(90deg, #fda4b5 0%, #f43f5e 55%, #be123c 100%); box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 3px 8px -3px rgba(225, 29, 72, .5); }
+        .mnu-cmp-card .hm-fly-after { background: linear-gradient(90deg, #15803d 0%, #22c55e 55%, #86efac 100%); box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 3px 8px -3px rgba(21, 128, 61, .5); }
         .mnu-cmp-card .hm-fly-bar::after { top: 2px; height: 3px; opacity: .7; }
-        .mnu-cmp-card .hm-fly-core { width: 40px; height: 40px; box-shadow: 0 -2px 3px rgba(10, 18, 60, .3) inset, 0 4px 8px -4px rgba(23, 37, 84, .6), 0 0 0 2px #fff, 0 0 0 3px #dbe4f5; }
+        .mnu-cmp-card .hm-fly-core { width: 42px; height: 42px; box-shadow: 0 -2px 3px rgba(10, 18, 60, .28) inset, 0 5px 10px -4px rgba(23, 37, 84, .55), 0 0 0 2px #fff, 0 0 0 4px #dbe4f5; }
         .mnu-cmp-card .hm-fly-core b { font-size: .8rem; }
         .mnu-cmp-card .hm-fly-core span { font-size: .5rem; }
-        .mnu-cmp-card .hm-fly-pct .hm-chip { font-size: .76rem; font-weight: 800; padding: 3px 9px; }
+        .mnu-cmp-card .hm-fly-pct .hm-chip { font-size: .74rem; font-weight: 800; padding: 3px 10px; border-radius: 99px; min-width: 58px; text-align: center; }
         .mnu-cmp-card .hm-fly-none { font-size: .76rem; color: #94a3b8; }
-        .mnu-cmp-card .hm-fly-total { margin-top: 6px; padding: 10px 6px 6px; border-top: 2px solid #0f766e; border-bottom: none; background: linear-gradient(180deg, #f2fbf9, #fff); border-radius: 0 0 12px 12px; }
-        .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0f766e; font-weight: 800; }
+        .mnu-cmp-card .hm-fly-total { margin-top: 8px; padding: 10px 8px 8px; border-top: 2px solid #0d9488; border-bottom: none; background: linear-gradient(180deg, #f0fdf9 0%, #ecfdf5 100%); border-radius: 0 0 14px 14px; box-shadow: 0 -1px 0 #d1fae5; }
+        .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0d9488; font-weight: 800; font-size: .86rem; }
         .mnu-cmp-card .hm-fly-row:last-child { border-bottom: none; }
         /* ลดมิติ: แท่งสีเรียบ ไม่มีเงา/ไฮไลต์ คงโครงสร้างเดิม */
         .mnu-cmp-card .hm-fly-before { background: #ef6a82 !important; box-shadow: none !important; }
@@ -2426,7 +2426,7 @@
                     <div class="chart-card-icon"><i class="fas fa-chart-pie"></i></div>
                     <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ร้อยละเมนูอาหารที่ปรับสูตรลดโซเดียม</div>
-                        <div class="chart-card-subtitle">แยกตามสถานที่จำหน่าย · นำเมาส์ชี้บนกราฟเพื่อดูสัดส่วนและจำนวนเมนู</div>
+                        <div class="chart-card-subtitle">แยกตามสถานที่จำหน่าย</div>
                     </div>
                     <span class="tp-chip">{{ number_format(collect($pieChartData)->sum()) }} เมนู</span>
                 </div>
@@ -2442,7 +2442,7 @@
                     <div class="chart-card-icon"><i class="fas fa-scale-balanced"></i></div>
                     <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ค่าเฉลี่ยโซเดียมก่อน-หลังปรับสูตร รายจังหวัด</div>
-                        <div class="chart-card-subtitle">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง · ตรงกลางคือจำนวนเมนูทั้งหมดของจังหวัด</div>
+                        <div class="chart-card-subtitle">มก. ต่อเมนู เฉพาะเมนูที่วัดครบทั้งก่อนและหลัง</div>
                     </div>
                     <div class="hm-fly-legend">
                         <span><i style="background: linear-gradient(180deg, #fc8296, #e11d48);"></i>ก่อนปรับสูตร</span>
