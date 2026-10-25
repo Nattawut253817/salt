@@ -511,7 +511,7 @@
 
         /* Section Headings */
         .nav-section-title {
-            padding: 22px 12px 10px 12px;
+            padding: 14px 12px 6px 12px;
             font-size: 0.72rem;
             font-weight: 800;
             font-family: 'Prompt', 'Sarabun', sans-serif;
@@ -542,7 +542,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 10px 12px;
+            padding: 7px 12px;
             color: var(--sidebar-text);
             text-decoration: none !important;
             border-radius: 12px;
