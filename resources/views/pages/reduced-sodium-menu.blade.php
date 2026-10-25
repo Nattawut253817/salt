@@ -344,7 +344,7 @@
             .hm-fly-right { grid-column: 3; grid-row: 2; }
         }
 
-        .hm-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .hm-dot { display: none; }
         .hm-muted { color: #94a3b8; }
         .chart-card.accent-teal { --chart-accent: #0d9488; background: #f8fdfc; }
         .chart-card.accent-green { --chart-accent: #16a34a; background: #f8fdf9; }
