@@ -4451,25 +4451,40 @@ class AdminController extends Controller
             });
         }
 
-        // Calculate Summary Statistics (Full filtered query, not just current page)
-        $statsQuery = clone $query;
-        $totalAssessments = $statsQuery->count();
+        // Calculate Summary Statistics (Full filtered query, not just current page).
+        // Cache for 2 minutes keyed by user scope + data version so the two COUNT
+        // queries (which run a complex GROUP_CONCAT subquery each) don't run on
+        // every page load. The version is bumped by PublicPageCache::bump() whenever
+        // an admin changes data, ensuring stale stats are never shown for long.
+        $user = auth()->user();
+        $scopeId = match($user->User_rank_id) {
+            1       => 'all',
+            2       => 'p' . $user->Province_id,
+            default => 'd' . $user->District_id,
+        };
+        $filterSig = md5($request->fiscal_year . '|' . $request->quarter . '|' . $request->province_id . '|' . $request->district_id);
+        $statsCacheKey = 'salt_stats.' . $scopeId . '.' . $filterSig . '.' . \App\Support\AdminCache::version();
 
-        // Define "Complete" as having all 4 main steps plus all 5 sub-items of step 5 filled
-        $completeCount = (clone $query)->where(function ($q) {
-            foreach (range(1, 4) as $i) {
-                $q->whereNotNull("ans_{$i}_detail")->where("ans_{$i}_detail", '!=', '');
-            }
-            foreach (range(1, 5) as $i) {
-                $q->whereNotNull("ans_5_{$i}_detail")->where("ans_5_{$i}_detail", '!=', '');
-            }
-        })->count();
+        $stats = \Illuminate\Support\Facades\Cache::remember($statsCacheKey, 120, function () use ($query) {
+            $statsQuery = clone $query;
+            $totalAssessments = $statsQuery->count();
 
-        $stats = [
-            'total' => $totalAssessments,
-            'complete' => $completeCount,
-            'in_progress' => $totalAssessments - $completeCount
-        ];
+            // Define "Complete" as having all 4 main steps plus all 5 sub-items of step 5 filled
+            $completeCount = (clone $query)->where(function ($q) {
+                foreach (range(1, 4) as $i) {
+                    $q->whereNotNull("ans_{$i}_detail")->where("ans_{$i}_detail", '!=', '');
+                }
+                foreach (range(1, 5) as $i) {
+                    $q->whereNotNull("ans_5_{$i}_detail")->where("ans_5_{$i}_detail", '!=', '');
+                }
+            })->count();
+
+            return [
+                'total'       => $totalAssessments,
+                'complete'    => $completeCount,
+                'in_progress' => $totalAssessments - $completeCount,
+            ];
+        });
 
         $assessments = $query->join('users', 'salt_assessments.user_id', '=', 'users.id')
             ->select('salt_assessments.*')
@@ -4617,13 +4632,17 @@ class AdminController extends Controller
 
         // ทำแบบประเมินครบทุกปีงบประมาณแล้วหรือยัง (ผู้ใช้ที่ไม่ใช่ สคร.) - ให้ปุ่ม "ทำแบบประเมิน" เด้งป๊อปอัปแจ้งทันทีโดยไม่ต้องโหลดหน้าใหม่
         // เกณฑ์เดียวกับ reportProgress() โหมด new=1 (ปีใดมีรายการของหน่วยงาน = ทำแล้ว; นับตั้งแต่ปี 2568 ถึงปีปัจจุบัน)
+        // แคช 2 นาทีต่อผู้ใช้ (version bumps เมื่อข้อมูลเปลี่ยน) เพื่อลดจำนวน query ในหน้าแรกหลังล็อกอิน
         $allDoneYears = [];
         $notOpenYear = null;
         $currentAgencyUser = auth()->user();
         if ($currentAgencyUser->User_rank_id != 1) {
-            $doneYearsAll = SaltAssessment::whereIn('user_id', $this->getAgencyUserIds($currentAgencyUser))
-                ->distinct()->orderBy('fiscal_year', 'desc')->pluck('fiscal_year')
-                ->map(fn ($y) => (int) $y)->all();
+            $doneKey = 'salt_done_years.' . $currentAgencyUser->id . '.' . \App\Support\AdminCache::version();
+            $doneYearsAll = \Illuminate\Support\Facades\Cache::remember($doneKey, 120, function () use ($currentAgencyUser) {
+                return SaltAssessment::whereIn('user_id', $this->getAgencyUserIds($currentAgencyUser))
+                    ->distinct()->orderBy('fiscal_year', 'desc')->pluck('fiscal_year')
+                    ->map(fn ($y) => (int) $y)->all();
+            });
             $block = $this->saltStartBlock($doneYearsAll);
             if ($block && $block['type'] === 'not_open') {
                 $notOpenYear = $block['year'];
