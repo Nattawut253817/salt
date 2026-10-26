@@ -42,22 +42,7 @@ Route::get('/storage/{path}', function (string $path) {
     }
 
     if (!is_file($full)) {
-        // TEMP DIAGNOSTIC: tell us exactly why the lookup failed instead of
-        // just 404ing (always on, not gated by APP_DEBUG, so we can rule out
-        // a debug-mode mismatch too). Will be removed once the real cause is
-        // confirmed.
-        return response()->json([
-            'route_was_reached' => true,
-            'requested_path' => $path,
-            'resolved_full_path' => $full,
-            'base_dir' => $base,
-            'base_dir_exists' => is_dir($base),
-            'full_is_file' => is_file($full),
-            'full_file_exists' => file_exists($full),
-            'realpath_full' => realpath($full),
-            'app_debug' => config('app.debug'),
-            'dir_listing_of_target_folder' => is_dir(dirname($full)) ? array_slice(scandir(dirname($full)), 0, 20) : 'PARENT_DIR_NOT_FOUND: ' . dirname($full),
-        ], 404);
+        abort(404);
     }
 
     return response()->file($full);
@@ -142,8 +127,8 @@ Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     Route::put('/kidney-dhb/{id}', [AdminController::class, 'updateKidneyDHB'])->name('admin.kidney-dhb.update');
     Route::post('/kidney-dhb/{id}/change-area', [AdminController::class, 'changeKidneyDhbArea'])->middleware('super.admin')->name('admin.kidney-dhb.change-area');
     Route::post('/kidney-dhb/{id}/confirm', [AdminController::class, 'confirmKidneyDHB'])->name('admin.kidney-dhb.confirm');
-    Route::get('/admin/kidney-dhb/{id}/export-pdf', [AdminController::class, 'exportKidneyDHBPdf'])->name('admin.kidney-dhb.export-pdf');
-    Route::get('/admin/kidney-dhb/{id}/export-word', [AdminController::class, 'exportKidneyDHBWord'])->name('admin.kidney-dhb.export-word');
+    Route::get('/kidney-dhb/{id}/export-pdf', [AdminController::class, 'exportKidneyDHBPdf'])->name('admin.kidney-dhb.export-pdf');
+    Route::get('/kidney-dhb/{id}/export-word', [AdminController::class, 'exportKidneyDHBWord'])->name('admin.kidney-dhb.export-word');
     Route::delete('/kidney-dhb/{id}', [AdminController::class, 'destroyKidneyDHB'])->name('admin.kidney-dhb.destroy');
     Route::post('/kidney-dhb-list/delete-filtered', [AdminController::class, 'deleteFilteredKidneyDHB'])->middleware('super.admin')->name('admin.kidney-dhb.delete-filtered');
     Route::get('/kidney-dhb', [AdminController::class, 'kidneyDHB'])->name('admin.kidney-dhb');

@@ -354,7 +354,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'User_position' => 'required|string|max:255',
-            'User_rank_id' => 'required|string|max:255',
+            'User_rank_id' => 'required|in:1,2,3,4,5',
             'Province_id' => 'required|string|max:255',
             'District_id' => 'nullable|string|max:255',
             'Hospital_id' => 'nullable|string|max:255',

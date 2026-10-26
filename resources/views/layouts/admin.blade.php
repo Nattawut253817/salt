@@ -500,6 +500,7 @@
             scrollbar-color: #e2e8f0 transparent;
         }
 
+
         .sidebar-nav::-webkit-scrollbar {
             width: 5px;
         }
@@ -978,6 +979,12 @@
         }
 
         /* ---- Collapsed state ---- */
+        body.sidebar-collapsed {
+            /* Update the sidebar-width token so every consumer
+               (modal overlays, backdrop, etc.) automatically tracks
+               the collapsed width without a separate rule per consumer. */
+            --sidebar-width: 68px;
+        }
         body.sidebar-collapsed .admin-sidebar {
             width: 68px;
             overflow: visible;
@@ -1090,32 +1097,26 @@
             margin: 0 10px;
         }
 
-        /* Tooltip on hover */
-        body.sidebar-collapsed .admin-sidebar .nav-link,
-        body.sidebar-collapsed .admin-sidebar .nav-group-header {
-            position: relative;
-        }
-        body.sidebar-collapsed .admin-sidebar .nav-link::after,
-        body.sidebar-collapsed .admin-sidebar .nav-group-header::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            left: calc(100% + 10px);
-            top: 50%;
-            transform: translateY(-50%);
+        /* Sidebar tooltip — rendered as a fixed-position element appended
+           to <body> by JS, so it is never clipped by sidebar overflow.
+           The ::after pseudo approach was removed because CSS cannot have
+           overflow-x:visible and overflow-y:auto on the same container. */
+        #sidebar-tooltip {
+            position: fixed;
             background: #1e293b;
             color: #fff;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 8px;
             font-size: 0.76rem;
             font-family: 'K2D', 'Sarabun', sans-serif;
             white-space: nowrap;
             pointer-events: none;
+            z-index: 99999;
             opacity: 0;
-            transition: opacity 0.15s ease;
-            z-index: 9999;
+            transition: opacity 0.12s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
         }
-        body.sidebar-collapsed .admin-sidebar .nav-link:hover::after,
-        body.sidebar-collapsed .admin-sidebar .nav-group-header:hover::after {
+        #sidebar-tooltip.visible {
             opacity: 1;
         }
 
@@ -2418,6 +2419,46 @@
                         localStorage.setItem('sidebarCollapsed',
                             body.classList.contains('sidebar-collapsed') ? '1' : '0');
                     } catch(e) {}
+                });
+            }
+        })();
+
+        /* ============================================================
+           Sidebar collapsed-state tooltips (fixed-position, body-level)
+           Uses position:fixed so it is never clipped by sidebar overflow.
+           ============================================================ */
+        (function () {
+            var tip = document.createElement('div');
+            tip.id  = 'sidebar-tooltip';
+            document.body.appendChild(tip);
+
+            var hideTimer = null;
+
+            function showTip(el) {
+                var label = el.getAttribute('data-tooltip');
+                if (!label || !document.body.classList.contains('sidebar-collapsed')) return;
+                clearTimeout(hideTimer);
+                var rect = el.getBoundingClientRect();
+                tip.textContent = label;
+                tip.style.top  = Math.round(rect.top + rect.height / 2) + 'px';
+                tip.style.left = Math.round(rect.right + 10) + 'px';
+                tip.style.transform = 'translateY(-50%)';
+                tip.classList.add('visible');
+            }
+
+            function hideTip() {
+                tip.classList.remove('visible');
+            }
+
+            var sidebar = document.querySelector('.admin-sidebar');
+            if (sidebar) {
+                sidebar.addEventListener('mouseover', function (e) {
+                    var el = e.target.closest('[data-tooltip]');
+                    if (el) showTip(el);
+                });
+                sidebar.addEventListener('mouseout', function (e) {
+                    var el = e.target.closest('[data-tooltip]');
+                    if (el) hideTip();
                 });
             }
         })();

@@ -525,6 +525,8 @@
             width: 95%;
             /* Fluid width */
             margin: 0 auto;
+            /* entry animation ถูกจัดการโดย JS ด้านล่างแทน CSS animation
+               เพื่อให้ทำงานได้แม้ Windows ปิด "Animate windows" ไว้ */
         }
 
         .content-header {
@@ -1599,46 +1601,97 @@
     @yield('extra_js')
 
     {{-- ===== Page Transition Overlay =====
-         แสดง spinner ทันทีที่ user คลิก nav-link เพื่อให้รู้สึกว่า UI ตอบสนอง
-         แม้ server ยังประมวลผลอยู่  ซ่อนอัตโนมัติเมื่อหน้าโหลดเสร็จ (pageshow)
-         หรือ popstate (กด Back) --}}
+         Exit  : overlay สีเขียวน้ำเงิน (ธีมแอป) ปัดลงมาจากด้านบนเมื่อ user คลิก nav-link
+         Entry : .main-content fade-in + slide-up เมื่อหน้าใหม่โหลดเสร็จ
+         (animation entry ถูกกำหนดไว้ที่ .main-content ใน CSS section ด้านบนแล้ว) --}}
     <style>
+        /* ----- exit curtain — ใช้ CSS transition แทน animation เพื่อให้ทำงาน
+           ได้แม้ OS จะปิด "Animations" ไว้ (prefers-reduced-motion) ----- */
         #page-transition-overlay {
-            display: none;
             position: fixed;
             inset: 0;
-            background: rgba(255,255,255,0.72);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
             z-index: 99998;
+            background: linear-gradient(150deg, #0c4a6e 0%, #0e7490 45%, #06b6d4 100%);
+            overflow: hidden;
+            /* ซ่อนด้วย opacity+transform แทน display:none
+               เพราะ display:none → block + CSS animation มักไม่ trigger */
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-100%);
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.05s linear;
+        }
+        #page-transition-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 0.05s linear;
+        }
+        /* spinner + label centred inside the curtain */
+        .pt-inner {
+            position: absolute;
+            inset: 0;
+            display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
+            opacity: 0;
+            transition: opacity 0.18s 0.22s ease;
         }
-        #page-transition-overlay.active { display: flex; }
+        #page-transition-overlay.active .pt-inner {
+            opacity: 1;
+        }
         .pt-spinner {
-            width: 44px; height: 44px;
-            border: 4px solid rgba(14,116,144,0.18);
-            border-top-color: #0e7490;
+            width: 42px; height: 42px;
+            border: 3.5px solid rgba(255,255,255,0.25);
+            border-top-color: #fff;
             border-radius: 50%;
-            animation: pt-spin 0.7s linear infinite;
+            animation: pt-spin 0.65s linear infinite;
         }
         @keyframes pt-spin { to { transform: rotate(360deg); } }
         .pt-label {
-            font-family: 'Sarabun', sans-serif;
-            font-size: 0.9rem;
-            color: #0e7490;
+            font-family: 'Sarabun', 'K2D', sans-serif;
+            font-size: 0.92rem;
+            color: rgba(255,255,255,0.88);
             font-weight: 500;
+            letter-spacing: 0.02em;
         }
     </style>
     <div id="page-transition-overlay" aria-hidden="true" role="status">
-        <div class="pt-spinner"></div>
-        <span class="pt-label">กำลังโหลด…</span>
+        <div class="pt-inner">
+            <div class="pt-spinner"></div>
+            <span class="pt-label">กำลังโหลด…</span>
+        </div>
     </div>
     <script>
     (function () {
         var overlay = document.getElementById('page-transition-overlay');
+
+        // ตรวจ reduced-motion preference
+        // ── Entry animation สำหรับ .main-content ──
+        // ใช้ JS แทน CSS animation เพื่อหลีกเลี่ยง prefers-reduced-motion ที่ Windows ปิดไว้
+        (function() {
+            var main = document.querySelector('.main-content');
+            if (!main) return;
+            main.style.opacity = '0';
+            main.style.transform = 'translateY(18px)';
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    main.style.transition = 'opacity 0.42s cubic-bezier(0.4,0,0.2,1), transform 0.42s cubic-bezier(0.4,0,0.2,1)';
+                    main.style.opacity = '1';
+                    main.style.transform = 'translateY(0)';
+                    // ลบ transform หลัง animation เสร็จ ไม่ให้กลายเป็น containing block
+                    // ของ position:fixed children (modal, FAB ฯลฯ) ซึ่งต้องอ้างอิง viewport
+                    setTimeout(function() {
+                        main.style.transform = '';
+                        main.style.transition = '';
+                    }, 480);
+                });
+            });
+        })();
+
         // แสดง overlay เมื่อคลิก link ที่ไปหน้าอื่นในไซต์เดียวกัน
         document.addEventListener('click', function (e) {
             var a = e.target.closest('a[href]');
@@ -1649,21 +1702,26 @@
                 href.startsWith('#') || href.startsWith('javascript') ||
                 a.getAttribute('target') === '_blank' ||
                 e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return;
-            // ข้ามถ้าเป็น same page (ป้องกัน anchor jump)
+            // ข้ามถ้าเป็น same page (ป้องกัน anchor jump + filter change)
             try {
                 var dest = new URL(href, location.href);
                 if (dest.pathname === location.pathname && dest.search === location.search) return;
             } catch(ex) {}
             overlay.classList.add('active');
         });
+
         // ซ่อน overlay เมื่อหน้าโหลดเสร็จ (รวมกด Back/Forward)
-        window.addEventListener('pageshow', function () {
+        window.addEventListener('pageshow', function (e) {
+            // ปิด transition ชั่วคราวเพื่อซ่อน overlay ทันที (ไม่ให้ slide กลับขึ้น)
+            overlay.style.transition = 'none';
             overlay.classList.remove('active');
+            requestAnimationFrame(function() { overlay.style.transition = ''; });
         });
         window.addEventListener('popstate', function () {
             overlay.classList.remove('active');
         });
-        // กันกรณี browser รอนาน: ซ่อน overlay อัตโนมัติถ้าเกิน 8 วินาที
+
+        // safety net: ซ่อน overlay อัตโนมัติถ้าเกิน 8 วินาที
         var _timer;
         document.addEventListener('click', function (e) {
             if (e.target.closest('a[href]')) {

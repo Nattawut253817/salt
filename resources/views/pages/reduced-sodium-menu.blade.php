@@ -199,7 +199,7 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            padding: 16px 20px;
+            padding: 15px 20px;
             border-radius: 16px;
             min-width: 0;
             background: linear-gradient(155deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.6));
@@ -329,8 +329,8 @@
         .hm-fly-core.is-empty { background: radial-gradient(circle at 32% 25%, #e2e8f0, #cbd5e1); color: #64748b; box-shadow: 0 0 0 3px #fff, 0 0 0 4px #e2e8f0; }
         .hm-fly-none { font-size: .76rem; }
         /* ลดความสูงการ์ดรายจังหวัด: ระยะบน-ล่างและหัวการ์ดกระชับขึ้น */
-        .mnu-ins-row .chart-card { padding: 16px 18px 14px; }
-        .mnu-ins-row .chart-card-head { margin-bottom: 12px; padding-bottom: 12px; }
+        .mnu-ins-row .chart-card { padding: 6px 18px; }
+        .mnu-ins-row .chart-card-head { margin-bottom: 5px; padding-bottom: 5px; }
         .hm-fly-total { margin-top: 8px; padding: 12px 0 2px; border-top: 2px solid #0f766e; border-bottom: none; }
         .hm-fly-total .hm-fly-prov { color: #0f766e; font-weight: 800; }
         .hm-fly-total .hm-fly-val { font-size: .86rem; }
@@ -355,14 +355,14 @@
         .mnu-layout { margin-bottom: 25px; }
         /* แถวบน: แผนที่ | ร้อยละตามสถานที่จำหน่าย | เปรียบเทียบโซเดียมรายจังหวัด อยู่แถวเดียวกัน ความสูงเท่ากัน */
         .mnu-side { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.05fr) minmax(0, 1.6fr); gap: 18px; align-items: stretch; margin-bottom: 22px; }
-        .mnu-side .chart-card { margin: 0; padding: 14px; }
-        .mnu-side .chart-card-head { margin-bottom: 10px; padding-bottom: 10px; gap: 10px; }
+        .mnu-side .chart-card { margin: 0; padding: 12px 18px 10px; }
+        .mnu-side .chart-card-head { margin-bottom: 10px; padding-bottom: 9px; gap: 12px; }
         .mnu-side .chart-card-title { font-size: .88rem; }
         .mnu-side .chart-card-subtitle { font-size: .72rem; }
         .mnu-main { min-width: 0; }
         /* ลดระยะบน-ล่างของการ์ดร้อยละ + การ์ดเปรียบเทียบ */
-        .mnu-side .tp-card, .mnu-side .mnu-cmp-card { padding: 8px 14px 8px; }
-        .mnu-side .tp-card .chart-card-head, .mnu-side .mnu-cmp-card .chart-card-head { margin-bottom: 6px; padding-bottom: 8px; }
+        .mnu-side .tp-card, .mnu-side .mnu-cmp-card { padding: 12px 18px 10px; }
+        .mnu-side .tp-card .chart-card-head, .mnu-side .mnu-cmp-card .chart-card-head { margin-bottom: 9px; padding-bottom: 8px; }
         .mnu-cmp-card .hm-fly-legend { margin: 0 0 2px; }
         .mnu-cmp-card { display: flex; flex-direction: column; min-width: 0; }
         .mnu-cmp-card .hm-fly { flex: 1; grid-auto-rows: minmax(0, 1fr); }
@@ -403,8 +403,8 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            padding: 15px;
-            /* Reduced from 20px */
+            padding: 6px 15px;
+            /* top/bottom 6px, left/right 15px */
             display: flex;
             flex-direction: column;
             transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -433,8 +433,8 @@
             display: flex;
             align-items: flex-start;
             gap: 12px;
-            margin-bottom: 14px;
-            padding-bottom: 12px;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
             border-bottom: 1px solid rgba(15, 23, 42, 0.06);
         }
 
@@ -476,6 +476,9 @@
 
 
         .chart-card.accent-pink   { --chart-accent: #ec4899; background: #fffafc; }
+        /* Map card: stretch to fill card height */
+        .mnu-side .chart-card.accent-pink { display: flex; flex-direction: column; }
+        #map-container { flex: 1 1 auto; min-height: 260px; }
         .chart-card.accent-purple { --chart-accent: #8b5cf6; background: #fbfaff; }
         .chart-card.accent-amber  { --chart-accent: #f59e0b; background: #fffdf7; }
 
@@ -2221,18 +2224,69 @@
         .mnu-cmp-card .hm-fly-total .hm-fly-prov { color: #0d9488; font-weight: 800; font-size: .86rem; }
         .hm-pct-badge { font-size: .68rem; font-weight: 800; padding: 1px 7px; border-radius: 99px; }
         .mnu-cmp-card .hm-fly-row:last-child { border-bottom: none; }
-        /* ลดมิติ: แท่งสีเรียบ ไม่มีเงา/ไฮไลต์ คงโครงสร้างเดิม */
-        .mnu-cmp-card .hm-fly-before { background: #ef6a82 !important; box-shadow: none !important; }
-        .mnu-cmp-card .hm-fly-after { background: #3fb97a !important; box-shadow: none !important; }
-        .mnu-cmp-card .hm-fly-bar::after { display: none !important; }
-        .mnu-cmp-card .hm-fly-side::before { background: #f1f5f9 !important; box-shadow: none !important; }
-        .mnu-cmp-card .hm-fly-core { background: #2c4a8f !important; box-shadow: 0 0 0 3px #e6ecf7 !important; }
-        .mnu-cmp-card .hm-fly-core.is-empty { background: #e2e8f0 !important; color: #64748b; box-shadow: 0 0 0 3px #f1f5f9 !important; }
-        .mnu-cmp-card .hm-fly-legend i:nth-of-type(1) { background: #ef6a82 !important; }
-        .mnu-cmp-card .hm-fly-legend span:nth-child(1) i { background: #ef6a82 !important; }
-        .mnu-cmp-card .hm-fly-legend span:nth-child(2) i { background: #3fb97a !important; }
-        .mnu-cmp-card .hm-fly-total { background: transparent !important; }
-        .mnu-cmp-card .hm-fly-row:not(.hm-fly-total):hover { background: transparent !important; }
+        /* ── mnu-cmp-card: มิติและความสวยงาม ── */
+        .mnu-cmp-card .hm-fly-before {
+            background: linear-gradient(90deg, #fda4b5 0%, #f43f5e 50%, #be123c 100%) !important;
+            box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 3px 10px -3px rgba(225,29,72,.5) !important;
+        }
+        .mnu-cmp-card .hm-fly-after {
+            background: linear-gradient(90deg, #15803d 0%, #22c55e 50%, #86efac 100%) !important;
+            box-shadow: 0 1px 0 rgba(255,255,255,.55) inset, 0 3px 10px -3px rgba(21,128,61,.5) !important;
+        }
+        .mnu-cmp-card .hm-fly-bar::after {
+            display: block !important;
+            top: 2px; height: 3px; opacity: .72;
+            background: linear-gradient(180deg, rgba(255,255,255,.62), rgba(255,255,255,.04)) !important;
+        }
+        .mnu-cmp-card .hm-fly-side::before {
+            background: linear-gradient(180deg, #e4eaf4, #f0f4f9) !important;
+            box-shadow: inset 0 1px 3px rgba(15,23,42,.09), inset 0 -1px 2px rgba(255,255,255,.7) !important;
+        }
+        .mnu-cmp-card .hm-fly-core {
+            background: radial-gradient(circle at 30% 20%, #5470c9 0%, #1e3a8a 55%, #0f1f52 100%) !important;
+            box-shadow:
+                0 1px 0 rgba(255,255,255,.28) inset,
+                0 -2px 4px rgba(10,18,60,.32) inset,
+                0 6px 14px -5px rgba(23,37,84,.65),
+                0 0 0 2.5px #fff,
+                0 0 0 4.5px #c8d8f5 !important;
+        }
+        .mnu-cmp-card .hm-fly-core.is-empty {
+            background: radial-gradient(circle at 32% 25%, #eaeff6, #d1d9e6) !important;
+            color: #64748b !important;
+            box-shadow: 0 1px 0 rgba(255,255,255,.5) inset, 0 0 0 2.5px #fff, 0 0 0 4px #dde3ed !important;
+        }
+        .mnu-cmp-card .hm-fly-legend span:nth-child(1) i {
+            background: linear-gradient(135deg, #f43f5e, #be123c) !important;
+            box-shadow: 0 1px 4px rgba(225,29,72,.4) !important;
+        }
+        .mnu-cmp-card .hm-fly-legend span:nth-child(2) i {
+            background: linear-gradient(135deg, #22c55e, #15803d) !important;
+            box-shadow: 0 1px 4px rgba(21,128,61,.4) !important;
+        }
+        .mnu-cmp-card .hm-fly-total {
+            background: linear-gradient(180deg, #f0fdf9 0%, #ecfdf5 100%) !important;
+            border-radius: 0 0 14px 14px !important;
+            box-shadow: 0 -1px 0 #bbf7d0, 0 4px 10px -6px rgba(13,148,136,.2) !important;
+        }
+        .mnu-cmp-card .hm-fly-row:not(.hm-fly-total):hover {
+            background: #f5f8fe !important;
+            box-shadow: inset 0 1px 0 #eaeff8, inset 0 -1px 0 #eaeff8 !important;
+        }
+        /* Province dot + legend icon dots */
+        .mnu-cmp-card .hm-dot { display: inline-block !important; width: 9px; height: 9px; border-radius: 50% !important; flex-shrink: 0; margin-right: 1px; box-shadow: 0 1px 4px rgba(0,0,0,.2) !important; }
+        .mnu-cmp-card .hm-fly-legend i { border-radius: 50% !important; width: 9px !important; height: 9px !important; }
+        /* Reduction / increase chips */
+        .mnu-cmp-card .hm-chip.ok {
+            background: linear-gradient(135deg, #0e7490 0%, #0d9488 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 2px 8px -2px rgba(13,148,136,.5) !important;
+        }
+        .mnu-cmp-card .hm-chip.warn {
+            background: linear-gradient(135deg, #c2410c 0%, #ea580c 100%) !important;
+            color: #fff !important;
+            box-shadow: 0 2px 8px -2px rgba(194,65,12,.45) !important;
+        }
 
         /* ตกแต่งตารางรายการเมนู: กรอบมนมีเส้นขอบ หัวตารางนุ่ม แถวสลับสี แถบเน้นตอนชี้ รูปและป้ายอ่อนลง */
         .menu-table-container { border: 1px solid #e6eaf3; border-radius: 18px; box-shadow: 0 10px 30px -14px rgba(49, 46, 129, .22); }
@@ -2257,6 +2311,29 @@
         .tp-card .tp-item { flex: 1 1 0; min-height: 44px; }
         .tp-card .tp-mid { gap: 8px; }
         .tp-card .tp-track { height: 9px; }
+
+        /* ── Proportional Area Chart (สัดส่วนตามสถานที่จำหน่าย) ─────────────── */
+        .tp-card .tp-list { padding: 2px 0; gap: 0; }
+        /* ── Proportional Area Chart: vertical stack ────────────────────────── */
+        .pa-chart { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; min-height: 0; height: 100%; }
+        /* Dominant card — takes flex: 2 so it's visually heavier than each mini */
+        .pa-dom { border-radius: 14px; padding: 14px 18px 14px 16px; display: flex; align-items: center; justify-content: space-between; position: relative; overflow: hidden; flex: 2 1 0; min-height: 80px; }
+        .pa-dom-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; z-index: 1; }
+        .pa-dom-badge { display: inline-block; align-self: flex-start; background: rgba(79,70,229,.12); color: #3730a3; font-size: .68rem; font-weight: 700; padding: 2px 10px; border-radius: 99px; margin-bottom: 3px; letter-spacing: .03em; }
+        .pa-dom-name { font-size: 1.2rem; font-weight: 800; color: #0f172a; line-height: 1.15; }
+        .pa-dom-sub { font-size: .7rem; color: #64748b; margin-top: 4px; }
+        .pa-dom-count { font-size: .88rem; color: #334155; font-weight: 600; }
+        .pa-dom-count b { font-size: 1.3rem; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .pa-dom-pct { font-size: 2.3rem; font-weight: 900; color: #3730a3; line-height: 1; text-align: right; text-shadow: none; z-index: 1; white-space: nowrap; padding-left: 10px; }
+        .pa-dom-mark { position: absolute; right: 80px; top: 50%; transform: translateY(-50%); font-size: 4.5rem; font-weight: 900; color: rgba(79,70,229,.08); pointer-events: none; line-height: 1; user-select: none; z-index: 0; }
+        /* Smaller cards — stacked vertically, each flex: 1 */
+        .pa-others { display: flex; flex-direction: column; gap: 6px; flex: 3 1 0; min-height: 0; }
+        .pa-mini { flex: 1 1 0; min-height: 44px; border-radius: 12px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; position: relative; overflow: hidden; }
+        .pa-mini-left { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; z-index: 1; }
+        .pa-mini-name { font-size: .82rem; font-weight: 700; color: #0f172a; line-height: 1.25; }
+        .pa-mini-count { color: #475569; font-size: .8rem; font-weight: 600; }
+        .pa-mini-count b { font-size: 1.1rem; font-weight: 900; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .pa-mini-pct { font-size: .75rem; font-weight: 800; color: #1e293b; background: rgba(15,23,42,.08); padding: 3px 10px; border-radius: 99px; white-space: nowrap; flex: none; z-index: 1; }
     </style>
 @endsection
 
@@ -2416,10 +2493,10 @@
                         <div class="chart-card-title">จำนวนเมนูลดโซเดียม แยกตามจังหวัด</div>
                         <div class="chart-card-subtitle mnu-sub">ปี
                             {{ request('fiscal_year') ?: (isset($years[0]) ? $years[0] : (date('Y') + 543)) }}
-                            · รวมทั้งเขต <b>{{ number_format(collect($mapData)->sum()) }}</b> เมนู</div>
+                           </div>
                     </div>
                 </div>
-                <div id="map-container" style="height: 340px;"></div>
+                <div id="map-container"></div>
             </div>
 
             <!-- Pie Chart -->
@@ -2430,7 +2507,6 @@
                         <div class="chart-card-title">ร้อยละเมนูอาหารที่ปรับสูตรลดโซเดียม</div>
                         <div class="chart-card-subtitle">แยกตามสถานที่จำหน่าย</div>
                     </div>
-                    <span class="tp-chip">{{ number_format(collect($pieChartData)->sum()) }} เมนู</span>
                 </div>
                 <div class="tp-body">
                     <div id="sourcePieList" class="tp-list"></div>
@@ -2462,8 +2538,8 @@
                                     <span class="hm-fly-bar hm-fly-before" style="width: {{ max(4, round($row['avg_before'] / $flyMax * 100, 1)) }}%;"></span>
                                 @endif
                             </div>
-                            <div class="hm-fly-core {{ $row['total'] > 0 ? '' : 'is-empty' }}" title="เมนูทั้งหมด {{ number_format($row['total']) }} เมนู (วัดผลแล้ว {{ number_format($row['measured']) }})">
-                                <b>{{ number_format($row['total']) }}</b><span>เมนู</span>
+                            <div class="hm-fly-core {{ $row['measured'] > 0 ? '' : 'is-empty' }}" title="เมนูที่วัดครบก่อน-หลัง {{ number_format($row['measured']) }} เมนู">
+                                <b>{{ number_format($row['measured']) }}</b><span>เมนู</span>
                             </div>
                             <div class="hm-fly-side hm-fly-right" @if ($has) title="หลังปรับสูตร เฉลี่ย {{ number_format($row['avg_after'], 1) }} มก." @endif>
                                 @if ($has)
@@ -2491,8 +2567,8 @@
                                 <span class="hm-fly-bar hm-fly-before" style="width: {{ max(4, round($mi['avg_before'] / $flyMax * 100, 1)) }}%;"></span>
                             @endif
                         </div>
-                        <div class="hm-fly-core {{ $mi['total'] > 0 ? '' : 'is-empty' }}" title="เมนูทั้งหมดในเขต {{ number_format($mi['total']) }} เมนู (วัดผลแล้ว {{ number_format($mi['measured']) }})">
-                            <b>{{ number_format($mi['total']) }}</b><span>เมนู</span>
+                        <div class="hm-fly-core {{ $mi['measured'] > 0 ? '' : 'is-empty' }}" title="เมนูที่วัดครบก่อน-หลังทั้งเขต {{ number_format($mi['measured']) }} เมนู">
+                            <b>{{ number_format($mi['measured']) }}</b><span>เมนู</span>
                         </div>
                         <div class="hm-fly-side hm-fly-right" @if ($flyAllHas) title="หลังปรับสูตร เฉลี่ยทั้งเขต {{ number_format($mi['avg_after'], 1) }} มก." @endif>
                             @if ($flyAllHas)
@@ -2904,8 +2980,9 @@
     <!-- เครื่องคำนวณโซเดียมในมื้ออาหาร - collapsed into a small round button
          by default; opens into the full panel on click. Fed by the
          "+ คำนวณมื้อ" button in each table row. -->
-    <button type="button" class="meal-calc-fab" id="mealCalcFab" title="เปิดเครื่องคำนวณโซเดียมในมื้ออาหาร">
-        <i class="fas fa-calculator"></i>
+    <button type="button" class="meal-calc-fab" id="mealCalcFab" title="เปิด/ปิดเครื่องคำนวณโซเดียม">
+        <i class="fas fa-calculator fab-icon-calc"></i>
+        <i class="fas fa-times fab-icon-close" style="display:none;"></i>
         <span class="meal-calc-fab-badge" id="mealCalcFabBadge" style="display: none;">0</span>
     </button>
 
@@ -3049,7 +3126,8 @@
                     chart: {
                         map: filteredMapData,
                         backgroundColor: 'transparent',
-                        spacing: [10, 10, 10, 10]
+                        spacing: [4, 2, 4, 2],
+                        height: null
                     },
                     title: { text: '' },
                     mapNavigation: { enabled: false },
@@ -3111,18 +3189,58 @@
                 .map((d, i) => ({ ...d, color: pieColors[i % pieColors.length] }));
             const pieTotal = pieData.reduce((sum, d) => sum + d.y, 0);
             const escPie = str => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-            // รายการสัดส่วนตามสถานที่จำหน่าย (ไม่มีวงกลม) - พื้นแถวไล่สีตามสัดส่วนจริง
+            // ── Proportional Area Chart: dominant card + smaller cards ──
             const pieListEl = document.getElementById('sourcePieList');
             if (pieListEl) {
-                pieListEl.innerHTML = pieData.map(d => {
-                    const pct = pieTotal > 0 ? d.y / pieTotal * 100 : 0;
-                    return '<div class="tp-item" style="--tp-c:' + d.color + '; --tp-w:' + Math.max(pct, 2.5).toFixed(1) + '%;">'
-                        + '<span class="tp-mid"><span class="tp-name">' + escPie(d.name) + '</span>'
-                        + '<span class="tp-track"><i></i></span></span>'
-                        + '<span class="tp-val"><span class="tp-cnt"><b>' + Highcharts.numberFormat(d.y, 0) + '</b> เมนู</span>'
-                        + '<span class="tp-pct">' + Highcharts.numberFormat(pct, 1) + '%</span></span>'
+                const paGrads = [
+                    'linear-gradient(135deg,#eef2ff 0%,#e0e7ff 100%)',
+                    'linear-gradient(135deg,#ecfeff 0%,#cffafe 100%)',
+                    'linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%)',
+                    'linear-gradient(135deg,#fffbeb 0%,#fef3c7 100%)',
+                    'linear-gradient(135deg,#faf5ff 0%,#ede9fe 100%)',
+                    'linear-gradient(135deg,#fff0f6 0%,#fce7f3 100%)',
+                    'linear-gradient(135deg,#f0fdfa 0%,#ccfbf1 100%)',
+                    'linear-gradient(135deg,#fff5f5 0%,#fee2e2 100%)',
+                ];
+                const paAccent = [
+                    '#4f46e5','#0891b2','#16a34a','#d97706','#7c3aed','#db2777','#0d9488','#dc2626'
+                ];
+                if (pieData.length === 0) {
+                    pieListEl.innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;font-size:.85rem;">ไม่มีข้อมูล</div>';
+                } else {
+                    const top = pieData[0];
+                    const topPct = pieTotal > 0 ? top.y / pieTotal * 100 : 0;
+                    const rest = pieData.slice(1);
+                    let html = '<div class="pa-chart">';
+                    // Dominant card (largest share)
+                    html += '<div class="pa-dom" style="background:' + paGrads[0] + '">'
+                        + '<div class="pa-dom-info">'
+                        + '<span class="pa-dom-badge" style="background:' + paAccent[0] + '1a;color:' + paAccent[0] + '">ครองสัดส่วนหลัก</span>'
+                        + '<div class="pa-dom-name">' + escPie(top.name) + '</div>'
+                        + '<div class="pa-dom-sub">จำนวนเมนูที่ปรับสูตร</div>'
+                        + '<div class="pa-dom-count"><b>' + Highcharts.numberFormat(top.y, 0) + '</b> เมนู</div>'
+                        + '</div>'
+                        + '<div class="pa-dom-pct" style="color:' + paAccent[0] + '">' + Highcharts.numberFormat(topPct, 1) + '%</div>'
+                        + '<div class="pa-dom-mark" aria-hidden="true">ดีๆ</div>'
                         + '</div>';
-                }).join('');
+                    // Smaller cards
+                    if (rest.length > 0) {
+                        html += '<div class="pa-others">';
+                        rest.forEach(function(d, i) {
+                            const pct2 = pieTotal > 0 ? d.y / pieTotal * 100 : 0;
+                            html += '<div class="pa-mini" style="background:' + paGrads[i + 1] + '">'
+                                + '<div class="pa-mini-left">'
+                                + '<span class="pa-mini-name">' + escPie(d.name) + '</span>'
+                                + '<div class="pa-mini-count"><b>' + Highcharts.numberFormat(d.y, 0) + '</b> เมนู</div>'
+                                + '</div>'
+                                + '<span class="pa-mini-pct" style="background:' + paAccent[i + 1] + '1a;color:' + paAccent[i + 1] + '">' + Highcharts.numberFormat(pct2, 1) + '%</span>'
+                                + '</div>';
+                        });
+                        html += '</div>';
+                    }
+                    html += '</div>';
+                    pieListEl.innerHTML = html;
+                }
             }
         });
     </script>
@@ -3348,15 +3466,25 @@
 
             function openWidget() {
                 widget.classList.add('is-open');
-                fab.style.display = 'none';
+                // FAB แสดงตลอด - เปลี่ยน icon เป็น X
+                fab.querySelector('.fab-icon-calc').style.display = 'none';
+                fab.querySelector('.fab-icon-close').style.display = '';
+                fab.title = 'ปิดเครื่องคำนวณโซเดียม';
             }
 
             function closeWidget() {
                 widget.classList.remove('is-open');
-                fab.style.display = 'flex';
+                // คืน icon กลับ calculator
+                fab.querySelector('.fab-icon-calc').style.display = '';
+                fab.querySelector('.fab-icon-close').style.display = 'none';
+                fab.title = 'เปิดเครื่องคำนวณโซเดียม';
             }
 
-            fab.addEventListener('click', openWidget);
+            // Toggle: กดเมื่อเปิดอยู่ → ปิด, กดเมื่อปิดอยู่ → เปิด
+            fab.addEventListener('click', function() {
+                if (widget.classList.contains('is-open')) closeWidget();
+                else openWidget();
+            });
             if (collapseBtn) collapseBtn.addEventListener('click', closeWidget);
 
             function setAddBtnState(id, added) {

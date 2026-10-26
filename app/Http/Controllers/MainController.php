@@ -46,20 +46,28 @@ class MainController extends Controller
         return Cache::remember($key, now()->addMinutes(10), $build);
     }
 
-    /** "จำนวนแถว|updated_at ล่าสุด" ของตารางของโมเดล - ใช้เป็นเวอร์ชันของข้อมูล (หาไม่ได้ -> เปลี่ยนทุกนาที) */
+    /** "จำนวนแถว|updated_at ล่าสุด" ของตารางของโมเดล - ใช้เป็นเวอร์ชันของข้อมูล (หาไม่ได้ -> เปลี่ยนทุกนาที)
+     *  แคชผลไว้ 30 วินาที ข้ามคำขอ เพื่อไม่ให้ทุก request วิ่ง COUNT(*)+MAX(updated_at)
+     *  ซ้ำ (เดิมแคชเฉพาะใน request เดียวกันด้วย static $memo เท่านั้น) */
     private function tableStamp(string $modelClass): string
     {
         static $memo = [];
         if (isset($memo[$modelClass])) {
             return $memo[$modelClass];
         }
-        try {
-            $row = DB::table((new $modelClass)->getTable())->selectRaw('COUNT(*) as c, MAX(updated_at) as u')->first();
+        // แคช 30 วินาทีข้ามคำขอ — หน้าที่ cache ข้อมูลอยู่แล้ว (TTL 10 นาที) ไม่จำเป็น
+        // ต้องรู้ stamp ที่แม่นยำกว่า 30 วินาที; ลด DB round-trip 4-5 รายการต่อคำขอ
+        $result = Cache::remember('table_stamp_v1:' . $modelClass, now()->addSeconds(30), function () use ($modelClass) {
+            try {
+                $row = DB::table((new $modelClass)->getTable())->selectRaw('COUNT(*) as c, MAX(updated_at) as u')->first();
 
-            return $memo[$modelClass] = ($row->c ?? 0) . '|' . ($row->u ?? '');
-        } catch (\Throwable $e) {
-            return $memo[$modelClass] = 'n' . floor(time() / 60);
-        }
+                return ($row->c ?? 0) . '|' . ($row->u ?? '');
+            } catch (\Throwable $e) {
+                return 'n' . floor(time() / 60);
+            }
+        });
+
+        return $memo[$modelClass] = $result;
     }
 
     public function kidneyDHBReport(Request $request)
@@ -1049,9 +1057,9 @@ class MainController extends Controller
         // admin edits "จัดการปีงบประมาณ", so it is cached for 10 minutes and
         // keyed by that table's row count + latest update, which makes an
         // admin's enable/hide show up immediately.
-        $fiscalYearStamp = FiscalYear::query()->selectRaw('COUNT(*) as c, MAX(updated_at) as u')->first();
+        // ใช้ tableStamp() แทน query ตรง — ได้ผลจาก cache 30 วินาทีเดิม ไม่เพิ่ม DB round-trip
         $yearsBundle = Cache::remember(
-            'home_years_v1:' . md5(json_encode([$fiscalYearStamp->c ?? 0, (string) ($fiscalYearStamp->u ?? '')])),
+            'home_years_v1:' . $this->tableStamp(FiscalYear::class),
             now()->addMinutes(10),
             function () {
                 $awarenessYears = SodiumSurvey::select('fiscal_year')->distinct()->pluck('fiscal_year');
@@ -1280,11 +1288,23 @@ class MainController extends Controller
         $overviewHtByProvinceId = $overviewHtQuery->get()->groupBy('Province_id');
         $overviewProvinceIds = Province::whereIn('province_name', $overviewScopeProvinces)->pluck('province_id', 'province_name');
 
-        $overviewKidneyQuery = KidneyAssessment::with('user.province');
+        // กรองจังหวัดที่ SQL แทนการโหลด ALL assessments แล้วกรองใน PHP
+        // เดิม: KidneyAssessment::with('user.province')->get() โหลดทุกแถว + eager load users+provinces
+        // ใหม่: JOIN user -> Province_id เพื่อจำกัดชุดข้อมูลก่อน, เลือกเฉพาะ column ที่ต้องการ
+        $kidneyUserIdToProvinceId = \App\Models\User::whereIn('Province_id', $overviewProvinceIds->values()->all())
+            ->pluck('Province_id', 'id'); // user_id -> province_id
+        $overviewKidneyQuery = KidneyAssessment::whereIn('user_id', $kidneyUserIdToProvinceId->keys()->all())
+            ->select(['id', 'user_id', 'fiscal_year', 'operating_area',
+                      'category_1', 'category_2', 'category_3', 'category_4',
+                      'category_5', 'category_6', 'category_7',
+                      'category_8_1', 'category_8_2', 'category_8_3']);
         if ($activeFiscalYear !== '') {
             $overviewKidneyQuery->where('fiscal_year', $activeFiscalYear);
         }
         $overviewKidneyAssessments = $overviewKidneyQuery->get();
+        // map user_id -> province_name สำหรับ groupBy ใน PHP ด้านล่าง (แทน $a->user->province->province_name)
+        $provIdToName = $overviewProvinceIds->flip(); // province_id -> province_name
+        $kidneyUserProvinceName = $kidneyUserIdToProvinceId->map(fn ($pid) => $provIdToName->get($pid));
 
         $overviewMenuQuery = ReducedSodiumMenu::query()->whereIn('province', $overviewScopeProvinces);
         if ($activeFiscalYear !== '') {
@@ -1296,7 +1316,8 @@ class MainController extends Controller
             $overviewHtByProvinceId,
             $overviewProvinceIds,
             $overviewKidneyAssessments,
-            $overviewMenusByProvince
+            $overviewMenusByProvince,
+            $kidneyUserProvinceName
         ) {
             // HT / แสนคน
             $provinceId = $overviewProvinceIds->get($province);
@@ -1307,7 +1328,7 @@ class MainController extends Controller
             // พื้นที่ดำเนินงาน % + ข้อมูลครบ - same (user_id|operating_area) unit
             // and "all 8 milestones" completion rule as kidneyDHBReport().
             $areaGroups = $overviewKidneyAssessments
-                ->filter(fn($a) => $a->user && $a->user->province && $a->user->province->province_name === $province)
+                ->filter(fn($a) => ($kidneyUserProvinceName->get($a->user_id) ?? null) === $province)
                 ->groupBy(fn($a) => $a->user_id . '|' . (($a->operating_area !== null && $a->operating_area !== '') ? $a->operating_area : ''));
 
             $totalAreas = $areaGroups->count();

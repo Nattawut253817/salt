@@ -218,7 +218,7 @@ class UserManagementController extends Controller
             'User_lastname' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20|regex:/^0[0-9]{1,2}-?[0-9]{3}-?[0-9]{3,4}$/',
             'email' => 'required|email|unique:users,email,' . $id,
-            'User_rank_id' => 'required',
+            'User_rank_id' => 'required|in:1,2,3,4,5',
             'Province_id' => 'required',
         ]);
 
@@ -226,6 +226,11 @@ class UserManagementController extends Controller
 
         // Ensure name is updated from firstname/lastname
         $data['name'] = $request->User_firstname . ' ' . $request->User_lastname;
+
+        // Only SuperAdmin may change a user's rank; non-super admins keep the existing rank.
+        if (! auth()->user()->isSuperAdmin()) {
+            $data['User_rank_id'] = $user->User_rank_id;
+        }
 
         $user->update($data);
 

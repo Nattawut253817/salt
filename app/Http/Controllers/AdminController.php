@@ -3803,6 +3803,41 @@ class AdminController extends Controller
     }
 
     /**
+     * Authorization gate for SaltAssessment records — mirrors the same
+     * rank/organisation scoping used by canManageKidneyAssessment().
+     * Returns true when $user is allowed to view or modify $assessment.
+     */
+    private function canManageSaltAssessment($user, SaltAssessment $assessment): bool
+    {
+        if (!$user) {
+            return false;
+        }
+        if ($user->User_rank_id == 1) {
+            return true;
+        }
+        if ($user->User_rank_id == 2) {
+            $owner = $assessment->user;
+            return $owner
+                && (int) $owner->User_rank_id === 2
+                && $owner->Province_id == $user->Province_id;
+        }
+        if ($user->User_rank_id == 3) {
+            $owner = $assessment->user;
+            return $owner
+                && (int) $owner->User_rank_id === 3
+                && $owner->District_id == $user->District_id;
+        }
+        if ($user->User_rank_id == 4) {
+            $owner = $assessment->user;
+            if (!$owner || (int) $owner->User_rank_id !== 4) {
+                return false;
+            }
+            return !empty($user->sh_id) ? $owner->sh_id == $user->sh_id : $owner->id == $user->id;
+        }
+        return in_array($assessment->user_id, $this->getAgencyUserIds($user));
+    }
+
+    /**
      * ข้อมูลตำแหน่ง/ชื่อพื้นที่ที่บันทึกไว้กับรายการนี้ - รูปแบบเดียวกับที่
      * operatingAreaPinsForUser()/usedOperatingAreasForAgency() ส่งให้ JS
      * (display_name/breadcrumb/province_name/lat/lng ...) เพื่อใช้ซ้ำโค้ดเดียวกัน.
@@ -4219,6 +4254,7 @@ class AdminController extends Controller
     public function exportKidneyDHBPdf($id)
     {
         $assessment = KidneyAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageKidneyAssessment(auth()->user(), $assessment), 403);
 
         $agencyUserIds = $this->getAgencyUserIds($assessment->user);
 
@@ -4281,6 +4317,7 @@ class AdminController extends Controller
     public function exportKidneyDHBWord($id)
     {
         $assessment = KidneyAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageKidneyAssessment(auth()->user(), $assessment), 403);
 
         $agencyUserIds = $this->getAgencyUserIds($assessment->user);
 
@@ -4601,6 +4638,7 @@ class AdminController extends Controller
     public function showSaltAssessment(Request $request, $id)
     {
         $assessment = SaltAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageSaltAssessment(auth()->user(), $assessment), 403);
         $userId = $assessment->user_id;
 
         // Handle filter form submission
@@ -4753,7 +4791,8 @@ class AdminController extends Controller
 
     public function destroySaltAssessment($id)
     {
-        $assessment = SaltAssessment::findOrFail($id);
+        $assessment = SaltAssessment::with('user')->findOrFail($id);
+        abort_unless($this->canManageSaltAssessment(auth()->user(), $assessment), 403);
         $assessment->delete();
 
         return redirect()->route('admin.salt-assessment-list')->with('success', 'ลบข้อมูลเรียบร้อยแล้ว');
@@ -4799,6 +4838,7 @@ class AdminController extends Controller
     public function exportSaltAssessmentExcel($id)
     {
         $assessment = SaltAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageSaltAssessment(auth()->user(), $assessment), 403);
 
         $assessment->problems = trim($assessment->problems);
         $assessment->suggestions = trim($assessment->suggestions);
@@ -4813,6 +4853,7 @@ class AdminController extends Controller
     public function exportSaltAssessmentPdf($id)
     {
         $assessment = SaltAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageSaltAssessment(auth()->user(), $assessment), 403);
 
         $assessment->problems = trim($assessment->problems);
         $assessment->suggestions = trim($assessment->suggestions);
@@ -4828,6 +4869,7 @@ class AdminController extends Controller
     public function exportSaltAssessmentWord($id)
     {
         $assessment = SaltAssessment::with(['user.province', 'user.district', 'user.subdistrictHospital', 'user.hospital'])->findOrFail($id);
+        abort_unless($this->canManageSaltAssessment(auth()->user(), $assessment), 403);
 
         $assessment->problems = trim($assessment->problems);
         $assessment->suggestions = trim($assessment->suggestions);
