@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Services\OidcClient;
 use App\Services\OidcException;
 use Illuminate\Http\RedirectResponse;
@@ -138,6 +139,28 @@ class OidcController extends Controller
                 'error' => $e->getMessage(),
             ]);
             // Non-blocking: proceed without claims (middleware will retry on next request)
+        }
+
+        // -- Look up local user by IdP email and call Auth::login() ---------
+        // After 2026-11-01 all admin routes require valid OIDC tokens.
+        // Auth::login() lets existing 'auth' middleware coexist with oidc.auth.
+        $idpEmail = strtolower(trim(
+            $claims['email'] ?? $claims['preferred_username'] ?? ''
+        ));
+
+        if (! empty($idpEmail)) {
+            $localUser = User::where('email', $idpEmail)->first();
+
+            if ($localUser && $localUser->is_approved) {
+                Auth::login($localUser, remember: false);
+                $request->session()->regenerate();
+            } else {
+                $this->purgeOidcSession($request);
+                $errorMsg = $localUser
+                    ? 'บัญชีของคุณยังรอการอนุมัติจากผู้ดูแลระบบ'
+                    : 'ไม่พบบัญชีสำหรับอีเมล ' . $idpEmail . ' ในระบบ กรุณาติดต่อผู้ดูแล';
+                return redirect()->route('login')->withErrors(['oidc' => $errorMsg]);
+            }
         }
 
         // ── Redirect to originally requested page ─────────────────────────

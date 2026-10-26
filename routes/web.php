@@ -97,7 +97,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::get('/report-progress', [MainController::class, 'reportProgress'])->middleware(['page.view', 'page.cache'])->name('report-progress');
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'log.admin', 'oidc.auth'])->group(function () {
     
 Route::get('/', function () {
         $user = auth()->user();

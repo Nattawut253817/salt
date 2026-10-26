@@ -1192,12 +1192,7 @@
 
                     <div class="auth-divider"><span>หรือเข้าใช้งานด้วย</span></div>
 
-                    <div class="modern-alert modern-alert-info" id="sso-coming-soon-alert" style="display: none;">
-                        <i class="fas fa-circle-info"></i>
-                        <span>ระบบเข้าสู่ระบบด้วย Government SSO อยู่ระหว่างการพัฒนา ขณะนี้กรุณาเข้าสู่ระบบด้วยอีเมลและรหัสผ่านไปก่อนนะครับ</span>
-                    </div>
-
-                    <button type="button" class="btn-sso" id="sso-login-btn" onclick="showSsoComingSoon()">
+                    <button type="button" class="btn-sso" id="sso-login-btn" onclick="window.location.href='{{ route('oidc.redirect') }}'">
                         <i class="fas fa-shield-halved"></i>
                         <span>เข้าสู่ระบบด้วย Government SSO</span>
                     </button>
@@ -1961,22 +1956,8 @@
             requestAnimationFrame(() => requestAnimationFrame(() => form.submit()));
         }
 
-        // Government SSO button is UI-only for now (no provider wired up
-        // yet) - clicking it just surfaces this notice instead of
-        // pretending to sign the person in. Swap this for a real
-        // redirect (e.g. window.location.href = '/sso/redirect')
-        // once the actual SSO integration exists.
-        function showSsoComingSoon() {
-            const alertBox = document.getElementById('sso-coming-soon-alert');
-            if (!alertBox) return;
-            alertBox.style.display = 'flex';
-            alertBox.classList.remove('fading-out');
-            clearTimeout(window.__ssoAlertTimer);
-            window.__ssoAlertTimer = setTimeout(() => {
-                alertBox.classList.add('fading-out');
-                setTimeout(() => { alertBox.style.display = 'none'; }, 400);
-            }, 5000);
-        }
+        // SSO button → /oauth/redirect (ODPCX IdP Authorization Code + PKCE flow)
+        // The redirect is set directly on the button's onclick; nothing needed here.
 
         // Live-format a Thai phone number as the person types: strips
         // everything but digits, caps at 10 (the longest Thai numbers -
