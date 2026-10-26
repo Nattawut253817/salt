@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // OAuth callback: redirect comes from the external IdP (no CSRF token)
+        'oauth/callback',
     ];
 }

@@ -63,6 +63,7 @@ class Kernel extends HttpKernel
         'log.admin' => \App\Http\Middleware\LogAdminActivity::class,
         'page.view' => \App\Http\Middleware\CountPageView::class,
         'page.cache' => \App\Http\Middleware\PublicPageCache::class,
+        'oidc.auth' => \App\Http\Middleware\OidcAuthenticated::class,
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'signed' => \App\Http\Middleware\ValidateSignature::class,

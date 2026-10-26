@@ -6,6 +6,7 @@ use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
+use App\Services\OidcClient;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +16,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // ── OIDC Confidential Client (ODPCX IdP hardening 2026-11-01) ──
+        $this->app->singleton(OidcClient::class, function ($app) {
+            return new OidcClient(
+                idpBase:      config('oidc.idp_base'),
+                clientId:     config('oidc.client_id'),
+                clientSecret: config('oidc.client_secret'),
+                redirectUri:  config('oidc.redirect_uri'),
+                scopes:       config('oidc.scopes'),
+            );
+        });
+
         //
     }
 

@@ -18,6 +18,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HiController;
 use App\Http\Controllers\AwarenessAssessmentController;
+use App\Http\Controllers\OidcController;
 use App\Http\Controllers\SurveyQuestionSettingsController;
 use App\Models\KidneyAssessment;
 use App\Models\ReducedSodiumProduct;
@@ -47,6 +48,17 @@ Route::get('/storage/{path}', function (string $path) {
 
     return response()->file($full);
 })->where('path', '.*')->name('storage.local-fallback');
+
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ODPCX IdP — OAuth 2.0 / OIDC Authorization Code Flow routes
+// Enforcement deadline: 2026-11-01 (no grace period)
+// DO NOT add middleware that intercepts these routes before auth completes.
+// ─────────────────────────────────────────────────────────────────────────────
+Route::get('/oauth/redirect',  [OidcController::class, 'redirect'])->name('oidc.redirect');
+Route::get('/oauth/callback',  [OidcController::class, 'callback'])->name('oidc.callback');
+Route::post('/oauth/logout',   [OidcController::class, 'logout'])->name('oidc.logout');
 
 Route::get('/', [MainController::class, 'index'])->middleware(['page.view', 'page.cache'])->name('home');
 Route::get('/api/ht-trend', [MainController::class, 'htTrendFeed'])->middleware('throttle:60,1')->name('api.ht-trend');
@@ -86,7 +98,8 @@ Route::get('/report-progress', [MainController::class, 'reportProgress'])->middl
 
 // Admin Routes
 Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
-    Route::get('/', function () {
+    
+Route::get('/', function () {
         $user = auth()->user();
         if ($user->User_rank_id == 5) {
             return redirect()->route('admin.sodium-menus');
