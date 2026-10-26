@@ -1,3 +1,67 @@
+<style>
+/* ── DARK MODE: HI Table Partial ── */
+body.dark-mode .stats-frame {
+    background: transparent !important;
+}
+body.dark-mode .hi-province-card {
+    background: #1e2236 !important;
+    border-color: #2d3148 !important;
+}
+body.dark-mode .hi-province-card div[style*="color:"],
+body.dark-mode .hi-province-card div[style*="color: "] {
+    color: #94a3b8 !important;
+}
+body.dark-mode .hi-province-card div[style*="font-size: 0.98rem"],
+body.dark-mode .hi-province-card div[style*="1e293b"] {
+    color: #f1f5f9 !important;
+}
+body.dark-mode .hi-province-card span {
+    color: #64748b !important;
+}
+body.dark-mode .table-container {
+    background: #1a1d2e !important;
+    border-color: #2d3148 !important;
+}
+body.dark-mode .hi-table-title-bar {
+    border-bottom-color: #2d3148 !important;
+}
+body.dark-mode .hi-legend {
+    color: #64748b !important;
+}
+body.dark-mode .table th {
+    background: #10122a !important;
+    color: #8b9ab5 !important;
+    border-color: #2d3148 !important;
+}
+body.dark-mode .table td {
+    color: #e2e8f0 !important;
+    border-color: #2d3148 !important;
+}
+body.dark-mode .table tbody tr:nth-child(even) {
+    background: #1e2236 !important;
+}
+body.dark-mode .table tbody tr:hover td {
+    background: #242640 !important;
+}
+body.dark-mode .hi-overview-row {
+    background: #10122a !important;
+    border-top-color: #3d4580 !important;
+}
+body.dark-mode .hi-overview-row td {
+    color: #a5b4fc !important;
+}
+body.dark-mode .th-month-group {
+    background: #1a1d4a !important;
+    color: #818cf8 !important;
+    border-color: #2d3148 !important;
+}
+body.dark-mode .th-month-first {
+    border-color: #2d3148 !important;
+}
+body.dark-mode .table-responsive {
+    border-color: #2d3148 !important;
+}
+</style>
 @php
     // Month columns in fiscal-year order (Thai FY starts October). Shared by
     // both the per-district rows below and the overview/total row in tfoot.

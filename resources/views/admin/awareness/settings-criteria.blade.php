@@ -897,6 +897,133 @@
         .panel-list.is-inactive-method .panel-picker-card {
             cursor: not-allowed;
         }
+
+        /* ── DARK MODE: Criteria Settings ── */
+        body.dark-mode .settings-container { background: transparent !important; }
+        body.dark-mode .hero-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .hero-title { color: #f1f5f9 !important; }
+        body.dark-mode .hero-sub,
+        body.dark-mode .hero-card-body { color: #8b9ab5 !important; }
+        body.dark-mode .method-picker-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .method-picker-card.is-active {
+            background: #1a2248 !important;
+            border-color: #4f46e5 !important;
+        }
+        body.dark-mode .method-picker-title { color: #f1f5f9 !important; }
+        body.dark-mode .method-picker-desc { color: #8b9ab5 !important; }
+        body.dark-mode .method-picker-badge {
+            background: #242640 !important;
+            color: #8b9ab5 !important;
+            border: none !important;
+        }
+        body.dark-mode .method-picker-badge.is-active-badge {
+            background: #3730a3 !important;
+            color: #e0e7ff !important;
+        }
+        body.dark-mode .panel-picker-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .panel-picker-card:hover {
+            border-color: var(--panel-color, #ec4899) !important;
+        }
+        body.dark-mode .panel-picker-title { color: #f1f5f9 !important; }
+        body.dark-mode .panel-picker-desc { color: #8b9ab5 !important; }
+        body.dark-mode .panel-picker-badge {
+            background: color-mix(in srgb, var(--panel-color, #ec4899) 18%, #1a1d2e) !important;
+            color: var(--panel-color, #f472b6) !important;
+            border: none !important;
+        }
+        body.dark-mode .panel-picker-count {
+            background: color-mix(in srgb, var(--panel-color, #ec4899) 14%, #1a1d2e) !important;
+            color: var(--panel-color, #f472b6) !important;
+            border: none !important;
+        }
+        body.dark-mode .panel-picker-cta {
+            color: var(--panel-color, #f472b6) !important;
+            background: color-mix(in srgb, var(--panel-color, #ec4899) 10%, #1a1d2e) !important;
+        }
+        body.dark-mode .panel-picker-illustration {
+            background: color-mix(in srgb, var(--panel-color, #ec4899) 10%, #1a1d2e) !important;
+        }
+        body.dark-mode .panel-picker-footer { border-top-color: #2d3148 !important; }
+        body.dark-mode .behavior-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .behavior-card:hover {
+            border-color: var(--behavior-color, #818cf8) !important;
+        }
+        body.dark-mode .behavior-card-badge {
+            background: color-mix(in srgb, var(--behavior-color, #6366f1) 18%, #1a1d2e) !important;
+            color: var(--behavior-color, #818cf8) !important;
+            border: none !important;
+        }
+        body.dark-mode .behavior-card-icon {
+            background: color-mix(in srgb, var(--behavior-color, #6366f1) 18%, #1a1d2e) !important;
+        }
+        body.dark-mode .behavior-card-title { color: #f1f5f9 !important; }
+        body.dark-mode .behavior-card-footer { border-top-color: #2d3148 !important; }
+        body.dark-mode .behavior-card-current {
+            color: #64748b !important;
+            background: #242640 !important;
+            border: none !important;
+        }
+        body.dark-mode .notice-box,
+        body.dark-mode .method-info-box {
+            background: #1a2236 !important;
+            border-color: #2d4a6b !important;
+            color: #93c5fd !important;
+        }
+        body.dark-mode .option-card {
+            background: color-mix(in srgb, var(--option-color, #6366f1) 6%, #1e2236) !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .option-card.is-selected {
+            background: color-mix(in srgb, var(--option-color, #6366f1) 14%, #1a1d2e) !important;
+            border-color: var(--option-color, #6366f1) !important;
+        }
+        body.dark-mode .option-label { color: #e2e8f0 !important; }
+        body.dark-mode .option-desc { color: #8b9ab5 !important; }
+        body.dark-mode .modal-content {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .modal-body { background: #1a1d2e !important; color: #e2e8f0 !important; }
+        body.dark-mode .modal-footer { border-top-color: #2d3148 !important; background: #1a1d2e !important; }
+        body.dark-mode .form-control {
+            background: #242640 !important;
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .form-control option { background: #1a1d2e; color: #e2e8f0; }
+        body.dark-mode .scoring-card,
+        body.dark-mode .question-config-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .scoring-header { border-bottom-color: #2d3148 !important; color: #f1f5f9 !important; }
+        body.dark-mode .question-label { color: #e2e8f0 !important; }
+        body.dark-mode .choice-row { border-bottom-color: #2d3148 !important; }
+        body.dark-mode .choice-label { color: #94a3b8 !important; }
+        body.dark-mode .no-data-notice {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .no-data-notice-title { color: #f1f5f9 !important; }
+        body.dark-mode .no-data-notice-desc { color: #8b9ab5 !important; }
+        body.dark-mode .panel-list-header { color: #8b9ab5 !important; }
+        body.dark-mode .panel-list.is-inactive-method { opacity: 0.5 !important; }
     </style>
 
     <div class="settings-container">

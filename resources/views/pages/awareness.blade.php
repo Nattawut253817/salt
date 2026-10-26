@@ -1798,6 +1798,52 @@
         #riskChart .divrow-seg>*{position:relative;z-index:1}
         #riskChart .divrow-seg:hover{filter:brightness(1.05) saturate(1.08)}
         .divrow-glab small{color:#334155 !important;font-weight:600 !important}
+
+        /* ── DARK MODE: Awareness Filter Bar ── */
+        body.dark-mode .awr-filter-bar {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .awr-filter-heading {
+            color: #94a3b8 !important;
+            border-right-color: #2d3148 !important;
+        }
+        body.dark-mode .awr-filter-item label,
+        body.dark-mode .awr-filter-item span {
+            color: #8b9ab5 !important;
+        }
+        body.dark-mode .awr-filter-select,
+        body.dark-mode .awr-filter-bar select,
+        body.dark-mode .awr-filter-bar .form-control {
+            background: #242640 !important;
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .awr-filter-select option,
+        body.dark-mode .awr-filter-bar select option {
+            background: #1a1d2e;
+            color: #e2e8f0;
+        }
+        body.dark-mode .awr-filter-item { border-color: #2d3148 !important; }
+        body.dark-mode .awr-filter-divider { background: #2d3148 !important; }
+        body.dark-mode .awr-btn-reset {
+            background: #242640 !important;
+            color: #8b9ab5 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .awr-btn-search {
+            background: linear-gradient(135deg, #3730a3, #4f46e5) !important;
+            color: #fff !important;
+        }
+        /* Table section header */
+        body.dark-mode .awr-table-header,
+        body.dark-mode .awr-section-header {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .awr-section-title { color: #f1f5f9 !important; }
+        body.dark-mode .divrow-glab small { color: #94a3b8 !important; }
     </style>
 @endsection
 

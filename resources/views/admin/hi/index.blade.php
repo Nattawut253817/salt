@@ -631,6 +631,86 @@
             box-shadow: 0 14px 24px -8px rgba(190,18,60,.75), inset 0 1px 0 rgba(255,255,255,.35) !important;
         }
         #delete-filtered:focus-visible { outline: 3px solid #fecdd3; outline-offset: 2px; }
+
+        /* ── DARK MODE: HI Index Page ── */
+        body.dark-mode .list-header {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .list-header label,
+        body.dark-mode .list-header span:not(.badge) {
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .filter-input {
+            background-color: #242640 !important;
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .filter-input option {
+            background: #1a1d2e;
+            color: #e2e8f0;
+        }
+        body.dark-mode #delete-filtered {
+            background: linear-gradient(135deg, #2a1010 0%, #3a1515 100%) !important;
+            border-color: #6b2020 !important;
+        }
+        body.dark-mode .btn-toggle-form[data-target="#importHiModal"],
+        body.dark-mode a[href*="new-ht-cases-dashboard"] {
+            background: #1a2236 !important;
+            border-color: #2d3d6b !important;
+            color: #93c5fd !important;
+        }
+        body.dark-mode .filter-actions-row {
+            border-top-color: #2d3148 !important;
+        }
+        body.dark-mode .table th {
+            background: #10122a !important;
+            color: #8b9ab5 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .table td {
+            color: #e2e8f0 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .table tbody tr:nth-child(even) {
+            background: #1e2236 !important;
+        }
+        body.dark-mode .table tbody tr:hover td {
+            background: #242640 !important;
+        }
+        body.dark-mode .table-container {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .imp-dropzone {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            color: #8b9ab5 !important;
+        }
+        body.dark-mode .modal-content {
+            background: #1a1d2e !important;
+        }
+        body.dark-mode .modal-body,
+        body.dark-mode .card-body {
+            background: #1a1d2e !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .imp-step-title {
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .imp-label {
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .dup-option-label {
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .imp-select {
+            background: #242640 !important;
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
     </style>
 @endsection
 

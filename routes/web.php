@@ -19,6 +19,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\HiController;
 use App\Http\Controllers\AwarenessAssessmentController;
 use App\Http\Controllers\OidcController;
+use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\SurveyQuestionSettingsController;
 use App\Models\KidneyAssessment;
 use App\Models\ReducedSodiumProduct;
@@ -60,6 +61,10 @@ Route::get('/oauth/redirect',  [OidcController::class, 'redirect'])->name('oidc.
 Route::get('/oauth/callback',  [OidcController::class, 'callback'])->name('oidc.callback');
 Route::post('/oauth/logout',   [OidcController::class, 'logout'])->name('oidc.logout');
 
+// Google OAuth 2.0 Social Login
+Route::get('/auth/google',          [GoogleAuthController::class, 'redirect'])->name('google.redirect');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
 Route::get('/', [MainController::class, 'index'])->middleware(['page.view', 'page.cache'])->name('home');
 Route::get('/api/ht-trend', [MainController::class, 'htTrendFeed'])->middleware('throttle:60,1')->name('api.ht-trend');
 Route::get('/awareness', [MainController::class, 'awareness'])->middleware(['page.view', 'page.cache'])->name('awareness');
@@ -97,7 +102,7 @@ Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('
 Route::get('/report-progress', [MainController::class, 'reportProgress'])->middleware(['page.view', 'page.cache'])->name('report-progress');
 
 // Admin Routes
-Route::prefix('admin')->middleware(['auth', 'log.admin', 'oidc.auth'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'log.admin'])->group(function () {
     
 Route::get('/', function () {
         $user = auth()->user();

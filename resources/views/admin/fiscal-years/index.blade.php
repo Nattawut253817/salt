@@ -16,7 +16,7 @@
 @endsection
 
 @section('content')
-    <div style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border: 2px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; margin-bottom: 22px; display: flex; gap: 12px; align-items: flex-start;">
+    <div class="fiscal-info-box" style="background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%); border: 2px solid #bfdbfe; border-radius: 14px; padding: 16px 20px; margin-bottom: 22px; display: flex; gap: 12px; align-items: flex-start;">
         <i class="fas fa-info-circle" style="color: #2563eb; font-size: 1.1rem; margin-top: 2px;"></i>
         <div style="font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif; font-size: 0.85rem; font-weight: 600; color: #1e3a8a; line-height: 1.6;">
             <strong>ปีที่เพิ่มที่นี่จะไปปรากฏในตัวกรองค้นหาและฟอร์มอัปโหลดไฟล์ของหัวข้อนั้นทันที</strong> แม้ยังไม่มีข้อมูลจริงก็ตาม<br>
@@ -45,9 +45,49 @@
                 row-gap: 10px;
             }
         }
+
+        /* ── DARK MODE ── */
+        body.dark-mode .fiscal-info-box {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .fiscal-info-box,
+        body.dark-mode .fiscal-info-box div,
+        body.dark-mode .fiscal-info-box strong {
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .fiscal-info-box strong {
+            color: #c7d2fe !important;
+        }
+        body.dark-mode .module-list-card {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .fiscal-year-row:not(:last-child) {
+            border-bottom-color: #2d3148 !important;
+        }
+        /* Text inside rows — override hardcoded inline colours */
+        body.dark-mode .fiscal-year-row div {
+            color: #e2e8f0 !important;
+        }
+        /* subtitle / secondary text keep muted tone */
+        body.dark-mode .fiscal-year-row div[style*="color: #94a3b8"],
+        body.dark-mode .fiscal-year-row div[style*="font-size: 0.7rem"] {
+            color: #64748b !important;
+        }
+        /* year chips */
+        body.dark-mode .fiscal-year-chip {
+            background: #242640 !important;
+            border-color: #3d4158 !important;
+            color: #94a3b8 !important;
+        }
+        body.dark-mode .fiscal-year-chip-row span[style*="color: #94a3b8"] {
+            color: #64748b !important;
+        }
     </style>
 
-    <div style="background: #fff; border-radius: 16px; border: 1px solid #eef2f7; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); overflow: hidden;">
+    <div class="module-list-card" style="background: #fff; border-radius: 16px; border: 1px solid #eef2f7; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); overflow: hidden;">
         @foreach ($modules as $module)
             <div class="fiscal-year-row">
                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">

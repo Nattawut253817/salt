@@ -276,7 +276,7 @@
         }
 
         /* Welcome heading */
-        .auth-welcome { padding: 40px 44px 0; }
+        .auth-welcome { padding: 40px 50px 0; }
 
         .auth-welcome-label {
             font-size: 0.68rem;
@@ -317,7 +317,7 @@
 
         /* ── Pill Tabs ──────────────────────────────────────── */
         .auth-tabs-wrapper {
-            padding: 16px 44px 0;
+            padding: 16px 50px 0;
             display: flex;
             justify-content: flex-start;
         }
@@ -354,7 +354,7 @@
 
         /* ── Form container ─────────────────────────────────── */
         .auth-form-container {
-            padding: 16px 44px 30px;
+            padding: 16px 50px 30px;
             position: relative;
         }
 
@@ -450,7 +450,7 @@
             border: 1.5px solid #ede4ea;
             background: #fdf9fb;
             font-family: 'Sarabun', sans-serif;
-            font-size: 0.83rem;
+            font-size: 0.75rem;
             font-weight: 600;
             color: #1e1b2e;
             box-sizing: border-box;
@@ -637,6 +637,7 @@
             border-radius: 14px;
             border: 1.5px solid #ede4ea;
             background: #fff;
+            text-decoration: none !important;
             color: #1e1b2e;
             font-weight: 700;
             font-size: 0.85rem;
@@ -1192,10 +1193,16 @@
 
                     <div class="auth-divider"><span>หรือเข้าใช้งานด้วย</span></div>
 
-                    <button type="button" class="btn-sso" id="sso-login-btn" onclick="window.location.href='{{ route('oidc.redirect') }}'">
-                        <i class="fas fa-shield-halved"></i>
-                        <span>เข้าสู่ระบบด้วย Government SSO</span>
-                    </button>
+                    <a href="{{ route('google.redirect') }}" class="btn-sso" id="sso-login-btn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0">
+                            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.02 17.74 9.5 24 9.5z"/>
+                            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.52-13.47-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        <span>เข้าสู่ระบบด้วย Google</span>
+                    </a>
+                    <p style="margin: 6px 0 0; text-align: center; font-size: 12px; color: #9ca3af; line-height: 1.5;">สำหรับบัญชี @gmail.com ที่มีอยู่ในระบบแล้ว</p>
 
                     <div class="form-footer">
                         ยังไม่มีบัญชี? <a href="javascript:void(0)" onclick="switchTab('register')">สร้างบัญชีใหม่</a>
@@ -1251,29 +1258,29 @@
                             </div>
                         </div>
 
-                        <!-- Row 1b: Contact number -->
-                        <div class="form-group">
-                            <label class="form-label">เบอร์โทรศัพท์</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-phone"></i>
-                                <span class="phone-country-code">+66</span>
-                                <input type="tel" name="phone" id="reg_phone" class="form-control"
-                                    placeholder="08X-XXX-XXXX" inputmode="numeric" autocomplete="tel-national"
-                                    pattern="0[0-9]{1,2}-[0-9]{3}-[0-9]{3,4}" maxlength="12"
-                                    oninput="formatThaiPhone(this)"
-                                    title="กรอกเบอร์โทรศัพท์ไทย 9-10 หลัก เช่น 081-234-5678"
-                                    value="{{ old('phone') }}">
-                            </div>
-                        </div>
-
                         <div class="form-section-title">บัญชีผู้ใช้งาน</div>
-                        <!-- Row 2a: Email on its own full-width row -->
-                        <div class="form-group">
-                            <label class="form-label">อีเมล</label>
-                            <div class="input-wrapper">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" name="email" class="form-control" placeholder="example@health.go.th"
-                                    value="{{ old('email') }}" required>
+                        <!-- Row 1b+2a: Phone & Email side by side -->
+                        <div class="form-row-2">
+                            <div class="form-group">
+                                <label class="form-label">เบอร์โทรศัพท์</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-phone"></i>
+                                    <span class="phone-country-code">+66</span>
+                                    <input type="tel" name="phone" id="reg_phone" class="form-control"
+                                        placeholder="08X-XXX-XXXX" inputmode="numeric" autocomplete="tel-national"
+                                        pattern="0[0-9]{1,2}-[0-9]{3}-[0-9]{3,4}" maxlength="12"
+                                        oninput="formatThaiPhone(this)"
+                                        title="กรอกเบอร์โทรศัพท์ไทย 9-10 หลัก เช่น 081-234-5678"
+                                        value="{{ old('phone') }}">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">อีเมล</label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-envelope"></i>
+                                    <input type="email" name="email" class="form-control" placeholder="example@health.go.th"
+                                        value="{{ old('email') }}" required>
+                                </div>
                             </div>
                         </div>
                         <!-- Row 2b: Password paired with its confirmation -->

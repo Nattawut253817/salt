@@ -1171,6 +1171,23 @@
 #sodiumMenusExportModal .modal-footer .btn-success,
 #sodiumExportModal .modal-footer .btn-success,
 #exportModal .modal-footer .btn-success {flex:1 1 auto; background:linear-gradient(135deg,#10b981,#047857) !important; box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 12px 22px -8px rgba(4,120,87,.6) !important;}
+
+/* ── DARK MODE: Report Container & Filter Bar ── */
+body.dark-mode .report-container { background: transparent !important; }
+body.dark-mode .list-header {
+    background: #1a1d2e !important;
+    border-color: #2d3148 !important;
+    box-shadow: none !important;
+}
+body.dark-mode .list-header label,
+body.dark-mode .list-header span:not(.badge) {
+    color: #94a3b8 !important;
+}
+body.dark-mode .toast-card {
+    background: #1e2236 !important;
+    border-color: #2d3148 !important;
+    color: #e2e8f0 !important;
+}
 </style>
 
 <div id="toast-stack" class="toast-stack"></div>

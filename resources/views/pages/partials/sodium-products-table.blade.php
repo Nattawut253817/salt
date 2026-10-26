@@ -423,6 +423,58 @@
         text-decoration: underline;
         margin-left: auto;
     }
+
+    /* ── DARK MODE: Stat Cards & Table Container ── */
+    body.dark-mode .standards-summary-container {
+        background: #1a1d2e !important;
+        border-color: #2d3148 !important;
+    }
+    body.dark-mode .compact-stat-card {
+        background: #1e2236 !important;
+        border-color: #2d3148 !important;
+    }
+    body.dark-mode .card-total-compact   { background: #1e2745 !important; }
+    body.dark-mode .card-fda-compact     { background: #1e1e45 !important; }
+    body.dark-mode .card-ghp-compact     { background: #182a38 !important; }
+    body.dark-mode .card-haccp-compact   { background: #182e25 !important; }
+    body.dark-mode .card-community-compact { background: #2a2010 !important; }
+    body.dark-mode .card-organic-compact { background: #1c2a12 !important; }
+    body.dark-mode .card-halal-compact   { background: #2a1818 !important; }
+    body.dark-mode .card-avg-compact     { background: #1c2a12 !important; }
+    body.dark-mode .compact-stat-label   { color: #8b9ab5 !important; }
+    body.dark-mode .compact-stat-value   { color: #f1f5f9 !important; }
+    body.dark-mode .compact-stat-unit    { color: #64748b !important; }
+    body.dark-mode .table-container {
+        background: #1a1d2e !important;
+        border-color: #2d3148 !important;
+    }
+    body.dark-mode .table-container > .d-flex {
+        border-bottom-color: #2d3148 !important;
+    }
+    body.dark-mode .bulk-action-bar {
+        background: #2a1820 !important;
+        border-color: #4a1828 !important;
+    }
+    body.dark-mode .custom-table th {
+        background: #10122a !important;
+        color: #8b9ab5 !important;
+        border-color: #2d3148 !important;
+    }
+    body.dark-mode .custom-table td {
+        color: #e2e8f0 !important;
+        border-bottom-color: #2d3148 !important;
+        background: #1a1d2e !important;
+    }
+    body.dark-mode .custom-table tr:hover td {
+        background: #1e2236 !important;
+    }
+    body.dark-mode .no-img-placeholder {
+        background: #242640 !important;
+        color: #64748b !important;
+    }
+    body.dark-mode .product-img-thumb {
+        border-color: #2d3148 !important;
+    }
 </style>
 
 <!-- Table Card -->

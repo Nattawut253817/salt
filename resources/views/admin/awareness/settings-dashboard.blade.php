@@ -620,6 +620,92 @@
             color: #78350f;
             line-height: 1.6;
         }
+
+        /* ── DARK MODE: Dashboard Settings ── */
+        body.dark-mode .settings-container { background: transparent !important; }
+        body.dark-mode .hero-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .hero-title { color: #f1f5f9 !important; }
+        body.dark-mode .hero-sub { color: #8b9ab5 !important; }
+        body.dark-mode .hero-card-body { color: #e2e8f0 !important; }
+        body.dark-mode .no-data-notice {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .no-data-notice-title { color: #f1f5f9 !important; }
+        body.dark-mode .no-data-notice-desc { color: #8b9ab5 !important; }
+        body.dark-mode .no-data-notice-icon { color: #64748b !important; }
+        body.dark-mode .panel-picker-card {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            box-shadow: none !important;
+        }
+        body.dark-mode .panel-picker-card:hover {
+            border-color: var(--panel-color, #4f46e5) !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
+        }
+        body.dark-mode .panel-picker-title { color: #f1f5f9 !important; }
+        body.dark-mode .panel-picker-desc { color: #94a3b8 !important; }
+        body.dark-mode .panel-picker-badge {
+            background: color-mix(in srgb, var(--panel-color, #4f46e5) 18%, #1a1d2e) !important;
+            color: var(--panel-color, #818cf8) !important;
+            border: none !important;
+        }
+        body.dark-mode .panel-picker-count {
+            background: color-mix(in srgb, var(--panel-color, #4f46e5) 14%, #1a1d2e) !important;
+            color: var(--panel-color, #818cf8) !important;
+            border: none !important;
+        }
+        body.dark-mode .panel-picker-count.is-empty {
+            background: #1e2236 !important;
+            color: #64748b !important;
+        }
+        body.dark-mode .panel-picker-illustration {
+            background: color-mix(in srgb, var(--panel-color, #4f46e5) 10%, #1a1d2e) !important;
+        }
+        body.dark-mode .panel-picker-cta {
+            color: var(--panel-color, #818cf8) !important;
+            background: color-mix(in srgb, var(--panel-color, #4f46e5) 10%, #1a1d2e) !important;
+        }
+        body.dark-mode .panel-picker-footer { border-top-color: #2d3148 !important; }
+        body.dark-mode .panel-list-header { color: #8b9ab5 !important; }
+        body.dark-mode .warning-notice {
+            background: #2a1f10 !important;
+            border-color: #6b3a10 !important;
+            color: #f59e0b !important;
+        }
+        body.dark-mode .warning-notice strong { color: #fcd34d !important; }
+        body.dark-mode .success-notice {
+            background: #0d2a1a !important;
+            border-color: #166534 !important;
+            color: #6ee7b7 !important;
+        }
+        body.dark-mode .info-notice,
+        body.dark-mode .panel-meta-box {
+            background: #1a2236 !important;
+            border-color: #2d4a6b !important;
+            color: #93c5fd !important;
+        }
+        body.dark-mode .modal-content {
+            background: #1a1d2e !important;
+            border-color: #2d3148 !important;
+        }
+        body.dark-mode .modal-body { background: #1a1d2e !important; color: #e2e8f0 !important; }
+        body.dark-mode .modal-footer { border-top-color: #2d3148 !important; background: #1a1d2e !important; }
+        body.dark-mode .form-control {
+            background: #242640 !important;
+            border-color: #2d3148 !important;
+            color: #e2e8f0 !important;
+        }
+        body.dark-mode .form-control option { background: #1a1d2e; color: #e2e8f0; }
+        body.dark-mode .reset-mapping-btn {
+            background: #1e2236 !important;
+            border-color: #2d3148 !important;
+            color: #94a3b8 !important;
+        }
     </style>
 
     <div class="settings-container">
