@@ -20,20 +20,21 @@ use Illuminate\Support\Str;
  *   Rule 5  — 429 is NOT fatal; global gate paused for Retry-After; jittered backoff
  *
  * Error parsers:
- *   parseTokenEndpointError()  — for POST /v1/oauth/token (OAuth style body)
- *   parseUserInfoError()       — for GET /v1/oauth/userinfo  (NestJS style body)
+ *   parseTokenEndpointError()  — for the token endpoint (OAuth style body)
+ *   parseUserInfoError()       — for the userinfo endpoint (NestJS style body)
  *   These are intentionally SEPARATE and MUST NOT be merged.
+ *
+ * Endpoint discovery:
+ *   All IdP endpoint URLs are resolved dynamically via OIDC Discovery
+ *   ({issuer}/.well-known/openid-configuration) and cached.
+ *   NO paths are hardcoded — the IdP advertises its own endpoint URLs.
  */
 class OidcClient
 {
     /* ------------------------------------------------------------------ */
-    /* Endpoint paths                                                       */
+    /* Discovery cache key                                                  */
     /* ------------------------------------------------------------------ */
-    private const AUTHORIZE_PATH  = '/authorize';
-    private const TOKEN_PATH      = '/v1/oauth/token';
-    private const USERINFO_PATH   = '/v1/oauth/userinfo';
-    private const INTROSPECT_PATH = '/v1/oauth/token/introspect';
-    private const REVOKE_PATH     = '/v1/oauth/token/revoke';
+    private const DISCOVERY_CACHE_KEY = 'oidc:discovery';
 
     /* ------------------------------------------------------------------ */
     /* Session storage keys                                                 */
@@ -61,6 +62,65 @@ class OidcClient
     ) {}
 
     /* ================================================================== */
+    /* OIDC Discovery                                                       */
+    /* ================================================================== */
+
+    /**
+     * Fetch (and cache) the OIDC Discovery document.
+     *
+     * URL: {idpBase}/.well-known/openid-configuration
+     *
+     * Returns the full document array. Failed fetches are NEVER cached so
+     * that the very next request retries automatically once the IdP recovers.
+     *
+     * Keys we use:
+     *   authorization_endpoint — used by buildAuthorizeUrl()
+     *   token_endpoint         — used by callTokenEndpoint()
+     *   userinfo_endpoint      — used by getUserInfo()
+     *   introspection_endpoint — used by introspect()
+     *   revocation_endpoint    — used by revokeToken()
+     *
+     * @throws OidcException TYPE_TRANSIENT when the IdP is unreachable
+     */
+    public function discovery(): array
+    {
+        $cached = Cache::get(self::DISCOVERY_CACHE_KEY);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $url = rtrim($this->idpBase, '/') . '/.well-known/openid-configuration';
+
+        try {
+            $response = Http::timeout(10)->get($url);
+        } catch (\Throwable $e) {
+            throw new OidcException(
+                'OIDC discovery fetch failed: ' . $e->getMessage(),
+                OidcException::TYPE_TRANSIENT,
+                previous: $e,
+            );
+        }
+
+        if (! $response->successful()) {
+            throw new OidcException(
+                "OIDC discovery returned HTTP {$response->status()} — IdP may be down",
+                OidcException::TYPE_TRANSIENT,
+            );
+        }
+
+        $document = $response->json();
+        $ttl = config('oidc.discovery_ttl', 3600);
+        Cache::put(self::DISCOVERY_CACHE_KEY, $document, $ttl);
+
+        Log::info('OIDC: discovery document loaded', [
+            'authorization_endpoint' => $document['authorization_endpoint'] ?? 'missing',
+            'token_endpoint'         => $document['token_endpoint']         ?? 'missing',
+        ]);
+
+        return $document;
+    }
+
+    /* ================================================================== */
     /* PKCE helpers                                                         */
     /* ================================================================== */
 
@@ -85,11 +145,20 @@ class OidcClient
     /* ================================================================== */
 
     /**
-     * Build the /authorize redirect URL.
-     * Parameters (PKCE, state, nonce, scopes) are mandated by the IdP spec — DO NOT TOUCH.
+     * Build the authorization redirect URL using the discovered endpoint.
+     *
+     * @throws OidcException  TYPE_TRANSIENT when discovery fails
      */
     public function buildAuthorizeUrl(string $state, string $nonce, string $codeChallenge): string
     {
+        $document = $this->discovery();
+
+        $authorizeEndpoint = $document['authorization_endpoint']
+            ?? throw new OidcException(
+                'OIDC discovery: missing authorization_endpoint',
+                OidcException::TYPE_TRANSIENT,
+            );
+
         $params = http_build_query([
             'response_type'         => 'code',
             'client_id'             => $this->clientId,
@@ -101,7 +170,7 @@ class OidcClient
             'code_challenge_method' => 'S256',
         ]);
 
-        return $this->idpBase . self::AUTHORIZE_PATH . '?' . $params;
+        return $authorizeEndpoint . '?' . $params;
     }
 
     /* ================================================================== */
@@ -135,8 +204,6 @@ class OidcClient
      * Refresh the access token.
      *
      * Rule 1 — Confidential: ALWAYS send client_id + client_secret.
-     *   Missing secret → 401 invalid_client (FATAL, Rule 2).
-     *   Missing client_id → 400 invalid_grant: invalid refresh_token (also FATAL).
      *
      * @throws OidcException  TYPE_FATAL on invalid_client / invalid_grant
      *                        TYPE_RATE_LIMITED on 429
@@ -159,18 +226,21 @@ class OidcClient
     /* ================================================================== */
 
     /**
-     * Fetch user info.
+     * Fetch user info from the discovered userinfo_endpoint.
      *
-     * On 401: the IdP uses NestJS error shape — parse with parseUserInfoError().
-     * This parser is SEPARATE from parseTokenEndpointError().
-     *
-     * Returns raw claims array on success.
+     * On 401: uses parseUserInfoError() — NestJS body shape (NOT oauth shape).
      *
      * @throws OidcException
      */
     public function getUserInfo(string $accessToken): array
     {
-        $url      = $this->idpBase . self::USERINFO_PATH;
+        $document = $this->discovery();
+        $url      = $document['userinfo_endpoint']
+            ?? throw new OidcException(
+                'OIDC discovery: missing userinfo_endpoint',
+                OidcException::TYPE_TRANSIENT,
+            );
+
         $response = Http::withToken($accessToken)->get($url);
 
         if ($response->successful()) {
@@ -193,18 +263,18 @@ class OidcClient
     /* ================================================================== */
 
     /**
-     * Introspect an access token.
-     *
-     * Confidential: send client_id + client_secret.
-     * Only access tokens can be active; refresh tokens always return active:false.
-     *
-     * Returns ['active' => bool, ...rest].
+     * Introspect an access token via the discovered introspection_endpoint.
      *
      * @throws OidcException
      */
     public function introspect(string $accessToken): array
     {
-        $url = $this->idpBase . self::INTROSPECT_PATH;
+        $document = $this->discovery();
+        $url      = $document['introspection_endpoint']
+            ?? throw new OidcException(
+                'OIDC discovery: missing introspection_endpoint',
+                OidcException::TYPE_TRANSIENT,
+            );
 
         $response = Http::asForm()->post($url, [
             'token'         => $accessToken,
@@ -227,20 +297,21 @@ class OidcClient
     /* ================================================================== */
 
     /**
-     * Request token revocation from the IdP.
+     * Request token revocation from the discovered revocation_endpoint.
      *
-     * Rule 4 — the endpoint ALWAYS returns 200 {} (RFC 7009 §2.2).
-     *   200 is NOT proof of revocation.
-     *   The caller MUST purge local state regardless of this call's outcome.
-     *   Only revoke tokens issued to THIS app's client_id.
-     *
-     * Exceptions are intentionally swallowed here — local purge must happen
-     * regardless (caller is responsible for purging before calling this).
+     * Rule 4 — always returns 200 {} (RFC 7009); do NOT treat 200 as proof.
+     * Exceptions are swallowed — caller must have already purged local state.
      */
     public function revokeToken(string $token, string $tokenTypeHint = 'access_token'): void
     {
         try {
-            $url = $this->idpBase . self::REVOKE_PATH;
+            $document = $this->discovery();
+            $url      = $document['revocation_endpoint'] ?? null;
+
+            if (! $url) {
+                Log::warning('OIDC: revocation_endpoint not in discovery — skipping revoke');
+                return;
+            }
 
             Http::asForm()->post($url, [
                 'token'           => $token,
@@ -261,7 +332,7 @@ class OidcClient
     /* ================================================================== */
 
     /**
-     * POST to /v1/oauth/token.
+     * POST to the discovered token_endpoint.
      *
      * 1. Checks the global rate-limit gate before sending.
      * 2. On 429 → sets the gate, then throws TYPE_RATE_LIMITED.
@@ -274,7 +345,12 @@ class OidcClient
     {
         $this->checkRateLimitGate();      // Rule 5: honour existing gate
 
-        $url = $this->idpBase . self::TOKEN_PATH;
+        $document = $this->discovery();
+        $url      = $document['token_endpoint']
+            ?? throw new OidcException(
+                'OIDC discovery: missing token_endpoint',
+                OidcException::TYPE_TRANSIENT,
+            );
 
         try {
             $response = Http::asForm()
@@ -314,22 +390,18 @@ class OidcClient
     }
 
     /* ================================================================== */
-    /* Error parser #1 — /v1/oauth/token (OAuth style)                     */
+    /* Error parser #1 — token endpoint (OAuth style)                       */
     /* DO NOT use this parser for /userinfo responses.                      */
     /* ================================================================== */
 
     /**
-     * Parse an error response from POST /v1/oauth/token.
+     * Parse an error response from the token endpoint.
      *
      * Body shape: {"error":"invalid_grant","error_description":"..."}
      *
      * Fatal errors (Rule 2):
      *   - 401 invalid_client              → missing/wrong client_secret
-     *   - any invalid_grant (400 or 401)  → token revoked/expired/user disabled/access restricted
-     *
-     * Non-fatal:
-     *   - 5xx, network errors → TYPE_TRANSIENT
-     *   - 429                 → handled in callTokenEndpoint before this method is reached
+     *   - any invalid_grant (400 or 401)  → token revoked/expired/user disabled
      */
     private function parseTokenEndpointError(array $body, int $status): OidcException
     {
@@ -347,7 +419,6 @@ class OidcClient
         }
 
         // ── FATAL: invalid_grant (400 or 401, any description) ───────────
-        // Match on error key, NOT on HTTP status alone.
         if ($error === 'invalid_grant') {
             return new OidcException(
                 "OIDC FATAL: invalid_grant ({$description})",
@@ -367,29 +438,22 @@ class OidcClient
     }
 
     /* ================================================================== */
-    /* Error parser #2 — /v1/oauth/userinfo (NestJS style)                 */
+    /* Error parser #2 — userinfo endpoint (NestJS style)                   */
     /* DO NOT use this parser for /token responses.                         */
     /* ================================================================== */
 
     /**
-     * Parse an error response from GET /v1/oauth/userinfo.
+     * Parse an error response from the userinfo endpoint.
      *
      * Body shape: {"statusCode":401,"message":"invalid_token: revoked","error":"Unauthorized"}
      *
-     * IMPORTANT differences from /token error shape:
-     *   - No `WWW-Authenticate` header.
-     *   - Error is in `message`, NOT in `error` (which just says "Unauthorized").
-     *   - Read `message` to determine token state.
-     *
-     * Any message starting with "invalid_token" → token not usable (Rule 3).
-     * We throw TYPE_FATAL so the caller (OidcAuthenticated middleware) triggers
-     * the single-flight refresh cycle.
+     * Error is in `message` (not `error`). Any "invalid_token…" → TYPE_FATAL
+     * so the caller triggers the single-flight refresh cycle (Rule 3).
      */
     private function parseUserInfoError(array $body, int $status): OidcException
     {
         $message = $body['message'] ?? '';
 
-        // Rule 3: any "invalid_token…" variant → treat as "token not usable"
         if (str_starts_with($message, 'invalid_token')) {
             return new OidcException(
                 "OIDC userinfo: token not usable — {$message}",
@@ -412,8 +476,8 @@ class OidcClient
     /** @throws OidcException TYPE_RATE_LIMITED if the gate is currently closed. */
     private function checkRateLimitGate(): void
     {
-        $gateKey   = config('oidc.rate_limit_cache_key', 'oidc:rate_limit_gate');
-        $resumeAt  = Cache::get($gateKey);
+        $gateKey  = config('oidc.rate_limit_cache_key', 'oidc:rate_limit_gate');
+        $resumeAt = Cache::get($gateKey);
 
         if ($resumeAt && time() < $resumeAt) {
             $waitSecs = $resumeAt - time();
@@ -430,33 +494,30 @@ class OidcClient
     {
         $gateKey  = config('oidc.rate_limit_cache_key', 'oidc:rate_limit_gate');
         $resumeAt = time() + max(1, $retryAfterSecs);
-
-        // Add a small jitter (0–5 s) to spread workers that wake simultaneously
-        $jitter = rand(0, 5);
+        $jitter   = rand(0, 5);
 
         Cache::put($gateKey, $resumeAt + $jitter, $retryAfterSecs + 60);
 
         Log::warning('OIDC: rate-limit gate set', [
-            'resume_at'    => date('c', $resumeAt),
-            'retry_after'  => $retryAfterSecs,
+            'resume_at'   => date('c', $resumeAt),
+            'retry_after' => $retryAfterSecs,
         ]);
     }
 
     /**
      * Parse the Retry-After header value.
-     * Accepts delta-seconds (e.g. "30") or an HTTP-date (e.g. "Mon, 26 Oct 2026 12:00:30 GMT").
+     * Accepts delta-seconds ("30") or an HTTP-date ("Mon, 26 Oct 2026 12:00:30 GMT").
      */
     private function parseRetryAfter(?string $header): int
     {
         if (empty($header)) {
-            return 60;   // safe default
+            return 60;
         }
 
         if (is_numeric($header)) {
             return max(1, (int) $header);
         }
 
-        // Try HTTP-date
         $ts = strtotime($header);
         if ($ts !== false && $ts > time()) {
             return $ts - time();

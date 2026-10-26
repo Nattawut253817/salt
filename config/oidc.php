@@ -12,7 +12,14 @@ return [
     |   - client_secret MUST be sent on every /token call (body or Basic)
     */
 
+    /*
+    | OIDC Discovery document ({idp_base}/.well-known/openid-configuration).
+    | All endpoint URLs (authorization, token, userinfo, introspection,
+    | revocation) are resolved dynamically from this document — NO paths
+    | are hardcoded. TTL: how long the discovery document is cached (s).
+    */
     'idp_base'      => env('OIDC_IDP_BASE', 'https://api.idp.akaratmakebugs.store'),
+    'discovery_ttl' => env('OIDC_DISCOVERY_TTL', 3600),
     'client_id'     => env('OIDC_CLIENT_ID', ''),
     'client_secret' => env('OIDC_CLIENT_SECRET', ''),    // confidential — never empty in production
     'redirect_uri'  => env('OIDC_REDIRECT_URI', ''),
