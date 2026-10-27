@@ -244,6 +244,7 @@ Route::get('/', function () {
         Route::post('/system-management/toggle-otp', [\App\Http\Controllers\SystemManagementController::class, 'toggleOtp'])->name('admin.system-management.toggle-otp');
         Route::post('/system-management/toggle-rank1-register', [\App\Http\Controllers\SystemManagementController::class, 'toggleRank1Register'])->name('admin.system-management.toggle-rank1-register');
         Route::post('/system-management/reset-page-views', [\App\Http\Controllers\SystemManagementController::class, 'resetPageViews'])->name('admin.system-management.reset-page-views');
+        Route::post('/system-management/toggle-assessment', [\App\Http\Controllers\SystemManagementController::class, 'toggleAssessment'])->name('admin.system-management.toggle-assessment');
         Route::get('/system-management/activity-logs', [\App\Http\Controllers\SystemManagementController::class, 'activityLogs'])->name('admin.system-management.activity-logs');
         Route::get('/system-management/activity-logs/purge-preview', [\App\Http\Controllers\SystemManagementController::class, 'purgeActivityLogsPreview'])->name('admin.system-management.activity-logs.purge-preview');
         Route::post('/system-management/activity-logs/purge', [\App\Http\Controllers\SystemManagementController::class, 'purgeActivityLogs'])->name('admin.system-management.activity-logs.purge');

@@ -14,6 +14,7 @@ use App\Models\District;
 use App\Models\Tambon;
 use App\Models\Village;
 use App\Models\OperatingAreaPin;
+use App\Support\SystemSettings;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -199,6 +200,15 @@ class AdminController extends Controller
             ? (User::find($request->target_user_id) ?: $currentUser)
             : $currentUser;
         $agencyUserIds = $this->getAgencyUserIds($targetUser);
+
+        // ตรวจสอบว่าปีงบประมาณนี้ถูกปิดรับข้อมูลหรือไม่
+        if (!SystemSettings::get('assessment_open_salt_assessment_' . $request->fiscal_year, true)) {
+            return redirect()->route('admin.report-progress', array_filter([
+                'fiscal_year' => $request->fiscal_year,
+                'quarter'     => $request->quarter,
+                'only'        => $request->input('only'),
+            ]))->withErrors(['error' => 'ปีงบประมาณ ' . $request->fiscal_year . ' ถูกปิดรับข้อมูลแล้ว ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้']);
+        }
 
         // One query serves both the "quarter already confirmed" gate and the
         // existing-record lookup below (they used to be two separate queries
@@ -838,6 +848,14 @@ class AdminController extends Controller
             : $currentUser;
         $agencyUserIds = $this->getAgencyUserIds($targetUser);
         $currentName = trim(($currentUser->prefix ?? '') . ($currentUser->User_firstname ?? '') . ' ' . ($currentUser->User_lastname ?? '')) ?: ($currentUser->name ?? 'ไม่ระบุชื่อ');
+
+        // ตรวจสอบว่าปีงบประมาณนี้ถูกปิดรับข้อมูลหรือไม่
+        if (!SystemSettings::get('assessment_open_kidney_' . $request->fiscal_year, true)) {
+            return redirect()->route('admin.kidney-dhb', array_filter([
+                'fiscal_year' => $request->fiscal_year,
+                'quarter'     => $request->quarter,
+            ]))->withErrors(['error' => 'ปีงบประมาณ ' . $request->fiscal_year . ' ถูกปิดรับข้อมูลแล้ว ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้']);
+        }
 
         // Word-import attribution: a historical report is filled in by
         // whoever the DOCUMENT names as its reporter, not by the Level 1
@@ -3932,6 +3950,12 @@ class AdminController extends Controller
         abort_unless($this->canManageKidneyAssessment(auth()->user(), $anchor), 403);
         // สคร. (level 1) ทั่วไปดูอย่างเดียว - เฉพาะ SuperAdmin เท่านั้นที่บันทึกแก้ไขได้
         abort_if(auth()->user()->User_rank_id == 1 && !auth()->user()->isSuperAdmin(), 403);
+
+        // ตรวจสอบว่าปีงบประมาณของรายการนี้ถูกปิดรับข้อมูลหรือไม่
+        if (!SystemSettings::get('assessment_open_kidney_' . $anchor->fiscal_year, true)) {
+            return redirect()->route('admin.kidney-dhb.show', $anchor->id)
+                ->withErrors(['error' => 'ปีงบประมาณ ' . $anchor->fiscal_year . ' ถูกปิดรับข้อมูลแล้ว ไม่สามารถแก้ไขข้อมูลได้']);
+        }
 
         $catFields = ['category_1', 'category_2', 'category_3', 'category_4', 'category_5', 'category_6', 'category_7',
             'category_8_1', 'category_8_2', 'category_8_3'];

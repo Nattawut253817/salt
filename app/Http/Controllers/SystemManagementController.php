@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FiscalYear;
+use App\Models\KidneyAssessment;
+use App\Models\SaltAssessment;
 use App\Models\User;
 use App\Support\ActivityLog;
+use App\Support\AdminCache;
 use App\Support\SystemSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -47,7 +51,36 @@ class SystemManagementController extends Controller
 
         [$pageViews, $pageViewsTotal, $pageViewsSince] = $this->pageViewSummary();
 
-        return view('admin.system-management.index', compact('sections', 'otpEnabled', 'rank1RegisterEnabled', 'rank1UserCount', 'pageViews', 'pageViewsTotal', 'pageViewsSince'));
+        // แบบประเมิน: ปีงบประมาณที่เปิด/ปิดรับข้อมูล
+        $assessmentModules = [
+            'salt_assessment' => [
+                'label'   => 'แบบรายงานความก้าวหน้าฯ ลดการบริโภคเกลือและโซเดียม',
+                'icon'    => 'fa-flask',
+                'color'   => '#0891b2',
+                'years'   => FiscalYear::selectableYearsFor('salt_assessment', AdminCache::distinct(SaltAssessment::class, 'fiscal_year')),
+            ],
+            'kidney' => [
+                'label'   => 'แบบรายงานความก้าวหน้าฯ ป้องกันควบคุมโรคไม่ติดต่อเรื้อรัง/โรคไตในชุมชน',
+                'icon'    => 'fa-heart-pulse',
+                'color'   => '#dc2626',
+                'years'   => FiscalYear::selectableYearsFor('kidney', AdminCache::distinct(KidneyAssessment::class, 'fiscal_year')),
+            ],
+        ];
+
+        // โหลดสถานะเปิด/ปิดทุกปีจาก SystemSettings ครั้งเดียว
+        $allSettings = SystemSettings::all();
+        foreach ($assessmentModules as $moduleKey => &$moduleData) {
+            $states = [];
+            foreach ($moduleData['years'] as $year) {
+                $key = "assessment_open_{$moduleKey}_{$year}";
+                // default คือเปิด (true) เว้นแต่ถูกปิดไว้อย่างชัดเจน
+                $states[$year] = array_key_exists($key, $allSettings) ? (bool) $allSettings[$key] : true;
+            }
+            $moduleData['states'] = $states;
+        }
+        unset($moduleData);
+
+        return view('admin.system-management.index', compact('sections', 'otpEnabled', 'rank1RegisterEnabled', 'rank1UserCount', 'pageViews', 'pageViewsTotal', 'pageViewsSince', 'assessmentModules'));
     }
 
     /**
@@ -82,6 +115,32 @@ class SystemManagementController extends Controller
         return redirect()->route('admin.system-management.index')->with('success', $enabled
             ? 'เปิดรับสมัครสมาชิกระดับ สคร. แล้ว (ตัวเลือก สคร. จะแสดงในหน้าสมัครสมาชิก)'
             : 'ปิดรับสมัครสมาชิกระดับ สคร. แล้ว (ตัวเลือก สคร. จะไม่แสดงในหน้าสมัครสมาชิก)');
+    }
+
+    /**
+     * เปิด/ปิดการรับข้อมูลแบบประเมินในปีงบประมาณที่ระบุ
+     * key ใน SystemSettings: assessment_open_{module}_{year}  (true = เปิด, false = ปิด)
+     * default คือเปิด (ถ้า key ไม่มีอยู่ใน settings ก็ถือว่าเปิดอยู่)
+     */
+    public function toggleAssessment(Request $request)
+    {
+        $module  = $request->input('module', '');
+        $year    = (int) $request->input('year', 0);
+        $enabled = $request->boolean('enabled');
+
+        abort_unless(in_array($module, ['salt_assessment', 'kidney'], true), 422, 'Module ไม่ถูกต้อง');
+        abort_unless($year >= 2500 && $year <= 2600, 422, 'ปีงบประมาณไม่ถูกต้อง');
+
+        SystemSettings::set("assessment_open_{$module}_{$year}", $enabled);
+
+        $moduleLabel = match ($module) {
+            'salt_assessment' => 'แบบรายงานลดการบริโภคเกลือฯ',
+            'kidney'          => 'แบบรายงานโรคไตฯ',
+        };
+
+        return redirect()->route('admin.system-management.index')->with('success',
+            ($enabled ? 'เปิด' : 'ปิด') . "การรับข้อมูล {$moduleLabel} ปีงบประมาณ {$year} แล้ว"
+        );
     }
 
     /** หน้าสาธารณะที่มีตัวนับการเข้าชม (key = ชื่อ route ที่ใช้ middleware page.view) */

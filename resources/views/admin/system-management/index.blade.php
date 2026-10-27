@@ -393,6 +393,81 @@
         @endforeach
     </div>
 
+    {{-- ===== การเปิด/ปิดรับข้อมูลแบบประเมิน (รายปีงบประมาณ) ===== --}}
+    <div style="margin-top: 20px; background: #fff; border-radius: 16px; border: 1px solid #eef2f7; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); overflow: hidden;">
+
+        {{-- หัวข้อส่วน --}}
+        <div style="padding: 16px 22px 14px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: #7c3aed; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; flex-shrink: 0;">
+                <i class="fas fa-lock-open"></i>
+            </div>
+            <div>
+                <div class="sysmgmt-title" style="font-size: 1rem;">การเปิด/ปิดรับข้อมูลแบบประเมิน</div>
+                <div class="sysmgmt-subtitle">ควบคุมว่าปีงบประมาณใดสามารถบันทึก/แก้ไขข้อมูลได้ — ปีที่ปิดจะไม่สามารถบันทึกหรือแก้ไขได้</div>
+            </div>
+        </div>
+
+        @foreach ($assessmentModules as $moduleKey => $module)
+            {{-- แถวชื่อ module --}}
+            <div style="padding: 14px 22px 6px; background: #fafafa; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px;">
+                <div style="width: 30px; height: 30px; border-radius: 8px; background: {{ $module['color'] }}; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem; flex-shrink: 0;">
+                    <i class="fas {{ $module['icon'] }}"></i>
+                </div>
+                <span class="sysmgmt-title" style="font-size: 0.88rem; color: #374151;">{{ $module['label'] }}</span>
+            </div>
+
+            @if ($module['years']->isEmpty())
+                <div style="padding: 12px 22px 12px 64px; font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif; font-size: 0.82rem; color: #9ca3af;">
+                    ยังไม่มีปีงบประมาณในโมดูลนี้
+                </div>
+            @else
+                @foreach ($module['years'] as $year)
+                    @php $isOpen = $module['states'][$year] ?? true; @endphp
+                    <div class="sysmgmt-row sysmgmt-assess-row">
+                        <div class="sysmgmt-icon" style="background: {{ $isOpen ? '#16a34a' : '#6b7280' }}; width: 36px; height: 36px; border-radius: 9px; font-size: 0.85rem;">
+                            <i class="fas {{ $isOpen ? 'fa-lock-open' : 'fa-lock' }}"></i>
+                        </div>
+                        <div>
+                            <div class="sysmgmt-title" style="font-size: 0.9rem;">ปีงบประมาณ {{ $year }}</div>
+                            <div class="sysmgmt-subtitle">{{ $isOpen ? 'รับข้อมูลได้ — สามารถบันทึกและแก้ไขได้ปกติ' : 'ปิดรับข้อมูล — ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้' }}</div>
+                        </div>
+                        <div class="sysmgmt-toggle-cell">
+                            <span class="sysmgmt-status {{ $isOpen ? 'is-on' : 'is-off' }}">
+                                {{ $isOpen ? 'เปิดอยู่' : 'ปิดอยู่' }}
+                            </span>
+                            <form action="{{ route('admin.system-management.toggle-assessment') }}" method="POST"
+                                  id="assessForm_{{ $moduleKey }}_{{ $year }}">
+                                @csrf
+                                <input type="hidden" name="module" value="{{ $moduleKey }}">
+                                <input type="hidden" name="year" value="{{ $year }}">
+                                <input type="hidden" name="enabled" id="assessEnabled_{{ $moduleKey }}_{{ $year }}" value="{{ $isOpen ? '1' : '0' }}">
+                                <label class="sysmgmt-switch">
+                                    <input type="checkbox" {{ $isOpen ? 'checked' : '' }}
+                                        onchange="document.getElementById('assessEnabled_{{ $moduleKey }}_{{ $year }}').value = this.checked ? '1' : '0'; document.getElementById('assessForm_{{ $moduleKey }}_{{ $year }}').submit();">
+                                    <span class="sysmgmt-switch-track"></span>
+                                </label>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            @endif
+
+            @if (!$loop->last)
+                <div style="border-top: 2px dashed #f1f5f9;"></div>
+            @endif
+        @endforeach
+    </div>
+
+    <style>
+        .sysmgmt-assess-row {
+            grid-template-columns: auto minmax(200px, 1fr) auto;
+            padding: 12px 22px;
+        }
+        .sysmgmt-assess-row:not(:last-child) {
+            border-bottom: 1px solid #f8fafc;
+        }
+    </style>
+
     <script>
         var resetBtn = document.getElementById('resetPageViewsBtn');
         if (resetBtn) resetBtn.addEventListener('click', function () {
