@@ -267,19 +267,20 @@
 
         .filter-groups {
             display: flex;
-            flex-direction: column;
-            gap: 8px;
+            flex-direction: row;
+            align-items: flex-end;
+            gap: 0;
         }
 
         .filter-cluster {
+            flex: 1;
             display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 6px;
         }
 
         .filter-cluster-label {
-            flex: 0 0 128px;
+            flex: none;
             display: flex;
             align-items: center;
             gap: 7px;
@@ -287,7 +288,7 @@
             font-size: 0.85rem;
             font-weight: 600;
             color: #475569;
-            padding-top: 4px;
+            padding-top: 0;
         }
 
         .filter-cluster-label i {
@@ -295,9 +296,8 @@
         }
 
         .filter-cluster-fields {
-            flex: 1 1 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 10px 12px;
         }
 
@@ -332,14 +332,21 @@
 
         .cluster-divider {
             border: none;
-            border-top: 1px dashed #e2e8f0;
-            margin: 0;
+            border-left: 1px dashed #e2e8f0;
+            margin: 0 16px;
+            align-self: stretch;
         }
 
         @media (max-width: 760px) {
-            .filter-cluster {
+            .filter-groups {
                 flex-direction: column;
                 gap: 8px;
+            }
+            .cluster-divider {
+                border: none;
+                border-top: 1px dashed #e2e8f0;
+                margin: 4px 0;
+                align-self: auto;
             }
             .filter-cluster-label {
                 flex: none;
