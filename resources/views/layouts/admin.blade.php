@@ -1249,13 +1249,14 @@
            hierarchy clear without fighting the parent for attention.
         ──────────────────────────────────────────────────────────────────────────── */
         .nav-submenu .nav-link.active {
-            background: rgba(79, 70, 229, 0.10);
-            color: var(--admin-primary);
+            background: rgba(79, 70, 229, 0.18);
+            color: #3730a3;
             box-shadow: none;
+            font-weight: 600;
         }
         .nav-submenu .nav-link.active i {
-            color: var(--admin-primary);
-            background: rgba(79, 70, 229, 0.14);
+            color: #3730a3;
+            background: rgba(79, 70, 229, 0.22);
         }
         /* Nav-badge inside group header */
         .nav-group-header .nav-badge {
