@@ -46,7 +46,6 @@
 
         <form action="{{ route('admin.salt-assessment-list') }}" method="GET" class="filter-groups">
             <div class="filter-cluster">
-                <div class="filter-cluster-label"><i class="fas fa-calendar-days"></i> ช่วงเวลา</div>
                 <div class="filter-cluster-fields">
                     <div class="filter-field">
                         <label>ปีงบประมาณ</label>
@@ -75,7 +74,6 @@
             <hr class="cluster-divider">
 
             <div class="filter-cluster">
-                <div class="filter-cluster-label"><i class="fas fa-map-location-dot"></i> พื้นที่</div>
                 <div class="filter-cluster-fields">
                     <div class="filter-field">
                         <label>จังหวัด</label>
