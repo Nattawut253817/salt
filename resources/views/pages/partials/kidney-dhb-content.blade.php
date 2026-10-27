@@ -301,6 +301,10 @@
     #kidneyForm.is-quarter-locked .btn-submit,
     #kidneyForm.is-quarter-locked .btn-submit:hover { background: #cbd5e1; color: #64748b; cursor: not-allowed; box-shadow: none; transform: none; }
 
+    /* Year closed gate */
+    #kidneyForm.is-year-locked .report-textarea { background: #f6f4ee; color: #5f6368; cursor: not-allowed; }
+    #kidneyForm.is-year-locked .btn-submit { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
+
     .btn-submit {
         display: flex;
         align-items: center;
@@ -1616,6 +1620,14 @@
                 <div class="loader-inner-dot"></div>
             </div>
             <div class="loader-text" style="font-size: 0.8rem; margin-top: 10px;">กำลังนำเข้าข้อมูล...</div>
+        </div>
+
+        {{-- Banner: ปีงบประมาณถูกปิดรับข้อมูล --}}
+        <div id="kidneyYearClosedBanner" style="display:none; margin-bottom:16px; padding:10px 16px; border-radius:10px;
+             background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:0.85rem;
+             align-items:center; gap:8px;">
+            <i class="fas fa-lock" style="font-size:0.95rem; flex-shrink:0;"></i>
+            <span>ปีงบประมาณนี้ถูกปิดรับข้อมูลแล้ว ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้</span>
         </div>
 
         <form action="{{ route('admin.kidney-dhb.store') }}" method="POST" enctype="multipart/form-data" id="kidneyForm" onsubmit="kdhbBtnLoading(this)">
@@ -4754,7 +4766,7 @@
     // Respects applyQuarterLock(): if the form is locked we do nothing
     // (the lock guard already calls e.preventDefault()).
     function kdhbBtnLoading(form) {
-        if (form.classList.contains('is-quarter-locked')) return;
+        if (form.classList.contains('is-quarter-locked') || form.classList.contains('is-year-locked')) return;
         const btn = form.querySelector('.btn-submit');
         if (!btn || btn.disabled) return;
         btn.disabled = true;
@@ -4766,4 +4778,46 @@
             btn.innerHTML = origHTML;
         }, 30000);
     }
+
+    // ===== Assessment-year open/close gate (kidney) =====
+    (function () {
+        const states  = @json($kidneyAssessmentYearStates ?? []);
+        const form    = document.getElementById('kidneyForm');
+        const banner  = document.getElementById('kidneyYearClosedBanner');
+        const yearSel = document.getElementById('fiscal_year');
+
+        function applyYearLock(year) {
+            const isOpen = states[String(year)] !== false;
+            if (isOpen) {
+                form   && form.classList.remove('is-year-locked');
+                banner && (banner.style.display = 'none');
+                form && form.querySelectorAll('.report-textarea[data-year-locked]').forEach(el => {
+                    el.removeAttribute('disabled');
+                    el.removeAttribute('data-year-locked');
+                });
+                const submitBtn = form && form.querySelector('.btn-submit');
+                if (submitBtn && submitBtn.dataset.yearLocked) {
+                    submitBtn.disabled = false;
+                    delete submitBtn.dataset.yearLocked;
+                }
+            } else {
+                form   && form.classList.add('is-year-locked');
+                banner && (banner.style.display = 'flex');
+                form && form.querySelectorAll('.report-textarea').forEach(el => {
+                    el.setAttribute('disabled', 'disabled');
+                    el.dataset.yearLocked = '1';
+                });
+                const submitBtn = form && form.querySelector('.btn-submit');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.dataset.yearLocked = '1';
+                }
+            }
+        }
+
+        if (yearSel) {
+            applyYearLock(yearSel.value);
+            yearSel.addEventListener('change', () => applyYearLock(yearSel.value));
+        }
+    })();
 </script>

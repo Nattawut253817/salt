@@ -602,6 +602,12 @@
     #assessmentForm.is-locked .btn-remove-file { pointer-events: none; opacity: 0.4; }
     #assessmentForm.is-locked .btn-submit { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
 
+    /* Year-closed gate */
+    #assessmentForm.is-locked-year .report-textarea { background: #f6f4ee; color: #5f6368; cursor: not-allowed; pointer-events: none; }
+    #assessmentForm.is-locked-year .btn-submit { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
+    #assessmentForm.is-locked-year .btn-upload,
+    #assessmentForm.is-locked-year .btn-remove-file { pointer-events: none; opacity: 0.4; }
+
     .confirm-modal-card.tone-success .confirm-modal-icon { background: linear-gradient(135deg, #e6f6ec 0%, #c9ecd6 100%); color: #1f7a45; }
     .confirm-modal-card.tone-success .confirm-modal-btn-confirm { background: linear-gradient(135deg, #34a96c 0%, #1f7a45 100%); box-shadow: 0 10px 22px rgba(31, 122, 69, 0.32); }
     .confirm-modal-card.tone-neutral .confirm-modal-icon { background: linear-gradient(135deg, #eef2f6 0%, #dbe3ea 100%); color: #475569; }
@@ -1970,6 +1976,14 @@
                 <div class="pulse-dot"></div>
             </div>
             <div class="loader-text">กำลังโหลดข้อมูล...</div>
+        </div>
+
+        {{-- Banner: ปีงบประมาณถูกปิดรับข้อมูล --}}
+        <div id="saltYearClosedBanner" style="display:none; margin-bottom:16px; padding:10px 16px; border-radius:10px;
+             background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:0.85rem;
+             display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-lock" style="font-size:0.95rem; flex-shrink:0;"></i>
+            <span id="saltYearClosedMsg">ปีงบประมาณนี้ถูกปิดรับข้อมูลแล้ว ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้</span>
         </div>
 
         <form action="{{ route('admin.report-progress.store') }}" method="POST" enctype="multipart/form-data"
@@ -3557,7 +3571,7 @@
 
         // loading state เมื่อกด บันทึกแบบรายงาน (ป้องกัน double-submit)
         function rpSubmitLoading(form) {
-            if (form.classList.contains('is-locked')) return;
+            if (form.classList.contains('is-locked') || form.classList.contains('is-locked-year')) return;
             const btn = form.querySelector('.btn-submit');
             if (!btn || btn.disabled) return;
             btn.disabled = true;
@@ -3565,4 +3579,48 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังบันทึก...';
             setTimeout(() => { btn.disabled = false; btn.innerHTML = orig; }, 20000);
         }
+
+        // ===== Assessment-year open/close gate (salt) =====
+        (function () {
+            const states = @json($saltAssessmentYearStates ?? []);
+            const form   = document.getElementById('assessmentForm');
+            const banner = document.getElementById('saltYearClosedBanner');
+            const yearSel = document.getElementById('fiscal_year');
+
+            function applyYearLock(year) {
+                const isOpen = states[String(year)] !== false; // default true
+                if (isOpen) {
+                    form && form.classList.remove('is-locked-year');
+                    banner && (banner.style.display = 'none');
+                    // re-enable fields disabled by THIS gate only
+                    form && form.querySelectorAll('.report-textarea[data-year-locked]').forEach(el => {
+                        el.removeAttribute('disabled');
+                        el.removeAttribute('data-year-locked');
+                    });
+                    const submitBtn = form && form.querySelector('.btn-submit');
+                    if (submitBtn && submitBtn.dataset.yearLocked) {
+                        submitBtn.disabled = false;
+                        delete submitBtn.dataset.yearLocked;
+                    }
+                } else {
+                    form && form.classList.add('is-locked-year');
+                    banner && (banner.style.display = 'flex');
+                    // disable all textareas in form
+                    form && form.querySelectorAll('.report-textarea').forEach(el => {
+                        el.setAttribute('disabled', 'disabled');
+                        el.dataset.yearLocked = '1';
+                    });
+                    const submitBtn = form && form.querySelector('.btn-submit');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.dataset.yearLocked = '1';
+                    }
+                }
+            }
+
+            if (yearSel) {
+                applyYearLock(yearSel.value);
+                yearSel.addEventListener('change', () => applyYearLock(yearSel.value));
+            }
+        })();
     </script>

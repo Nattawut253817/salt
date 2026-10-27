@@ -105,9 +105,15 @@ class AdminController extends Controller
             }
         }
 
+        // แผนที่ year => เปิด/ปิด สำหรับ JS ใน view (disable form เมื่อปีถูกปิด)
+        $saltYears = $this->saltAssessmentYears();
+        $saltAssessmentYearStates = collect($saltYears)
+            ->mapWithKeys(fn ($y) => [(string) $y => \App\Support\SystemSettings::get('assessment_open_salt_assessment_' . $y, true)])
+            ->all();
+
         return view('admin.report-progress', [
             'availableYears' => $availableYears,
-            'formYears' => $this->saltAssessmentYears(),
+            'formYears' => $saltYears,
             'doneYears' => $doneYears,
             'presetTargetId' => $presetTargetId,
             'presetTargetLabel' => $presetTargetLabel,
@@ -117,6 +123,7 @@ class AdminController extends Controller
             'agencyName' => $agencyName,
             'canImportWord' => $canImportWord,
             'provinces' => $provinces,
+            'saltAssessmentYearStates' => $saltAssessmentYearStates,
         ]);
     }
 
@@ -776,6 +783,9 @@ class AdminController extends Controller
             'canImportWord' => $canImportWord,
             // ปีงบประมาณในช่อง "ปีงบประมาณของรายงานนี้" (นำเข้า Word) - ใช้รายการเดียวกับหน้า "จัดการปีงบประมาณ" ของ พชอ.ไต
             'importYears' => FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'))->all(),
+            'kidneyAssessmentYearStates' => FiscalYear::selectableYearsFor('kidney', \App\Support\AdminCache::distinct(\App\Models\KidneyAssessment::class, 'fiscal_year'))
+                ->mapWithKeys(fn ($y) => [(string) $y => \App\Support\SystemSettings::get('assessment_open_kidney_' . $y, true)])
+                ->all(),
         ]);
     }
 
