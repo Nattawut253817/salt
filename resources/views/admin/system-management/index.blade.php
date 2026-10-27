@@ -388,7 +388,6 @@
                     <div class="sysmgmt-title">{{ $section['title'] }}</div>
                     <div class="sysmgmt-subtitle">{{ $section['subtitle'] }}</div>
                 </div>
-                <span class="sysmgmt-badge">เร็ว ๆ นี้</span>
             </div>
         @endforeach
     </div>
@@ -509,7 +508,7 @@
         }
         .assess-mod-name {
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.83rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #374151;
             white-space: nowrap;
@@ -524,13 +523,13 @@
         }
         .assess-count-pill {
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.75rem;
+            font-size: 0.92rem;
             display: flex;
             align-items: center;
             gap: 5px;
         }
         .assess-chevron {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             color: #9ca3af;
             transition: transform 0.2s ease;
         }
@@ -556,7 +555,7 @@
         }
         .assess-year-num {
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.92rem;
+            font-size: 1.15rem;
             font-weight: 700;
             line-height: 1;
         }
@@ -565,7 +564,7 @@
 
         .assess-year-label {
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.74rem;
+            font-size: 0.92rem;
             color: #9ca3af;
         }
 
@@ -585,8 +584,8 @@
 
         .assess-status-text {
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.75rem;
-            min-width: 72px;
+            font-size: 0.92rem;
+            min-width: 84px;
             text-align: right;
         }
         .text-open   { color: #15803d; }
@@ -595,7 +594,7 @@
         .assess-empty {
             padding: 10px 28px;
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             color: #9ca3af;
         }
     </style>

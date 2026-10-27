@@ -3569,6 +3569,12 @@ class AdminController extends Controller
             $canEdit = auth()->user()->isSuperAdmin();
         }
 
+        // ปีงบประมาณที่ปิดรับข้อมูลแล้ว: ปิดการแก้ไขทุกบทบาท ยกเว้น SuperAdmin
+        $yearLocked = !\App\Support\SystemSettings::get('assessment_open_kidney_' . (int) $assessment->fiscal_year, true);
+        if ($yearLocked && !auth()->user()->isSuperAdmin()) {
+            $canEdit = false;
+        }
+
         // ข้อมูล 10 หัวข้อ (ข้อ 1-8.3) "ไหล" สะสมตั้งแต่ไตรมาส 1 ถึงไตรมาสที่เลือก - หลักเดียวกับ
         // getKidneyDHBData()/ฟอร์ม admin/kidney-dhb และหน้า export PDF: หัวข้อละข้อความล่าสุด
         // (updated_at) ที่ไม่ว่างในหน่วยงาน/ปี/พื้นที่เดียวกัน. ปัญหาอุปสรรคและข้อเสนอแนะเป็นรายไตรมาส
@@ -3699,6 +3705,7 @@ class AdminController extends Controller
             'availableQuarters',
             'canEdit',
             'quarterLocked',
+            'yearLocked',
             'areaGeo',
             'areaPinOptions',
             'stepQuarters',

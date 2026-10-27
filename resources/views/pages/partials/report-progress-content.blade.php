@@ -2490,7 +2490,9 @@
                     }
                 });
 
-                updatePeriodExport(result.assessment_id);
+                const _quarterVal = document.getElementById('quarter') ? document.getElementById('quarter').value : null;
+                const _exportId = result.assessment_id || (_quarterVal && result.quarters && result.quarters[_quarterVal] ? result.quarters[_quarterVal].id : null);
+                updatePeriodExport(_exportId);
 
                 if (result.exists) {
                     status.className = 'data-status';

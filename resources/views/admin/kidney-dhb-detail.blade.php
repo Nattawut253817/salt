@@ -709,6 +709,10 @@
         // บัญชีที่แถวนี้ถูกเก็บไว้ ถ้าไม่เคยนำเข้าก็ใช้ข้อมูลบัญชีเจ้าของแถวแทน
         $importReporter = $assessment->reporter_metadata['_import_reporter'] ?? null;
         $reporterName = $importReporter['name'] ?? ($assessment->user->name ?? null);
+        // บัญชีตัวแทน Word ไม่ใช่ชื่อจริง — แสดงเป็น "-"
+        if ($reporterName !== null && str_contains((string) $reporterName, 'สร้างจากการนำเข้า')) {
+            $reporterName = null;
+        }
         $reporterPosition = $importReporter['position'] ?? ($assessment->user->User_position ?? null);
         $reporterPhoneRaw = $importReporter['phone'] ?? ($assessment->user->phone ?? null);
         $reporterEmail = $importReporter['email'] ?? ($assessment->user->email ?? null);
@@ -775,25 +779,37 @@
                     <button type="button" id="kdEditBtn" class="kd-edit-btn kd-only-view">
                         <i class="fas fa-pen-to-square"></i> แก้ไขข้อมูลไตรมาส {{ (int) $assessment->quarter }}
                     </button>
+                @elseif(!empty($yearLocked))
+                    <button type="button" class="kd-edit-btn" disabled aria-disabled="true"
+                        title="ปีงบประมาณ {{ (int) $assessment->fiscal_year }} ถูกปิดรับข้อมูลแล้ว ไม่สามารถแก้ไขได้">
+                        <i class="fas fa-lock"></i> ปิดรับข้อมูลแล้ว · แก้ไขไม่ได้
+                    </button>
                 @elseif(!empty($quarterLocked))
                     <button type="button" class="kd-edit-btn" disabled aria-disabled="true"
                         title="ไตรมาสนี้ได้รับการยืนยันข้อมูลจาก สคร. แล้ว จึงไม่สามารถแก้ไขได้">
                         <i class="fas fa-lock"></i> ยืนยันข้อมูลแล้ว · แก้ไขไม่ได้
                     </button>
                 @endif
-                @unless($isNew)
-                <a href="{{ route('admin.kidney-dhb.export-pdf', $assessment->id) }}" target="_blank"
+                @if(!$isNew || $anchorId)
+                <a href="{{ route('admin.kidney-dhb.export-pdf', $isNew ? $anchorId : $assessment->id) }}" target="_blank"
                     class="btn text-white shadow"
                     style="background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); border: none; border-radius: 12px; padding: 7px 14px; font-size: 0.78rem; transition: all 0.3s; font-weight: 500;">
                     <i class="fas fa-file-pdf mr-1"></i> Export PDF
                 </a>
-                @endunless
+                @endif
                 <a href="{{ route('admin.kidney-dhb-list') }}" class="btn-back"
                     style="font-size: 0.78rem; padding: 7px 14px;">
                     <i class="fas fa-arrow-left"></i> กลับหน้ารายการ
                 </a>
             </div>
         </div>
+
+        @if(!empty($yearLocked))
+        <div style="display:flex; align-items:center; gap:10px; background:#fff1f2; border:1px solid #fecdd3; border-radius:12px; padding:12px 18px; margin-bottom:16px; color:#be123c; font-size:0.87rem; font-weight:600;">
+            <i class="fas fa-lock" style="font-size:1rem; flex-shrink:0;"></i>
+            <span>ปีงบประมาณ {{ (int) $assessment->fiscal_year }} ถูกปิดรับข้อมูลแล้ว ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้</span>
+        </div>
+        @endif
 
         <div class="report-card" style="padding: 28px;">
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
