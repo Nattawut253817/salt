@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class AdminCache
 {
-    private static function version()
+    public static function version()
     {
         return Cache::get('public_page_cache_version', 0);
     }
