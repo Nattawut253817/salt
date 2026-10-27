@@ -397,74 +397,206 @@
     <div style="margin-top: 20px; background: #fff; border-radius: 16px; border: 1px solid #eef2f7; box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06); overflow: hidden;">
 
         {{-- หัวข้อส่วน --}}
-        <div style="padding: 16px 22px 14px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
-            <div style="width: 36px; height: 36px; border-radius: 10px; background: #7c3aed; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.9rem; flex-shrink: 0;">
+        <div style="padding: 14px 22px 12px; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 34px; height: 34px; border-radius: 9px; background: #7c3aed; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.85rem; flex-shrink: 0;">
                 <i class="fas fa-lock-open"></i>
             </div>
             <div>
-                <div class="sysmgmt-title" style="font-size: 1rem;">การเปิด/ปิดรับข้อมูลแบบประเมิน</div>
-                <div class="sysmgmt-subtitle">ควบคุมว่าปีงบประมาณใดสามารถบันทึก/แก้ไขข้อมูลได้ — ปีที่ปิดจะไม่สามารถบันทึกหรือแก้ไขได้</div>
+                <div class="sysmgmt-title" style="font-size: 0.95rem;">การเปิด/ปิดรับข้อมูลแบบประเมิน</div>
+                <div class="sysmgmt-subtitle">ควบคุมว่าปีงบประมาณใดบันทึก/แก้ไขข้อมูลได้</div>
             </div>
         </div>
 
         @foreach ($assessmentModules as $moduleKey => $module)
-            {{-- แถวชื่อ module --}}
-            <div style="padding: 14px 22px 6px; background: #fafafa; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px;">
-                <div style="width: 30px; height: 30px; border-radius: 8px; background: {{ $module['color'] }}; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem; flex-shrink: 0;">
-                    <i class="fas {{ $module['icon'] }}"></i>
-                </div>
-                <span class="sysmgmt-title" style="font-size: 0.88rem; color: #374151;">{{ $module['label'] }}</span>
-            </div>
+            @php
+                $openCount  = collect($module['states'])->filter()->count();
+                $totalCount = count($module['states']);
+            @endphp
 
-            @if ($module['years']->isEmpty())
-                <div style="padding: 12px 22px 12px 64px; font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif; font-size: 0.82rem; color: #9ca3af;">
-                    ยังไม่มีปีงบประมาณในโมดูลนี้
-                </div>
-            @else
-                @foreach ($module['years'] as $year)
-                    @php $isOpen = $module['states'][$year] ?? true; @endphp
-                    <div class="sysmgmt-row sysmgmt-assess-row">
-                        <div class="sysmgmt-icon" style="background: {{ $isOpen ? '#16a34a' : '#6b7280' }}; width: 36px; height: 36px; border-radius: 9px; font-size: 0.85rem;">
-                            <i class="fas {{ $isOpen ? 'fa-lock-open' : 'fa-lock' }}"></i>
-                        </div>
-                        <div>
-                            <div class="sysmgmt-title" style="font-size: 0.9rem;">ปีงบประมาณ {{ $year }}</div>
-                            <div class="sysmgmt-subtitle">{{ $isOpen ? 'รับข้อมูลได้ — สามารถบันทึกและแก้ไขได้ปกติ' : 'ปิดรับข้อมูล — ไม่สามารถบันทึกหรือแก้ไขข้อมูลได้' }}</div>
-                        </div>
-                        <div class="sysmgmt-toggle-cell">
-                            <span class="sysmgmt-status {{ $isOpen ? 'is-on' : 'is-off' }}">
-                                {{ $isOpen ? 'เปิดอยู่' : 'ปิดอยู่' }}
-                            </span>
-                            <form action="{{ route('admin.system-management.toggle-assessment') }}" method="POST"
-                                  id="assessForm_{{ $moduleKey }}_{{ $year }}">
-                                @csrf
-                                <input type="hidden" name="module" value="{{ $moduleKey }}">
-                                <input type="hidden" name="year" value="{{ $year }}">
-                                <input type="hidden" name="enabled" id="assessEnabled_{{ $moduleKey }}_{{ $year }}" value="{{ $isOpen ? '1' : '0' }}">
-                                <label class="sysmgmt-switch">
-                                    <input type="checkbox" {{ $isOpen ? 'checked' : '' }}
-                                        onchange="document.getElementById('assessEnabled_{{ $moduleKey }}_{{ $year }}').value = this.checked ? '1' : '0'; document.getElementById('assessForm_{{ $moduleKey }}_{{ $year }}').submit();">
-                                    <span class="sysmgmt-switch-track"></span>
-                                </label>
-                            </form>
-                        </div>
+            {{-- Accordion per module --}}
+            <details class="assess-accordion" {{ $loop->first ? 'open' : '' }}>
+                <summary class="assess-summary">
+                    <div class="assess-sum-left">
+                        <span class="assess-mod-dot" style="background: {{ $module['color'] }};"></span>
+                        <span class="assess-mod-name">{{ $module['label'] }}</span>
                     </div>
-                @endforeach
-            @endif
+                    <div class="assess-sum-right">
+                        @if ($totalCount > 0)
+                            <span class="assess-count-pill">
+                                <span style="color: #16a34a;">{{ $openCount }} เปิด</span>
+                                @if ($totalCount - $openCount > 0)
+                                    <span style="color: #9ca3af;">·</span>
+                                    <span style="color: #6b7280;">{{ $totalCount - $openCount }} ปิด</span>
+                                @endif
+                            </span>
+                        @endif
+                        <i class="fas fa-chevron-down assess-chevron"></i>
+                    </div>
+                </summary>
+
+                <div class="assess-year-list">
+                    @if ($module['years']->isEmpty())
+                        <div class="assess-empty">ยังไม่มีปีงบประมาณในโมดูลนี้</div>
+                    @else
+                        @foreach ($module['years'] as $year)
+                            @php $isOpen = $module['states'][$year] ?? true; @endphp
+                            <div class="assess-year-row {{ $isOpen ? 'is-open' : 'is-closed' }}">
+                                <div class="assess-year-left">
+                                    <span class="assess-year-num">{{ $year }}</span>
+                                    <span class="assess-year-label">ปีงบประมาณ</span>
+                                </div>
+                                <div class="assess-year-right">
+                                    <span class="assess-status-dot {{ $isOpen ? 'dot-open' : 'dot-closed' }}"></span>
+                                    <span class="assess-status-text {{ $isOpen ? 'text-open' : 'text-closed' }}">
+                                        {{ $isOpen ? 'รับข้อมูลได้' : 'ปิดรับข้อมูล' }}
+                                    </span>
+                                    <form action="{{ route('admin.system-management.toggle-assessment') }}" method="POST"
+                                          id="assessForm_{{ $moduleKey }}_{{ $year }}" style="margin: 0;">
+                                        @csrf
+                                        <input type="hidden" name="module" value="{{ $moduleKey }}">
+                                        <input type="hidden" name="year" value="{{ $year }}">
+                                        <input type="hidden" name="enabled" id="assessEnabled_{{ $moduleKey }}_{{ $year }}" value="{{ $isOpen ? '1' : '0' }}">
+                                        <label class="sysmgmt-switch" style="margin: 0;">
+                                            <input type="checkbox" {{ $isOpen ? 'checked' : '' }}
+                                                onchange="document.getElementById('assessEnabled_{{ $moduleKey }}_{{ $year }}').value = this.checked ? '1' : '0'; document.getElementById('assessForm_{{ $moduleKey }}_{{ $year }}').submit();">
+                                            <span class="sysmgmt-switch-track"></span>
+                                        </label>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    @endif
+                </div>
+            </details>
 
             @if (!$loop->last)
-                <div style="border-top: 2px dashed #f1f5f9;"></div>
+                <div style="border-top: 1px solid #f1f5f9;"></div>
             @endif
         @endforeach
     </div>
 
     <style>
-        .sysmgmt-assess-row {
-            grid-template-columns: auto minmax(200px, 1fr) auto;
-            padding: 12px 22px;
+        /* Accordion shell */
+        .assess-accordion { border: none; }
+        .assess-accordion[open] .assess-chevron { transform: rotate(180deg); }
+
+        /* Summary / clickable header */
+        .assess-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 20px;
+            cursor: pointer;
+            background: #fafafa;
+            list-style: none;
+            user-select: none;
+            gap: 10px;
+            transition: background 0.15s;
         }
-        .sysmgmt-assess-row:not(:last-child) {
+        .assess-summary::-webkit-details-marker { display: none; }
+        .assess-summary:hover { background: #f4f6fa; }
+
+        .assess-sum-left {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            min-width: 0;
+        }
+        .assess-mod-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .assess-mod-name {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.83rem;
+            font-weight: 600;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .assess-sum-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .assess-count-pill {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .assess-chevron {
+            font-size: 0.7rem;
+            color: #9ca3af;
+            transition: transform 0.2s ease;
+        }
+
+        /* Year rows inside accordion */
+        .assess-year-list { padding: 4px 0; }
+        .assess-year-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px 8px 28px;
             border-bottom: 1px solid #f8fafc;
+            gap: 12px;
+            transition: background 0.12s;
+        }
+        .assess-year-row:last-child { border-bottom: none; }
+        .assess-year-row:hover { background: #f9fafb; }
+
+        .assess-year-left {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+        .assess-year-num {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .assess-year-row.is-open  .assess-year-num { color: #15803d; }
+        .assess-year-row.is-closed .assess-year-num { color: #6b7280; }
+
+        .assess-year-label {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.74rem;
+            color: #9ca3af;
+        }
+
+        .assess-year-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .assess-status-dot {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .dot-open   { background: #16a34a; }
+        .dot-closed { background: #d1d5db; }
+
+        .assess-status-text {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.75rem;
+            min-width: 72px;
+            text-align: right;
+        }
+        .text-open   { color: #15803d; }
+        .text-closed { color: #9ca3af; }
+
+        .assess-empty {
+            padding: 10px 28px;
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.8rem;
+            color: #9ca3af;
         }
     </style>
 
