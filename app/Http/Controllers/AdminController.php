@@ -2618,7 +2618,7 @@ class AdminController extends Controller
             ->pluck('province')->all());
 
         // Preload all province name maps in ONE query to avoid N+1 Province::find calls.
-        $numericIds = collect($rawProvinces)->filter('is_numeric')->unique()->values()->all();
+        $numericIds = collect($rawProvinces)->filter(fn($p) => is_numeric($p))->unique()->values()->all();
         $provinceNameMap = [];
         if (!empty($numericIds)) {
             $provinceNameMap = \App\Models\Province::whereIn('province_id', $numericIds)
