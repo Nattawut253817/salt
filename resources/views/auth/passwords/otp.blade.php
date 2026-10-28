@@ -48,8 +48,9 @@
     .brand-logo-wrap span { font-family: 'Kodchasan', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1.3; }
 
     .hero-block { position: relative; margin-top: 28px; flex: 1; }
-    .hero-block h1 { font-family: 'Kodchasan','Sarabun', sans-serif; font-size: 1.55rem; font-weight: 900; line-height: 1.3; color: #fff; margin-bottom: 10px; }
-    .hero-block h1 span { color: #fda4af; }
+    .hero-block h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 14px; color: #fff; text-shadow: 0 2px 12px rgba(30,2,16,.5); }
+    .hero-block h1 span { display: block; }
+    .hero-block h1 .accent { background: linear-gradient(88deg, #fda4af, #f472b6 55%, #fbcfe8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #fda4af; }
     .hero-block p { font-family: 'Sarabun', sans-serif; font-size: 0.8rem; color: rgba(255,255,255,0.72); line-height: 1.6; max-width: 200px; }
 
     .feature-list { position: relative; display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
@@ -133,7 +134,7 @@
 
     @media (prefers-reduced-motion: reduce) { .auth-side-panel, .auth-form-panel, .auth-byline, .auth-steps, .auth-form-heading, .email-chip, .otp-timer-pill, .otp-input-group, .btn-auth, .auth-divider, .btn-sso, .auth-back-link { animation: none; } .btn-auth .btn-fill { transition: none; } .btn-auth .btn-icon.is-spinner { animation-duration: 1.8s; } .btn-auth.is-loading .btn-spark { animation: none; } }
 
-    @media (max-width: 700px) { .auth-card { flex-direction: column; border-radius: 20px; max-width: 460px; } .auth-side-panel { flex: none; padding: 24px 24px 0; } .hero-block { margin-top: 12px; } .hero-block h1 { font-size: 1.2rem; } .feature-list { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 12px; } .panel-wave { display: none; } .auth-form-panel { padding: 22px 24px 24px; } }
+    @media (max-width: 700px) { .auth-card { flex-direction: column; border-radius: 20px; max-width: 460px; } .auth-side-panel { flex: none; padding: 24px 24px 0; } .hero-block { margin-top: 12px; } .hero-block h1 { font-size: 1.05rem; margin-bottom: 0; } .hero-block h1 span { display: inline; } .feature-list { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 12px; } .panel-wave { display: none; } .auth-form-panel { padding: 22px 24px 24px; } }
     @media (max-width: 420px) { .auth-container { padding: 12px; } .auth-card { border-radius: 16px; } .otp-input-group input { width: 40px; height: 48px; } }
 </style>
 @endsection
@@ -150,7 +151,7 @@
                     <span>Salt &amp; Sodium<br>Smart Monitor</span>
                 </div>
                 <div class="hero-block">
-                    <h1>ยืนยันตัวตน<br><span>ปลอดภัย</span></h1>
+                    <h1><span>ยืนยันตัวตน</span><span class="accent">ปลอดภัย</span></h1>
                     <p>ระบบตรวจสอบตัวตนด้วยรหัส OTP ที่ส่งถึงอีเมลคุณโดยตรง</p>
                     <div class="feature-list">
                         <div class="feature-item">
