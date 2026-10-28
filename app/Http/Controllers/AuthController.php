@@ -265,19 +265,17 @@ class AuthController extends Controller
 
         \App\Support\ActivityLog::record('password_reset_done', 'ตั้งรหัสผ่านใหม่สำเร็จ (ผ่านการยืนยัน OTP)', $user, [], $request);
 
-        // "จดจำฉันไว้" - if checked, log the admin straight in (with a
-        // remember-me cookie) instead of sending them back to the login
-        // form, same as a normal remembered login would. Skipped for an
-        // account that's still pending rank-1 approval, same guard as the
-        // regular login() method uses.
-        if ($request->boolean('remember') && ($user->User_rank_id == 1 || $user->is_approved)) {
-            Auth::login($user, true);
-            $request->session()->regenerate();
+        // Auto-login straight into the system after a successful password reset —
+        // no need to go through the login page again.  If the user ticked
+        // "ออกจากระบบอุปกรณ์อื่น" we also invalidate every other session.
+        Auth::login($user, true);
+        $request->session()->regenerate();
 
-            return redirect()->intended('admin')->with('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว เข้าสู่ระบบให้อัตโนมัติ');
+        if ($request->boolean('logout_other')) {
+            Auth::logoutOtherDevices($request->input('password'));
         }
 
-        return redirect()->route('staff')->with('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
+        return redirect()->intended('admin')->with('success', 'ตั้งรหัสผ่านใหม่สำเร็จ เข้าสู่ระบบอัตโนมัติแล้ว');
     }
 
     public function getDistricts($province_id)
