@@ -44,37 +44,38 @@ class HiController extends Controller
             $query->where('District_name', 'like', '%' . trim($request->search) . '%');
         }
 
-        // Calculate Summary Statistics (on filtered results)
-        // รวมผลรวม/ค่าเฉลี่ย/ยอดรายเดือน เป็น query เดียว (เดิม 3 query) และนับรายจังหวัดด้วย GROUP BY เดียว (เดิม 5 query + whereHas)
-        $statsQuery = clone $query;
-        $agg = (clone $statsQuery)->without('province')->reorder()->selectRaw(
-            'SUM(target_b) as agg_target, SUM(total_a) as agg_cases, AVG(rate_per_100k) as agg_rate, '
-            . implode(', ', array_map(fn ($col) => "SUM($col) as $col", $validMonthColumns))
-        )->first();
-        $totalTarget = $agg->agg_target ?? 0;
-        $totalNewCases = $agg->agg_cases ?? 0;
-        $avgRate = $agg->agg_rate ?: 0;
-
-        // Province-wise counts for the 5 target provinces
+        // Calculate Summary Statistics (cached per active filters)
+        $statsQuery    = clone $query;
         $targetProvinces = ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'];
-        $countByProvinceId = (clone $statsQuery)->without('province')->reorder()
-            ->groupBy('Province_id')->selectRaw('Province_id, COUNT(*) as c')->pluck('c', 'Province_id');
-        $provinceCounts = [];
-        foreach ($targetProvinces as $pName) {
-            $ids = $provinces->where('province_name', $pName)->pluck('province_id');
-            $provinceCounts[$pName] = (int) $ids->sum(fn ($id) => (int) ($countByProvinceId[$id] ?? 0));
-        }
+        $hiFilterSig   = md5($request->input('year', '') . '|' . $request->input('province_id', '') . '|'
+                         . $request->input('district', '') . '|' . $request->input('month', '') . '|'
+                         . $request->input('search', ''));
+        $hiStatsCacheKey = 'hi_stats.' . $hiFilterSig . '.' . \App\Support\AdminCache::version();
 
-        // Monthly totals across every filtered row (not just the current page) - มาจาก query รวมด้านบน
-        $monthlyTotals = $agg;
+        $stats = \Illuminate\Support\Facades\Cache::remember($hiStatsCacheKey, 120, function () use ($statsQuery, $targetProvinces, $provinces, $validMonthColumns) {
+            // รวมผลรวม/ค่าเฉลี่ย/ยอดรายเดือน เป็น query เดียว + GROUP BY จังหวัดอีก query
+            $agg = (clone $statsQuery)->without('province')->reorder()->selectRaw(
+                'SUM(target_b) as agg_target, SUM(total_a) as agg_cases, AVG(rate_per_100k) as agg_rate, '
+                . implode(', ', array_map(fn ($col) => "SUM($col) as $col", $validMonthColumns))
+            )->first();
 
-        $stats = [
-            'total_target' => $totalTarget,
-            'total_new_cases' => $totalNewCases,
-            'avg_rate' => $avgRate,
-            'province_counts' => $provinceCounts,
-            'monthly_totals' => $monthlyTotals,
-        ];
+            $countByProvinceId = (clone $statsQuery)->without('province')->reorder()
+                ->groupBy('Province_id')->selectRaw('Province_id, COUNT(*) as c')->pluck('c', 'Province_id');
+
+            $provinceCounts = [];
+            foreach ($targetProvinces as $pName) {
+                $ids = $provinces->where('province_name', $pName)->pluck('province_id');
+                $provinceCounts[$pName] = (int) $ids->sum(fn ($id) => (int) ($countByProvinceId[$id] ?? 0));
+            }
+
+            return [
+                'total_target'   => $agg->agg_target ?? 0,
+                'total_new_cases' => $agg->agg_cases ?? 0,
+                'avg_rate'       => $agg->agg_rate ?: 0,
+                'province_counts' => $provinceCounts,
+                'monthly_totals' => $agg,
+            ];
+        });
 
         $hiData = $query->orderBy('year', 'desc')
             ->orderBy('District_name', 'asc')
@@ -88,7 +89,7 @@ class HiController extends Controller
         // modal - real distinct years already in the data, plus any
         // admin-enabled years and minus any admin-hidden years from
         // "จัดการปีงบประมาณ" (FiscalYearController).
-        $years = FiscalYear::selectableYearsFor('hi', Hi::whereNotNull('year')->distinct()->pluck('year'));
+        $years = FiscalYear::selectableYearsFor('hi', \App\Support\AdminCache::distinct(\App\Models\Hi::class, 'year'));
 
         return view('admin.hi.index', compact('provinces', 'hiData', 'stats', 'years'));
     }

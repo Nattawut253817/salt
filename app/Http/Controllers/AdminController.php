@@ -1855,34 +1855,39 @@ class AdminController extends Controller
             $query->where('standard_certification', $request->standard);
         }
 
-        // Calculate Summary Statistics (on filtered results)
-        $statsQuery = clone $query;
-        $totalProducts = (clone $statsQuery)->reorder()->count();
-        $avgSodium = (clone $statsQuery)->reorder()->avg('sodium_amount') ?: 0;
+        // Calculate Summary Statistics — cached per (user scope + active filters)
+        $statsQuery  = clone $query;
+        $spScopeId   = ($user->User_rank_id == 1) ? 'all' : 'p' . $user->Province_id;
+        $spFilterSig = md5($request->input('year', '') . '|' . $request->input('province', '') . '|'
+                         . $request->input('product_type', '') . '|' . $request->input('standard', ''));
+        $prodStatsCacheKey = 'sodium_prod_stats.' . $spScopeId . '.' . $spFilterSig . '.' . \App\Support\AdminCache::version();
 
-        // Get detailed certification counts
-        $standardsCount = (clone $statsQuery)
-            ->reorder() // Remove the orderBy('update_date') from the main query to avoid SQL error
-            ->whereNotNull('standard_certification')
-            ->groupBy('standard_certification')
-            ->selectRaw('standard_certification, count(*) as count')
-            ->pluck('count', 'standard_certification')
-            ->toArray();
+        $stats = \Illuminate\Support\Facades\Cache::remember($prodStatsCacheKey, 120, function () use ($statsQuery) {
+            $totalProducts = (clone $statsQuery)->reorder()->count();
+            $avgSodium     = (clone $statsQuery)->reorder()->avg('sodium_amount') ?: 0;
 
-        // Ensure "ทางเลือกสุขภาพ" is prioritized or explicitly handled if needed
-        $certifiedCount = $standardsCount['ทางเลือกสุขภาพ'] ?? 0;
+            // Get detailed certification counts (one query)
+            $standardsCount = (clone $statsQuery)
+                ->reorder()
+                ->whereNotNull('standard_certification')
+                ->groupBy('standard_certification')
+                ->selectRaw('standard_certification, count(*) as count')
+                ->pluck('count', 'standard_certification')
+                ->toArray();
 
-        $stats = [
-            'total' => $totalProducts,
-            'certified' => $certifiedCount,
-            'avg_sodium' => $avgSodium,
-            'standards' => $standardsCount
-        ];
+            return [
+                'total'      => $totalProducts,
+                'certified'  => $standardsCount['ทางเลือกสุขภาพ'] ?? 0,
+                'avg_sodium' => $avgSodium,
+                'standards'  => $standardsCount,
+            ];
+        });
 
         $products = $query->paginate(15)->appends($request->all());
 
         // Fetch Filter Options with Defaults (Ensures options stay even after deletion)
-        $provinces = \App\Models\Province::whereIn('province_name', ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'])->pluck('province_name');
+        $provinces = \Illuminate\Support\Facades\Cache::remember('perf.sodium_products.fixed_provinces', 600, fn() =>
+            \App\Models\Province::whereIn('province_name', ['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร'])->pluck('province_name'));
         $defaultTypes = [
             'กลุ่มเนื้อสัตว์แห้ง',
             'กลุ่มเนื้อสัตว์หมัก',
@@ -2589,20 +2594,26 @@ class AdminController extends Controller
             $query->where('kitchen_type', $request->kitchen_type);
         }
 
-        // Calculate Summary Statistics
-        // 1 query แทน 3 (count + avg + sum)
-        $agg = (clone $query)->reorder()
-            ->selectRaw('COUNT(*) as total_menus, AVG(sodium_after) as avg_after, SUM(sodium_before - sodium_after) as total_red')
-            ->first();
-        $totalMenus = (int) ($agg->total_menus ?? 0);
-        $avgSodiumAfter = $agg->avg_after ?: 0;
-        $totalReduction = $agg->total_red ?: 0;
+        // Calculate Summary Statistics — cached per (user scope + active filters)
+        $smScopeId = match((int) $user->User_rank_id) {
+            1       => 'all',
+            2       => 'p' . $user->Province_id,
+            default => 'u' . $user->id,
+        };
+        $smFilterSig       = md5($request->input('year', '') . '|' . $request->input('province', '') . '|' . $request->input('kitchen_type', ''));
+        $menuStatsCacheKey = 'sodium_menu_stats.' . $smScopeId . '.' . $smFilterSig . '.' . \App\Support\AdminCache::version();
 
-        $stats = [
-            'total_menus' => $totalMenus,
-            'avg_sodium' => $avgSodiumAfter,
-            'total_reduction' => $totalReduction
-        ];
+        $stats = \Illuminate\Support\Facades\Cache::remember($menuStatsCacheKey, 120, function () use ($query) {
+            // Single aggregate query (count + avg + sum in one pass)
+            $agg = (clone $query)->reorder()
+                ->selectRaw('COUNT(*) as total_menus, AVG(sodium_after) as avg_after, SUM(sodium_before - sodium_after) as total_red')
+                ->first();
+            return [
+                'total_menus'     => (int) ($agg->total_menus ?? 0),
+                'avg_sodium'      => $agg->avg_after ?: 0,
+                'total_reduction' => $agg->total_red ?: 0,
+            ];
+        });
 
         $menus = $query->orderBy('update_date', 'desc')->paginate(15)->appends($request->all());
         // ตัวเลือก filter (distinct) เปลี่ยนไม่บ่อย - แคช 2 นาทีลดการสแกนตารางทุกครั้งที่เปิด/กรองหน้า
