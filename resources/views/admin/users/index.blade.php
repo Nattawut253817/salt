@@ -294,41 +294,37 @@
         .btn-action {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 7px 16px;
-            border-radius: 999px;
-            border: 1.5px solid transparent;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            border: 0;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.8rem;
-            font-weight: 700;
-            white-space: nowrap;
-            line-height: 1.2;
+            font-size: 0;
+            line-height: 1;
+            text-decoration: none;
+            transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
         }
 
-        .btn-action:hover {
-            transform: translateY(-2px);
-        }
+        .btn-action i { font-size: 0.88rem; transition: transform 0.15s ease; }
+        .btn-action:hover i { transform: scale(1.18); }
+        .btn-action:hover { transform: translateY(-1px); }
 
-        .btn-edit {
-            background: #eef2ff;
-            color: #4f46e5;
-            border-color: #c7d2fe;
-        }
-
-        .btn-edit:hover {
-            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-            color: #ffffff;
-            border-color: transparent;
-            box-shadow: 0 3px 8px rgba(29, 78, 216, 0.35);
-        }
+        .btn-edit  { background: #eef2ff; color: #4f46e5; }
+        .btn-edit:hover, .btn-edit:focus-visible  { background: #c7d2fe; color: #4338ca; }
+        .btn-edit:active  { background: #a5b4fc; }
 
         /* "gap-3" is a Bootstrap 5 utility and this app runs Bootstrap 4, so it
            was a no-op - the edit/delete buttons sat with no space between them.
            This is a plain flexbox gap instead, which works in any Bootstrap
            version since it's just a native CSS property. */
         .action-buttons-group {
-            gap: 10px;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: flex-start !important;
+            gap: 4px;
+            width: 122px;
         }
 
         /* เลือกหลายบัญชีเพื่อลบ (เฉพาะ SuperAdmin) */
@@ -344,50 +340,17 @@
         .bulk-delete { border: 0; background: #e11d48; color: #fff; font-weight: 700; padding: 8px 16px; border-radius: 12px;
             box-shadow: 0 6px 14px rgba(225, 29, 72, .28); }
         .bulk-delete:hover { background: #be123c; }
-        .btn-delete {
-            background: #fef1f2;
-            color: #e11d48;
-            border-color: #fecdd3;
-        }
-
-        .btn-delete:hover {
-            background: #e11d48;
-            color: #ffffff;
-            border-color: #e11d48;
-            box-shadow: 0 3px 8px rgba(225, 29, 72, 0.35);
-        }
+        .btn-delete { background: #fff1f2; color: #e11d48; }
+        .btn-delete:hover, .btn-delete:focus-visible { background: #fecdd3; color: #be123c; }
+        .btn-delete:active { background: #fda4af; }
 
         /* ปุ่มมอบ/ถอนสิทธิ์ SuperAdmin (เห็นเฉพาะ SuperAdmin) — icon-only */
-        .btn-super {
-            background: #fffbeb;
-            color: #b45309;
-            border-color: #fde68a;
-            padding: 7px 10px;
-            gap: 0;
-            min-width: 34px;
-            justify-content: center;
-        }
-
-        .btn-super:hover:not(:disabled) {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: #ffffff;
-            border-color: transparent;
-            box-shadow: 0 3px 8px rgba(217, 119, 6, 0.35);
-        }
-
-        .btn-super.is-super {
-            background: #fef3c7;
-            border-color: #f59e0b;
-        }
-
-        .btn-super:disabled {
-            opacity: .55;
-            cursor: not-allowed;
-        }
-
-        .btn-super:disabled:hover {
-            transform: none;
-        }
+        .btn-super { background: #fffbeb; color: #b45309; }
+        .btn-super:hover:not(:disabled), .btn-super:focus-visible:not(:disabled) { background: #fde68a; color: #92400e; }
+        .btn-super:active:not(:disabled) { background: #fcd34d; }
+        .btn-super.is-super { background: #fef3c7; color: #d97706; }
+        .btn-super:disabled { opacity: .45; cursor: not-allowed; }
+        .btn-super:disabled:hover { transform: none; }
 
         .superadmin-tag {
             display: inline-flex;

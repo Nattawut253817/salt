@@ -18,7 +18,6 @@
     .table-container {
         background: white;
         border-radius: 20px;
-        overflow: hidden;
         border: 1.5px solid #edeff2;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         margin-top: 10px;
@@ -299,39 +298,32 @@
     /* ปุ่มจัดการต่อแถว: แคปซูลเดียว แบ่งช่องด้วยเส้นบาง — ดู / แก้ไข / ลบ */
     .row-actions {
         display: inline-flex;
-        align-items: stretch;
-        background: #fff;
-        border: 1.5px solid #e2e8f0;
+        align-items: center;
+        gap: 4px;
         border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
     }
 
-    .row-actions form { display: flex; margin: 0; border-left: 1.5px solid #e2e8f0; }
-    .row-actions > .btn-action + .btn-action { border-left: 1.5px solid #e2e8f0; }
+    .row-actions form { display: flex; margin: 0; }
+    .row-actions > .btn-action + .btn-action { }
 
     .btn-action {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 7px;
-        height: 36px;
-        min-width: 64px;
-        padding: 0 15px;
+        width: 38px;
+        height: 38px;
+        padding: 0;
         border: 0;
-        border-radius: 0;
-        background: transparent;
+        border-radius: 8px;
         cursor: pointer;
         font-family: inherit;
-        font-size: 0.8rem;
-        font-weight: 700;
+        font-size: 0;
         line-height: 1;
-        white-space: nowrap;
         text-decoration: none;
-        transition: background-color 0.15s ease, color 0.15s ease;
+        transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease;
     }
 
-    .btn-action i { font-size: 0.82rem; transition: transform 0.15s ease; }
+    .btn-action i { font-size: 0.88rem; transition: transform 0.15s ease; }
     .btn-action:hover i { transform: scale(1.18); }
     .btn-action:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
@@ -372,7 +364,6 @@
         background: white;
         border-radius: 24px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        overflow: hidden;
         position: relative;
         transform-origin: center;
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -442,7 +433,6 @@
         width: 100%;
         height: 240px;
         border-radius: 24px;
-        overflow: hidden;
         background: white;
         border: 1px solid #e2e8f0;
         display: flex;
@@ -647,7 +637,6 @@
         width: 100%;
         padding: 9px 12px;
         border-radius: 10px;
-        border: 1.5px solid #e2e8f0;
         background: #f8fafc;
         font-family: 'Noto Serif Thai', sans-serif;
         font-size: 0.82rem;
@@ -1074,15 +1063,41 @@
     .prd-lightbox.open { display: flex; }
     .prd-lightbox img { max-width: 100%; max-height: 100%; border-radius: 12px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
 
+
+    /* ── Toolbar solid-clean buttons ── */
+    .btn-toolbar-solid {
+        display: inline-flex; align-items: center; gap: 7px;
+        height: 44px; padding: 0 18px;
+        border: none; border-radius: 10px;
+        font-family: 'Noto Serif Thai', sans-serif;
+        font-size: 0.82rem; font-weight: 600;
+        white-space: nowrap; cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        transition: background .18s ease, color .18s ease, box-shadow .18s ease, transform .12s ease;
+        text-decoration: none;
+    }
+    .btn-toolbar-solid:hover { transform: translateY(-1px); }
+    .btn-toolbar-solid:active { filter: brightness(.94); transform: translateY(0); }
+    .btn-toolbar-solid:focus-visible { outline: 3px solid rgba(0,0,0,.15); outline-offset: 2px; }
+    /* Green — light base → solid hover */
+    .btn-toolbar-green  { background: #d1fae5 !important; color: #065f46 !important; }
+    .btn-toolbar-green:hover  { background: #10b981 !important; color: #fff !important; box-shadow: 0 3px 10px rgba(16,185,129,.35); }
+    /* Blue — light base → solid hover */
+    .btn-toolbar-blue   { background: #dbeafe !important; color: #1e40af !important; }
+    .btn-toolbar-blue:hover   { background: #3b82f6 !important; color: #fff !important; box-shadow: 0 3px 10px rgba(59,130,246,.35); }
+    /* Violet — light base → solid hover */
+    .btn-toolbar-violet { background: #e0e7ff !important; color: #3730a3 !important; }
+    .btn-toolbar-violet:hover { background: #6366f1 !important; color: #fff !important; box-shadow: 0 3px 10px rgba(99,102,241,.35); }
+
     /* ===== ปุ่มหัวรายการ: นำเข้า Excel (เขียวมรกต โปร่ง) + เพิ่มรายการใหม่ (ม่วงเข้มมีไฮไลต์) ===== */
-    .btn-toggle-form[data-bs-target*="ImportModal"] {
+    .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid) {
         background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 100%) !important; color: #047857 !important;
         border: 1.5px solid #6ee7b7 !important; border-radius: 14px !important; height: 46px !important;
         padding: 0 20px !important; font-size: .88rem !important; font-weight: 700 !important; gap: 9px !important;
         box-shadow: 0 6px 14px -8px rgba(5, 150, 105, .55), inset 0 1px 0 rgba(255, 255, 255, .8) !important;
     }
-    .btn-toggle-form[data-bs-target*="ImportModal"] i { color: #059669; font-size: 1rem; }
-    .btn-toggle-form[data-bs-target*="ImportModal"]:hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
+    .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid) i { color: #059669; font-size: 1rem; }
+    .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid):hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]) {
         background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; color: #fff !important;
         border-radius: 14px !important; height: 46px !important; padding: 0 24px !important; gap: 10px !important;
@@ -1356,29 +1371,21 @@ body.dark-mode .toast-card {
                     @endif
                 </div>
                 @if (auth()->user()->User_rank_id == 1)
-                    <button type="button" class="btn-toggle-form"
-                        title="ส่งออก Excel" data-toggle="modal" data-bs-toggle="modal" data-target="#sodiumExportModal" data-bs-target="#sodiumExportModal"
-                        style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); color: #16a34a; border: 2px solid #86efac; border-radius: 10px; padding: 10px 14px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.8rem; font-weight: 600; height: 44px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s ease;"
-                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(34, 197, 94, 0.15)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.05)';">
+                    <button type="button" class="btn-toggle-form btn-toolbar-solid btn-toolbar-green"
+                        title="ส่งออก Excel" data-toggle="modal" data-bs-toggle="modal" data-target="#sodiumExportModal" data-bs-target="#sodiumExportModal">
                         <i class="fas fa-download"></i> ส่งออก Excel
                     </button>
                 @endif
                 @if (in_array(auth()->user()->User_rank_id, [1, 2]))
-                    <button type="button" class="btn-toggle-form"
-                        style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); color: #1d4ed8; border: 2px solid #93c5fd; border-radius: 10px; padding: 10px 16px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.8rem; font-weight: 600; height: 44px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(29,78,216,0.1); transition: all 0.2s ease;"
-                        title="นำเข้าไฟล์ Excel" data-toggle="modal" data-bs-toggle="modal" data-target="#sodiumProductsImportModal" data-bs-target="#sodiumProductsImportModal"
-                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(29,78,216,0.15)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(29,78,216,0.1)';">
+                    <button type="button" class="btn-toggle-form btn-toolbar-solid btn-toolbar-blue"
+                        title="นำเข้าไฟล์ Excel" data-toggle="modal" data-bs-toggle="modal" data-target="#sodiumProductsImportModal" data-bs-target="#sodiumProductsImportModal">
                         <i class="fas fa-file-excel"></i> นำเข้า Excel
                     </button>
                 @endif
                 @if (auth()->user()->User_rank_id == 1)
                     <a href="{{ route('admin.reduced-sodium-products-dashboard') }}"
-                        style="background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); color: #4338ca; border: 2px solid #c7d2fe; border-radius: 10px; padding: 10px 16px; white-space: nowrap; font-family: 'Noto Serif Thai', sans-serif; font-size: 0.8rem; font-weight: 600; height: 44px; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(67,56,202,0.1); transition: all 0.2s ease; text-decoration: none;"
-                        title="ดูภาพรวม/แดชบอร์ด"
-                        onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 8px rgba(67,56,202,0.15)';"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(67,56,202,0.1)';">
+                        class="btn-toolbar-solid btn-toolbar-violet"
+                        title="ดูภาพรวม/แดชบอร์ด" style="text-decoration:none;">
                         <i class="fas fa-chart-pie"></i> ภาพรวม
                     </a>
                 @endif

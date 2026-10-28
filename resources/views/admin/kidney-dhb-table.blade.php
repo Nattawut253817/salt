@@ -24,9 +24,16 @@
         }
 
         .status-badge.status-done {
-            background: linear-gradient(135deg, #a78bfa, #6d28d9);
-            color: white;
-            box-shadow: 0 2px 4px rgba(109, 40, 217, 0.3);
+            background:
+                radial-gradient(circle at 36% 30%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.10) 50%, transparent 68%),
+                linear-gradient(145deg, rgba(196,181,253,.78) 0%, rgba(109,40,217,.86) 60%, rgba(91,33,182,.90) 100%);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,.60);
+            box-shadow:
+                inset 0  2px 4px rgba(255,255,255,.48),
+                inset 0 -2px 5px rgba(76,29,149,.32),
+                0 3px 10px rgba(109,40,217,.22),
+                0 0 0 3px rgba(139,92,246,.10);
         }
 
         .status-badge.status-empty {
@@ -615,26 +622,51 @@
         .org-name { font-size: .88rem; letter-spacing: .1px; }
         .fy-year { font-size: 1rem; }
 
-        /* ไอคอนสถานะ: ช่องว่าง (ยังไม่มีข้อมูล) จางลง ให้ตาไปที่ช่องที่ทำแล้ว */
+        /* ──── STATUS & CONFIRM BADGES ──── */
         .status-badge { width: 26px; height: 26px; }
         .confirm-badge { width: 28px; height: 28px; }
-    
-        /* ไอคอนถูก (บันทึกแล้ว): ทรงเม็ดแก้วนูน มีแสงสะท้อนด้านบนและเงาด้านล่าง */
+
+        /* ● ทำแล้ว — solid violet (ตาม reference ภาพ) */
         .status-badge.status-done {
             position: relative; width: 26px; height: 26px; font-size: .72rem; color: #fff;
-            background:
-                radial-gradient(circle at 32% 24%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 42%),
-                radial-gradient(circle at 50% 110%, #5b21b6 0, #7c3aed 55%, #a78bfa 100%);
-            border: 1px solid rgba(91,33,182,.55);
-            box-shadow:
-                inset 0 -3px 5px rgba(46,16,101,.38),
-                inset 0 2px 3px rgba(255,255,255,.35),
-                0 0 0 3px rgba(139,92,246,.12),
-                0 5px 9px -3px rgba(91,33,182,.55);
+            background: linear-gradient(145deg, #a78bfa 0%, #7c3aed 55%, #5b21b6 100%);
+            border: none;
+            box-shadow: 0 2px 6px rgba(109,40,217,.35);
         }
-        .status-badge.status-done i { text-shadow: 0 1px 1px rgba(46,16,101,.55); filter: drop-shadow(0 1px 0 rgba(46,16,101,.25)); }
-        .status-badge.status-done:hover { transform: translateY(-1px) scale(1.1); }
-        .status-badge.status-empty { width: 26px; height: 26px; background: #f8fafc; box-shadow: inset 0 1px 2px rgba(15,23,42,.06); }
+        .status-badge.status-done i { filter: drop-shadow(0 1px 0 rgba(46,16,101,.30)); }
+        .status-badge.status-done:hover { transform: scale(1.1); box-shadow: 0 3px 10px rgba(109,40,217,.45); }
+
+        /* ○ ยังไม่ดำเนินการ — วงกลมเส้นประอ่อน */
+        .status-badge.status-empty {
+            width: 26px; height: 26px;
+            background: #f1f5f9;
+            border: 1.5px dashed #cbd5e1;
+            color: #94a3b8;
+        }
+
+        /* ● confirm-done — solid amber */
+        .confirm-badge.confirm-done {
+            background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 55%, #b45309 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 2px 6px rgba(180,83,9,.35);
+            text-shadow: 0 1px 1px rgba(120,53,15,.40);
+        }
+        .confirm-badge.confirm-done:hover { transform: scale(1.1); }
+
+        /* ◑ confirm-pending */
+        .confirm-badge.confirm-pending {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1.5px solid #fdba74;
+        }
+
+        /* ○ confirm-none */
+        .confirm-badge.confirm-none {
+            background: #f1f5f9;
+            border: 1.5px dashed #cbd5e1;
+            color: #94a3b8;
+        }
     </style>
 
     <!-- Summary Statistics Cards -->

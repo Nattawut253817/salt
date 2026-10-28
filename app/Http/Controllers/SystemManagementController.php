@@ -34,21 +34,6 @@ class SystemManagementController extends Controller
         $rank1RegisterEnabled = (bool) SystemSettings::get('register_rank1_enabled', true);
         $rank1UserCount = User::where('User_rank_id', 1)->count();
 
-        $sections = [
-            [
-                'title' => 'ตั้งค่าทั่วไป',
-                'subtitle' => 'ชื่อระบบ โลโก้ และข้อมูลการติดต่อ',
-                'icon' => 'fa-sliders',
-                'color' => '#6366f1',
-            ],
-            [
-                'title' => 'สิทธิ์การใช้งาน',
-                'subtitle' => 'กำหนดสิทธิ์การเข้าถึงตามระดับผู้ใช้งาน',
-                'icon' => 'fa-shield-halved',
-                'color' => '#16a34a',
-            ],
-        ];
-
         [$pageViews, $pageViewsTotal, $pageViewsSince] = $this->pageViewSummary();
 
         // แบบประเมิน: ปีงบประมาณที่เปิด/ปิดรับข้อมูล
@@ -80,7 +65,7 @@ class SystemManagementController extends Controller
         }
         unset($moduleData);
 
-        return view('admin.system-management.index', compact('sections', 'otpEnabled', 'rank1RegisterEnabled', 'rank1UserCount', 'pageViews', 'pageViewsTotal', 'pageViewsSince', 'assessmentModules'));
+        return view('admin.system-management.index', compact('otpEnabled', 'rank1RegisterEnabled', 'rank1UserCount', 'pageViews', 'pageViewsTotal', 'pageViewsSince', 'assessmentModules'));
     }
 
     /**

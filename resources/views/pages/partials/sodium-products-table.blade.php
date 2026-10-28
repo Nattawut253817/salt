@@ -500,7 +500,7 @@
     <span class="bulk-action-count"><i class="fas fa-check-circle"></i> เลือกแล้ว
         <span id="bulk-selected-count-products">0</span> รายการ</span>
     <button type="button" class="bulk-action-delete-btn" onclick="bulkDeleteSelectedProducts()">
-        <i class="fas fa-trash-alt"></i> ลบรายการที่เลือก
+        <i class="fas fa-trash-alt"></i>รายการที่เลือก
     </button>
     <button type="button" class="bulk-action-clear-btn" onclick="clearProductSelection()">ยกเลิกการเลือก</button>
 </div>
@@ -579,18 +579,18 @@
                     <div class="row-actions">
                         <button type="button" class="btn-action btn-view" title="ดูรายละเอียด"
                             onclick="openDetailModal({{ json_encode($product) }})">
-                            <i class="fas fa-eye"></i> ดู
+                            <i class="fas fa-eye"></i>
                         </button>
                         <button type="button" class="btn-action btn-edit" title="แก้ไข"
                             onclick="openEditModal({{ json_encode($product) }})">
-                            <i class="fas fa-edit"></i> แก้ไข
+                            <i class="fas fa-edit"></i>
                         </button>
                         <form action="{{ route('admin.sodium-products.destroy', $product->id) }}" method="POST"
                             onsubmit="return confirmDelete(event)">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn-action btn-delete" title="ลบ">
-                                <i class="fas fa-trash-alt"></i> ลบ
+                                <i class="fas fa-trash-alt"></i>
                             </button>
                         </form>
                     </div>

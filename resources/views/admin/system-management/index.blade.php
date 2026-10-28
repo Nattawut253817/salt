@@ -169,18 +169,22 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding: 8px 12px;
+            padding: 9px 14px;
             border-radius: 10px;
-            background: #f0fdf4;
-            border: 1px solid #dcfce7;
+            background: #f8fffe;
+            border: 1px solid #d1fae5;
+            border-left: 3px solid #16a34a;
             font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             color: #166534;
+            transition: background 0.12s;
         }
+        .sysmgmt-views-item:hover { background: #f0fdf4; }
 
         .sysmgmt-views-item b {
             font-variant-numeric: tabular-nums;
-            font-size: 0.85rem;
+            font-size: 0.87rem;
+            font-weight: 700;
             color: #15803d;
         }
 
@@ -379,17 +383,6 @@
             </div>
         </div>
 
-        @foreach ($sections as $section)
-            <div class="sysmgmt-row">
-                <div class="sysmgmt-icon" style="background: {{ $section['color'] }};">
-                    <i class="fas {{ $section['icon'] }}"></i>
-                </div>
-                <div>
-                    <div class="sysmgmt-title">{{ $section['title'] }}</div>
-                    <div class="sysmgmt-subtitle">{{ $section['subtitle'] }}</div>
-                </div>
-            </div>
-        @endforeach
     </div>
 
     {{-- ===== การเปิด/ปิดรับข้อมูลแบบประเมิน (รายปีงบประมาณ) ===== --}}
@@ -408,196 +401,290 @@
 
         @foreach ($assessmentModules as $moduleKey => $module)
             @php
-                $openCount  = collect($module['states'])->filter()->count();
-                $totalCount = count($module['states']);
+                $openCount   = collect($module['states'])->filter()->count();
+                $totalCount  = count($module['states']);
+                $closedCount = $totalCount - $openCount;
+                $isFirst     = $loop->first;
             @endphp
 
-            {{-- Accordion per module --}}
-            <details class="assess-accordion" {{ $loop->first ? 'open' : '' }}>
-                <summary class="assess-summary">
-                    <div class="assess-sum-left">
-                        <span class="assess-mod-dot" style="background: {{ $module['color'] }};"></span>
-                        <span class="assess-mod-name">{{ $module['label'] }}</span>
-                    </div>
-                    <div class="assess-sum-right">
-                        @if ($totalCount > 0)
-                            <span class="assess-count-pill">
-                                <span style="color: #16a34a;">{{ $openCount }} เปิด</span>
-                                @if ($totalCount - $openCount > 0)
-                                    <span style="color: #9ca3af;">·</span>
-                                    <span style="color: #6b7280;">{{ $totalCount - $openCount }} ปิด</span>
-                                @endif
-                            </span>
-                        @endif
-                        <i class="fas fa-chevron-down assess-chevron"></i>
-                    </div>
-                </summary>
+            {{-- Dropdown panel per module --}}
+            <div class="amod-panel" id="amod_{{ $moduleKey }}"
+                 data-open="{{ $isFirst ? 'true' : 'false' }}">
 
-                <div class="assess-year-list">
+                <button type="button" class="amod-header"
+                        onclick="toggleAmod('{{ $moduleKey }}')"
+                        aria-expanded="{{ $isFirst ? 'true' : 'false' }}">
+                    <span class="amod-stripe" style="background: {{ $module['color'] }};"></span>
+                    <span class="amod-name">{{ $module['label'] }}</span>
+                    <span class="amod-pills">
+                        @if ($openCount > 0)
+                            <span class="amod-pill amod-pill-open">{{ $openCount }} เปิด</span>
+                        @endif
+                        @if ($closedCount > 0)
+                            <span class="amod-pill amod-pill-closed">{{ $closedCount }} ปิด</span>
+                        @endif
+                    </span>
+                    <i class="fas fa-chevron-down amod-chevron"></i>
+                </button>
+
+                <div class="amod-body" style="{{ $isFirst ? '' : 'display:none;' }}">
                     @if ($module['years']->isEmpty())
-                        <div class="assess-empty">ยังไม่มีปีงบประมาณในโมดูลนี้</div>
+                        <div class="amod-empty">ยังไม่มีปีงบประมาณในโมดูลนี้</div>
                     @else
-                        @foreach ($module['years'] as $year)
-                            @php $isOpen = $module['states'][$year] ?? true; @endphp
-                            <div class="assess-year-row {{ $isOpen ? 'is-open' : 'is-closed' }}">
-                                <div class="assess-year-left">
-                                    <span class="assess-year-num">{{ $year }}</span>
-                                    <span class="assess-year-label">ปีงบประมาณ</span>
-                                </div>
-                                <div class="assess-year-right">
-                                    <span class="assess-status-dot {{ $isOpen ? 'dot-open' : 'dot-closed' }}"></span>
-                                    <span class="assess-status-text {{ $isOpen ? 'text-open' : 'text-closed' }}">
-                                        {{ $isOpen ? 'รับข้อมูลได้' : 'ปิดรับข้อมูล' }}
-                                    </span>
-                                    <form action="{{ route('admin.system-management.toggle-assessment') }}" method="POST"
-                                          id="assessForm_{{ $moduleKey }}_{{ $year }}" style="margin: 0;">
-                                        @csrf
-                                        <input type="hidden" name="module" value="{{ $moduleKey }}">
-                                        <input type="hidden" name="year" value="{{ $year }}">
-                                        <input type="hidden" name="enabled" id="assessEnabled_{{ $moduleKey }}_{{ $year }}" value="{{ $isOpen ? '1' : '0' }}">
-                                        <label class="sysmgmt-switch" style="margin: 0;">
-                                            <input type="checkbox" {{ $isOpen ? 'checked' : '' }}
-                                                onchange="document.getElementById('assessEnabled_{{ $moduleKey }}_{{ $year }}').value = this.checked ? '1' : '0'; document.getElementById('assessForm_{{ $moduleKey }}_{{ $year }}').submit();">
-                                            <span class="sysmgmt-switch-track"></span>
-                                        </label>
-                                    </form>
-                                </div>
+                        <div class="ayr-wrap" style="--mod-color: {{ $module['color'] }};">
+
+                            {{-- Pill year tabs --}}
+                            {{-- Year status chips — one per year, colored by status, click to manage --}}
+                            <div class="ayr-chips" role="tablist">
+                                @foreach ($module['years'] as $year)
+                                    @php $isOpen = $module['states'][$year] ?? true; @endphp
+                                    <button class="ayr-chip {{ $isOpen ? 'ayr-chip-open' : 'ayr-chip-closed' }}"
+                                            onclick="ayrSwitch('{{ $moduleKey }}', '{{ $year }}', this)"
+                                            role="tab" aria-selected="false">
+                                        <span class="ayr-chip-yr">{{ $year }}</span>
+                                        <span class="ayr-chip-lbl">{{ $isOpen ? 'รับข้อมูลได้' : 'ปิดรับข้อมูล' }}</span>
+                                    </button>
+                                @endforeach
                             </div>
-                        @endforeach
+                            {{-- Hidden placeholder — JS looks for this element when toggling back to overview --}}
+                            <div style="display:none;" id="ayr_grid_{{ $moduleKey }}" role="tabpanel"></div>
+
+                            {{-- Detail panels — one per year --}}
+                            @foreach ($module['years'] as $year)
+                                @php $isOpen = $module['states'][$year] ?? true; @endphp
+                                <div class="ayr-pane" id="ayr_det_{{ $moduleKey }}_{{ $year }}"
+                                     style="display:none;" role="tabpanel">
+                                    <div class="ayr-det-row">
+                                        <div class="ayr-det-left">
+                                            <span class="ayr-det-sdot {{ $isOpen ? 'dot-open' : 'dot-closed' }}"></span>
+                                            <div>
+                                                <div class="ayr-det-yr">{{ $year }}</div>
+                                                <div class="ayr-det-status {{ $isOpen ? 'ds-open' : 'ds-closed' }}">
+                                                    {{ $isOpen ? 'รับข้อมูลได้' : 'ปิดรับข้อมูล' }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <form action="{{ route('admin.system-management.toggle-assessment') }}" method="POST" style="margin:0;">
+                                            @csrf
+                                            <input type="hidden" name="module" value="{{ $moduleKey }}">
+                                            <input type="hidden" name="year"   value="{{ $year }}">
+                                            <input type="hidden" name="enabled" value="{{ $isOpen ? '0' : '1' }}">
+                                            <button type="submit" class="ayr-act-btn {{ $isOpen ? 'ab-close' : 'ab-open' }}">
+                                                <i class="fas {{ $isOpen ? 'fa-lock' : 'fa-lock-open' }}"></i>
+                                                {{ $isOpen ? 'ปิดรับข้อมูล' : 'เปิดรับข้อมูล' }}
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endforeach
+
+                        </div>
                     @endif
                 </div>
-            </details>
+            </div>
 
             @if (!$loop->last)
-                <div style="border-top: 1px solid #f1f5f9;"></div>
+                <div class="amod-divider"></div>
             @endif
         @endforeach
     </div>
 
     <style>
-        /* Accordion shell */
-        .assess-accordion { border: none; }
-        .assess-accordion[open] .assess-chevron { transform: rotate(180deg); }
+        /* ── Module dropdown panel ─────────────────── */
+        .amod-panel { position: relative; }
 
-        /* Summary / clickable header */
-        .assess-summary {
+        .amod-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin: 0 18px;
+        }
+
+        /* Header button */
+        .amod-header {
+            width: 100%;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 11px 20px;
+            gap: 12px;
+            padding: 14px 20px 14px 0;
+            background: none;
+            border: none;
             cursor: pointer;
-            background: #fafafa;
-            list-style: none;
-            user-select: none;
-            gap: 10px;
-            transition: background 0.15s;
+            text-align: left;
+            transition: background 0.14s;
+            position: relative;
+            overflow: hidden;
         }
-        .assess-summary::-webkit-details-marker { display: none; }
-        .assess-summary:hover { background: #f4f6fa; }
+        .amod-header:hover { background: #f8fafc; }
+        .amod-header:focus-visible {
+            outline: 2px solid #6366f1;
+            outline-offset: -2px;
+        }
 
-        .assess-sum-left {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            min-width: 0;
-        }
-        .assess-mod-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
+        /* Left color stripe — the distinctive structural move */
+        .amod-stripe {
+            width: 4px;
+            align-self: stretch;
+            border-radius: 0 3px 3px 0;
             flex-shrink: 0;
+            min-height: 24px;
+            margin-left: 0;
         }
-        .assess-mod-name {
+
+        .amod-name {
+            flex: 1;
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 1rem;
+            font-size: 0.97rem;
             font-weight: 600;
-            color: #374151;
-            white-space: nowrap;
+            color: #1e293b;
+            min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-        .assess-sum-right {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-        }
-        .assess-count-pill {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.92rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .assess-chevron {
-            font-size: 0.85rem;
-            color: #9ca3af;
-            transition: transform 0.2s ease;
+            white-space: nowrap;
         }
 
-        /* Year rows inside accordion */
-        .assess-year-list { padding: 4px 0; }
-        .assess-year-row {
+        /* Status pills */
+        .amod-pills {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 8px 20px 8px 28px;
-            border-bottom: 1px solid #f8fafc;
-            gap: 12px;
-            transition: background 0.12s;
-        }
-        .assess-year-row:last-child { border-bottom: none; }
-        .assess-year-row:hover { background: #f9fafb; }
-
-        .assess-year-left {
-            display: flex;
-            align-items: baseline;
             gap: 6px;
-        }
-        .assess-year-num {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 1.15rem;
-            font-weight: 700;
-            line-height: 1;
-        }
-        .assess-year-row.is-open  .assess-year-num { color: #15803d; }
-        .assess-year-row.is-closed .assess-year-num { color: #6b7280; }
-
-        .assess-year-label {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.92rem;
-            color: #9ca3af;
-        }
-
-        .assess-year-right {
-            display: flex;
-            align-items: center;
-            gap: 8px;
             flex-shrink: 0;
         }
-        .assess-status-dot {
-            width: 7px; height: 7px;
-            border-radius: 50%;
+        .amod-pill {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 999px;
+        }
+        .amod-pill-open   { background: #dcfce7; color: #15803d; }
+        .amod-pill-closed { background: #f3f4f6; color: #6b7280; }
+
+        .amod-chevron {
+            font-size: 0.78rem;
+            color: #cbd5e1;
+            transition: transform 0.22s ease;
             flex-shrink: 0;
+            margin-right: 4px;
         }
-        .dot-open   { background: #16a34a; }
-        .dot-closed { background: #d1d5db; }
-
-        .assess-status-text {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.92rem;
-            min-width: 84px;
-            text-align: right;
+        .amod-panel[data-open="true"] .amod-chevron {
+            transform: rotate(180deg);
         }
-        .text-open   { color: #15803d; }
-        .text-closed { color: #9ca3af; }
 
-        .assess-empty {
-            padding: 10px 28px;
+        /* Dropdown body */
+        .amod-body { overflow: hidden; }
+
+        /* ── Year picker (ayr) ─────────────────────────── */
+        /* ── Pill year tabs ── */
+        .ayr-wrap { padding: 10px 16px 14px; }
+        .ayr-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+        /* ── Year status chips ── */
+        .ayr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+        .ayr-chip {
+            display: inline-flex; flex-direction: column; align-items: flex-start;
+            padding: 9px 16px; border-radius: 12px; border: 2px solid transparent;
+            cursor: pointer; background: none; text-align: left;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+        .ayr-chip:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+        .ayr-chip:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+        .ayr-chip-open  { background: #f0fdf4; border-color: #86efac; }
+        .ayr-chip-open  .ayr-chip-yr  { color: #166534; }
+        .ayr-chip-open  .ayr-chip-lbl { color: #16a34a; }
+        .ayr-chip-closed { background: #f9fafb; border-color: #e5e7eb; }
+        .ayr-chip-closed .ayr-chip-yr  { color: #9ca3af; }
+        .ayr-chip-closed .ayr-chip-lbl { color: #d1d5db; }
+        .ayr-chip-open.ayr-tab-active  { background: #16a34a; border-color: #15803d; box-shadow: 0 4px 14px rgba(22,163,74,0.3); }
+        .ayr-chip-open.ayr-tab-active  .ayr-chip-yr,
+        .ayr-chip-open.ayr-tab-active  .ayr-chip-lbl { color: #fff; }
+        .ayr-chip-closed.ayr-tab-active { background: #6b7280; border-color: #4b5563; }
+        .ayr-chip-closed.ayr-tab-active .ayr-chip-yr,
+        .ayr-chip-closed.ayr-tab-active .ayr-chip-lbl { color: #fff; }
+        .ayr-chip-yr {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-size: 0.97rem; font-weight: 800; line-height: 1;
+        }
+        .ayr-chip-lbl {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-size: 0.72rem; font-weight: 600; margin-top: 3px;
+        }
+        .ayr-pane { display: block; }
+        /* ── Detail panel ── */
+        .ayr-det-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 4px 0; }
+        .ayr-det-left { display: flex; align-items: center; gap: 12px; }
+        .ayr-det-sdot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .ayr-det-yr {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-size: 2rem; font-weight: 800; color: #1e293b; line-height: 1;
+        }
+        .ayr-det-status {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-size: 0.82rem; font-weight: 600; margin-top: 4px;
+        }
+        .ds-open   { color: #15803d; }
+        .ds-closed { color: #9ca3af; }
+        .ayr-act-btn {
+            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-size: 0.88rem; font-weight: 700; padding: 9px 22px;
+            border-radius: 10px; border: none; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 8px;
+            transition: opacity 0.14s, box-shadow 0.14s; white-space: nowrap;
+        }
+        .ayr-act-btn:hover { opacity: 0.84; box-shadow: 0 4px 12px rgba(0,0,0,0.14); }
+        .ab-open  { background: var(--mod-color, #7c3aed); color: #fff; }
+        .ab-close { background: #f1f5f9; color: #6b7280; border: 1.5px solid #e2e8f0; }
+
+        .amod-empty {
+            padding: 12px 22px;
             font-family: 'Noto Serif Thai', 'TH Sarabun New', sans-serif;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             color: #9ca3af;
         }
     </style>
+
+    <script>
+        function toggleAmod(key) {
+            var panel  = document.getElementById('amod_' + key);
+            var body   = panel.querySelector('.amod-body');
+            var btn    = panel.querySelector('.amod-header');
+            var isOpen = panel.getAttribute('data-open') === 'true';
+            if (isOpen) {
+                body.style.display = 'none';
+                panel.setAttribute('data-open', 'false');
+                btn.setAttribute('aria-expanded', 'false');
+            } else {
+                body.style.display = '';
+                panel.setAttribute('data-open', 'true');
+                btn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        function ayrSwitch(moduleKey, target, tabEl) {
+            var isActive = tabEl.classList.contains('ayr-tab-active');
+            var grid = document.getElementById('ayr_grid_' + moduleKey);
+
+            // Deselect all chips
+            tabEl.closest('.ayr-chips').querySelectorAll('.ayr-chip').forEach(function(t) {
+                t.classList.remove('ayr-tab-active');
+                t.setAttribute('aria-selected', 'false');
+            });
+
+            // Hide all detail panels
+            document.querySelectorAll('[id^="ayr_det_' + moduleKey + '_"]').forEach(function(el) {
+                el.style.display = 'none';
+            });
+
+            if (isActive) {
+                // Clicking active tab → go back to summary grid
+                if (grid) grid.style.display = '';
+            } else {
+                tabEl.classList.add('ayr-tab-active');
+                tabEl.setAttribute('aria-selected', 'true');
+                if (grid) grid.style.display = 'none';
+                var det = document.getElementById('ayr_det_' + moduleKey + '_' + target);
+                if (det) det.style.display = '';
+            }
+        }
+    </script>
 
     <script>
         var resetBtn = document.getElementById('resetPageViewsBtn');

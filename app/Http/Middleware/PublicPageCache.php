@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Cache;
  */
 class PublicPageCache
 {
-    private const TTL = 60;
+    private const TTL = 300;
     private const VERSION_KEY = 'public_page_cache_version';
 
     public static function bump(): void

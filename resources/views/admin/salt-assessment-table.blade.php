@@ -19,15 +19,15 @@
         }
 
         .status-badge.status-done {
-            background: linear-gradient(135deg, #34d399, #059669);
-            color: white;
-            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.3);
+            background: linear-gradient(145deg, #6ee7b7 0%, #10b981 55%, #047857 100%);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(4,120,87,.30);
         }
 
         .status-badge.status-empty {
-            background: #f8fafc;
-            color: #cbd5e1;
-            border: 1.5px dashed #e2e8f0;
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1.5px dashed #cbd5e1;
         }
 
         .icon-container {
@@ -73,13 +73,9 @@
         }
 
         .confirm-badge.confirm-done {
-            background: radial-gradient(circle at 32% 28%, #fef3c7 0%, #f59e0b 45%, #b45309 100%);
-            color: #78350f;
-            box-shadow:
-                0 3px 6px rgba(180, 83, 9, 0.45),
-                inset 0 1px 1px rgba(255, 255, 255, 0.65),
-                inset 0 -2px 3px rgba(120, 53, 15, 0.35);
-            border: 1px solid rgba(180, 83, 9, 0.3);
+            background: linear-gradient(145deg, #fbbf24 0%, #f59e0b 55%, #b45309 100%);
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(180,83,9,.30);
         }
 
         .confirm-badge.confirm-pending {
@@ -89,9 +85,9 @@
         }
 
         .confirm-badge.confirm-none {
-            background: #f8fafc;
-            color: #cbd5e1;
-            border: 1.5px dashed #e2e8f0;
+            background: #f1f5f9;
+            color: #94a3b8;
+            border: 1.5px dashed #cbd5e1;
         }
 
         /* ---- stats row ---- */
@@ -529,18 +525,17 @@
         table.report-table tbody td.grp-step55 { background-color: #fbfaff; }
         table.report-table tbody td.grp-confirm { background-color: #fffdf6; }
 
-        /* ไอคอนถูก: ทรงเม็ดแก้วนูน */
+        /* ● ทำแล้ว — solid green */
         .status-badge.status-done {
             width: 26px; height: 26px; font-size: .72rem; color: #fff;
-            background:
-                radial-gradient(circle at 32% 24%, rgba(255,255,255,.55) 0, rgba(255,255,255,0) 42%),
-                radial-gradient(circle at 50% 110%, #047857 0, #10b981 55%, #6ee7b7 100%);
-            border: 1px solid rgba(4,120,87,.55);
-            box-shadow: inset 0 -3px 5px rgba(6,78,59,.35), inset 0 2px 3px rgba(255,255,255,.35), 0 0 0 3px rgba(16,185,129,.12), 0 5px 9px -3px rgba(4,120,87,.5);
+            background: linear-gradient(145deg, #6ee7b7 0%, #10b981 55%, #047857 100%);
+            border: none;
+            box-shadow: 0 2px 6px rgba(4,120,87,.30);
         }
-        .status-badge.status-done i { text-shadow: 0 1px 1px rgba(6,78,59,.5); }
-        .status-badge.status-done:hover { transform: translateY(-1px) scale(1.1); }
-        .status-badge.status-empty { width: 26px; height: 26px; background: #f8fafc; box-shadow: inset 0 1px 2px rgba(15,23,42,.06); }
+        .status-badge.status-done i { filter: drop-shadow(0 1px 0 rgba(6,78,59,.25)); }
+        .status-badge.status-done:hover { transform: scale(1.1); box-shadow: 0 3px 10px rgba(4,120,87,.40); }
+        /* ○ ยังไม่ดำเนินการ */
+        .status-badge.status-empty { width: 26px; height: 26px; background: #f1f5f9; border: 1.5px dashed #cbd5e1; color: #94a3b8; }
     </style>
 
     <!-- Summary Statistics Cards -->

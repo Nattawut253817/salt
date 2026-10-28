@@ -3857,17 +3857,12 @@ class AdminController extends Controller
             return true;
         }
         if ($user->User_rank_id == 2) {
-            $owner = $assessment->user;
-            return $owner
-                && (int) $owner->User_rank_id === 2
-                && $owner->Province_id == $user->Province_id;
+            // สสจ.: ดูและจัดการได้ทุกรายการในจังหวัด ไม่จำกัด rank ของผู้ตอบ
+            return in_array($assessment->user_id, $this->getAgencyUserIds($user));
         }
         if ($user->User_rank_id == 3) {
-            // สสอ.: เฉพาะรายการที่ สสอ. อำเภอตนเองเป็นผู้ตอบ - รายการที่ รพ.สต. ในอำเภอตอบ ดูได้แต่แก้ไม่ได้
-            $owner = $assessment->user;
-            return $owner
-                && (int) $owner->User_rank_id === 3
-                && $owner->District_id == $user->District_id;
+            // สสอ.: ดูและจัดการได้ทุกรายการในอำเภอ ไม่จำกัด rank ของผู้ตอบ
+            return in_array($assessment->user_id, $this->getAgencyUserIds($user));
         }
         if ($user->User_rank_id == 4) {
             // รพ.สต.: เฉพาะรายการของ รพ.สต. ตนเอง (รหัสหน่วยบริการเดียวกัน; ถ้าบัญชีไม่มีรหัส = เฉพาะบัญชีตนเอง)

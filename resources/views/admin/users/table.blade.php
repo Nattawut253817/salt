@@ -56,7 +56,7 @@
     <div class="bulk-bar" id="bulk-bar" hidden>
         <span class="bulk-count"><i class="fas fa-check-double"></i> เลือกแล้ว <b id="bulk-count">0</b> บัญชี</span>
         <button type="button" class="bulk-clear" id="bulk-clear">ล้างการเลือก</button>
-        <button type="button" class="bulk-delete" id="bulk-delete"><i class="fas fa-trash-alt"></i> ลบที่เลือก</button>
+        <button type="button" class="bulk-delete" id="bulk-delete"><i class="fas fa-trash-alt"></i>ที่เลือก</button>
     </div>
 @endif
 <div class="table-responsive">
@@ -171,13 +171,13 @@
                             <button type="button" class="btn-action btn-edit edit-user" data-id="{{ $user->id }}"
                                 data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
                                 title="แก้ไข">
-                                <i class="fas fa-edit"></i> แก้ไข
+                                <i class="fas fa-pen"></i>
                             </button>
             @if ($canBulk)
                             <button type="button" class="btn-action btn-delete delete-user" data-id="{{ $user->id }}"
                                 data-name="{{ $user->prefix }}{{ $user->User_firstname }} {{ $user->User_lastname }}"
                                 title="ลบ">
-                                <i class="fas fa-trash-alt"></i> ลบ
+                                <i class="fas fa-trash-alt"></i>
                             </button>
             @endif
                             @if ($viewerIsSuperAdmin && (int) $user->User_rank_id === 1 && $user->id !== auth()->id())
