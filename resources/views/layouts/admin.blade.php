@@ -44,7 +44,7 @@
             /* Slate 700 */
             --sidebar-active-bg: #4f46e5;
             --sidebar-active-text: #ffffff;
-            --sidebar-width: 280px;
+            --sidebar-width: 300px;
             --navbar-height: 96px;
             /* Brand banner - matches the public site's pink shell (see
                layouts/layout.blade.php's --pink-gradient) but rendered
@@ -491,7 +491,7 @@
 
         .sidebar-nav {
             flex: 1;
-            padding: 4px 14px 20px 14px;
+            padding: 4px 16px 20px 16px;
             list-style: none;
             margin: 0;
             overflow-y: auto;
@@ -512,8 +512,8 @@
 
         /* Section Headings */
         .nav-section-title {
-            padding: 14px 12px 6px 12px;
-            font-size: 0.72rem;
+            padding: 14px 14px 6px 14px;
+            font-size: 0.75rem;
             font-weight: 800;
             font-family: 'Prompt', 'Sarabun', sans-serif;
             color: #94a3b8;
@@ -532,7 +532,7 @@
         }
 
         .sidebar-nav > .nav-section-title:first-child {
-            padding-top: 8px;
+            padding-top: 10px;
         }
 
         .nav-item {
@@ -543,10 +543,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 7px 12px;
+            padding: 9px 14px;
             color: var(--sidebar-text);
             text-decoration: none !important;
-            border-radius: 12px;
+            border-radius: 14px;
             font-weight: 600;
             font-family: 'K2D', 'Sarabun', sans-serif;
             line-height: 1.35;
@@ -556,8 +556,8 @@
 
         .nav-link i {
             font-size: 0.86rem;
-            width: 29px;
-            height: 29px;
+            width: 32px;
+            height: 32px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -570,7 +570,7 @@
         }
 
         .nav-link span:not(.nav-badge) {
-            font-size: 0.85rem;
+            font-size: 0.90rem;
             flex: 1;
             min-width: 0;
         }
@@ -932,7 +932,7 @@
 
             .admin-sidebar.open {
                 transform: translateX(0);
-                width: 280px;
+                width: 300px;
             }
 
             .admin-sidebar.open span,
@@ -1155,8 +1155,8 @@
             text-decoration: none !important;
         }
         .nav-group-header i.group-icon {
-            font-size: 0.86rem;
-            width: 29px;
+            font-size: 0.90rem;
+            width: 32px;
             height: 29px;
             flex-shrink: 0;
             display: flex;
@@ -2104,9 +2104,7 @@
         }
     </style>
 
-    <div id="navLoadingOverlay"
-        style="position: fixed; top: var(--admin-banner-height); left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); height: calc(100% - var(--admin-banner-height)); background: rgba(255, 255, 255, 0.35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: none; z-index: 900; opacity: 0;">
-    </div>
+
 
     <!-- Core Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -2117,19 +2115,6 @@
 
     <script>
         $(document).ready(function() {
-            // Show the blur/loading overlay on every real sidebar navigation
-            // click - a consistent page-transition standard, not just a
-            // handful of specific routes.
-            $('a.nav-link')
-                .on('click', function(e) {
-                    // If it's just a placeholder (no real destination), don't load
-                    const href = $(this).attr('href');
-                    if (!href || href === '#' || href === 'javascript:void(0);') return;
-
-                    // Show overlay with smooth fade
-                    $('#navLoadingOverlay').css({display: 'flex', opacity: 1});
-                });
-
             // Confirm before signing out, so an accidental click on the
             // sidebar button doesn't kick the user out of the app.
             $('#logout-btn').on('click', function () {
