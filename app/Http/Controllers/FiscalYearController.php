@@ -112,41 +112,46 @@ class FiscalYearController extends Controller
 
     public function index()
     {
-        $modules = [];
+        // Cache the full $modules array for 5 minutes.
+        // Busted by store() / destroy() via AdminCache::version().
+        $cacheKey = 'fiscal_year_index.' . \App\Support\AdminCache::version();
+        $modules = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () {
+            $built = [];
+            foreach ($this->moduleDefinitions() as $key => $def) {
+                $realYearStrings = $def['real_years']()
+                    ->filter(fn ($y) => $y !== null && $y !== '')
+                    ->map(fn ($y) => (string) (int) $y)
+                    ->unique();
 
-        foreach ($this->moduleDefinitions() as $key => $def) {
-            $realYearStrings = $def['real_years']()
-                ->filter(fn ($y) => $y !== null && $y !== '')
-                ->map(fn ($y) => (string) (int) $y)
-                ->unique();
+                $rows = FiscalYear::where('module', $key)->get();
+                $enabledRows = $rows->where('hidden', false)->keyBy(fn ($r) => (string) $r->year);
+                $hiddenRows = $rows->where('hidden', true)->keyBy(fn ($r) => (string) $r->year);
 
-            $rows = FiscalYear::where('module', $key)->get();
-            $enabledRows = $rows->where('hidden', false)->keyBy(fn ($r) => (string) $r->year);
-            $hiddenRows = $rows->where('hidden', true)->keyBy(fn ($r) => (string) $r->year);
+                $years = $realYearStrings->merge($enabledRows->keys())
+                    ->merge($hiddenRows->keys())
+                    ->unique()
+                    ->sortDesc()
+                    ->values()
+                    ->map(function ($y) use ($realYearStrings, $enabledRows, $hiddenRows) {
+                        return [
+                            'year' => $y,
+                            'has_data' => $realYearStrings->contains($y),
+                            'is_hidden' => $hiddenRows->has($y),
+                            'fiscal_year_id' => optional($enabledRows->get($y) ?? $hiddenRows->get($y))->id,
+                        ];
+                    });
 
-            $years = $realYearStrings->merge($enabledRows->keys())
-                ->merge($hiddenRows->keys())
-                ->unique()
-                ->sortDesc()
-                ->values()
-                ->map(function ($y) use ($realYearStrings, $enabledRows, $hiddenRows) {
-                    return [
-                        'year' => $y,
-                        'has_data' => $realYearStrings->contains($y),
-                        'is_hidden' => $hiddenRows->has($y),
-                        'fiscal_year_id' => optional($enabledRows->get($y) ?? $hiddenRows->get($y))->id,
-                    ];
-                });
-
-            $modules[] = [
-                'key' => $key,
-                'title' => $def['title'],
-                'subtitle' => $def['subtitle'],
-                'icon' => $def['icon'],
-                'color' => $def['color'],
-                'years' => $years,
-            ];
-        }
+                $built[] = [
+                    'key' => $key,
+                    'title' => $def['title'],
+                    'subtitle' => $def['subtitle'],
+                    'icon' => $def['icon'],
+                    'color' => $def['color'],
+                    'years' => $years,
+                ];
+            }
+            return $built;
+        });
 
         return view('admin.fiscal-years.index', compact('modules'));
     }

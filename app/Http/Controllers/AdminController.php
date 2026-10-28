@@ -368,6 +368,12 @@ class AdminController extends Controller
                 SaltAssessment::create($data);
             }
 
+            // Flush getAssessmentData cache for this scope/year/quarter
+            $flushBase = 'adat.' . $targetUser->id . '.' . crc32(implode(',', $agencyUserIds))
+                . '.' . $request->fiscal_year . '.' . $request->quarter . '.';
+            \Illuminate\Support\Facades\Cache::forget($flushBase . '0');
+            \Illuminate\Support\Facades\Cache::forget($flushBase . '1');
+
             return redirect()->route('admin.report-progress', [
                 'fiscal_year' => $request->fiscal_year,
                 'quarter' => $request->quarter
@@ -451,6 +457,17 @@ class AdminController extends Controller
 
         // --- Determine agency peers based on rank ---
         $agencyUserIds = $this->getAgencyUserIds($scopeUser);
+
+        // Short-lived response cache keyed by scope + year + quarter (60s TTL)
+        $assessCacheKey = 'adat.' . $scopeUser->id . '.' . crc32(implode(',', $agencyUserIds))
+            . '.' . $request->fiscal_year . '.' . $request->quarter
+            . '.' . ($request->boolean('only') ? '1' : '0');
+
+        // Cache hit → return immediately (server_time is always fresh)
+        if ($hit = \Illuminate\Support\Facades\Cache::get($assessCacheKey)) {
+            $hit['server_time'] = now('Asia/Bangkok')->format('H:i:s');
+            return response()->json($hit);
+        }
 
         // 1. Fetch ALL assessments for this agency & year
         $allAssessments = SaltAssessment::with(['user', 'confirmedBy'])
@@ -618,7 +635,7 @@ class AdminController extends Controller
             $quarterStates[$q] = $this->saltQuarterState($rec);
         }
 
-        return response()->json([
+        $payload = [
             'exists' => $exists,
             // id ของรายการไตรมาสนี้ (ใช้กับปุ่ม Export PDF ในหน้ากรอกแบบรายงาน) - null ถ้ายังไม่เคยบันทึก
             'assessment_id' => $ownRecord ? $ownRecord->id : null,
@@ -628,12 +645,15 @@ class AdminController extends Controller
             'can_confirm' => $currentUser->User_rank_id == 1,
             // ไตรมาสที่ยืนยันข้อมูลแล้ว ปิดช่องแก้ไขทุกบทบาท (สคร. ปลดล็อกด้วยปุ่ม "ยกเลิกการยืนยัน")
             'locked' => !empty($quarterStates[$targetQuarter]['confirmed']),
-            // App timezone (config/app.php) is UTC, so a bare date('H:i:s')
-            // here would show the server's UTC clock instead of Thailand
-            // local time - this is what the "ซิงค์ล่าสุด" pill displays,
-            // so it needs to be explicitly converted for that audience.
-            'server_time' => now('Asia/Bangkok')->format('H:i:s')
-        ]);
+        ];
+
+        // Store payload (without server_time) for 60 s; server_time always fresh
+        \Illuminate\Support\Facades\Cache::put($assessCacheKey, $payload, 60);
+
+        // App timezone (config/app.php) is UTC — display Thailand local time
+        $payload['server_time'] = now('Asia/Bangkok')->format('H:i:s');
+
+        return response()->json($payload);
     }
 
     /**
@@ -2591,32 +2611,31 @@ class AdminController extends Controller
         );
         $realMenuYears = collect($realMenuYears);
         $years = FiscalYear::selectableYearsFor('sodium_menus', $realMenuYears);
-        $dbProvinces = collect(\Illuminate\Support\Facades\Cache::remember('perf.sodium_menus.provinces', 120, fn() =>
+        $rawProvinces = \Illuminate\Support\Facades\Cache::remember('perf.sodium_menus.provinces', 120, fn() =>
             ReducedSodiumMenu::whereNotNull('province')
             ->whereNotIn('province', ['', '-', ' '])
             ->distinct()
-            ->pluck('province')->all()))
-            ->map(function ($p) {
-                // Check if the value is numeric (legacy ID)
-                if (is_numeric($p)) {
-                    // Start with known hotfixes
-                    if ($p == '33')
-                        return 'ศรีสะเกษ';
-                    if ($p == '49')
-                        return 'มุกดาหาร';
+            ->pluck('province')->all());
 
-                    // Try to fetch from DB if possible
-                    try {
-                        $provinceObj = \App\Models\Province::where('province_id', $p)->first();
-                        if ($provinceObj) {
-                            return $provinceObj->province_name;
-                        }
-                    } catch (\Exception $e) {
-                        // Fallback
-                    }
-                }
-                return trim($p);
-            });
+        // Preload all province name maps in ONE query to avoid N+1 Province::find calls.
+        $numericIds = collect($rawProvinces)->filter('is_numeric')->unique()->values()->all();
+        $provinceNameMap = [];
+        if (!empty($numericIds)) {
+            $provinceNameMap = \App\Models\Province::whereIn('province_id', $numericIds)
+                ->pluck('province_name', 'province_id')
+                ->all();
+        }
+
+        $dbProvinces = collect($rawProvinces)->map(function ($p) use ($provinceNameMap) {
+            if (is_numeric($p)) {
+                // Hardcoded hotfixes (legacy IDs not in the provinces table)
+                if ($p == '33') return 'ศรีสะเกษ';
+                if ($p == '49') return 'มุกดาหาร';
+                // Use preloaded map — zero extra queries
+                return $provinceNameMap[$p] ?? trim($p);
+            }
+            return trim($p);
+        });
 
         // Health Region 10 Default Provinces (Ensure these always exist)
         $defaultProvinces = collect(['อุบลราชธานี', 'ศรีสะเกษ', 'ยโสธร', 'อำนาจเจริญ', 'มุกดาหาร']);
@@ -3074,25 +3093,38 @@ class AdminController extends Controller
             $query->where('operating_area', $request->operating_area);
         }
 
-        // Calculate Summary Statistics (Full filtered query, not just current page)
-        $statsQuery = clone $query;
-        $totalSubmissions = $statsQuery->count();
+        // Calculate Summary Statistics (Full filtered query, not just current page).
+        // Cache for 2 minutes: the "complete" count requires fetching and walking ALL
+        // records in PHP (carry-forward logic), which is the heaviest single operation
+        // on this page. Keyed by user scope + active filters.
+        $kScopeId = match((int) $user->User_rank_id) {
+            1       => 'all',
+            2       => 'p' . $user->Province_id,
+            default => 'd' . $user->District_id,
+        };
+        $kFilterSig = md5($request->fiscal_year . '|' . $request->quarter . '|'
+            . $request->province_id . '|' . $request->district_id . '|'
+            . $request->operating_area . '|' . $request->org_type . '|'
+            . $request->input('status', ''));
+        $kidneyStatsCacheKey = 'kidney_stats.' . $kScopeId . '.' . $kFilterSig . '.' . \App\Support\AdminCache::version();
 
-        // "Complete" = all 10 categories filled, counting data carried forward from
-        // earlier quarters (same agency / fiscal year / operating area) - the same
-        // cumulative rule the detail page and the per-row icons below use.
         $flowCache = [];
-        $completeRecs = (clone $query)->with('user')->get();
-        $this->prefetchKidneyPageRecords($completeRecs, $flowCache);
-        $completeCount = $completeRecs->filter(function ($rec) use (&$flowCache) {
-            return !in_array(false, $this->kidneyFlowFilled($rec, $flowCache), true);
-        })->count();
+        $stats = \Illuminate\Support\Facades\Cache::remember($kidneyStatsCacheKey, 120, function () use ($query, &$flowCache) {
+            $totalSubmissions = (clone $query)->count();
 
-        $stats = [
-            'total' => $totalSubmissions,
-            'complete' => $completeCount,
-            'in_progress' => $totalSubmissions - $completeCount
-        ];
+            // "Complete" = all 10 categories filled, counting carry-forward from prior quarters.
+            $completeRecs = (clone $query)->with('user')->get();
+            $this->prefetchKidneyPageRecords($completeRecs, $flowCache);
+            $completeCount = $completeRecs->filter(function ($rec) use (&$flowCache) {
+                return !in_array(false, $this->kidneyFlowFilled($rec, $flowCache), true);
+            })->count();
+
+            return [
+                'total' => $totalSubmissions,
+                'complete' => $completeCount,
+                'in_progress' => $totalSubmissions - $completeCount
+            ];
+        });
 
         $assessments = $query->join('users', 'kidney_assessments.user_id', '=', 'users.id')
             ->select('kidney_assessments.*');
