@@ -45,7 +45,7 @@
 
     .brand-logo-wrap { position: relative; display: flex; align-items: center; gap: 10px; }
     .brand-logo-wrap img { width: 36px; height: 36px; background: rgba(255,255,255,0.16); border-radius: 10px; padding: 4px; object-fit: contain; }
-    .brand-logo-wrap span { font-family: 'Kodchasan', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1.3; }
+    .brand-logo-wrap span { font-family: 'Sarabun', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1.3; }
 
     .hero-block { position: relative; margin-top: 28px; flex: 1; }
     .hero-block h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 14px; color: #fff; text-shadow: 0 2px 12px rgba(30,2,16,.5); }
@@ -61,17 +61,17 @@
 
     .auth-form-panel { flex: 1; background: #fff; display: flex; flex-direction: column; padding: 32px 34px 28px; animation: panelFromRight 0.65s cubic-bezier(0.23,1,0.32,1) 0.1s both; }
 
-    .auth-byline { font-family: 'Trirong','Sarabun', sans-serif; font-size: 0.72rem; color: #b0748a; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 16px; animation: fadeUp 0.5s ease 0.25s both; }
+    .auth-byline { font-size: 0.73rem; color: #c4a4b2; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 16px; animation: fadeUp 0.5s ease 0.25s both; }
 
     .auth-steps { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; animation: fadeUp 0.5s ease 0.3s both; }
-    .auth-step { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 800; background: #f1f5f9; color: #94a3b8; flex-shrink: 0; }
-    .auth-step.is-done { background: var(--primary-color); color: #fff; }
-    .auth-step.is-active { background: #fff; color: var(--primary-color); border: 2px solid var(--primary-color); box-shadow: 0 0 0 3px rgba(225,29,72,0.15); }
-    .auth-step-line { width: 24px; height: 2px; background: #e2e8f0; flex-shrink: 0; }
+    .auth-step { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; background: #f1e4ea; color: #b0748a; flex-shrink: 0; }
+    .auth-step.is-done { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 4px rgba(225,29,72,.15); }
+    .auth-step.is-active { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 4px rgba(225,29,72,.15); }
+    .auth-step-line { width: 28px; height: 2px; background: #ede4ea; flex-shrink: 0; }
     .auth-step-line.is-done { background: var(--primary-color); }
 
     .auth-form-heading { margin-bottom: 16px; animation: fadeUp 0.5s ease 0.35s both; }
-    .auth-form-heading h2 { font-family: 'Kodchasan','Sarabun', sans-serif; font-size: 1.18rem; font-weight: 800; color: #1e1b2e; margin-bottom: 3px; }
+    .auth-form-heading h2 { font-size: 1.65rem; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; color: #1e1b2e; margin-bottom: 3px; }
     .auth-form-heading p { font-family: 'Sarabun', sans-serif; font-size: 0.8rem; color: #7c6c78; }
 
     .email-chip { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; padding: 10px 18px; background: #fff; border: 1.5px solid #f0d6e0; border-radius: 14px; color: #1e293b; font-weight: 700; font-family: 'Sarabun', sans-serif; font-size: 0.88rem; max-width: 100%; overflow: hidden; animation: fadeUp 0.45s ease 0.4s both; box-shadow: 0 2px 8px rgba(225,29,72,0.06); }
