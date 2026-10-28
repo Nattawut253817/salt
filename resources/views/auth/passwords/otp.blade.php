@@ -143,9 +143,9 @@
         gap: 8px;
         margin: 0 auto 14px;
         padding: 8px 16px;
-        background: #f8fafc;
-        border: 1px solid #eef2f7;
-        border-radius: 999px;
+        background: #fdf9fb;
+        border: 1.5px solid #ede4ea;
+        border-radius: 14px;
         color: #1e293b;
         font-weight: 700;
         font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
@@ -172,7 +172,7 @@
         gap: 8px;
         margin: 0 auto 16px;
         padding: 8px 18px;
-        border-radius: 999px;
+        border-radius: 14px;
         background: #fff1f5;
         color: var(--primary-color);
         font-weight: 700;
@@ -260,16 +260,16 @@
     .btn-auth {
         width: 100%;
         padding: 13px;
-        border-radius: 50px;
+        border-radius: 14px;
         border: none;
-        background: var(--pink-gradient);
+        background: linear-gradient(110deg, #e11d48 0%, #be185d 55%, #db2777 100%);
         color: white;
         font-weight: 800;
-        font-family: 'Trirong', 'Sarabun', sans-serif;
-        font-size: 0.95rem;
+        font-family: 'Sarabun', sans-serif;
+        font-size: 0.92rem;
         cursor: pointer;
-        transition: all 0.4s;
-        box-shadow: 0 10px 25px rgba(225, 29, 72, 0.3);
+        transition: transform .25s cubic-bezier(.23,1,.32,1), box-shadow .25s ease;
+        box-shadow: 0 6px 20px rgba(225, 29, 72, 0.38), 0 2px 6px rgba(225, 29, 72, 0.2);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -277,8 +277,8 @@
     }
 
     .btn-auth:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 15px 35px rgba(225, 29, 72, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(225, 29, 72, 0.45), 0 4px 10px rgba(225, 29, 72, 0.22);
     }
 
     /* Submit loading state (same look as the sign-in button): a white panel

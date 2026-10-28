@@ -167,12 +167,13 @@
 
         .form-label {
             display: block;
-            margin-bottom: 5px;
-            margin-left: 15px;
-            font-weight: 700;
-            font-family: 'Kodchasan', 'Sarabun', sans-serif;
-            color: #1e293b;
+            margin-bottom: 6px;
+            margin-left: 2px;
+            font-weight: 600;
+            font-family: 'Sarabun', sans-serif;
+            color: #5a3d52;
             font-size: 0.82rem;
+            letter-spacing: .012em;
         }
 
         .input-wrapper {
@@ -190,49 +191,55 @@
 
         .form-control {
             width: 100%;
-            padding: 11px 25px 11px 48px;
-            border-radius: 50px;
-            border: 2px solid transparent;
-            background: #f8fafc;
-            font-family: 'Sarabun', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
-            transition: all 0.3s ease;
-            font-size: 0.92rem;
+            padding: 12px 42px 12px 46px;
+            border-radius: 14px;
+            border: 1.5px solid #ede4ea;
+            background: #fdf9fb;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.88rem;
+            font-weight: 500;
+            color: #1e1b2e;
             box-sizing: border-box;
+            transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
         }
 
+        .form-control::placeholder { color: #b8a8b2; font-weight: 400; }
+
         .form-control:focus {
-            border-color: rgba(225, 29, 72, 0.3);
-            background: white;
+            border-color: rgba(225, 29, 72, 0.45);
+            background: #fff;
+            box-shadow: 0 0 0 3.5px rgba(225, 29, 72, 0.1);
             outline: none;
         }
 
         .form-control[readonly] {
-            color: #94a3b8;
+            color: #9e8898;
+            cursor: default;
         }
 
         .btn-auth {
             width: 100%;
             padding: 13px;
-            border-radius: 50px;
+            border-radius: 14px;
             border: none;
-            background: var(--pink-gradient);
+            background: linear-gradient(110deg, #e11d48 0%, #be185d 55%, #db2777 100%);
             color: white;
             font-weight: 800;
-            font-family: 'Trirong', 'Sarabun', sans-serif;
-            font-size: 0.95rem;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 0.92rem;
             cursor: pointer;
-            transition: all 0.4s;
-            box-shadow: 0 10px 25px rgba(225, 29, 72, 0.3);
+            transition: transform .25s cubic-bezier(.23,1,.32,1), box-shadow .25s ease;
+            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.38), 0 2px 6px rgba(225, 29, 72, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .btn-auth:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(225, 29, 72, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(225, 29, 72, 0.45), 0 4px 10px rgba(225, 29, 72, 0.22);
         }
 
     /* Submit loading state (same look as the sign-in button): a white panel
@@ -278,19 +285,19 @@
 
         .toggle-password {
             position: absolute;
-            right: 15px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 50px;
+            background: transparent;
+            border: none;
             cursor: pointer;
-            color: var(--primary-color);
-            padding: 4px 11px;
-            font-size: 0.8rem;
-            transition: all 0.2s;
+            color: #b0748a;
+            padding: 4px 6px;
+            font-size: 0.82rem;
+            transition: color .2s ease;
             z-index: 2;
         }
+        .toggle-password:hover { color: var(--primary-color); }
 
         .remember-row {
             display: flex;
