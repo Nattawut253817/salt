@@ -106,21 +106,32 @@
     .btn-auth .btn-icon.is-spinner::before { content: none; }
     @keyframes btnSpin { to { transform: rotate(360deg); } }
     .btn-auth:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-spark { position: absolute; top: 50%; left: 4%; width: 11px; height: 11px; margin-top: -5.5px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, #ffd1e3 45%, rgba(255,209,227,0) 75%); box-shadow: 0 0 9px 3px rgba(255,255,255,.5), 0 0 16px 5px rgba(225,29,72,.45); opacity: 0; pointer-events: none; }
+    .btn-auth.is-loading .btn-spark { animation: sparkRun 1.3s ease-in-out infinite; }
+    @keyframes sparkRun { 0% { left: 4%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { left: 94%; opacity: 0; } }
+    .btn-auth .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,.5); transform: scale(0); animation: rippleOut .6s ease-out; pointer-events: none; }
+    @keyframes rippleOut { to { transform: scale(2.5); opacity: 0; } }
 
     .modern-alert { padding: 10px 16px; border-radius: 14px; margin-bottom: 12px; font-size: 0.83rem; display: flex; align-items: center; gap: 10px; }
     .modern-alert-success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .modern-alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
-    .auth-footer { text-align: center; margin-top: 14px; font-size: 0.83rem; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.45s ease 0.6s both; }
-    .auth-footer a, .resend-link { color: var(--primary-color); text-decoration: none; font-weight: 700; background: none; border: none; font-family: 'Trirong','Sarabun', sans-serif; font-size: inherit; cursor: pointer; padding: 0; }
-    .resend-link:disabled { color: #cbd5e1; cursor: not-allowed; }
-    .auth-footer-divider { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
+    .auth-divider { display: flex; align-items: center; margin: 20px 0 16px; color: #b0a0a8; font-size: 0.76rem; font-weight: 600; animation: fadeUp 0.45s ease 0.6s both; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #ede4ea; }
+    .auth-divider span { padding: 0 12px; white-space: nowrap; }
+    .btn-sso { width: 100%; padding: 13px; border-radius: 14px; border: 1.5px solid #ede4ea; background: #fff; text-decoration: none !important; color: #1e1b2e; font-weight: 700; font-size: 0.85rem; cursor: pointer; font-family: 'Sarabun', sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all .22s ease; animation: fadeUp 0.45s ease 0.65s both; }
+    .btn-sso i { color: var(--primary-color); }
+    .btn-sso:hover { background: #fff7fa; border-color: rgba(225,29,72,.4); box-shadow: 0 6px 18px rgba(225,29,72,.1); }
+    .btn-sso:disabled { opacity: .5; cursor: not-allowed; }
+    .auth-back-link { text-align: center; margin-top: 14px; font-size: 0.83rem; animation: fadeUp 0.45s ease 0.7s both; }
+    .auth-back-link a { color: var(--primary-color); text-decoration: none; font-weight: 700; font-family: 'Sarabun', sans-serif; }
+    .auth-back-link a:hover { text-decoration: underline; }
 
     @keyframes panelFromLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes panelFromRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
-    @media (prefers-reduced-motion: reduce) { .auth-side-panel, .auth-form-panel, .auth-byline, .auth-steps, .auth-form-heading, .email-chip, .otp-timer-pill, .otp-input-group, .btn-auth, .auth-footer { animation: none; } .btn-auth .btn-fill { transition: none; } .btn-auth .btn-icon.is-spinner { animation-duration: 1.8s; } }
+    @media (prefers-reduced-motion: reduce) { .auth-side-panel, .auth-form-panel, .auth-byline, .auth-steps, .auth-form-heading, .email-chip, .otp-timer-pill, .otp-input-group, .btn-auth, .auth-divider, .btn-sso, .auth-back-link { animation: none; } .btn-auth .btn-fill { transition: none; } .btn-auth .btn-icon.is-spinner { animation-duration: 1.8s; } .btn-auth.is-loading .btn-spark { animation: none; } }
 
     @media (max-width: 700px) { .auth-card { flex-direction: column; border-radius: 20px; max-width: 460px; } .auth-side-panel { flex: none; padding: 24px 24px 0; } .hero-block { margin-top: 12px; } .hero-block h1 { font-size: 1.2rem; } .feature-list { flex-direction: row; flex-wrap: wrap; gap: 8px; margin-top: 12px; } .panel-wave { display: none; } .auth-form-panel { padding: 22px 24px 24px; } }
     @media (max-width: 420px) { .auth-container { padding: 12px; } .auth-card { border-radius: 16px; } .otp-input-group input { width: 40px; height: 48px; } }
@@ -204,18 +215,22 @@
                     </div>
                     <button type="submit" class="btn-auth" id="otpSubmitBtn">
                         <span class="btn-fill"></span>
+                        <span class="btn-spark"></span>
                         <i class="fas fa-shield-check btn-icon"></i>
                         <span class="btn-label">ยืนยันรหัส OTP</span>
                     </button>
                 </form>
 
-                <div class="auth-footer">
-                    <hr class="auth-footer-divider">
-                    <form action="{{ route('password.email') }}" method="POST" id="resendForm">
-                        @csrf
-                        <input type="hidden" name="email" value="{{ $email }}">
-                        <button type="submit" class="resend-link" id="resendBtn" disabled>ยังไม่ได้รับรหัส? ส่งอีกครั้ง</button>
-                    </form>
+                <div class="auth-divider"><span>หรือ</span></div>
+                <form action="{{ route('password.email') }}" method="POST" id="resendForm">
+                    @csrf
+                    <input type="hidden" name="email" value="{{ $email }}">
+                    <button type="submit" class="btn-sso" id="resendBtn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                        <span id="resendBtnText">ขอรหัส OTP ใหม่</span>
+                    </button>
+                </form>
+                <div class="auth-back-link">
                     <a href="{{ route('password.request') }}"><i class="fas fa-arrow-left"></i> เริ่มต้นใหม่ด้วยอีเมลอื่น</a>
                 </div>
             </div>
@@ -313,6 +328,15 @@
                 btn.classList.add('is-loading');
                 if (label) label.textContent = 'กำลังตรวจสอบรหัส...';
                 if (icon) icon.className = 'btn-icon is-spinner';
+            });
+            btn.addEventListener('click', function (e) {
+                const r = document.createElement('span');
+                r.className = 'ripple';
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+                btn.appendChild(r);
+                r.addEventListener('animationend', () => r.remove());
             });
             window.addEventListener('pageshow', function (e) {
                 if (!e.persisted) return;
