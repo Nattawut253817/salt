@@ -77,7 +77,7 @@
     .email-chip { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin: 0 0 12px; padding: 10px 18px; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 14px; color: #1e293b; font-weight: 700; font-family: 'Sarabun', sans-serif; font-size: 0.88rem; max-width: 100%; overflow: hidden; animation: fadeUp 0.45s ease 0.4s both; box-shadow: 0 2px 8px rgba(59,130,246,0.08); }
     .email-chip-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#dbeafe,#93c5fd); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .email-chip-icon i { font-size: 0.72rem; color: #2563eb; }
-    .email-chip i { color: var(--primary-color); flex-shrink: 0; }
+    .email-chip i { color: #1d4ed8; flex-shrink: 0; }
     .email-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .otp-timer-pill { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 16px; border-radius: 14px; background: #fff1f5; color: var(--primary-color); font-weight: 700; width: 100%; transition: background-color .3s ease, color .3s ease; animation: fadeUp 0.45s ease 0.45s both; border: 1.5px solid #fecdd3; box-shadow: 0 2px 8px rgba(225,29,72,0.06); }
