@@ -106,10 +106,13 @@
     .btn-auth { width: 100%; padding: 13px; border-radius: 14px; border: none; background: linear-gradient(110deg,#e11d48 0%,#be185d 55%,#db2777 100%); color: #fff; font-weight: 800; font-family: 'Sarabun', sans-serif; font-size: 0.92rem; cursor: pointer; transition: transform .25s cubic-bezier(.23,1,.32,1), box-shadow .25s ease; box-shadow: 0 6px 20px rgba(225,29,72,.38), 0 2px 6px rgba(225,29,72,.2); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; overflow: hidden; animation: fadeUp 0.45s ease 0.6s both; }
     .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(225,29,72,.45), 0 4px 10px rgba(225,29,72,.22); }
     .btn-auth .btn-fill { position: absolute; inset: 0; background: #fff; transform: scaleX(0); transform-origin: left center; transition: transform 0.55s cubic-bezier(0.65,0,0.35,1); pointer-events: none; }
+    .btn-auth.is-success .btn-fill { background: linear-gradient(110deg, #10b981 0%, #059669 55%, #34d399 100%); }
     .btn-auth .btn-icon, .btn-auth .btn-label { position: relative; transition: color 0.35s ease 0.15s; }
     .btn-auth.is-loading { cursor: wait; transform: none; pointer-events: none; box-shadow: 0 8px 20px rgba(225,29,72,.3); }
+    .btn-auth.is-loading.is-success { cursor: default; box-shadow: 0 8px 24px rgba(16,185,129,.4); }
     .btn-auth.is-loading .btn-fill { transform: scaleX(1); }
     .btn-auth.is-loading .btn-icon, .btn-auth.is-loading .btn-label { color: #e11d48; }
+    .btn-auth.is-success .btn-icon, .btn-auth.is-success .btn-label { color: #fff !important; }
     .btn-auth .btn-icon.is-spinner { display: inline-block; flex: 0 0 auto; width: 1.1em; height: 1.1em; box-sizing: border-box; border: 2.5px solid rgba(225,29,72,.22); border-top-color: #e11d48; border-radius: 50%; animation: btnSpin 0.75s linear infinite; }
     .btn-auth .btn-icon.is-spinner::before { content: none; }
     @keyframes btnSpin { to { transform: rotate(360deg); } }
@@ -326,9 +329,9 @@
                     cfm.focus();
                     return;
                 }
-                btn.classList.add('is-loading');
-                if (label) label.textContent = 'กำลังบันทึก...';
-                if (icon) icon.className = 'btn-icon is-spinner';
+                btn.classList.add('is-loading', 'is-success');
+                if (label) label.textContent = 'เข้าใช้งานได้เลย';
+                if (icon) { icon.className = ''; icon.className = 'fas fa-check btn-icon'; }
             });
             window.addEventListener('pageshow', function (e) {
                 if (!e.persisted) return;
