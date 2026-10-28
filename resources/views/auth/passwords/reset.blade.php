@@ -45,11 +45,12 @@
 
     .brand-logo-wrap { position: relative; display: flex; align-items: center; gap: 10px; }
     .brand-logo-wrap img { width: 36px; height: 36px; background: rgba(255,255,255,0.16); border-radius: 10px; padding: 4px; object-fit: contain; }
-    .brand-logo-wrap span { font-family: 'Kodchasan', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1.3; }
+    .brand-logo-wrap span { font-family: 'Sarabun', sans-serif; font-size: 0.78rem; font-weight: 700; color: rgba(255,255,255,0.9); line-height: 1.3; }
 
     .hero-block { position: relative; margin-top: 28px; flex: 1; }
-    .hero-block h1 { font-family: 'Kodchasan','Sarabun', sans-serif; font-size: 1.45rem; font-weight: 900; line-height: 1.3; color: #fff; margin-bottom: 10px; }
-    .hero-block h1 span { color: #fda4af; }
+    .hero-block h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 10px; color: #fff; text-shadow: 0 2px 12px rgba(30,2,16,.5); }
+    .hero-block h1 span { display: block; }
+    .hero-block h1 .accent { background: linear-gradient(88deg, #fda4af, #f472b6 55%, #fbcfe8); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #fda4af; }
     .hero-block p { font-family: 'Sarabun', sans-serif; font-size: 0.8rem; color: rgba(255,255,255,0.72); line-height: 1.6; max-width: 190px; }
 
     .feature-list { position: relative; display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
@@ -60,18 +61,18 @@
 
     .auth-form-panel { flex: 1; background: #fff; display: flex; flex-direction: column; padding: 28px 32px 26px; animation: panelFromRight 0.65s cubic-bezier(0.23,1,0.32,1) 0.1s both; }
 
-    .auth-byline { font-family: 'Trirong','Sarabun', sans-serif; font-size: 0.72rem; color: #b0748a; font-weight: 600; letter-spacing: 0.04em; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.25s both; }
+    .auth-byline { font-size: 0.73rem; color: #c4a4b2; font-weight: 700; letter-spacing: 0.04em; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.25s both; }
 
     .auth-steps { display: flex; align-items: center; gap: 6px; margin-bottom: 16px; animation: fadeUp 0.5s ease 0.3s both; }
-    .auth-step { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 800; background: #f1f5f9; color: #94a3b8; flex-shrink: 0; }
-    .auth-step.is-done { background: var(--primary-color); color: #fff; }
-    .auth-step.is-active { background: #fff; color: var(--primary-color); border: 2px solid var(--primary-color); box-shadow: 0 0 0 3px rgba(225,29,72,0.15); }
-    .auth-step-line { width: 24px; height: 2px; background: #e2e8f0; flex-shrink: 0; }
+    .auth-step { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; background: #f1e4ea; color: #b0748a; flex-shrink: 0; }
+    .auth-step.is-done { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 4px rgba(225,29,72,.15); }
+    .auth-step.is-active { background: var(--primary-color); color: #fff; box-shadow: 0 0 0 4px rgba(225,29,72,.15); }
+    .auth-step-line { width: 28px; height: 2px; background: #ede4ea; flex-shrink: 0; }
     .auth-step-line.is-done { background: var(--primary-color); }
 
     .auth-form-heading-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; animation: fadeUp 0.5s ease 0.35s both; }
     .auth-icon-badge { width: 40px; height: 40px; flex-shrink: 0; background: linear-gradient(135deg, #e11d48, #be185d); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1rem; box-shadow: 0 4px 12px rgba(225,29,72,0.35); }
-    .auth-form-heading h2 { font-family: 'Kodchasan','Sarabun', sans-serif; font-size: 1.12rem; font-weight: 800; color: #1e1b2e; margin-bottom: 1px; }
+    .auth-form-heading h2 { font-size: 1.35rem; font-weight: 800; line-height: 1.15; letter-spacing: -.01em; color: #1e1b2e; margin-bottom: 1px; }
     .auth-form-heading p { font-family: 'Sarabun', sans-serif; font-size: 0.78rem; color: #7c6c78; }
 
     .form-label { display: block; font-family: 'Sarabun', sans-serif; font-size: 0.82rem; font-weight: 700; color: #374151; margin-bottom: 5px; }
@@ -83,6 +84,12 @@
     .pw-toggle-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 4px; color: #94a3b8; font-size: 0.88rem; line-height: 1; transition: color .2s ease; }
     .pw-toggle-btn:hover { color: var(--primary-color); }
     .pw-field-wrap .form-control { padding-right: 38px; }
+
+    .pw-match-msg { font-family: 'Sarabun', sans-serif; font-size: 0.78rem; font-weight: 700; margin-top: 5px; display: none; align-items: center; gap: 5px; }
+    .pw-match-msg.show { display: flex; }
+    .pw-match-msg.ok { color: #10b981; }
+    .pw-match-msg.err { color: #ef4444; }
+    .form-control.is-match { border-color: #10b981 !important; background: #f0fdf4 !important; }
 
     .reset-columns { display: flex; gap: 20px; flex: 1; animation: fadeUp 0.45s ease 0.4s both; }
     .reset-fields-col { flex: 1; display: flex; flex-direction: column; gap: 12px; }
@@ -112,7 +119,7 @@
     .modern-alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 
     .auth-footer { text-align: center; margin-top: 12px; font-size: 0.83rem; display: flex; flex-direction: column; gap: 6px; animation: fadeUp 0.45s ease 0.65s both; }
-    .auth-footer a { color: var(--primary-color); text-decoration: none; font-weight: 700; font-family: 'Trirong','Sarabun', sans-serif; }
+    .auth-footer a { color: var(--primary-color); text-decoration: none; font-weight: 700; font-family: 'Sarabun', sans-serif; }
     .auth-footer-divider { border: none; border-top: 1px solid #f1f5f9; margin: 4px 0; }
 
     @keyframes panelFromLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
@@ -139,7 +146,7 @@
                     <span>Salt &amp; Sodium<br>Smart Monitor</span>
                 </div>
                 <div class="hero-block">
-                    <h1>ตั้งรหัสผ่านใหม่<br><span>ปลอดภัยมั่นใจ</span></h1>
+                    <h1><span>ตั้งรหัสผ่านใหม่</span><span class="accent">ปลอดภัยมั่นใจ</span></h1>
                     <p>กำหนดรหัสผ่านที่แข็งแกร่งเพื่อปกป้องบัญชีของคุณ</p>
                     <div class="feature-list">
                         <div class="feature-item">
@@ -208,7 +215,7 @@
                                     <input type="password" name="password" id="passwordField"
                                         class="form-control @error('password') is-invalid @enderror"
                                         placeholder="กรอกรหัสผ่านใหม่" autocomplete="new-password"
-                                        oninput="updatePasswordChecklist(this.value)">
+                                        oninput="updatePasswordChecklist(this.value); checkPasswordMatch();">
                                     <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility('passwordField', this)" title="แสดง/ซ่อนรหัสผ่าน">
                                         <i class="fas fa-eye"></i>
                                     </button>
@@ -218,11 +225,13 @@
                                 <label class="form-label"><i class="fas fa-lock-open" style="color:var(--primary-color);margin-right:5px;"></i>ยืนยันรหัสผ่าน</label>
                                 <div class="pw-field-wrap">
                                     <input type="password" name="password_confirmation" id="passwordConfirmField"
-                                        class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง" autocomplete="new-password">
+                                        class="form-control" placeholder="กรอกรหัสผ่านอีกครั้ง" autocomplete="new-password"
+                                        oninput="checkPasswordMatch()">
                                     <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility('passwordConfirmField', this)" title="แสดง/ซ่อนรหัสผ่าน">
                                         <i class="fas fa-eye"></i>
                                     </button>
                                 </div>
+                                <div class="pw-match-msg" id="pwMatchMsg"></div>
                             </div>
                         </div>
 
@@ -266,6 +275,23 @@
             if (field.type === 'password') { field.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash'); }
             else { field.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
         }
+        function checkPasswordMatch() {
+            const pw  = document.getElementById('passwordField');
+            const cfm = document.getElementById('passwordConfirmField');
+            const msg = document.getElementById('pwMatchMsg');
+            if (!pw || !cfm || !msg) return;
+            const val = cfm.value;
+            if (!val) { msg.className = 'pw-match-msg'; msg.innerHTML = ''; cfm.classList.remove('is-match','is-invalid'); return; }
+            if (pw.value === val) {
+                msg.className = 'pw-match-msg show ok';
+                msg.innerHTML = '<i class="fas fa-check-circle"></i> รหัสผ่านตรงกัน';
+                cfm.classList.add('is-match'); cfm.classList.remove('is-invalid');
+            } else {
+                msg.className = 'pw-match-msg show err';
+                msg.innerHTML = '<i class="fas fa-times-circle"></i> รหัสผ่านไม่ตรงกัน';
+                cfm.classList.remove('is-match'); cfm.classList.add('is-invalid');
+            }
+        }
         function updatePasswordChecklist(value) {
             const rules = {
                 'rule-length':  value.length >= 8,
@@ -291,7 +317,15 @@
             if (!form || !btn) return;
             const icon = btn.querySelector('.btn-icon'), label = btn.querySelector('.btn-label');
             const iconClass = icon ? icon.className : '', labelText = label ? label.textContent : '';
-            form.addEventListener('submit', function () {
+            form.addEventListener('submit', function (e) {
+                const pw  = document.getElementById('passwordField');
+                const cfm = document.getElementById('passwordConfirmField');
+                if (pw && cfm && pw.value !== cfm.value) {
+                    e.preventDefault();
+                    checkPasswordMatch();
+                    cfm.focus();
+                    return;
+                }
                 btn.classList.add('is-loading');
                 if (label) label.textContent = 'กำลังบันทึก...';
                 if (icon) icon.className = 'btn-icon is-spinner';
