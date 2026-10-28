@@ -73,11 +73,15 @@
     .auth-form-heading h2 { font-family: 'Kodchasan','Sarabun', sans-serif; font-size: 1.18rem; font-weight: 800; color: #1e1b2e; margin-bottom: 3px; }
     .auth-form-heading p { font-family: 'Sarabun', sans-serif; font-size: 0.8rem; color: #7c6c78; }
 
-    .email-chip { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto 12px; padding: 8px 16px; background: #fdf9fb; border: 1.5px solid #ede4ea; border-radius: 14px; color: #1e293b; font-weight: 700; font-family: 'Sarabun', sans-serif; font-size: 0.88rem; max-width: 100%; overflow: hidden; animation: fadeUp 0.45s ease 0.4s both; }
+    .email-chip { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 12px; padding: 10px 18px; background: #fff; border: 1.5px solid #f0d6e0; border-radius: 14px; color: #1e293b; font-weight: 700; font-family: 'Sarabun', sans-serif; font-size: 0.88rem; max-width: 100%; overflow: hidden; animation: fadeUp 0.45s ease 0.4s both; box-shadow: 0 2px 8px rgba(225,29,72,0.06); }
+    .email-chip-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#fce7f3,#fda4af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .email-chip-icon i { font-size: 0.72rem; color: #e11d48; }
     .email-chip i { color: var(--primary-color); flex-shrink: 0; }
     .email-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    .otp-timer-pill { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 0 auto 14px; padding: 7px 16px; border-radius: 14px; background: #fff1f5; color: var(--primary-color); font-weight: 700; width: fit-content; transition: background-color .3s ease, color .3s ease; animation: fadeUp 0.45s ease 0.45s both; }
+    .otp-timer-pill { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 16px; border-radius: 14px; background: #fff1f5; color: var(--primary-color); font-weight: 700; width: 100%; transition: background-color .3s ease, color .3s ease; animation: fadeUp 0.45s ease 0.45s both; border: 1.5px solid #fecdd3; box-shadow: 0 2px 8px rgba(225,29,72,0.06); }
+    .otp-timer-icon { width: 28px; height: 28px; border-radius: 8px; background: linear-gradient(135deg,#ffe4e6,#fda4af); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .otp-timer-icon i { font-size: 0.72rem; color: #e11d48; }
     .otp-timer-pill i { font-size: 0.85rem; }
     .otp-timer-value { font-family: 'Sarabun', sans-serif; font-size: 1.05rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .5px; }
     .otp-timer-label { font-family: 'Trirong','Sarabun', sans-serif; font-size: 0.78rem; font-weight: 600; opacity: .85; }
@@ -171,16 +175,14 @@
                     <h2>ยืนยันรหัส OTP</h2>
                     <p>ระบบส่งรหัส 6 หลักไปที่อีเมลของคุณแล้ว</p>
                 </div>
-                <div class="email-chip"><i class="fas fa-envelope"></i> <span>{{ $email }}</span></div>
+                <div class="email-chip"><span class="email-chip-icon"><i class="fas fa-envelope"></i></span><span>{{ $email }}</span></div>
                 <div class="otp-timer-pill" id="otpTimer">
-                    <i class="fas fa-clock"></i>
-                    <span class="otp-timer-value" id="otpTimerValue">05:00</span>
-                    <span class="otp-timer-label" id="otpTimerLabel">จนกว่ารหัสจะหมดอายุ</span>
+                    <span class="otp-timer-icon"><i class="fas fa-clock"></i></span>
+                    <span>
+                        <span class="otp-timer-value" id="otpTimerValue" style="font-size:1.05rem;font-weight:800;letter-spacing:.4px;font-variant-numeric:tabular-nums;">05:00</span>
+                        <span class="otp-timer-label" id="otpTimerLabel" style="font-size:0.76rem;opacity:.8;margin-left:4px;">จนกว่ารหัสจะหมดอายุ</span>
+                    </span>
                 </div>
-
-                @if (session('success'))
-                    <div class="modern-alert modern-alert-success"><i class="fas fa-check-circle"></i> {{ session('success') }}</div>
-                @endif
                 @if (session('error'))
                     <div class="modern-alert modern-alert-error"><i class="fas fa-exclamation-circle"></i> {{ session('error') }}</div>
                 @endif
