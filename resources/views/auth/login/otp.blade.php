@@ -180,24 +180,49 @@
     }
 
     .otp-input-group input {
-        width: 42px;
-        height: 48px;
+        width: 44px;
+        height: 52px;
         text-align: center;
-        font-size: 1.3rem;
+        font-size: 1.35rem;
         font-weight: 800;
         border-radius: 14px;
         border: 2px solid #e2e8f0;
         background: #f8fafc;
         font-family: 'Sarabun', sans-serif;
         color: #1e293b;
-        transition: all 0.2s ease;
+        outline: none;
+        transition: border-color 0.2s ease, background-color 0.2s ease,
+                    box-shadow 0.2s ease, transform 0.15s ease, color 0.2s ease;
     }
 
     .otp-input-group input:focus {
         border-color: var(--primary-color);
         background: white;
-        outline: none;
         box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.12);
+    }
+
+    .otp-input-group input.filled {
+        border-color: var(--primary-color);
+        background: #fff1f5;
+        color: var(--primary-color);
+    }
+
+    .otp-input-group input.complete {
+        border-color: #10b981;
+        background: #f0fdf4;
+        color: #059669;
+    }
+
+    @keyframes digitPop {
+        0%   { transform: scale(1); }
+        40%  { transform: scale(1.18); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes digitComplete {
+        0%   { transform: scale(1); }
+        30%  { transform: scale(1.2); }
+        100% { transform: scale(1); }
     }
 
     .btn-auth {
@@ -217,6 +242,8 @@
         align-items: center;
         justify-content: center;
         gap: 10px;
+        position: relative;
+        overflow: hidden;
     }
 
     .btn-auth:hover {
@@ -229,6 +256,30 @@
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
+    }
+
+    /* Loading wipe state — same pattern as the login button */
+    .btn-auth .btn-fill {
+        position: absolute; inset: 0; background: #ffffff;
+        transform: scaleX(0); transform-origin: left center;
+        transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1);
+        pointer-events: none;
+    }
+    .btn-auth .btn-icon, .btn-auth .btn-label { position: relative; transition: color 0.35s ease 0.15s; }
+    .btn-auth.is-loading { cursor: wait; transform: none; pointer-events: none; box-shadow: 0 8px 20px rgba(225, 29, 72, 0.3); }
+    .btn-auth.is-loading .btn-fill { transform: scaleX(1); }
+    .btn-auth.is-loading .btn-icon, .btn-auth.is-loading .btn-label { color: #e11d48; }
+    .btn-auth .btn-icon.is-spinner {
+        display: inline-block; flex: 0 0 auto; width: 1.1em; height: 1.1em; box-sizing: border-box;
+        border: 2.5px solid rgba(225, 29, 72, 0.22); border-top-color: #e11d48; border-radius: 50%;
+        animation: btnSpin 0.75s linear infinite;
+    }
+    .btn-auth .btn-icon.is-spinner::before { content: none; }
+    @keyframes btnSpin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+        .btn-auth .btn-fill { transition: none; }
+        .btn-auth .btn-icon.is-spinner { animation-duration: 1.8s; }
+        .otp-input-group input { transition: none; }
     }
 
     .auth-footer {
@@ -337,8 +388,9 @@
                     </div>
 
                     <button type="submit" class="btn-auth" id="otpSubmitBtn">
-                        <i class="fas fa-shield-check"></i>
-                        ยืนยันและเข้าสู่ระบบ
+                        <span class="btn-fill"></span>
+                        <i class="fas fa-shield-check btn-icon"></i>
+                        <span class="btn-label">ยืนยันและเข้าสู่ระบบ</span>
                     </button>
                 </form>
 
@@ -360,49 +412,112 @@
 @section('extra_js')
     <script>
         (function () {
-            const digits = Array.from(document.querySelectorAll('.otp-digit'));
-            const hidden = document.getElementById('otpHidden');
+            const digits     = Array.from(document.querySelectorAll('.otp-digit'));
+            const hidden     = document.getElementById('otpHidden');
+            const form       = document.getElementById('otpForm');
+            const submitBtn  = document.getElementById('otpSubmitBtn');
+            const resendBtn  = document.getElementById('resendBtn');
+            const timerValue = document.getElementById('otpTimerValue');
+            const timerLabel = document.getElementById('otpTimerLabel');
+            const timerWrap  = document.getElementById('otpTimer');
+            const btnIcon    = submitBtn.querySelector('.btn-icon');
+            const btnLabel   = submitBtn.querySelector('.btn-label');
+            const savedIconClass  = btnIcon  ? btnIcon.className  : '';
+            const savedLabelText  = btnLabel ? btnLabel.textContent : '';
 
+            /* ── helpers ── */
             function syncHidden() {
                 hidden.value = digits.map(d => d.value).join('');
             }
 
+            function updateDigitState(input) {
+                if (input.value) { input.classList.add('filled'); }
+                else { input.classList.remove('filled', 'complete'); }
+            }
+
+            function triggerPop(input) {
+                input.style.animation = 'none';
+                void input.offsetWidth;
+                input.style.animation = 'digitPop 0.2s ease';
+            }
+
+            let autoSubmitTimer = null;
+            function checkAutoSubmit() {
+                const allFilled = digits.every(d => d.value.length === 1);
+                if (!allFilled) return;
+                digits.forEach(d => {
+                    d.classList.remove('filled');
+                    d.classList.add('complete');
+                    d.style.animation = 'none';
+                    void d.offsetWidth;
+                    d.style.animation = 'digitComplete 0.25s ease';
+                });
+                clearTimeout(autoSubmitTimer);
+                autoSubmitTimer = setTimeout(() => {
+                    syncHidden();
+                    form.requestSubmit();
+                }, 420);
+            }
+
+            /* ── digit event handlers ── */
             digits.forEach((input, idx) => {
                 input.addEventListener('input', () => {
                     input.value = input.value.replace(/[^0-9]/g, '').slice(0, 1);
-                    if (input.value && idx < digits.length - 1) {
-                        digits[idx + 1].focus();
+                    updateDigitState(input);
+                    if (input.value) {
+                        triggerPop(input);
+                        if (idx < digits.length - 1) digits[idx + 1].focus();
                     }
                     syncHidden();
+                    checkAutoSubmit();
                 });
 
                 input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && !input.value && idx > 0) {
-                        digits[idx - 1].focus();
+                    if (e.key === 'Backspace') {
+                        if (input.value) {
+                            input.value = '';
+                            updateDigitState(input);
+                            syncHidden();
+                        } else if (idx > 0) {
+                            digits[idx - 1].focus();
+                        }
+                        clearTimeout(autoSubmitTimer);
                     }
                 });
 
                 input.addEventListener('paste', (e) => {
-                    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+                    const text = (e.clipboardData || window.clipboardData)
+                        .getData('text').replace(/[^0-9]/g, '');
                     if (!text) return;
                     e.preventDefault();
                     text.slice(0, digits.length).split('').forEach((ch, i) => {
-                        if (digits[i]) digits[i].value = ch;
+                        if (digits[i]) { digits[i].value = ch; updateDigitState(digits[i]); }
                     });
                     const nextEmpty = digits.findIndex(d => !d.value);
                     (nextEmpty === -1 ? digits[digits.length - 1] : digits[nextEmpty]).focus();
                     syncHidden();
+                    checkAutoSubmit();
                 });
             });
 
-            document.getElementById('otpForm').addEventListener('submit', syncHidden);
+            /* ── loading state on submit ── */
+            form.addEventListener('submit', () => {
+                syncHidden();
+                submitBtn.classList.add('is-loading');
+                if (btnLabel) btnLabel.textContent = 'กำลังยืนยัน...';
+                if (btnIcon)  btnIcon.className = 'btn-icon is-spinner';
+            });
 
+            /* restore on bfcache (back button) */
+            window.addEventListener('pageshow', (e) => {
+                if (!e.persisted) return;
+                submitBtn.classList.remove('is-loading');
+                if (btnIcon)  btnIcon.className  = savedIconClass;
+                if (btnLabel) btnLabel.textContent = savedLabelText;
+            });
+
+            /* ── countdown timer ── */
             let remaining = {{ (int) $remainingSeconds }};
-            const timerValue = document.getElementById('otpTimerValue');
-            const timerLabel = document.getElementById('otpTimerLabel');
-            const timerWrap = document.getElementById('otpTimer');
-            const submitBtn = document.getElementById('otpSubmitBtn');
-            const resendBtn = document.getElementById('resendBtn');
 
             function render() {
                 const m = Math.floor(remaining / 60).toString().padStart(2, '0');

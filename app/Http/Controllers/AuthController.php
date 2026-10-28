@@ -274,7 +274,7 @@ class AuthController extends Controller
             Auth::login($user, true);
             $request->session()->regenerate();
 
-            return redirect()->intended($this->defaultAdminUrl($user))->with('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว เข้าสู่ระบบให้อัตโนมัติ');
+            return redirect()->intended('admin')->with('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว เข้าสู่ระบบให้อัตโนมัติ');
         }
 
         return redirect()->route('staff')->with('success', 'เปลี่ยนรหัสผ่านเรียบร้อยแล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่');
@@ -519,7 +519,7 @@ class AuthController extends Controller
             // login state was written - regenerating it a second time only
             // costs another session-file rewrite.
             Auth::login($user, $request->boolean('remember'));
-            return redirect()->intended($this->defaultAdminUrl($user));
+            return redirect()->intended('admin');
         }
 
         $this->issueLoginOtp($user);
@@ -632,7 +632,7 @@ class AuthController extends Controller
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
-        return redirect()->intended($this->defaultAdminUrl($user));
+        return redirect()->intended('admin');
     }
 
     /**
@@ -725,20 +725,6 @@ class AuthController extends Controller
                 report($e);
             }
         });
-    }
-
-    /**
-     * Default post-login landing URL for a user, chosen by rank so the browser
-     * goes directly to the correct admin section in a single redirect rather
-     * than bouncing through /admin which would redirect again.
-     */
-    private function defaultAdminUrl(\App\Models\User $user): string
-    {
-        return match(true) {
-            $user->User_rank_id == 1 => route('admin.sodium-menus'),
-            $user->User_rank_id == 2 => route('admin.kidney-dhb-list'),
-            default                   => route('admin.salt-assessment-list'),
-        };
     }
 
     public function logout(Request $request)
