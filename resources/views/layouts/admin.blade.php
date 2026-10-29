@@ -1420,38 +1420,44 @@
         }
     </style>
     <style>
-        /* ── Dark mode ─────────────────────────────────────────────────── */
-        html.dark-mode {
-            --sidebar-bg: #18181b;
-            --sidebar-text: #d1d5db;
-        }
+        /* ── Dark mode (sidebar only) ───────────────────────────────────── */
         html.dark-mode .admin-sidebar {
-            border-right-color: #27272a;
-            box-shadow: 1px 0 10px rgba(0,0,0,0.3);
+            --sidebar-bg: #18181b;
+            --sidebar-text: #ffffff;
+            background-color: #18181b;
+            border-right-color: #2d2d35;
+            box-shadow: 1px 0 12px rgba(0,0,0,0.4);
         }
-        html.dark-mode .nav-link { color: #9ca3af; }
-        html.dark-mode .nav-link:hover { background: #27272a; color: #a5b4fc; }
-        html.dark-mode .nav-link i { color: #6b7280; }
-        html.dark-mode .nav-link:hover i { color: #a5b4fc; }
-        html.dark-mode .nav-section-title { color: #4b5563; }
-        html.dark-mode .nav-group-header { color: #9ca3af; }
-        html.dark-mode .nav-group-header:hover { background: #27272a; }
-        html.dark-mode .sidebar-search-inner {
-            background: #27272a; border-color: #3f3f46;
+        /* nav links: pure white */
+        html.dark-mode .admin-sidebar .nav-link { color: #ffffff; }
+        html.dark-mode .admin-sidebar .nav-link i { color: rgba(255,255,255,0.55); }
+        html.dark-mode .admin-sidebar .nav-link:hover {
+            background: rgba(255,255,255,0.07);
+            color: #ffffff;
         }
-        html.dark-mode .sidebar-search-inner:focus-within {
-            background: #27272a; border-color: #6366f1;
-        }
-        html.dark-mode .sidebar-search-input { color: #d1d5db; }
-        html.dark-mode .sidebar-dark-toggle:hover { background: #27272a; }
-        html.dark-mode .sidebar-dark-label { color: #9ca3af; }
-        html.dark-mode .btn-logout { color: #9ca3af; }
-        html.dark-mode .btn-logout:hover { background: #2d1515; color: #f87171; }
-        html.dark-mode .sidebar-footer-divider { background: #27272a; }
-        html.dark-mode .admin-navbar {
-            background: linear-gradient(135deg, #18181b 0%, #1c1c27 100%);
-            border-bottom-color: #27272a;
-        }
+        html.dark-mode .admin-sidebar .nav-link:hover i { color: #a5b4fc; }
+        html.dark-mode .admin-sidebar .nav-link.active { background: #4f46e5; color: #fff; }
+        html.dark-mode .admin-sidebar .nav-link.active i { color: #fff; }
+        /* section titles */
+        html.dark-mode .admin-sidebar .nav-section-title { color: rgba(255,255,255,0.3); }
+        html.dark-mode .admin-sidebar .nav-section-title::after { background: rgba(255,255,255,0.08); }
+        /* group headers */
+        html.dark-mode .admin-sidebar .nav-group-header { color: #ffffff; }
+        html.dark-mode .admin-sidebar .nav-group-header i { color: rgba(255,255,255,0.55); }
+        html.dark-mode .admin-sidebar .nav-group-header:hover { background: rgba(255,255,255,0.07); }
+        html.dark-mode .admin-sidebar .nav-group-header.group-active { background: #4f46e5; color: #fff; }
+        /* submenu links */
+        html.dark-mode .admin-sidebar .nav-submenu .nav-link { color: rgba(255,255,255,0.8); }
+        html.dark-mode .admin-sidebar .nav-submenu .nav-link:hover { color: #ffffff; }
+        /* footer */
+        html.dark-mode .admin-sidebar .sidebar-footer { background: #18181b; }
+        html.dark-mode .admin-sidebar .sidebar-footer-divider { background: rgba(255,255,255,0.08); }
+        html.dark-mode .admin-sidebar .sidebar-dark-toggle:hover { background: rgba(255,255,255,0.07); }
+        html.dark-mode .admin-sidebar .sidebar-dark-label { color: #ffffff; }
+        html.dark-mode .admin-sidebar .sidebar-dark-icon { color: rgba(255,255,255,0.6); }
+        /* brand area */
+        html.dark-mode .admin-sidebar .sidebar-brand { background: #18181b; }
+        html.dark-mode .admin-sidebar .brand-logo-frame { border-color: rgba(255,255,255,0.1); }
     </style>
 </head>
 
@@ -1545,14 +1551,6 @@
             </div>
             <div class="brand-logo-collapsed" aria-hidden="true">
                 <span>S</span>
-            </div>
-        </div>
-
-        <div class="sidebar-search">
-            <div class="sidebar-search-inner">
-                <i class="fas fa-search sidebar-search-icon"></i>
-                <input type="text" id="sidebarSearch" class="sidebar-search-input"
-                       placeholder="ค้นหาเมนู..." autocomplete="off">
             </div>
         </div>
 
@@ -1815,10 +1813,6 @@
         </ul>
         <div class="sidebar-footer">
             <div class="sidebar-footer-divider"></div>
-            <button class="btn-logout sidebar-logout-btn" id="logout-btn" type="button">
-                <i class="fas fa-arrow-right-from-bracket"></i>
-                <span>ออกจากระบบ</span>
-            </button>
             <div class="sidebar-dark-toggle" id="darkModeToggle" title="เปลี่ยนธีม">
                 <i class="fas fa-moon sidebar-dark-icon"></i>
                 <span class="sidebar-dark-label">โหมดมืด</span>
@@ -2293,20 +2287,6 @@
 
     <script>
         $(document).ready(function() {
-            // ── Sidebar search: live filter nav links ─────────────────────────
-            $('#sidebarSearch').on('input', function () {
-                var q = $(this).val().toLowerCase().trim();
-                if (!q) {
-                    $('.nav-item, .nav-section-title, .nav-group').show();
-                    return;
-                }
-                $('.nav-section-title').hide();
-                $('.nav-group, .nav-item').each(function () {
-                    var text = $(this).find('span').not('.nav-badge').text().toLowerCase();
-                    $(this).toggle(text.indexOf(q) !== -1);
-                });
-            });
-
             // ── Dark mode toggle ───────────────────────────────────────────────
             var darkKey = 'sidebar_dark_mode';
             var isDark = localStorage.getItem(darkKey) === '1';
@@ -2323,11 +2303,6 @@
             $('#darkModeToggle').on('click', function () {
                 isDark = !isDark;
                 applyDarkMode(isDark);
-            });
-
-            // ── Sidebar logout button mirrors the top-banner logout ────────────
-            $('#logout-btn').on('click', function () {
-                $('#logoutConfirmModal').modal('show');
             });
 
             // Profile modal: tag its Bootstrap-generated backdrop so the CSS
