@@ -600,7 +600,6 @@
             background: #4f46e5;
             color: #ffffff;
             font-weight: 600;
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
         }
 
         .nav-link.active i {
@@ -1337,14 +1336,16 @@
         /* Submenu list */
         .nav-submenu {
             list-style: none;
-            padding: 4px 0 6px 0;
-            margin: 2px 0 0 0;   /* gap below group header, only for groups with submenus */
+            padding: 0;
+            margin: 0;
             overflow: hidden;
             max-height: 0;
-            transition: max-height 0.3s ease;
+            transition: max-height 0.3s ease, padding 0.3s ease;
         }
         .nav-submenu.submenu-open {
             max-height: 300px;
+            padding: 4px 0 6px 0;
+            margin: 2px 0 0 0;
         }
         .nav-submenu .nav-link {
             padding: 7px 12px 7px 20px;
