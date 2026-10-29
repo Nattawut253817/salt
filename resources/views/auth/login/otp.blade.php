@@ -222,8 +222,6 @@
                 <span class="auth-step is-done"><i class="fas fa-check"></i></span>
                 <span class="auth-step-line is-done"></span>
                 <span class="auth-step is-active">2</span>
-                <span class="auth-step-line"></span>
-                <span class="auth-step">3</span>
             </div>
 
             <div class="auth-form-heading">
