@@ -39,7 +39,7 @@
             --admin-bg: #f8fafc;
             /* Lighter background */
             --sidebar-bg: #ffffff;
-            --sidebar-text: #334155;
+            --sidebar-text: #1e293b;
             /* Slate 700 */
             --sidebar-active-bg: #4f46e5;
             --sidebar-active-text: #ffffff;
@@ -587,7 +587,7 @@
             align-items: center;
             gap: 12px;
             padding: 10px 14px;
-            color: #64748b;
+            color: #1e293b;
             text-decoration: none !important;
             border-radius: 12px;
             font-weight: 500;
@@ -605,7 +605,7 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: #94a3b8;
+            color: #64748b;
             transition: color 0.2s ease;
         }
 
@@ -1295,7 +1295,7 @@
             padding: 7px 12px;
             border-radius: 12px;
             cursor: pointer;
-            color: #64748b;
+            color: #1e293b;
             font-weight: 600;
             font-family: 'K2D', 'Sarabun', sans-serif;
             transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -1310,7 +1310,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #94a3b8;
+            color: #64748b;
             transition: color 0.2s;
         }
         .nav-group-header .group-label {
@@ -1323,7 +1323,7 @@
         }
         .submenu-arrow {
             font-size: 0.65rem;
-            color: #94a3b8;
+            color: #64748b;
             transition: transform 0.25s ease;
             flex-shrink: 0;
             margin-left: 2px;
