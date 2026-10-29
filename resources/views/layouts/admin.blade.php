@@ -171,6 +171,9 @@
             height: 100vh !important;
             bottom: auto !important;
         }
+        #userProfileModal .modal-dialog {
+            margin-top: 80px !important;
+        }
 
         @media (min-width: 769px) {
 
