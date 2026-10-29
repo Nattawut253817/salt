@@ -119,7 +119,7 @@
         overflow: hidden;
         box-shadow: 0 12px 28px rgba(0,0,0,.32), 0 2px 6px rgba(0,0,0,.1);
     }
-    .auth-side-logo img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }
+    .auth-side-logo img { width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
 
     .auth-side-hero { margin-top: auto; }
 
@@ -225,10 +225,10 @@
     .otp-timer-label { font-size: 0.78rem; font-weight: 600; opacity: 0.85; }
     .otp-timer-pill.expired { background: #fef2f2; color: #ef4444; }
 
-    /* Row: chip + timer side by side */
+    /* Email + timer stacked vertically */
     .otp-meta-row {
-        display: flex; flex-wrap: wrap; align-items: center;
-        gap: 10px; margin-bottom: 4px;
+        display: flex; flex-direction: column; align-items: flex-start;
+        gap: 8px; margin-bottom: 20px;
     }
     .otp-meta-row .otp-timer-pill,
     .otp-meta-row .email-chip { margin-bottom: 0; }
@@ -276,6 +276,7 @@
     .btn-auth {
         padding: 13px 28px; border-radius: 50px; border: none;
         background: var(--pink-gradient-btn); color: white;
+        font-family: 'Sarabun', 'TH Sarabun New', sans-serif;
         font-weight: 800; font-size: 0.95rem;
         cursor: pointer; transition: all 0.4s;
         box-shadow: 0 10px 25px rgba(225, 29, 72, 0.3);
