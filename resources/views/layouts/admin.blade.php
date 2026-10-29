@@ -1314,9 +1314,8 @@
             background: #e0e7ff;
         }
         .nav-group-header.group-active {
-            background: linear-gradient(135deg, var(--admin-primary) 0%, #6366f1 100%);
+            background: #4f46e5;
             color: white;
-            box-shadow: 0 6px 14px rgba(79, 70, 229, 0.28);
         }
         .nav-group-header.group-active i.group-icon {
             color: white;
@@ -1329,8 +1328,7 @@
         /* When group is active AND submenu is open: soften the header so the
            active child item can stand out more clearly (parent recedes slightly) */
         .nav-group-header.group-active.open {
-            background: linear-gradient(135deg, rgba(79,70,229,0.82) 0%, rgba(99,102,241,0.82) 100%);
-            box-shadow: 0 4px 10px rgba(79,70,229,0.18);
+            background: rgba(79,70,229,0.82);
         }
         /* Open state: rotate arrow */
         .nav-group-header.open .submenu-arrow {
