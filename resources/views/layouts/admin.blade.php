@@ -158,22 +158,37 @@
            sidebar is actually occupying that space on screen (it goes
            off-canvas below 768px - see the media query further down) - at
            that width modals go back to covering the full screen as normal. */
-        /* Exclude the user-profile modal from sidebar-scoping so it is
-           always centered in the full viewport (not just the content area),
-           regardless of sidebar width. The .profile-modal-backdrop class is
-           added by JS (show.bs.modal) to the backdrop Bootstrap creates. */
-        #userProfileModal,
-        .profile-modal-backdrop {
-            left: 0 !important;
-            width: 100% !important;
+        /* ── userProfileModal: full-viewport override ───────────────────────
+           Both rules use top/left/right/bottom:0 + auto width/height so the
+           element stretches to cover the real viewport, immune to the
+           html{zoom:90%} quirk that makes 100vh resolve to ~90% of viewport.
+
+           Specificity rationale (beats the sidebar media-query below):
+           #userProfileModal (id 0,1,0,0) > .modal (0,0,1,0)
+           .modal-backdrop.profile-modal-backdrop (0,0,2,0) > .modal-backdrop (0,0,1,0)
+           Both !important → higher specificity wins regardless of source order.
+           ─────────────────────────────────────────────────────────────── */
+        #userProfileModal {
             top: 0 !important;
-            height: 100vh !important;
-            bottom: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: auto !important;
+            height: auto !important;
+            overflow-y: auto !important;
+        }
+        /* Two-class selector beats single-class .modal-backdrop in media query */
+        .modal-backdrop.profile-modal-backdrop {
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: auto !important;
+            height: auto !important;
         }
 
-        /* Dialog: position:absolute ภายใน #userProfileModal (fixed full-viewport)
-           หลีกเลี่ยงปัญหา html{zoom:90%} ที่ทำให้ position:fixed ใน children
-           คำนวณ top/left ผิดใน zoomed coordinate space */
+        /* Dialog centered via position:absolute inside the fixed container.
+           Avoids the html{zoom:90%} bug that mispositions position:fixed children. */
         #userProfileModal .modal-dialog {
             position: absolute !important;
             top: 50% !important;
