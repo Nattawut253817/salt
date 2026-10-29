@@ -80,7 +80,7 @@
         align-items: center;
         gap: 10px;
         padding: 12px 24px;
-        background: linear-gradient(135deg, #60a5fa 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
         color: white;
         border: none;
         border-radius: 15px;
@@ -1274,7 +1274,7 @@
         width: auto;
         padding: 10px 26px;
         font-size: 0.82rem;
-        background: linear-gradient(135deg, #60a5fa 0%, #1d4ed8 100%);
+        background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%);
         box-shadow: 0 6px 14px rgba(99, 102, 241, 0.25);
     }
 
@@ -1718,21 +1718,21 @@
     .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid) i { color: #059669; font-size: 1rem; }
     .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid):hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]) {
-        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.25), transparent 52%), linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #1d4ed8 100%) !important; color: #fff !important;
+        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.25), transparent 52%), linear-gradient(135deg, #fb923c 0%, #f97316 50%, #ea580c 100%) !important; color: #fff !important;
         border-radius: 14px !important; height: 46px !important; padding: 0 24px !important; gap: 10px !important;
         font-size: .9rem !important; font-weight: 800 !important; letter-spacing: .1px;
-        box-shadow: 0 10px 24px -8px rgba(29, 78, 216, .65), inset 0 1px 0 rgba(255, 255, 255, .30) !important;
-        text-shadow: 0 1px 1px rgba(15, 30, 90, .30);
+        box-shadow: 0 10px 24px -8px rgba(194, 65, 12, .65), inset 0 1px 0 rgba(255, 255, 255, .30) !important;
+        text-shadow: 0 1px 1px rgba(120, 30, 5, .30);
     }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]) i {
         width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .22); font-size: .8rem;
         display: inline-grid; place-items: center;
     }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]):hover {
-        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.30), transparent 52%), linear-gradient(135deg, #93c5fd 0%, #60a5fa 50%, #3b82f6 100%) !important; transform: translateY(-2px);
-        box-shadow: 0 14px 28px -8px rgba(29, 78, 216, .75), inset 0 1px 0 rgba(255, 255, 255, .40) !important;
+        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.30), transparent 52%), linear-gradient(135deg, #fdba74 0%, #fb923c 50%, #f97316 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 28px -8px rgba(234, 88, 12, .75), inset 0 1px 0 rgba(255, 255, 255, .40) !important;
     }
-    .btn-toggle-form:focus-visible { outline: 3px solid #bfdbfe; outline-offset: 2px; }
+    .btn-toggle-form:focus-visible { outline: 3px solid #fed7aa; outline-offset: 2px; }
 
     /* ปุ่มลบตามตัวกรอง: สีแดง (override สีม่วงของปุ่มเพิ่ม) */
     .btn-toggle-form[onclick*="confirmBulkDelete"],
@@ -2468,7 +2468,7 @@
 
             <!-- Modal Header with Gradient -->
             <div class="modal-header-premium"
-                style="background: linear-gradient(135deg, #60a5fa 0%, #1d4ed8 100%); padding: 25px 35px; color: white; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;">
+                style="background: linear-gradient(135deg, #fb923c 0%, #ea580c 100%); padding: 25px 35px; color: white; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10;">
                 <div>
                     <h5
                         style="margin: 0; font-weight: 800; font-size: 1.4rem; display: flex; align-items: center; gap: 12px; letter-spacing: -0.5px;">
