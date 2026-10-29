@@ -195,7 +195,7 @@
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
             width: calc(100% - 32px) !important;
-            max-width: 440px !important;
+            max-width: 400px !important;
             margin: 0 !important;
             max-height: calc(100% - 64px) !important;
             overflow-y: auto !important;
@@ -2170,6 +2170,7 @@
 
         #userProfileModal .modal-header {
             background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%) !important;
+            padding: 16px 22px !important;
         }
 
         #userProfileModal .modal-title i {
@@ -2201,17 +2202,17 @@
         }
 
         #userProfileModal .profile-avatar {
-            width: 84px;
-            height: 84px;
-            border-radius: 22px;
+            width: 64px;
+            height: 64px;
+            border-radius: 14px;
             background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
             color: var(--admin-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 18px;
-            font-size: 2.5rem;
-            box-shadow: 0 0 0 6px rgba(79, 70, 229, 0.07);
+            margin: 0 auto 10px;
+            font-size: 1.9rem;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.07);
         }
 
         #userProfileModal .profile-badge {
@@ -2223,18 +2224,18 @@
 
         #userProfileModal .profile-info-card {
             background: #f8fafc;
-            border-radius: 18px;
-            padding: 6px 20px;
-            margin-top: 26px;
+            border-radius: 16px;
+            padding: 2px 16px;
+            margin-top: 12px;
         }
 
         #userProfileModal .profile-info-row {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 15px 8px;
+            gap: 12px;
+            padding: 9px 8px;
             border-bottom: 1px solid #e2e8f0;
-            border-radius: 12px;
+            border-radius: 10px;
             transition: background-color 0.2s ease;
         }
 
@@ -2248,39 +2249,39 @@
 
         #userProfileModal .profile-info-icon {
             flex: 0 0 auto;
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
+            width: 30px;
+            height: 30px;
+            border-radius: 9px;
             background: #eef2ff;
             color: var(--admin-primary);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
         }
 
         #userProfileModal .profile-info-label {
-            font-size: 0.74rem;
+            font-size: 0.70rem;
             color: #64748b;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.3px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             display: block;
         }
 
         #userProfileModal .profile-info-value {
             font-weight: 700;
             color: #1e293b;
-            font-size: 0.95rem;
+            font-size: 0.88rem;
             line-height: 1.3;
         }
 
         #userProfileModal .btn-profile-close {
-            border-radius: 13px;
-            padding: 13px;
+            border-radius: 11px;
+            padding: 9px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             background: #eef2ff;
             border: none;
             color: #4338ca;
@@ -2293,7 +2294,7 @@
         }
 
         #userProfileModal .profile-section-gap {
-            margin-top: 22px;
+            margin-top: 12px;
         }
     </style>
 
@@ -2395,7 +2396,7 @@
         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
-                <div class="modal-header" style="color: white; border-bottom: none; padding: 25px 28px;">
+                <div class="modal-header" style="color: white; border-bottom: none; padding: 16px 22px;">
                     <h5 class="modal-title" id="userProfileModalLabel"
                         style="font-weight: 800; letter-spacing: 0.3px; display: flex; align-items: center;">
                         <i class="fas fa-id-card-clip"></i> ข้อมูลส่วนตัวผู้ใช้งาน
@@ -2404,17 +2405,17 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body" style="padding: 28px 30px 30px;">
-                    <div class="text-center mb-4">
+                <div class="modal-body" style="padding: 18px 22px 20px;">
+                    <div class="text-center mb-2">
                         <div class="profile-avatar">
                             <i class="fas fa-user-tie"></i>
                         </div>
-                        <h4 style="font-weight: 800; color: #1e293b; margin-bottom: 8px;">
+                        <h4 style="font-weight: 800; color: #1e293b; margin-bottom: 4px; font-size: 1.1rem;">
                             {{ auth()->user()->prefix }}{{ auth()->user()->User_firstname }}
                             {{ auth()->user()->User_lastname }}
                         </h4>
                         <span class="badge badge-pill profile-badge"
-                            style="background: #eef2ff; color: #4f46e5; padding: 9px 18px; font-weight: 700; font-size: 0.82rem;">
+                            style="background: #eef2ff; color: #4f46e5; padding: 5px 12px; font-weight: 700; font-size: 0.78rem;">
                             <i class="fas fa-building mr-1"></i>
                             @php
                                 $ranks = [
