@@ -170,8 +170,25 @@
             height: 100vh !important;
             bottom: auto !important;
         }
+
+        /* Center the dialog in the full viewport using flexbox.
+           Bootstrap .modal is display:block by default; overriding to flex
+           lets us use justify-content:center for horizontal centering
+           without relying on margin:auto (which the margin-top override breaks). */
+        #userProfileModal.show {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            padding: 80px 16px 24px !important;
+            overflow-y: auto !important;
+        }
+
+        /* Dialog: let flexbox parent handle centering, be flexible on small screens */
         #userProfileModal .modal-dialog {
-            margin-top: 80px !important;
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 520px !important;
+            flex-shrink: 0;
         }
 
         @media (min-width: 769px) {
@@ -2365,7 +2382,7 @@
     <!-- User Profile Modal -->
     <div class="modal fade" id="userProfileModal" tabindex="-1" aria-labelledby="userProfileModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog">
             <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
                 <div class="modal-header" style="color: white; border-bottom: none; padding: 25px 28px;">
                     <h5 class="modal-title" id="userProfileModalLabel"
