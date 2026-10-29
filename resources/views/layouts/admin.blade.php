@@ -171,17 +171,18 @@
             bottom: auto !important;
         }
 
-        /* Dialog: position:fixed relative to viewport — immune to parent
-           positioning quirks and Bootstrap JS overrides. true viewport-center. */
+        /* Dialog: position:absolute ภายใน #userProfileModal (fixed full-viewport)
+           หลีกเลี่ยงปัญหา html{zoom:90%} ที่ทำให้ position:fixed ใน children
+           คำนวณ top/left ผิดใน zoomed coordinate space */
         #userProfileModal .modal-dialog {
-            position: fixed !important;
+            position: absolute !important;
             top: 50% !important;
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
-            width: calc(100vw - 32px) !important;
+            width: calc(100% - 32px) !important;
             max-width: 440px !important;
             margin: 0 !important;
-            max-height: calc(100vh - 64px) !important;
+            max-height: calc(100% - 64px) !important;
             overflow-y: auto !important;
             border-radius: 20px !important;
         }
