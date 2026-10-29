@@ -1267,7 +1267,7 @@
             padding: 7px 12px;
             border-radius: 12px;
             cursor: pointer;
-            color: var(--sidebar-text);
+            color: #64748b;
             font-weight: 600;
             font-family: 'K2D', 'Sarabun', sans-serif;
             transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
@@ -1276,17 +1276,14 @@
             text-decoration: none !important;
         }
         .nav-group-header i.group-icon {
-            font-size: 0.90rem;
-            width: 32px;
-            height: 29px;
+            font-size: 1rem;
+            width: 22px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #64748b;
-            background: #f1f5f9;
-            border-radius: 9px;
-            transition: color 0.2s, background 0.2s;
+            color: #94a3b8;
+            transition: color 0.2s;
         }
         .nav-group-header .group-label {
             font-size: 0.85rem;
@@ -1304,13 +1301,11 @@
             margin-left: 2px;
         }
         .nav-group-header:hover {
-            background: #f1f5f9;
-            color: var(--admin-primary);
-            transform: translateX(2px);
+            background: #eef2ff;
+            color: #4f46e5;
         }
         .nav-group-header:hover i.group-icon {
-            color: var(--admin-primary);
-            background: #e0e7ff;
+            color: #4f46e5;
         }
         .nav-group-header.group-active {
             background: #4f46e5;
@@ -1318,7 +1313,6 @@
         }
         .nav-group-header.group-active i.group-icon {
             color: white;
-            background: rgba(255,255,255,0.18);
         }
         .nav-group-header.group-active .submenu-arrow {
             color: rgba(255,255,255,0.7);
