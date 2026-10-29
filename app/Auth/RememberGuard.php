@@ -11,7 +11,7 @@ use Illuminate\Auth\SessionGuard;
 class RememberGuard extends SessionGuard
 {
     /** Remember-me cookie lifetime in minutes (30 days). */
-    protected int $rememberDuration = 43200; // 30 × 24 × 60
+    protected $rememberDuration = 43200; // 30 × 24 × 60
 
     /**
      * Create a remember-me cookie for the given recaller value

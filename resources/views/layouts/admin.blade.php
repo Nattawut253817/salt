@@ -89,7 +89,7 @@
         }
 
         body {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             background-color: var(--admin-bg);
             margin: 0;
             min-height: 100vh;
@@ -169,8 +169,8 @@
            Both !important → higher specificity wins regardless of source order.
            ─────────────────────────────────────────────────────────────── */
         #userProfileModal {
-            top: 0 !important;
-            left: 0 !important;
+            top: var(--admin-banner-height, 0px) !important;
+            left: var(--sidebar-width, 0px) !important;
             right: 0 !important;
             bottom: 0 !important;
             width: auto !important;
@@ -179,8 +179,8 @@
         }
         /* Two-class selector beats single-class .modal-backdrop in media query */
         .modal-backdrop.profile-modal-backdrop {
-            top: 0 !important;
-            left: 0 !important;
+            top: var(--admin-banner-height, 0px) !important;
+            left: var(--sidebar-width, 0px) !important;
             right: 0 !important;
             bottom: 0 !important;
             width: auto !important;
@@ -275,7 +275,7 @@
             flex-shrink: 0;
         }
         .brand-logo-collapsed span {
-            font-family: 'Prompt', 'Noto Sans Thai Looped', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 1.25rem;
             font-weight: 800;
             color: #fff;
@@ -345,7 +345,7 @@
         }
 
         .admin-banner-title {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 1.05rem;
             font-weight: 400;
             color: #ffffff;
@@ -365,7 +365,7 @@
            profile-chip on the right, not clash with it). */
         .admin-banner-subtitle,
         .admin-banner-org-rank {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.74rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.75);
@@ -438,7 +438,7 @@
         }
 
         .admin-banner-org-name {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.85rem;
             font-weight: 700;
             color: #ffffff;
@@ -491,7 +491,7 @@
             background: #ffffff;
             color: #e11d48;
             flex-shrink: 0;
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
@@ -529,7 +529,7 @@
 
         .sidebar-nav,
         .sidebar-footer {
-            font-family: 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .sidebar-nav {
@@ -558,7 +558,7 @@
             padding: 14px 14px 6px 14px;
             font-size: 0.75rem;
             font-weight: 800;
-            font-family: 'Prompt', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #94a3b8;
             text-transform: uppercase;
             letter-spacing: 0.9px;
@@ -591,7 +591,7 @@
             text-decoration: none !important;
             border-radius: 12px;
             font-weight: 500;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             line-height: 1.35;
             transition: background 0.18s ease, color 0.18s ease;
             position: relative;
@@ -662,7 +662,7 @@
             background: transparent;
             outline: none;
             font-size: 0.85rem;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             color: #334155;
             width: 100%;
             line-height: 1;
@@ -695,7 +695,7 @@
             gap: 12px;
             cursor: pointer;
             font-weight: 500;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             transition: background 0.18s, color 0.18s;
             font-size: 0.88rem;
         }
@@ -733,7 +733,7 @@
         .sidebar-dark-label {
             flex: 1;
             font-size: 0.88rem;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 500;
             color: #64748b;
         }
@@ -815,7 +815,7 @@
             font-weight: 700;
             font-size: 1.25rem;
             color: #3730a3;
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .page-header-subtitle {
@@ -831,7 +831,7 @@
             background: rgba(255, 255, 255, 0.65);
             border: 1px solid #dfe3fb;
             border-radius: 999px;
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .page-header-subtitle i {
@@ -852,7 +852,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             flex-shrink: 0;
             margin-left: 8px;
         }
@@ -877,7 +877,7 @@
             align-items: center;
             gap: 9px;
             color: #fff;
-            font-family: 'Noto Serif Thai', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.9rem;
             font-weight: 600;
             padding: 11px 24px;
@@ -901,15 +901,17 @@
         /* Primary / forward action (ทำแบบประเมิน, เพิ่มเมนู, เพิ่มผลิตภัณฑ์) -
            lighter indigo pill, matches the left button in the reference image. */
         .btn-take-assessment {
-            background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
-            box-shadow: 0 6px 16px rgba(67, 56, 202, 0.35);
+            background: linear-gradient(135deg, #fde047 0%, #eab308 100%);
+            box-shadow: 0 6px 16px rgba(234, 179, 8, 0.4);
+            color: #ffffff !important;
+            text-shadow: 0 1px 3px rgba(120, 53, 15, 0.4);
         }
 
         .btn-take-assessment:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 22px rgba(67, 56, 202, 0.45);
-            filter: brightness(1.08);
-            color: #fff;
+            box-shadow: 0 10px 22px rgba(234, 179, 8, 0.5);
+            filter: brightness(1.05);
+            color: #ffffff;
         }
 
         /* Back / return action (กลับหน้าหลัก) - deeper indigo pill, matches
@@ -936,6 +938,15 @@
             box-shadow: 0 10px 22px rgba(234, 88, 12, 0.45);
         }
 
+        /* ปุ่ม "เพิ่มผลิตภัณฑ์" - สีเขียวมรกต (emerald) */
+        .btn-take-assessment.btn-add-product {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 6px 16px rgba(5, 150, 105, 0.35);
+        }
+        .btn-take-assessment.btn-add-product:hover {
+            box-shadow: 0 10px 22px rgba(5, 150, 105, 0.45);
+        }
+
         .btn-take-assessment:active,
         .btn-back-home:active {
             transform: translateY(0);
@@ -947,7 +958,7 @@
             align-items: center;
             gap: 9px;
             color: #fff;
-            font-family: 'Noto Serif Thai', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-size: 0.9rem;
             font-weight: 600;
             padding: 11px 24px;
@@ -1257,7 +1268,7 @@
             padding: 5px 12px;
             border-radius: 8px;
             font-size: 0.76rem;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             white-space: nowrap;
             pointer-events: none;
             z-index: 99999;
@@ -1297,7 +1308,7 @@
             cursor: pointer;
             color: #1e293b;
             font-weight: 600;
-            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
             position: relative;
             user-select: none;
@@ -1410,7 +1421,7 @@
     @yield('extra_css')
     <style>
         /* =====================================================================
-           ระบบหลังบ้านทั้งหมดใช้ฟอนต์ Noto Sans Thai Looped (ตัวเลข 0-9 และอีเมลใช้ Sarabun แบบมีหัว)
+           ระบบหลังบ้านทั้งหมดใช้ฟอนต์ Sarabun (ตัวเลข 0-9 และอีเมลใช้ Sarabun แบบมีหัว)
            ยกเว้น: เมนู sidebar ด้านซ้าย, ปุ่ม Export (และข้อความในปุ่ม), ไอคอน Font Awesome,
                    กราฟ/แผนที่ SVG และโค้ด (code/pre/kbd) - ทั้งหมดนี้คงฟอนต์เดิม
            ปุ่ม Export ถูกติดคลาส .kd-keep-font อัตโนมัติด้วยสคริปต์ท้ายหน้า (ดู kd-keep-font)
@@ -1424,20 +1435,20 @@
         @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 600; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YK5silss6w.woff2) format('woff2'); unicode-range: U+30-39; }
         @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 700; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
         @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 800; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
-        :root { --kd-font: 'Sarabun Digits', 'Noto Sans Thai Looped', 'Noto Serif Thai', 'TH Sarabun New', sans-serif; }
+        :root { --kd-font: 'Sarabun Digits', 'Sarabun', sans-serif; }
         body *:not(.admin-sidebar):not(.admin-sidebar *):not(.kd-keep-font):not(.kd-keep-font *):not(.kd-email):not(.kd-email *):not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *):not(code):not(pre):not(kbd):not(samp),
         body {
             font-family: var(--kd-font) !important;
         }
         /* อีเมล: ใช้ Sarabun ทั้งตัวอักษรและตัวเลข - ติดคลาส .kd-email อัตโนมัติด้วยสคริปต์ท้ายหน้า (ไม่แตะไอคอน) */
         .kd-email, .kd-email *:not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *) {
-            font-family: 'Sarabun', 'Noto Sans Thai Looped', sans-serif;
+            font-family: 'Sarabun', sans-serif;
             font-weight: 600;
         }
         /* ส่วนที่ยกเว้นต้องกลับไปใช้ฟอนต์เดิมของระบบ (ไม่ใช่สืบทอดจาก body ที่เปลี่ยนแล้ว) */
         .admin-sidebar,
         .kd-keep-font {
-            font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
+            font-family: 'Sarabun', sans-serif;
         }
     </style>
     <style>
@@ -1870,12 +1881,12 @@
                     </a>
                 @elseif(auth()->user()->User_rank_id != 1 && request()->routeIs('admin.reduced-sodium-menu-dashboard'))
                     <a href="{{ route('admin.sodium-menus') }}" class="btn-take-assessment">
-                        <i class="fas fa-plus"></i>
+                        <i class="fas fa-utensils"></i>
                         <span>เพิ่มเมนู</span>
                     </a>
                 @elseif(auth()->user()->User_rank_id == 2 && request()->routeIs('admin.reduced-sodium-products-dashboard'))
-                    <a href="{{ route('admin.sodium-products') }}" class="btn-take-assessment">
-                        <i class="fas fa-plus"></i>
+                    <a href="{{ route('admin.sodium-products') }}" class="btn-take-assessment btn-add-product">
+                        <i class="fas fa-tags"></i>
                         <span>เพิ่มผลิตภัณฑ์</span>
                     </a>
                 @elseif(auth()->user()->User_rank_id != 1 && request()->routeIs('admin.sodium-menus'))
@@ -2233,7 +2244,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 9px 8px;
+            padding: 14px 8px;
             border-bottom: 1px solid #e2e8f0;
             border-radius: 10px;
             transition: background-color 0.2s ease;
@@ -2486,7 +2497,7 @@
         .need-area-hero { background: linear-gradient(160deg, #eef2ff 0%, #e0e7ff 100%); padding: 34px 28px 26px; border-bottom: 1px solid #e0e7ff; }
         .need-area-badge { position: relative; width: 76px; height: 76px; margin: 0 auto 14px; border-radius: 50%; background: #fff; display: grid; place-items: center; color: #4f46e5; font-size: 1.9rem; box-shadow: 0 10px 24px -8px rgba(79, 70, 229, .5); }
         .need-area-badge::after { content: "!"; position: absolute; right: -2px; top: -2px; width: 26px; height: 26px; border-radius: 50%; background: #f59e0b; color: #fff; font: 800 .9rem/26px 'Noto Serif Thai', sans-serif; text-align: center; border: 3px solid #eef2ff; }
-        .need-area-title { font-family: 'Noto Serif Thai', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1e1b4b; margin: 0; }
+        .need-area-title { font-family: 'Sarabun', sans-serif; font-size: 1.2rem; font-weight: 700; color: #1e1b4b; margin: 0; }
         .need-area-body { padding: 20px 30px 4px; text-align: center; color: #475569; font-size: .92rem; line-height: 1.7; }
         .need-area-steps { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 16px; font-size: .8rem; font-weight: 600; color: #94a3b8; }
         .need-area-steps .on { color: #4338ca; }
@@ -2494,8 +2505,8 @@
         .need-area-steps .on .dot { background: #4f46e5; color: #fff; }
         .need-area-steps .bar { width: 28px; height: 2px; background: #e2e8f0; border-radius: 2px; }
         .need-area-popup .swal2-actions { margin-top: 22px; gap: 10px; }
-        .need-area-popup .swal2-confirm { border-radius: 999px !important; padding: 11px 26px !important; font-family: 'Noto Serif Thai', sans-serif; font-weight: 600; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; box-shadow: 0 8px 18px rgba(67, 56, 202, .35) !important; }
-        .need-area-popup .swal2-cancel { border-radius: 999px !important; padding: 11px 22px !important; font-family: 'Noto Serif Thai', sans-serif; font-weight: 600; background: #f1f5f9 !important; color: #475569 !important; }
+        .need-area-popup .swal2-confirm { border-radius: 999px !important; padding: 11px 26px !important; font-family: 'Sarabun', sans-serif; font-weight: 600; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; box-shadow: 0 8px 18px rgba(67, 56, 202, .35) !important; }
+        .need-area-popup .swal2-cancel { border-radius: 999px !important; padding: 11px 22px !important; font-family: 'Sarabun', sans-serif; font-weight: 600; background: #f1f5f9 !important; color: #475569 !important; }
         .need-area-popup .swal2-confirm:focus-visible, .need-area-popup .swal2-cancel:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; box-shadow: none !important; }
     </style>
     <script>

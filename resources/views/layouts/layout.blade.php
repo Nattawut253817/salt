@@ -4,6 +4,9 @@
 <head>
     <script>window.APP_BASE = @json(rtrim(url('/'), '/')); // ฐาน URL ของแอป (รองรับติดตั้งในโฟลเดอร์ย่อย/โดเมนต่างๆ ตอนขึ้น server)</script>
     <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Salt & Sodium Smart Monitor')</title>
 
@@ -100,8 +103,9 @@
             /* Pure white background */
             --accent-color: #f8bbd0;
             --text-color: #2d3436;
-            --navbar-height: 70px;
-            --top-bar-height: 50px;
+            --navbar-height: 122px;
+            --top-bar-height: 68px;
+            --nav-bar-height: 54px;
             --sidebar-width: 0px;
             --glass-bg: rgba(255, 255, 255, 0.95);
             --header-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
@@ -166,44 +170,54 @@
             top: 0;
             z-index: 11500;
             width: 100%;
-            box-shadow: var(--header-shadow);
         }
 
         /* Gradient bridge removed — no strip below the header. */
 
-        .header-container {
+        /* ── Two-level header: top gradient bar + white nav bar ── */
+        .header-top-bar {
             display: flex;
             align-items: center;
-            gap: 18px;
+            justify-content: center;
+            gap: 20px;
             width: 100%;
             min-height: 68px;
-            padding: 10px 4%;
-            background:
-                radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.22), transparent 45%),
-                var(--pink-gradient);
+            padding: 0 4%;
+            background: linear-gradient(145deg, #fb7185 0%, #f43f5e 35%, #e11d48 70%, #be123c 100%);
+        }
+
+        .header-nav-bar {
+            display: flex;
+            align-items: stretch;
+            width: 100%;
+            height: 54px;
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 6px 20px rgba(0,0,0,.07);
         }
 
         .brand-container {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 12px;
+            gap: 36px;
             text-decoration: none;
             flex-shrink: 0;
+            margin-left: -48px;
         }
 
         .brand-logo-wrapper {
-            background: #ffffff;
-            padding: 7px;
+            background: transparent;
+            padding: 0;
             border-radius: 50%;
-            display: flex;
+            display: none;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: none;
+            border: none;
             transition: all 0.3s ease;
-            width: 54px;
-            height: 54px;
+            width: 64px;
+            height: 64px;
             flex-shrink: 0;
         }
 
@@ -221,114 +235,113 @@
         /* The header's sole mark: the SSS icon, sized to fill its round
            badge with a clear, confident presence now that it stands alone. */
         .brand-logo-wrapper--sss img {
-            height: 32px;
+            height: 52px;
             width: auto;
+            max-width: 160px;
+            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.20));
+            transition: filter 0.3s ease, transform 0.3s ease;
+        }
+        .brand-logo-wrapper--sss:hover img {
+            filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.40)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+            transform: translateY(-1px);
         }
 
         .brand-text-group {
             display: flex;
             flex-direction: column;
             line-height: 1.25;
-            align-items: flex-start;
-            text-align: left;
-            gap: 2px;
-            min-width: 0;
+            align-items: center;
+            text-align: center;
+            gap: 4px;
         }
 
         .brand-text-main {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.98rem;
-            font-weight: 400;
+            font-size: 1.45rem;
+            font-weight: 600;
             color: #ffffff;
-            letter-spacing: 0.2px;
-            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.15);
+            letter-spacing: 0.3px;
+            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
             white-space: nowrap;
             line-height: 1.2;
+            text-align: center;
         }
 
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.64rem;
-            color: #ffffff;
+            font-size: 0.90rem;
+            color: rgba(255,255,255,0.88);
             font-weight: 400;
-            letter-spacing: 1px;
+            letter-spacing: 1.8px;
             text-transform: uppercase;
             white-space: normal;
         }
 
+        /* ── Nav bar: full-width row, all 8 items get flex:1 ── */
         .main-navbar {
             display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            flex: 1;
-            min-width: 0;
+            align-items: stretch;
+            width: 100%;
         }
 
         .main-navbar .nav-links {
             display: flex;
-            align-items: center;
+            align-items: stretch;
+            justify-content: center;
             list-style: none;
             margin: 0;
-            padding: 0 4px;
+            padding: 0;
             gap: 0;
-            overflow-x: auto;
-            scrollbar-width: none;
-            /* Firefox */
-            /* Subtle inner container: slight inset look */
-            background: rgba(0, 0, 0, 0.12);
-            border-radius: 999px;
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 0 rgba(255,255,255,0.08);
+            width: 100%;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            border-radius: 0;
         }
 
         .main-navbar .nav-links::-webkit-scrollbar {
             display: none;
-            /* Chrome/Safari */
         }
 
         .main-navbar .nav-item {
-            flex-shrink: 0;
+            flex: 0 0 auto;
             display: flex;
-            align-items: center;
+            align-items: stretch;
         }
 
-        /* Divider between nav items */
+        /* No dividers in the white nav bar */
         .main-navbar .nav-item + .nav-item::before {
-            content: '';
-            display: block;
-            width: 1px;
-            height: 18px;
-            background: rgba(255, 255, 255, 0.35);
-            flex-shrink: 0;
+            display: none;
         }
 
-        /* Each link sits inline on the gradient bar */
+        /* Each link fills its flex cell and centers its content */
         .main-navbar .nav-link {
             display: flex;
             align-items: center;
-            gap: 5px;
-            height: 36px;
-            padding: 0 12px;
-            border-radius: 999px;
-            color: #ffffff;
-            text-decoration: none;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 14px;
+            height: calc(100% - 8px);
+            margin: 4px 3px;
+            border-radius: 8px;
+            color: #334155;
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 600;
-            font-size: 0.82rem;
+            font-weight: 400;
+            font-size: 0.88rem;
             white-space: nowrap;
-            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-            margin: 3px 0;
+            text-decoration: none;
+            transition: color 0.15s ease, background 0.15s ease;
+            position: relative;
         }
 
         .main-navbar .nav-link i {
-            font-size: 0.92rem;
-            opacity: 1;
-            transition: opacity 0.2s ease;
+            font-size: 0.75rem;
+            transition: opacity 0.15s ease;
         }
 
         .main-navbar .nav-link:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.2);
+            color: #e11d48;
+            background: #fff1f2;
         }
 
         .main-navbar .nav-link:hover i {
@@ -336,50 +349,60 @@
         }
 
         .main-navbar .nav-link.active {
-            color: var(--primary-color);
-            background: #ffffff;
-            font-weight: 700;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0,0,0,0.10);
+            color: #e11d48;
+            background: #fff1f2;
+            font-weight: 600;
+            box-shadow: none;
         }
 
         .main-navbar .nav-link.active i {
             opacity: 1;
         }
 
-        /* The staff sign-in, set apart from the wayfinding list by a
-           hairline divider and its own solid-white pill - reads as "an
-           action" rather than "another page to browse to". */
-        .header-actions {
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-            padding-left: 14px;
-            margin-left: 2px;
-            border-left: 1px solid rgba(255, 255, 255, 0.28);
+        /* Active page: bottom border line indicator */
+        .main-navbar .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: #f43f5e;
+            border-radius: 1px;
         }
 
+        /* Staff nav item: same style as other nav items */
+        .main-navbar .nav-link--staff {
+            color: #334155;
+        }
+        .main-navbar .nav-link--staff:hover {
+            color: #e11d48;
+            background: #fff1f2;
+        }
+
+        /* Ghost pill button in the pink top bar */
         .header-cta {
             display: flex;
             align-items: center;
-            gap: 6px;
-            height: 34px;
-            padding: 0 14px 0 6px;
+            gap: 8px;
+            padding: 9px 22px;
             border-radius: 999px;
-            background: #ffffff;
-            border: none;
-            color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.18);
+            border: 1.5px solid rgba(255, 255, 255, 0.45);
+            color: #ffffff;
             text-decoration: none;
-            font-family: 'Itim', 'Sarabun', sans-serif;
-            font-weight: 700;
-            font-size: 0.80rem;
+            font-family: 'Sarabun', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
             white-space: nowrap;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.10);
-            transition: box-shadow 0.18s ease, transform 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            transition: background 0.15s ease, box-shadow 0.15s ease;
         }
 
         .header-cta:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,0.22), 0 2px 5px rgba(0,0,0,0.12);
-            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.28);
+            transform: none;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.18);
         }
 
         /* ── Theme toggle ── */
@@ -695,86 +718,59 @@
             margin-right: 15px;
         }
 
-        /* Responsive Adjustment for Top Nav - the bar stays a single row
-           all the way down to the 768px handoff to the mobile bottom tab
-           bar; the nav list also scrolls horizontally
-           (.main-navbar .nav-links) as a last-resort fallback, but every
-           rule below is sized/verified so that fallback is never actually
-           needed at any common desktop or laptop width - all 7 items plus
-           the staff link stay on screen. */
-        @media (max-width: 1500px) {
-            .header-container {
+        /* ── Responsive: Two-level navbar ──
+           Top bar: brand+staff — no longer competes with the nav items.
+           Nav bar: flex: 1 cells fill the full width automatically.
+           Below ~960px the brand title wraps; below ~600px the nav text
+           labels shrink or hide and we fall back to icons only. */
+        @media (max-width: 1200px) {
+            .header-top-bar {
                 gap: 10px;
+                padding: 8px 3%;
             }
 
-            /* Below this width the title no longer fits on one line
-               alongside every nav item and the staff link - wrapping it
-               to two lines here (rather than at every width) frees the
-               room those need, while keeping the reference layout's
-               single-line title at ordinary desktop widths. */
             .brand-text-group {
-                max-width: 195px;
+                max-width: 220px;
             }
 
             .brand-text-main {
                 white-space: normal;
-            }
-
-            .main-navbar .nav-links {
-                gap: 0;
-            }
-
-            .main-navbar .nav-link {
-                gap: 3px;
-                padding: 0 8px;
-                font-size: 0.72rem;
-            }
-
-            .main-navbar .nav-link i {
-                font-size: 0.86rem;
-            }
-
-            .header-cta > span:not(.header-cta-icon) {
-                display: none;
-            }
-
-            .header-cta {
-                padding: 0 7px;
+                font-size: 1.35rem;
             }
         }
 
-        @media (max-width: 992px) {
-            .header-container {
-                padding: 10px 3%;
-            }
-
+        @media (max-width: 960px) {
             .brand-text-sub {
                 display: none;
             }
 
-            /* Text labels no longer fit next to every icon in this range -
-               drop to icon-only pills (title attribute keeps a tooltip) so
-               all 7 items still fit without the nav row silently
-               scroll-clipping any of them. */
-            .main-navbar .nav-links {
-                gap: 0;
+            .header-top-bar {
+                padding: 8px 2.5%;
             }
 
+            /* Nav labels get tighter but still visible — flex cells handle spacing */
+            .main-navbar .nav-link {
+                font-size: 0.78rem;
+                gap: 4px;
+            }
+
+            .main-navbar .nav-link i {
+                font-size: 0.82rem;
+            }
+        }
+
+        /* Below ~600px: icon-only nav bar (tooltips via title attr) */
+        @media (max-width: 600px) {
             .main-navbar .nav-link span {
                 display: none;
             }
 
             .main-navbar .nav-link {
-                padding: 0 10px;
                 gap: 0;
             }
 
             .main-navbar .nav-link i {
-                font-size: 1.05rem;
-            }
-
-            .main-navbar .nav-item + .nav-item::before {
-                height: 14px;
+                font-size: 1rem;
             }
         }
 
@@ -784,7 +780,7 @@
             }
 
             .brand-text-main {
-                font-size: 0.9rem;
+                font-size: 1.15rem;
             }
 
             .brand-text-sub {
@@ -792,23 +788,25 @@
             }
 
             .brand-logo-wrapper {
-                width: 46px;
-                height: 46px;
-                padding: 6px;
+                width: 52px;
+                height: 52px;
+                padding: 7px;
             }
 
             .brand-container img {
-                height: 22px;
-            }
-
-            .brand-logo-wrapper--sss img {
                 height: 26px;
             }
 
-            .main-navbar,
-            .header-actions {
+            .brand-logo-wrapper--sss img {
+                height: 30px;
+            }
+
+            /* On mobile: hide the nav bar, keep the brand top bar visible */
+            .header-nav-bar {
                 display: none;
             }
+
+            /* header-actions stays in the top bar — already visible */
 
             .main-content {
                 padding: 20px 15px 80px 15px;
@@ -1367,10 +1365,11 @@
     <div class="overlay" id="sidebar-overlay"></div>
 
     <header class="site-header">
-        <div class="header-container">
+        {{-- ── Top bar: brand mark + staff CTA on the pink gradient ── --}}
+        <div class="header-top-bar">
             <div class="brand-container">
                 <div class="brand-logo-wrapper brand-logo-wrapper--sss" title="Smart Salt &amp; Sodium Monitor">
-                    <img src="{{ asset('images/logo-sss-icon.png') }}" alt="SSS Logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="SSS Logo">
                 </div>
                 <div class="brand-text-group">
                     <span class="brand-text-main">ระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10</span>
@@ -1378,6 +1377,10 @@
                 </div>
             </div>
 
+        </div>
+
+        {{-- ── Nav bar: full-width balanced 7-item navigation ── --}}
+        <div class="header-nav-bar">
             <nav class="main-navbar">
                 <ul class="nav-links">
                     <li class="nav-item">
@@ -1436,15 +1439,16 @@
                             <span>แบบรายงานบริโภคเกลือ</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('staff') }}" title="สำหรับเจ้าหน้าที่"
+                            class="nav-link {{ request()->routeIs('staff*') ? 'active' : '' }} nav-link--staff">
+                            <i class="fas fa-user-shield"></i>
+                            <span>สำหรับเจ้าหน้าที่</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
-            <div class="header-actions">
-                <a href="{{ route('staff') }}" class="header-cta">
-                    <span class="header-cta-icon"><i class="fas fa-user-shield"></i></span>
-                    <span>สำหรับเจ้าหน้าที่</span>
-                </a>
-            </div>
         </div>
     </header>
 

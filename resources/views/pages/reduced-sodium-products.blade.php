@@ -1033,7 +1033,7 @@
                     <div class="chart-card-icon"><i class="fas fa-chart-pie"></i></div>
                     <div style="flex:1; min-width:0;">
                         <div class="chart-card-title">ร้อยละผลิตภัณฑ์อาหารที่ปรับสูตรลดโซเดียม</div>
-                        <div class="chart-card-subtitle">แยกตามประเภท · นำเมาส์ชี้บนกราฟเพื่อดูสัดส่วนและจำนวนรายการ</div>
+                        <div class="chart-card-subtitle">แยกตามประเภท</div>
                     </div>
                     <span class="tp-chip">{{ number_format(collect($typeChartData)->sum()) }} รายการ</span>
                 </div>
