@@ -39,7 +39,6 @@
             --admin-bg: #f8fafc;
             /* Lighter background */
             --sidebar-bg: #ffffff;
-            /* White sidebar */
             --sidebar-text: #334155;
             /* Slate 700 */
             --sidebar-active-bg: #4f46e5;
@@ -558,31 +557,28 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 10px;
-            padding: 9px 14px;
-            color: var(--sidebar-text);
+            gap: 12px;
+            padding: 10px 14px;
+            color: #64748b;
             text-decoration: none !important;
-            border-radius: 14px;
-            font-weight: 600;
+            border-radius: 12px;
+            font-weight: 500;
             font-family: 'K2D', 'Sarabun', sans-serif;
             line-height: 1.35;
-            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            transition: background 0.18s ease, color 0.18s ease;
             position: relative;
         }
 
         .nav-link i {
-            font-size: 0.86rem;
-            width: 32px;
-            height: 32px;
+            font-size: 1rem;
+            width: 22px;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            color: #64748b;
-            background: #f1f5f9;
-            border-radius: 9px;
-            transition: color 0.2s ease, background-color 0.2s ease;
+            color: #94a3b8;
+            transition: color 0.2s ease;
         }
 
         .nav-link span:not(.nav-badge) {
@@ -592,55 +588,153 @@
         }
 
         .nav-link:hover {
-            color: var(--admin-primary);
-            background: #f1f5f9;
-            transform: translateX(2px);
+            color: #4f46e5;
+            background: #eef2ff;
         }
 
         .nav-link:hover i {
-            color: var(--admin-primary);
-            background: #e0e7ff;
+            color: #4f46e5;
         }
 
         .nav-link.active {
-            background: linear-gradient(135deg, var(--admin-primary) 0%, #6366f1 100%);
-            color: white;
+            background: #4f46e5;
+            color: #ffffff;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
         }
 
         .nav-link.active i {
-            color: white;
-            background: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
         }
 
-        .sidebar-footer {
-            padding: 16px 20px 20px 20px;
+        /* ── Sidebar search ── */
+        .sidebar-search {
+            padding: 0 16px 12px;
+        }
+        .sidebar-search-inner {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 8px 13px;
+            transition: border-color 0.2s;
+        }
+        .sidebar-search-inner:focus-within {
+            border-color: #a5b4fc;
             background: #fff;
-            border-top: 1px solid #f1f5f9;
+        }
+        .sidebar-search-icon {
+            color: #94a3b8;
+            font-size: 0.78rem;
+            flex-shrink: 0;
+        }
+        .sidebar-search-input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.85rem;
+            font-family: 'K2D', 'Sarabun', sans-serif;
+            color: #334155;
+            width: 100%;
+            line-height: 1;
+        }
+        .sidebar-search-input::placeholder {
+            color: #cbd5e1;
+        }
+
+        /* ── Sidebar footer ── */
+        .sidebar-footer {
+            flex-shrink: 0;
+            padding: 0 14px 20px;
+            background: var(--sidebar-bg);
+        }
+        .sidebar-footer-divider {
+            height: 1px;
+            background: #f1f5f9;
+            margin-bottom: 12px;
         }
 
         .btn-logout {
             width: 100%;
-            padding: 11px;
+            padding: 10px 14px;
             border-radius: 12px;
             border: none;
-            background: #fef2f2;
-            color: #ef4444;
+            background: transparent;
+            color: #64748b;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            gap: 12px;
             cursor: pointer;
-            font-weight: 700;
+            font-weight: 500;
             font-family: 'K2D', 'Sarabun', sans-serif;
-            transition: all 0.2s;
-            font-size: 0.85rem;
+            transition: background 0.18s, color 0.18s;
+            font-size: 0.88rem;
         }
 
         .btn-logout:hover {
-            background: #ef4444;
-            color: white;
-            border-color: #ef4444;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.15);
+            background: #fef2f2;
+            color: #ef4444;
+        }
+        .btn-logout i {
+            font-size: 1rem;
+            width: 22px;
+            flex-shrink: 0;
+        }
+
+        /* Dark mode toggle row */
+        .sidebar-dark-toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.18s;
+            user-select: none;
+        }
+        .sidebar-dark-toggle:hover {
+            background: #f1f5f9;
+        }
+        .sidebar-dark-icon {
+            font-size: 1rem;
+            width: 22px;
+            color: #94a3b8;
+            flex-shrink: 0;
+        }
+        .sidebar-dark-label {
+            flex: 1;
+            font-size: 0.88rem;
+            font-family: 'K2D', 'Sarabun', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+        }
+        .sidebar-toggle-switch {
+            width: 38px;
+            height: 22px;
+            border-radius: 11px;
+            background: #e2e8f0;
+            position: relative;
+            transition: background 0.25s;
+            flex-shrink: 0;
+        }
+        .sidebar-toggle-switch.on {
+            background: #4f46e5;
+        }
+        .sidebar-toggle-thumb {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+            transition: transform 0.25s;
+        }
+        .sidebar-toggle-switch.on .sidebar-toggle-thumb {
+            transform: translateX(16px);
         }
 
         /* Main Content Styling */
@@ -1110,7 +1204,19 @@
         body.sidebar-collapsed .admin-sidebar .btn-logout {
             justify-content: center;
             padding: 8px 0;
-            margin: 0 10px;
+            margin: 0 4px;
+        }
+
+        /* hide search + dark mode label in collapsed */
+        body.sidebar-collapsed .admin-sidebar .sidebar-search,
+        body.sidebar-collapsed .admin-sidebar .sidebar-dark-label,
+        body.sidebar-collapsed .admin-sidebar .sidebar-toggle-switch {
+            display: none !important;
+        }
+        body.sidebar-collapsed .admin-sidebar .sidebar-dark-toggle {
+            justify-content: center;
+            padding: 8px 0;
+            margin: 0 4px;
         }
 
         /* Sidebar tooltip — rendered as a fixed-position element appended
@@ -1313,6 +1419,40 @@
             font-family: 'Noto Serif Thai', 'TH Sarabun New', 'TH Sarabun PS', sans-serif;
         }
     </style>
+    <style>
+        /* ── Dark mode ─────────────────────────────────────────────────── */
+        html.dark-mode {
+            --sidebar-bg: #18181b;
+            --sidebar-text: #d1d5db;
+        }
+        html.dark-mode .admin-sidebar {
+            border-right-color: #27272a;
+            box-shadow: 1px 0 10px rgba(0,0,0,0.3);
+        }
+        html.dark-mode .nav-link { color: #9ca3af; }
+        html.dark-mode .nav-link:hover { background: #27272a; color: #a5b4fc; }
+        html.dark-mode .nav-link i { color: #6b7280; }
+        html.dark-mode .nav-link:hover i { color: #a5b4fc; }
+        html.dark-mode .nav-section-title { color: #4b5563; }
+        html.dark-mode .nav-group-header { color: #9ca3af; }
+        html.dark-mode .nav-group-header:hover { background: #27272a; }
+        html.dark-mode .sidebar-search-inner {
+            background: #27272a; border-color: #3f3f46;
+        }
+        html.dark-mode .sidebar-search-inner:focus-within {
+            background: #27272a; border-color: #6366f1;
+        }
+        html.dark-mode .sidebar-search-input { color: #d1d5db; }
+        html.dark-mode .sidebar-dark-toggle:hover { background: #27272a; }
+        html.dark-mode .sidebar-dark-label { color: #9ca3af; }
+        html.dark-mode .btn-logout { color: #9ca3af; }
+        html.dark-mode .btn-logout:hover { background: #2d1515; color: #f87171; }
+        html.dark-mode .sidebar-footer-divider { background: #27272a; }
+        html.dark-mode .admin-navbar {
+            background: linear-gradient(135deg, #18181b 0%, #1c1c27 100%);
+            border-bottom-color: #27272a;
+        }
+    </style>
 </head>
 
 <body>
@@ -1405,6 +1545,14 @@
             </div>
             <div class="brand-logo-collapsed" aria-hidden="true">
                 <span>S</span>
+            </div>
+        </div>
+
+        <div class="sidebar-search">
+            <div class="sidebar-search-inner">
+                <i class="fas fa-search sidebar-search-icon"></i>
+                <input type="text" id="sidebarSearch" class="sidebar-search-input"
+                       placeholder="ค้นหาเมนู..." autocomplete="off">
             </div>
         </div>
 
@@ -1665,6 +1813,20 @@
 
             @endif
         </ul>
+        <div class="sidebar-footer">
+            <div class="sidebar-footer-divider"></div>
+            <button class="btn-logout sidebar-logout-btn" id="logout-btn" type="button">
+                <i class="fas fa-arrow-right-from-bracket"></i>
+                <span>ออกจากระบบ</span>
+            </button>
+            <div class="sidebar-dark-toggle" id="darkModeToggle" title="เปลี่ยนธีม">
+                <i class="fas fa-moon sidebar-dark-icon"></i>
+                <span class="sidebar-dark-label">โหมดมืด</span>
+                <div class="sidebar-toggle-switch" id="darkModeSwitch">
+                    <div class="sidebar-toggle-thumb"></div>
+                </div>
+            </div>
+        </div>
     </aside>
 
     <div class="admin-main">
@@ -2131,6 +2293,43 @@
 
     <script>
         $(document).ready(function() {
+            // ── Sidebar search: live filter nav links ─────────────────────────
+            $('#sidebarSearch').on('input', function () {
+                var q = $(this).val().toLowerCase().trim();
+                if (!q) {
+                    $('.nav-item, .nav-section-title, .nav-group').show();
+                    return;
+                }
+                $('.nav-section-title').hide();
+                $('.nav-group, .nav-item').each(function () {
+                    var text = $(this).find('span').not('.nav-badge').text().toLowerCase();
+                    $(this).toggle(text.indexOf(q) !== -1);
+                });
+            });
+
+            // ── Dark mode toggle ───────────────────────────────────────────────
+            var darkKey = 'sidebar_dark_mode';
+            var isDark = localStorage.getItem(darkKey) === '1';
+
+            function applyDarkMode(on) {
+                $('html').toggleClass('dark-mode', on);
+                $('#darkModeSwitch').toggleClass('on', on);
+                $('.sidebar-dark-icon').toggleClass('fa-moon', !on).toggleClass('fa-sun', on);
+                localStorage.setItem(darkKey, on ? '1' : '0');
+            }
+
+            applyDarkMode(isDark);
+
+            $('#darkModeToggle').on('click', function () {
+                isDark = !isDark;
+                applyDarkMode(isDark);
+            });
+
+            // ── Sidebar logout button mirrors the top-banner logout ────────────
+            $('#logout-btn').on('click', function () {
+                $('#logoutConfirmModal').modal('show');
+            });
+
             // Profile modal: tag its Bootstrap-generated backdrop so the CSS
             // exclusion rule can target it without a broad body > :last-of-type selector.
             $('#userProfileModal')
