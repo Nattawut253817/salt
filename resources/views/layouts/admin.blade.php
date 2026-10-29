@@ -171,24 +171,18 @@
             bottom: auto !important;
         }
 
-        /* Center the dialog in the full viewport using flexbox.
-           Bootstrap .modal is display:block by default; overriding to flex
-           lets us use justify-content:center for horizontal centering
-           without relying on margin:auto (which the margin-top override breaks). */
-        #userProfileModal.show {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: flex-start !important;
-            padding: 80px 16px 24px !important;
-            overflow-y: auto !important;
-        }
-
-        /* Dialog: let flexbox parent handle centering, be flexible on small screens */
+        /* Center the dialog with transform — works regardless of Bootstrap JS
+           setting style="display:block" on the parent modal element.
+           .modal is position:fixed covering the full viewport;
+           .modal-dialog with left:50% + translateX(-50%) centers perfectly. */
         #userProfileModal .modal-dialog {
-            margin: 0 !important;
-            width: 100% !important;
+            position: absolute !important;
+            top: 80px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: calc(100% - 32px) !important;
             max-width: 520px !important;
-            flex-shrink: 0;
+            margin: 0 !important;
         }
 
         @media (min-width: 769px) {
