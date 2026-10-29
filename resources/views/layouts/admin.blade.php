@@ -171,18 +171,19 @@
             bottom: auto !important;
         }
 
-        /* Center the dialog with transform — works regardless of Bootstrap JS
-           setting style="display:block" on the parent modal element.
-           .modal is position:fixed covering the full viewport;
-           .modal-dialog with left:50% + translateX(-50%) centers perfectly. */
+        /* Dialog: position:fixed relative to viewport — immune to parent
+           positioning quirks and Bootstrap JS overrides. true viewport-center. */
         #userProfileModal .modal-dialog {
-            position: absolute !important;
-            top: 80px !important;
+            position: fixed !important;
+            top: 50% !important;
             left: 50% !important;
-            transform: translateX(-50%) !important;
-            width: calc(100% - 32px) !important;
-            max-width: 520px !important;
+            transform: translate(-50%, -50%) !important;
+            width: calc(100vw - 32px) !important;
+            max-width: 440px !important;
             margin: 0 !important;
+            max-height: calc(100vh - 64px) !important;
+            overflow-y: auto !important;
+            border-radius: 20px !important;
         }
 
         @media (min-width: 769px) {
