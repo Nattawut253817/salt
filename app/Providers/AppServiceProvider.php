@@ -39,11 +39,11 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(Login::class, function (Login $event) {
             \App\Support\ActivityLog::record('login_success', 'เข้าสู่ระบบสำเร็จ', $event->user, ['remember' => (bool) $event->remember]);
 
-            // เข้าสู่ระบบครั้งแรก (มีบันทึก login_success ของผู้ใช้นี้เพียง 1 รายการ = ครั้งที่เพิ่งบันทึก)
-            // -> ตั้งธงให้หน้าแอดมินแสดง pop up ต้อนรับครั้งเดียว (layouts.admin ดึงธงนี้ออกทันทีที่แสดง)
+            // เข้าสู่ระบบครั้งแรก → เซ็ต first_login_at ครั้งเดียว แล้วตั้งธงให้หน้าแอดมินแสดง pop-up ต้อนรับ
+            // (layouts.admin ดึงธงนี้ออกทันทีที่แสดง ผ่าน session()->pull)
             try {
-                if (\Illuminate\Support\Facades\DB::table('activity_logs')
-                    ->where('user_id', $event->user->id)->where('event', 'login_success')->count() === 1) {
+                if ($event->user->first_login_at === null) {
+                    $event->user->update(['first_login_at' => now()]);
                     session(['show_welcome' => true]);
                 }
             } catch (\Throwable $e) {

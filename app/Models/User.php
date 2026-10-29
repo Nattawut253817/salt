@@ -34,6 +34,7 @@ class User extends Authenticatable
         'sh_id',
         'Con_name',
         'is_approved',
+        'first_login_at',
     ];
 
     /**
@@ -145,6 +146,7 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'first_login_at' => 'datetime',
     ];
     public function province()
     {
