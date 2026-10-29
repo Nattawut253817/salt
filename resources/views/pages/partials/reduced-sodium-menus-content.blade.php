@@ -80,19 +80,19 @@
         align-items: center;
         gap: 10px;
         padding: 12px 24px;
-        background: linear-gradient(135deg, #2dd4bf 0%, #0f766e 100%);
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
         color: white;
         border: none;
         border-radius: 15px;
         font-weight: 800;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 14px rgba(13, 148, 136, 0.30);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.18);
     }
 
     .btn-toggle-form:hover {
         transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(13, 148, 136, 0.38);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25);
     }
 
     .btn-back {
@@ -204,6 +204,7 @@
         width: 100%;
         padding: 12px 15px;
         border-radius: 12px;
+        border: 1.5px solid #e2e8f0;
         background: #f8fafc;
         font-family: 'Noto Serif Thai', sans-serif;
         transition: 0.3s;
@@ -221,11 +222,9 @@
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        border-radius: 12px;
     }
 
     .row-actions form { display: flex; margin: 0; }
-    .row-actions > .btn-action + .btn-action { }
 
     .btn-action {
         display: inline-flex;
@@ -248,17 +247,17 @@
     .btn-action:hover i { transform: scale(1.18); }
     .btn-action:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
 
-    .btn-view { color: #2563eb; }
-    .btn-view:hover, .btn-view:focus-visible { background: #dbeafe; color: #1d4ed8; }
-    .btn-view:active { background: #bfdbfe; }
+    .btn-view  { background: #eff6ff; color: #2563eb; }
+    .btn-view:hover, .btn-view:focus-visible  { background: #bfdbfe; color: #1d4ed8; box-shadow: inset 0 0 0 1px rgba(37,99,235,.18); }
+    .btn-view:active  { background: #93c5fd; }
 
-    .btn-edit { color: #4f46e5; }
-    .btn-edit:hover, .btn-edit:focus-visible { background: #e0e7ff; color: #4338ca; }
-    .btn-edit:active { background: #c7d2fe; }
+    .btn-edit  { background: #eef2ff; color: #4f46e5; }
+    .btn-edit:hover, .btn-edit:focus-visible  { background: #c7d2fe; color: #4338ca; box-shadow: inset 0 0 0 1px rgba(79,70,229,.18); }
+    .btn-edit:active  { background: #a5b4fc; }
 
-    .btn-delete { color: #e11d48; }
-    .btn-delete:hover, .btn-delete:focus-visible { background: #ffe4e6; color: #be123c; }
-    .btn-delete:active { background: #fecdd3; }
+    .btn-delete { background: #fff1f2; color: #e11d48; }
+    .btn-delete:hover, .btn-delete:focus-visible { background: #fecdd3; color: #be123c; box-shadow: inset 0 0 0 1px rgba(225,29,72,.18); }
+    .btn-delete:active { background: #fda4af; }
 
     @media (max-width: 575.98px) {
         .btn-action { min-width: 0; padding: 0 11px; }
@@ -285,6 +284,7 @@
         background: white;
         border-radius: 24px;
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
         position: relative;
         transform-origin: center;
         animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -354,6 +354,7 @@
         width: 100%;
         height: 280px;
         border-radius: 24px;
+        overflow: hidden;
         background: white;
         border: 1px solid #e2e8f0;
         display: flex;
@@ -743,6 +744,7 @@
         align-items: center;
         padding: 4px 12px;
         background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
         border-radius: 8px;
         font-size: 0.8rem;
         font-weight: 700;
@@ -902,6 +904,7 @@
         font-size: 0.84rem;
         color: #1e293b;
         white-space: nowrap;
+        overflow: hidden;
         text-overflow: ellipsis;
     }
 
@@ -1079,6 +1082,7 @@
         color: #94a3b8;
         cursor: pointer;
         gap: 4px;
+        overflow: hidden;
         position: relative;
         transition: 0.25s;
     }
@@ -1202,6 +1206,7 @@
         transition: 0.3s;
         cursor: pointer;
         position: relative;
+        overflow: hidden;
     }
 
     .upload-container:hover {
@@ -1269,13 +1274,12 @@
         width: auto;
         padding: 10px 26px;
         font-size: 0.82rem;
-        background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
-        box-shadow: 0 6px 14px rgba(67, 56, 163, 0.35);
+        background: linear-gradient(135deg, #818cf8 0%, #6366f1 100%);
+        box-shadow: 0 6px 14px rgba(99, 102, 241, 0.25);
     }
 
     #submit-btn:hover {
-        background: linear-gradient(135deg, #4338ca 0%, #312e81 100%);
-        box-shadow: 0 10px 20px rgba(67, 56, 163, 0.45);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
     }
 
     /* Modal Premium Styling */
@@ -1714,21 +1718,21 @@
     .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid) i { color: #059669; font-size: 1rem; }
     .btn-toggle-form[data-bs-target*="ImportModal"]:not(.btn-toolbar-solid):hover { background: linear-gradient(180deg, #d1fae5 0%, #a7f3d0 100%) !important; border-color: #34d399 !important; }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]) {
-        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.25), transparent 52%), linear-gradient(135deg, #2dd4bf 0%, #0d9488 50%, #0f766e 100%) !important; color: #fff !important;
+        background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%) !important; color: #fff !important;
         border-radius: 14px !important; height: 46px !important; padding: 0 24px !important; gap: 10px !important;
         font-size: .9rem !important; font-weight: 800 !important; letter-spacing: .1px;
-        box-shadow: 0 10px 24px -8px rgba(15, 118, 110, .65), inset 0 1px 0 rgba(255, 255, 255, .30) !important;
-        text-shadow: 0 1px 1px rgba(5, 50, 47, .30);
+        box-shadow: 0 10px 22px -8px rgba(67, 56, 202, .7), inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+        text-shadow: 0 1px 1px rgba(30, 27, 75, .35);
     }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]) i {
         width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, .22); font-size: .8rem;
         display: inline-grid; place-items: center;
     }
     .btn-toggle-form:not(.btn-back):not([data-bs-target]):hover {
-        background: radial-gradient(circle at 28% 20%, rgba(255,255,255,.30), transparent 52%), linear-gradient(135deg, #5eead4 0%, #14b8a6 50%, #0d9488 100%) !important; transform: translateY(-2px);
-        box-shadow: 0 14px 28px -8px rgba(13, 148, 136, .75), inset 0 1px 0 rgba(255, 255, 255, .40) !important;
+        background: linear-gradient(135deg, #818cf8 0%, #4f46e5 100%) !important; transform: translateY(-2px);
+        box-shadow: 0 14px 26px -8px rgba(67, 56, 202, .8), inset 0 1px 0 rgba(255, 255, 255, .35) !important;
     }
-    .btn-toggle-form:focus-visible { outline: 3px solid #99f6e4; outline-offset: 2px; }
+    .btn-toggle-form:focus-visible { outline: 3px solid #c7d2fe; outline-offset: 2px; }
 
     /* ปุ่มลบตามตัวกรอง: สีแดง (override สีม่วงของปุ่มเพิ่ม) */
     .btn-toggle-form[onclick*="confirmBulkDelete"],
