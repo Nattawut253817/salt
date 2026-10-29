@@ -159,6 +159,19 @@
            sidebar is actually occupying that space on screen (it goes
            off-canvas below 768px - see the media query further down) - at
            that width modals go back to covering the full screen as normal. */
+        /* Exclude the user-profile modal from sidebar-scoping so it is
+           always centered in the full viewport (not just the content area),
+           regardless of sidebar width. The .profile-modal-backdrop class is
+           added by JS (show.bs.modal) to the backdrop Bootstrap creates. */
+        #userProfileModal,
+        .profile-modal-backdrop {
+            left: 0 !important;
+            width: 100% !important;
+            top: 0 !important;
+            height: 100vh !important;
+            bottom: auto !important;
+        }
+
         @media (min-width: 769px) {
 
             .modal-backdrop,
@@ -2115,6 +2128,20 @@
 
     <script>
         $(document).ready(function() {
+            // Profile modal: tag its Bootstrap-generated backdrop so the CSS
+            // exclusion rule can target it without a broad body > :last-of-type selector.
+            $('#userProfileModal')
+                .on('show.bs.modal', function () {
+                    // Backdrop is appended just before 'shown'; use a short
+                    // rAF so it already exists in the DOM when we tag it.
+                    requestAnimationFrame(function () {
+                        $('.modal-backdrop').addClass('profile-modal-backdrop');
+                    });
+                })
+                .on('hidden.bs.modal', function () {
+                    $('.modal-backdrop').removeClass('profile-modal-backdrop');
+                });
+
             // Confirm before signing out, so an accidental click on the
             // sidebar button doesn't kick the user out of the app.
             $('#logout-btn').on('click', function () {
