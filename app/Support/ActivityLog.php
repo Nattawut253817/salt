@@ -60,9 +60,17 @@ class ActivityLog
         }
     }
 
+    /** In-process flag: set to true the first time this request confirms the table exists.
+     *  Avoids a file-cache read on every subsequent ActivityLog::record() call in the same request. */
+    private static bool $tableReady = false;
+
     public static function ensureTable(): void
     {
+        if (self::$tableReady) {
+            return;                         // ✓ already confirmed this request
+        }
         if (Cache::get('activity_logs_table_ready')) {
+            self::$tableReady = true;       // promote to in-process flag
             return;
         }
 
@@ -80,6 +88,7 @@ class ActivityLog
             });
         }
 
+        self::$tableReady = true;
         Cache::forever('activity_logs_table_ready', true);
     }
 

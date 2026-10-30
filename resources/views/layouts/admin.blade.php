@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="preconnect" href="https://code.jquery.com" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&family=Noto+Serif+Thai:wght@400;500;600;700&family=Prompt:wght@500;600;700;800&family=K2D:wght@400;500;600;700&display=swap"
@@ -50,7 +51,7 @@
                full-bleed above the sidebar, per the backend redesign
                request. (No matching footer in the admin panel - removed
                per request, public site footer is unaffected.) */
-            --pink-gradient: linear-gradient(145deg, #f0527f 0%, #d81e4a 100%);
+            --pink-gradient: linear-gradient(to right, #FF4D72 0%, #F02860 35%, #D91550 70%, #BE0A42 100%);
             --admin-banner-height: 76px;
         }
 
@@ -296,8 +297,24 @@
             right: 0;
             height: var(--admin-banner-height);
             background:
-                radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.28), transparent 45%),
-                linear-gradient(180deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0) 60%),
+                /* Depth vignette right */
+                radial-gradient(ellipse 52% 130% at 100% 50%, rgba(80,10,30,0.28) 0%, transparent 65%),
+                /* Diamond mesh 45° */
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 23px,
+                    rgba(255,255,255,0.06) 23px,
+                    rgba(255,255,255,0.06) 24px
+                ),
+                /* Diamond mesh 135° */
+                repeating-linear-gradient(
+                    135deg,
+                    transparent,
+                    transparent 23px,
+                    rgba(255,255,255,0.06) 23px,
+                    rgba(255,255,255,0.06) 24px
+                ),
                 var(--pink-gradient);
             display: flex;
             align-items: center;
@@ -313,7 +330,7 @@
             align-items: center;
             gap: 14px;
             min-width: 0;
-            text-decoration: none !important;
+            text-decoration: none;
         }
 
         .admin-banner-logo {
@@ -345,7 +362,7 @@
         }
 
         .admin-banner-title {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Itim', sans-serif !important;
             font-size: 1.05rem;
             font-weight: 400;
             color: #ffffff;
@@ -365,7 +382,8 @@
            profile-chip on the right, not clash with it). */
         .admin-banner-subtitle,
         .admin-banner-org-rank {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Itim', sans-serif !important;
+            font-weight: 400 !important;
             font-size: 0.74rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.75);
@@ -438,7 +456,7 @@
         }
 
         .admin-banner-org-name {
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Itim', sans-serif;
             font-size: 0.85rem;
             font-weight: 700;
             color: #ffffff;
@@ -491,7 +509,7 @@
             background: #ffffff;
             color: #e11d48;
             flex-shrink: 0;
-            font-family: 'Sarabun', sans-serif;
+            font-family: 'Itim', sans-serif;
             font-size: 0.82rem;
             font-weight: 700;
             cursor: pointer;
@@ -588,7 +606,7 @@
             gap: 12px;
             padding: 10px 14px;
             color: #1e293b;
-            text-decoration: none !important;
+            text-decoration: none;
             border-radius: 12px;
             font-weight: 500;
             font-family: 'Sarabun', sans-serif;
@@ -968,7 +986,7 @@
             white-space: nowrap;
             background: linear-gradient(135deg, #059669 0%, #047857 100%);
             box-shadow: 0 6px 16px rgba(4, 120, 87, 0.35);
-            text-decoration: none !important;
+            text-decoration: none;
             transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
         }
         .btn-mark-read i { font-size: 0.95rem; }
@@ -1312,7 +1330,7 @@
             transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
             position: relative;
             user-select: none;
-            text-decoration: none !important;
+            text-decoration: none;
         }
         .nav-group-header i.group-icon {
             font-size: 1rem;
@@ -1436,7 +1454,7 @@
         @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 700; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
         @font-face { font-family: 'Sarabun Digits'; font-style: normal; font-weight: 800; font-display: swap; src: url(https://fonts.gstatic.com/s/sarabun/v17/DtVmJx26TKEr37c9YLJvilss6w.woff2) format('woff2'); unicode-range: U+30-39; }
         :root { --kd-font: 'Sarabun Digits', 'Sarabun', sans-serif; }
-        body *:not(.admin-sidebar):not(.admin-sidebar *):not(.kd-keep-font):not(.kd-keep-font *):not(.kd-email):not(.kd-email *):not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *):not(code):not(pre):not(kbd):not(samp),
+        body *:not(.admin-sidebar):not(.admin-sidebar *):not(.kd-keep-font):not(.kd-keep-font *):not(.kd-email):not(.kd-email *):not(.admin-banner-right):not(.admin-banner-right *):not(i):not(.fas):not(.far):not(.fab):not(.fa):not([class*="fa-"]):not(svg):not(svg *):not(code):not(pre):not(kbd):not(samp),
         body {
             font-family: var(--kd-font) !important;
         }
@@ -1529,16 +1547,16 @@
          replaces the old sidebar profile card, and still opens the same
          user-profile modal on click. -->
     <div class="admin-top-banner">
-        <a href="{{ route('home') }}" class="admin-banner-brand">
+        <div class="admin-banner-brand">
             <div class="admin-banner-logo">
                 <img src="{{ asset('images/logo.png') }}" alt="Smart Salt Sodium Monitor"
                     onerror="this.onerror=null; this.parentElement.innerHTML='<i class=\'fa-solid fa-staff-snake\' style=\'color:#d81e4a;font-size:1.3rem;\'></i>'">
             </div>
             <div class="admin-banner-text">
-                <span class="admin-banner-title">ระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10</span>
-                <span class="admin-banner-subtitle">Smart Salt &amp; Sodium Monitor</span>
+                <span class="admin-banner-title kd-keep-font">ระบบเฝ้าระวังติดตามการบริโภคเกลือและโซเดียม เขตสุขภาพที่ 10</span>
+                <span class="admin-banner-subtitle kd-keep-font">Smart Salt &amp; Sodium Monitor</span>
             </div>
-        </a>
+        </div>
 
         <div class="admin-banner-right">
             <div class="admin-banner-org" data-toggle="modal" data-target="#userProfileModal">

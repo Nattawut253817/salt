@@ -11,7 +11,7 @@
         position: relative;
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         padding: 24px 20px;
         min-height: 88vh;
         --pink-gradient-btn: linear-gradient(110deg, #e11d48 0%, #be185d 55%, #db2777 100%);

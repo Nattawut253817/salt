@@ -17,8 +17,7 @@
         color: #1a202c;
         text-align: left;
         cursor: pointer;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow: visible;
         white-space: nowrap;
         outline: none;
     }

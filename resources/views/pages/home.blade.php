@@ -243,57 +243,64 @@
            reflow based on the real rendered width instead of a
            viewport-width media query. */
         .home-filter-bar {
-            background: transparent;
-            border: none;
-            border-bottom: 1px solid #e2e8f0;
-            border-radius: 0;
-            box-shadow: none;
-            margin-bottom: 20px;
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
-            gap: 8px;
-            padding: 0 0 16px 0;
+            flex-wrap: wrap;
+            gap: 6px 0;
+            background: #fff;
+            border: 1px solid #e5e9f0;
+            border-radius: 999px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 6px 10px 6px 20px;
+            margin-bottom: 20px;
         }
 
         .home-filter-title {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 10px;
+            color: #475569;
+            font-weight: 700;
+            font-size: 0.85rem;
             white-space: nowrap;
-            font-weight: 800;
-            font-size: 0.88rem;
-            color: #334155;
+            padding-right: 18px;
+            border-right: 1px solid #e2e8f0;
+            margin-right: 6px;
         }
 
         .home-filter-item {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 8px;
-            padding: 9px 16px;
-            white-space: nowrap;
-            background: #f8fafc;
-            border: 1px solid #eef1f6;
-            border-radius: 999px;
-            flex: 1 1 200px;
+            padding: 0 16px;
+            border-right: 1px solid #e2e8f0;
+            flex: 1 1 0;
+            min-width: 130px;
+            background: transparent;
+            border-radius: 0;
+            border-top: none;
+            border-bottom: none;
+            border-left: none;
         }
 
-        .home-filter-reset {
-            flex-shrink: 0;
+        .home-filter-item:last-of-type {
+            border-right: none;
         }
 
         .home-filter-title i,
         .home-filter-item-icon {
             color: #94a3b8;
-            font-size: 0.82rem;
+            font-size: 0.78rem;
+            margin-right: 8px;
+            flex-shrink: 0;
         }
 
         .home-filter-item-label {
-            font-weight: 700;
-            font-size: 0.85rem;
-            color: #64748b;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            margin-right: 6px;
+            flex-shrink: 0;
         }
 
         .awareness-filter-select {
@@ -308,6 +315,7 @@
             cursor: pointer;
             padding: 0;
             outline: none;
+            height: 40px;
             /* Stretch to fill whatever room is left in the chip (icon +
                label + chevron are fixed-width, this grabs the rest)
                instead of shrinking to the selected option's own text
@@ -329,33 +337,30 @@
             color: #94a3b8;
             font-size: 0.65rem;
             pointer-events: none;
-            /* Pushed to the far edge of its chip (instead of sitting
-               packed next to the select) so each chip reads as
-               balanced: icon+label+value on the left, the chevron
-               anchored on the right. */
-            margin-left: auto;
+            margin-left: 4px;
         }
 
         .home-filter-reset {
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 9px 18px;
-            border-radius: 999px;
             background: #f1f5f9;
             color: #475569;
+            border-radius: 999px;
+            padding: 9px 20px;
             font-weight: 700;
             font-size: 0.85rem;
+            text-decoration: none !important;
+            white-space: nowrap;
+            transition: all 0.2s;
+            margin-left: 10px;
             border: none;
             cursor: pointer;
-            text-decoration: none !important;
-            transition: all 0.2s ease;
-            white-space: nowrap;
         }
 
         .home-filter-reset:hover {
-            background: #55707a;
-            color: #fff;
+            background: #e2e8f0;
+            color: #1e293b;
         }
 
         /* รายการตัวเลือกในตัวกรอง (ปี/จังหวัด): เว้นระยะจากขอบซ้าย อ่านง่าย */
@@ -1445,7 +1450,7 @@
 
         <label class="home-filter-item">
             <i class="far fa-calendar-alt home-filter-item-icon"></i>
-            <span class="home-filter-item-label">ปี</span>
+            <span class="home-filter-item-label">ปีงบประมาณ</span>
             <select id="fiscal_year" class="awareness-filter-select" onchange="updateFilters()">
                 <option value="" {{ $awarenessMetrics['current_year'] === '' ? 'selected' : '' }}>ทั้งหมด</option>
                 @foreach ($years as $year)

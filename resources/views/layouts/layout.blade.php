@@ -178,11 +178,11 @@
         .header-top-bar {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 20px;
             width: 100%;
-            min-height: 68px;
-            padding: 0 4%;
+            min-height: 92px;
+            padding: 0 4% 0 18%;
             background: linear-gradient(145deg, #fb7185 0%, #f43f5e 35%, #e11d48 70%, #be123c 100%);
         }
 
@@ -200,24 +200,22 @@
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 36px;
+            gap: 18px;
             text-decoration: none;
             flex-shrink: 0;
-            margin-left: -48px;
+            margin-left: 0;
         }
 
         .brand-logo-wrapper {
             background: transparent;
             padding: 0;
-            border-radius: 50%;
-            display: none;
+            border-radius: 0;
+            display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: none;
             border: none;
             transition: all 0.3s ease;
-            width: 64px;
-            height: 64px;
             flex-shrink: 0;
         }
 
@@ -235,11 +233,10 @@
         /* The header's sole mark: the SSS icon, sized to fill its round
            badge with a clear, confident presence now that it stands alone. */
         .brand-logo-wrapper--sss img {
-            height: 52px;
+            height: 58px;
+            margin-left: -14px;
             width: auto;
-            max-width: 160px;
-            filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.35)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.20));
-            transition: filter 0.3s ease, transform 0.3s ease;
+            transition: transform 0.3s ease;
         }
         .brand-logo-wrapper--sss:hover img {
             filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.40)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
@@ -250,26 +247,27 @@
             display: flex;
             flex-direction: column;
             line-height: 1.25;
-            align-items: center;
-            text-align: center;
+            align-items: flex-start;
+            text-align: left;
             gap: 4px;
+            margin-left: 12px;
         }
 
         .brand-text-main {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 1.45rem;
+            font-size: 1.48rem;
             font-weight: 600;
             color: #ffffff;
             letter-spacing: 0.3px;
             text-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
             white-space: nowrap;
             line-height: 1.2;
-            text-align: center;
+            text-align: left;
         }
 
         .brand-text-sub {
             font-family: 'Itim', 'Sarabun', sans-serif;
-            font-size: 0.90rem;
+            font-size: 1.0rem;
             color: rgba(255,255,255,0.88);
             font-weight: 400;
             letter-spacing: 1.8px;
@@ -553,20 +551,22 @@
         }
 
         .content-header {
-            margin-bottom: 25px;
-            padding: 15px 25px;
-            background: white;
-            border-radius: 18px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-            border-left: 5px solid var(--primary-color);
+            margin-bottom: 12px;
+            padding: 4px 0 6px 0;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            border-left: none;
+            border-bottom: none;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 10px;
         }
 
         .content-header h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
+            display: inline;
+            font-size: 1.3rem;
+            font-weight: 700;
             color: #2d3436;
             margin: 0;
         }
@@ -584,126 +584,87 @@
            toward the right. No separate border-left, so there is no seam
            between a border and the fill. Pages outside that set (staff,
            etc.) keep the plain bar above untouched. */
-        .content-header.content-header-themed {
-            border-left: none;
-            background: linear-gradient(100deg,
-                color-mix(in srgb, var(--ch-accent) 20%, #fff) 0%,
-                var(--ch-bg-a) 45%,
-                var(--ch-bg-b) 100%);
-            box-shadow: 0 8px 24px -18px rgba(0, 0, 0, 0.06);
-        }
-
         .content-header-icon {
-            width: 46px;
-            height: 46px;
-            min-width: 46px;
-            border-radius: 14px;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            border-radius: 8px;
             background: var(--ch-accent);
             color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 10px rgba(var(--ch-accent-rgb), 0.35);
+            font-size: 0.8rem;
+            box-shadow: 0 2px 6px rgba(var(--ch-accent-rgb), 0.28);
         }
 
         .content-header-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+            display: block;
             min-width: 0;
         }
 
-        .content-header.content-header-themed h1 {
-            /* Darkened past the raw accent (mixed toward black) so the
-               title stays bold and legible against the lightened
-               background wash above, instead of reading washed-out. */
-            color: color-mix(in srgb, var(--ch-accent) 75%, #000);
-        }
-
         .content-header-subtitle {
+            display: inline;
             margin: 0;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 1.1rem;
+            font-weight: 400;
             color: #64748b;
         }
 
-        .content-header.content-header-themed .content-header-subtitle {
-            /* Same idea for the subtitle: a darker, accent-tinted slate
-               instead of the plain neutral gray, so it reads with more
-               weight on the themed cards. */
-            color: color-mix(in srgb, var(--ch-accent) 40%, #334155);
+        .content-header-subtitle::before {
+            content: "  —  ";
+            color: #b0bec5;
+            font-weight: 300;
         }
 
-        /* Banner รุ่นสวย (ใช้ร่วมทุกหน้าที่มีธีม): ไล่สีตามสีประจำหน้า + แสงเรือง + วงกลมตกแต่ง
-           + ไอคอนมีมิติ + หัวข้อไล่สี + เส้นสั้นนำหน้าคำอธิบาย */
+        /* Themed variant: clean cardless header — icon + title + subtitle on one line */
         .content-header.content-header-themed {
             position: relative;
-            overflow: hidden;
-            padding: 18px 28px;
-            gap: 18px;
-            /* Subtle pink top-edge connects this accent card back to the
-               crimson navbar above — the rest of the border stays light
-               white/transparent so the card itself still reads clearly. */
-            border-top: 1.5px solid rgba(225, 29, 72, 0.14);
-            border-left: 1px solid rgba(255, 255, 255, .8);
-            border-right: 1px solid rgba(255, 255, 255, .8);
-            border-bottom: 1px solid rgba(255, 255, 255, .8);
-            background:
-                radial-gradient(circle at 92% 20%, rgba(255, 255, 255, .85) 0, rgba(255, 255, 255, 0) 38%),
-                linear-gradient(105deg,
-                    color-mix(in srgb, var(--ch-accent) 28%, #fff) 0%,
-                    var(--ch-bg-a) 42%,
-                    color-mix(in srgb, var(--ch-bg-a) 55%, #fff) 70%,
-                    var(--ch-bg-b) 100%);
-            box-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset,
-                0 16px 30px -22px rgba(var(--ch-accent-rgb), .55), 0 2px 6px rgba(15, 23, 42, .04);
+            overflow: visible;
+            padding: 4px 0 6px 0;
+            gap: 10px;
+            background: transparent;
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: none;
+            box-shadow: none;
         }
         .content-header.content-header-themed::before,
-        .content-header.content-header-themed::after {
-            content: ""; position: absolute; border-radius: 50%; pointer-events: none;
-        }
-        .content-header.content-header-themed::before {
-            width: 190px; height: 190px; right: -46px; top: -92px;
-            background: radial-gradient(circle at 35% 35%, rgba(var(--ch-accent-rgb), .20), rgba(var(--ch-accent-rgb), 0) 70%);
-        }
-        .content-header.content-header-themed::after {
-            width: 120px; height: 120px; right: 150px; bottom: -78px;
-            background: radial-gradient(circle at 40% 40%, rgba(var(--ch-accent-rgb), .22), rgba(var(--ch-accent-rgb), 0) 70%);
-        }
+        .content-header.content-header-themed::after { display: none; }
         .content-header.content-header-themed .content-header-icon {
-            position: relative; z-index: 1;
-            width: 54px; height: 54px; min-width: 54px; border-radius: 17px; font-size: 1.4rem;
-            background: linear-gradient(150deg,
+            width: 30px; height: 30px; min-width: 30px; border-radius: 8px; font-size: 0.82rem;
+            background: linear-gradient(140deg,
                 color-mix(in srgb, var(--ch-accent) 72%, #fff) 0%,
-                var(--ch-accent) 55%,
-                color-mix(in srgb, var(--ch-accent) 70%, #000) 100%);
-            box-shadow: 0 1px 0 rgba(255, 255, 255, .45) inset, 0 0 0 4px rgba(255, 255, 255, .55),
-                0 10px 18px -8px rgba(var(--ch-accent-rgb), .75);
+                var(--ch-accent) 60%,
+                color-mix(in srgb, var(--ch-accent) 75%, #000) 100%);
+            box-shadow: 0 2px 6px -1px rgba(var(--ch-accent-rgb), .40);
         }
-        .content-header.content-header-themed .content-header-text { position: relative; z-index: 1; gap: 4px; }
+        .content-header.content-header-themed .content-header-text {
+            display: block; /* allow h1 + subtitle to flow inline */
+        }
         .content-header.content-header-themed h1 {
-            font-size: 1.65rem; font-weight: 800; letter-spacing: -.2px;
-            background: linear-gradient(90deg,
-                color-mix(in srgb, var(--ch-accent) 62%, #000) 0%,
-                var(--ch-accent) 100%);
-            -webkit-background-clip: text; background-clip: text; color: transparent;
+            display: inline;
+            font-size: 1.3rem; font-weight: 700; letter-spacing: -.1px;
+            color: color-mix(in srgb, var(--ch-accent) 70%, #1e293b);
+            background: none; -webkit-background-clip: unset; background-clip: unset;
         }
         .content-header.content-header-themed .content-header-subtitle {
-            font-size: .9rem; font-weight: 600;
-            color: color-mix(in srgb, var(--ch-accent) 35%, #475569);
-            display: inline-flex; align-items: center; gap: 8px;
+            display: inline;
+            font-size: 1.1rem; font-weight: 400;
+            color: #64748b;
         }
         .content-header.content-header-themed .content-header-subtitle::before {
-            content: ""; flex: none; width: 22px; height: 3px; border-radius: 99px;
-            background: linear-gradient(90deg, var(--ch-accent), color-mix(in srgb, var(--ch-accent) 40%, #fff));
+            content: "  —  "; display: inline; width: auto; height: auto; border-radius: 0;
+            background: none;
+            color: #94a3b8;
+            font-weight: 300;
         }
         @media (max-width: 560px) {
-            .content-header.content-header-themed { padding: 14px 16px; gap: 12px; }
-            .content-header.content-header-themed .content-header-icon { width: 44px; height: 44px; min-width: 44px; font-size: 1.15rem; border-radius: 14px; }
-            .content-header.content-header-themed h1 { font-size: 1.2rem; }
-            .content-header.content-header-themed .content-header-subtitle { font-size: .78rem; }
-            .content-header.content-header-themed .content-header-subtitle::before { width: 14px; }
+            .content-header.content-header-themed { padding: 6px 0; gap: 10px; }
+            .content-header.content-header-themed .content-header-icon { width: 28px; height: 28px; min-width: 28px; font-size: 0.8rem; border-radius: 7px; }
+            .content-header.content-header-themed h1 { font-size: 1.5rem; }
+            .content-header.content-header-themed .content-header-subtitle { font-size: 1.15rem; }
         }
 
         /* Sidebar Toggle Button */
@@ -735,7 +696,7 @@
 
             .brand-text-main {
                 white-space: normal;
-                font-size: 1.35rem;
+                font-size: 1.1rem;
             }
         }
 
@@ -1376,8 +1337,7 @@
                     <span class="brand-text-sub">Smart Salt &amp; Sodium Monitor</span>
                 </div>
             </div>
-
-        </div>
+</div>
 
         {{-- ── Nav bar: full-width balanced 7-item navigation ── --}}
         <div class="header-nav-bar">

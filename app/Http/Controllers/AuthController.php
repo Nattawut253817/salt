@@ -418,8 +418,8 @@ class AuthController extends Controller
             : (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($ipKey, self::LOGIN_IP_MAX_ATTEMPTS) ? $ipKey : null);
         if ($locked !== null) {
             $minutes = (int) ceil(\Illuminate\Support\Facades\RateLimiter::availableIn($locked) / 60);
-            \App\Support\ActivityLog::record('login_failed', 'ถูกล็อกชั่วคราว: กรอกรหัสผ่านผิดเกินกำหนด', null, ['reason' => 'locked'], $request, strtolower($request->email));
-            return back()->with('login_alert', [
+            $this->logAfterResponse('login_failed', 'ถูกล็อกชั่วคราว: กรอกรหัสผ่านผิดเกินกำหนด', null, ['reason' => 'locked'], $request, strtolower($request->email));
+            $alert = [
                 'type' => 'lock',
                 'title' => 'ระบบล็อกการเข้าสู่ระบบชั่วคราว',
                 'message' => 'กรอกรหัสผ่านผิดเกินจำนวนครั้งที่กำหนด กรุณาลองใหม่อีกครั้งใน ' . max(1, $minutes) . ' นาที',
@@ -427,7 +427,11 @@ class AuthController extends Controller
                     'การล็อกนี้ช่วยป้องกันบัญชีของท่านจากการเดารหัสผ่าน และจะปลดล็อกอัตโนมัติเมื่อครบเวลา',
                     'หากจำรหัสผ่านไม่ได้ สามารถใช้เมนู "ลืมรหัสผ่าน" เพื่อตั้งรหัสใหม่',
                 ],
-            ])->withInput($request->only('email'));
+            ];
+            if ($request->expectsJson()) {
+                return response()->json(['alert' => $alert, 'email' => $request->email]);
+            }
+            return back()->with('login_alert', $alert)->withInput($request->only('email'));
         }
 
         // Single lookup, reused for both the existence check and the password
@@ -441,9 +445,9 @@ class AuthController extends Controller
             \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, self::LOGIN_LOCK_SECONDS);
             \Illuminate\Support\Facades\RateLimiter::hit($ipKey, self::LOGIN_LOCK_SECONDS);
             if (!$user) {
-                \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: ไม่พบอีเมลนี้ในระบบ', null, ['reason' => 'unknown_email'], $request, strtolower($request->email));
+                $this->logAfterResponse('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: ไม่พบอีเมลนี้ในระบบ', null, ['reason' => 'unknown_email'], $request, strtolower($request->email));
             } else {
-                \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
+                $this->logAfterResponse('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: รหัสผ่านไม่ถูกต้อง', $user, ['reason' => 'wrong_password'], $request);
             }
             // Unknown email gets the combined message; a known email with a
             // wrong password is told the password is wrong (product owner's
@@ -477,6 +481,9 @@ class AuthController extends Controller
                     ? 'เหลือโอกาสอีก ' . $remaining . ' ครั้ง ก่อนระบบล็อกการเข้าสู่ระบบชั่วคราว ' . $lockMinutes . ' นาที'
                     : 'ระบบจะล็อกการเข้าสู่ระบบชั่วคราวในความพยายามครั้งถัดไป';
             }
+            if ($request->expectsJson()) {
+                return response()->json(['alert' => $alert, 'email' => $request->email]);
+            }
             return back()->with('login_alert', $alert)->withInput($request->only('email'));
         }
 
@@ -488,8 +495,8 @@ class AuthController extends Controller
 
         // Bypass approval check for Level 1 users
         if ($user->User_rank_id != 1 && !$user->is_approved) {
-            \App\Support\ActivityLog::record('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: บัญชียังรอการอนุมัติ', $user, ['reason' => 'pending_approval'], $request);
-            return back()->with('login_alert', [
+            $this->logAfterResponse('login_failed', 'เข้าสู่ระบบไม่สำเร็จ: บัญชียังรอการอนุมัติ', $user, ['reason' => 'pending_approval'], $request);
+            $pendingAlert = [
                 'type' => 'warning',
                 'title' => 'บัญชีอยู่ระหว่างรอการอนุมัติ',
                 'message' => 'บัญชีของท่านอยู่ระหว่างรอการอนุมัติจากผู้ดูแลระบบ จึงยังไม่สามารถเข้าใช้งานได้',
@@ -497,7 +504,11 @@ class AuthController extends Controller
                     'ผู้ดูแลระบบจะตรวจสอบข้อมูลการสมัครและอนุมัติสิทธิ์ให้ตามลำดับ',
                     'หากรอนานเกินกำหนด กรุณาติดต่อผู้ดูแลระบบของหน่วยงาน',
                 ],
-            ])->withInput($request->only('email'));
+            ];
+            if ($request->expectsJson()) {
+                return response()->json(['alert' => $pendingAlert, 'email' => $request->email]);
+            }
+            return back()->with('login_alert', $pendingAlert)->withInput($request->only('email'));
         }
 
         // Credentials and approval check passed, but the account is not
@@ -517,6 +528,9 @@ class AuthController extends Controller
             // login state was written - regenerating it a second time only
             // costs another session-file rewrite.
             Auth::login($user, $request->boolean('remember'));
+            if ($request->expectsJson()) {
+                return response()->json(['redirect' => redirect()->intended('admin')->getTargetUrl()]);
+            }
             return redirect()->intended('admin');
         }
 
@@ -530,6 +544,9 @@ class AuthController extends Controller
         $request->session()->put('login_2fa_user_id', $user->id);
         $request->session()->put('login_2fa_remember', $request->boolean('remember'));
 
+        if ($request->expectsJson()) {
+            return response()->json(['redirect' => route('login.otp.form')]);
+        }
         return redirect()->route('login.otp.form');
     }
 
@@ -703,6 +720,21 @@ class AuthController extends Controller
         }
 
         return hash_equals($stored, $this->otpDigest($otp));
+    }
+
+
+    /**
+     * Defer an ActivityLog::record() call to after the HTTP response has been sent,
+     * so audit writes never add latency to the login response.
+     */
+    private function logAfterResponse(string $event, ?string $description, $user, array $meta, $request, ?string $actorName = null): void
+    {
+        // Capture all values now (closures are lazy, so pass by value)
+        $reqCapture  = $request;
+        $userCapture = $user;
+        app()->terminating(static function () use ($event, $description, $userCapture, $meta, $reqCapture, $actorName) {
+            \App\Support\ActivityLog::record($event, $description, $userCapture, $meta, $reqCapture, $actorName);
+        });
     }
 
     /**

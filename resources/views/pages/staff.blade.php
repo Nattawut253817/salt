@@ -13,17 +13,26 @@
         /* Hide default header */
         .content-header { display: none !important; }
 
+        /* Override layout shell so auth page fills viewport */
+        .main-content {
+            padding: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+
         /* ── Page shell ─────────────────────────────────────── */
         .auth-container {
             position: relative;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 24px 20px;
+            align-items: flex-start;
+            padding: 60px 20px 24px;
             min-height: 88vh;
             --pink-gradient-btn: linear-gradient(110deg, #e11d48 0%, #be185d 55%, #db2777 100%);
             --pink-gradient: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
             --primary-color: #e11d48;
+            background: transparent;
+            font-family: 'Sarabun', sans-serif;
         }
 
         .auth-card {
@@ -33,8 +42,8 @@
             align-items: stretch;
             background: #ffffff;
             width: 100%;
-            max-width: 1160px;
-            min-height: 670px;
+            max-width: 980px;
+            min-height: 580px;
             border-radius: 32px;
             box-shadow:
                 0 2px 4px rgba(225, 29, 72, 0.04),
@@ -54,7 +63,7 @@
         .auth-side-panel {
             position: relative;
             flex: 0 0 42%;
-            padding: 48px 40px 44px;
+            padding: 32px 28px 32px;
             background:
                 radial-gradient(ellipse 80% 55% at 95% 95%, rgba(244,63,94,.65), transparent 68%),
                 radial-gradient(ellipse 65% 45% at 5%  5%,  rgba(136,19,55,.6),  transparent 62%),
@@ -268,7 +277,7 @@
         /* Subtle byline top-right */
         .auth-byline {
             position: absolute;
-            top: 22px; right: 32px;
+            top: 12px; right: 32px;
             font-size: 0.73rem;
             font-weight: 700;
             color: #c4a4b2;
@@ -276,7 +285,7 @@
         }
 
         /* Welcome heading */
-        .auth-welcome { padding: 40px 50px 0; }
+        .auth-welcome { padding: 12px 36px 0; }
 
         .auth-welcome-label {
             font-size: 0.68rem;
@@ -317,7 +326,7 @@
 
         /* ── Pill Tabs ──────────────────────────────────────── */
         .auth-tabs-wrapper {
-            padding: 16px 50px 0;
+            padding: 10px 36px 0;
             display: flex;
             justify-content: flex-start;
         }
@@ -354,7 +363,7 @@
 
         /* ── Form container ─────────────────────────────────── */
         .auth-form-container {
-            padding: 16px 50px 30px;
+            padding: 10px 36px 20px;
             position: relative;
         }
 
@@ -1141,6 +1150,7 @@
                         }
                         $alertIcon = ['error' => 'fa-circle-xmark', 'warning' => 'fa-hourglass-half', 'lock' => 'fa-lock'];
                     @endphp
+                    <div id="login-alert-area">
                     @if ($loginAlert)
                         <div class="auth-alert auth-alert-{{ $loginAlert['type'] }}" role="alert" aria-live="assertive">
                             <div class="auth-alert-icon"><i class="fas {{ $alertIcon[$loginAlert['type']] ?? 'fa-circle-xmark' }}"></i></div>
@@ -1159,6 +1169,7 @@
                             </div>
                         </div>
                     @endif
+                    </div>{{-- #login-alert-area --}}
                     <form action="{{ route('login.post') }}" method="POST" id="login-form" onsubmit="showLoginLoading(event)">
                         @csrf
                         <div class="form-group">
@@ -1499,34 +1510,94 @@
 
 @section('extra_js')
     <script>
-        function showLoginLoading(event) {
-            event.preventDefault(); // Prevent immediate submission
+        /* ─── Alert rendering helper ──────────────────────────────── */
+        function renderLoginAlert(data) {
+            const iconMap = { error: 'fa-circle-xmark', warning: 'fa-hourglass-half', lock: 'fa-lock' };
+            const icon = iconMap[data.type] || 'fa-circle-xmark';
+            let tips = '';
+            if (data.tips && data.tips.length) {
+                tips = '<ul class="auth-alert-tips">' +
+                    data.tips.map(t => '<li>' + t + '</li>').join('') +
+                    '</ul>';
+            }
+            const html = '<div class="auth-alert auth-alert-' + data.type + '" role="alert" aria-live="assertive">' +
+                '<div class="auth-alert-icon"><i class="fas ' + icon + '"></i></div>' +
+                '<div class="auth-alert-body">' +
+                    '<div class="auth-alert-title">' + data.title + '</div>' +
+                    (data.message ? '<div class="auth-alert-msg">' + data.message + '</div>' : '') +
+                    tips +
+                '</div></div>';
 
-            const btn = document.getElementById('login-btn');
-            const form = document.getElementById('login-form');
+            // Insert / replace the alert above the form
+            let container = document.getElementById('login-alert-area');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'login-alert-area';
+                const form = document.getElementById('login-form');
+                form.parentNode.insertBefore(container, form);
+            }
+            container.innerHTML = html;
+            container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function resetLoginBtn() {
+            const btn    = document.getElementById('login-btn');
+            const textEl = document.getElementById('login-btn-text');
+            const arrowEl = document.getElementById('login-btn-arrow');
+            btn.classList.remove('is-loading');
+            btn.disabled = false;
+            if (textEl)  textEl.textContent = 'เข้าสู่ระบบ';
+            if (arrowEl) arrowEl.className = 'fas fa-arrow-right';
+        }
+
+        /* ─── AJAX submit ──────────────────────────────────────────── */
+        function showLoginLoading(event) {
+            event.preventDefault();
+
+            const btn    = document.getElementById('login-btn');
+            const form   = document.getElementById('login-form');
             const textEl = document.getElementById('login-btn-text');
             const arrowEl = document.getElementById('login-btn-arrow');
 
-            // Swap the label to "กำลังตรวจสอบ..." and the arrow icon to a
-            // circular spinner while the white fill wipes in, so it reads as an
-            // active checking state rather than a static button that
-            // merely changed color. No need to revert either on failure -
-            // a failed login is a normal full-page reload (validation
-            // errors), which resets this markup back to its Blade default.
+            // Show spinner immediately — paint happens before fetch fires
             btn.classList.add('is-loading');
             btn.disabled = true;
-            if (textEl) {
-                textEl.textContent = 'กำลังตรวจสอบ...';
-            }
-            if (arrowEl) {
-                // ไอคอนลูกศร -> วงกลมหมุน (CSS .is-spinner)
-                arrowEl.className = 'is-spinner';
-            }
+            if (textEl)  textEl.textContent = 'กำลังตรวจสอบ...';
+            if (arrowEl) arrowEl.className = 'is-spinner';
 
-            // Submit on the very next frame so we hand off to the network
-            // as soon as the spinner has painted, rather than waiting on
-            // an arbitrary timeout.
-            requestAnimationFrame(() => requestAnimationFrame(() => form.submit()));
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData,
+                credentials: 'same-origin',
+            })
+            .then(r => {
+                if (!r.ok && r.status === 422) {
+                    // Laravel validation error → treat as generic error
+                    return r.json().then(j => {
+                        const msgs = j.errors ? Object.values(j.errors).flat() : ['กรุณากรอกข้อมูลให้ครบถ้วน'];
+                        renderLoginAlert({ type: 'warning', title: 'กรุณากรอกข้อมูลให้ครบถ้วน', message: msgs[0], tips: [] });
+                        resetLoginBtn();
+                    });
+                }
+                return r.json();
+            })
+            .then(data => {
+                if (!data) return; // already handled (422 path)
+                if (data.redirect) {
+                    // Success — navigate (spinner stays while page loads)
+                    window.location.href = data.redirect;
+                } else if (data.alert) {
+                    renderLoginAlert(data.alert);
+                    resetLoginBtn();
+                }
+            })
+            .catch(() => {
+                // Network error — fall back to normal submit
+                form.submit();
+            });
         }
 
         // Small ripple flourish on click for tactile feedback

@@ -63,6 +63,10 @@ class PublicPageCache
 
     private function cacheable(Request $request): bool
     {
+        // ปิด cache ใน local environment เพื่อให้เห็นการแก้ไขทันทีโดยไม่ต้องใส่ ?v=NNN
+        if (app()->isLocal()) {
+            return false;
+        }
         return $request->isMethod('GET')
             && ! auth()->check()
             && strlen((string) $request->getQueryString()) <= 300
