@@ -3559,7 +3559,7 @@ class MainController extends Controller
         $districts = Cache::remember('awareness_districts_list:' . md5((string) $request->input('province')), now()->addMinutes(30), function () use ($request) {
             return SodiumSurvey::when($request->filled('province'), function ($q) use ($request) {
                 return $q->where('province_name', $request->province);
-            })->distinct()->orderBy('district_name')->pluck('district_name');
+            })->whereNotNull('district_name')->where('district_name', '!=', '')->distinct()->orderBy('district_name')->pluck('district_name');
         });
 
         // เก็บผลลัพธ์ในเบราว์เซอร์ 2 นาที: เลือกตัวกรองซ้ำ/ย้อนกลับ/ตัวกรองที่โหลดล่วงหน้าไว้ จะแสดงทันทีโดยไม่ต้องถามเซิร์ฟเวอร์

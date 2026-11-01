@@ -10,7 +10,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 26px 20px;
+        padding: 20px 20px 80px;
         background: #fbfbfd;
         min-height: calc(100vh - 60px);
     }

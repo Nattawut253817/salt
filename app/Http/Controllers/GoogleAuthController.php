@@ -19,6 +19,10 @@ class GoogleAuthController extends Controller
 
     /**
      * Handle Google OAuth callback — match email to local User, then login.
+     *
+     * Google has already authenticated the user; no OTP step is needed here.
+     * Adding a second OTP on top of Google's own 2FA would be redundant and
+     * would break the SSO experience.
      */
     public function callback(Request $request)
     {
@@ -54,6 +58,7 @@ class GoogleAuthController extends Controller
                 ->with('login_alert', ['type' => 'warning', 'title' => 'รอการอนุมัติ', 'message' => 'บัญชีของคุณยังรอการอนุมัติจากผู้ดูแลระบบ', 'tips' => []]);
         }
 
+        // Google has already verified identity — log in directly, no OTP needed.
         Auth::login($user, remember: false);
         $request->session()->regenerate();
 

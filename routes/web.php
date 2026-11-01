@@ -79,7 +79,7 @@ Route::get('/staff', [MainController::class, 'staff'])->middleware(['page.view',
 Route::get('/login', [MainController::class, 'staff'])->name('login');
 
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:30,1')->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/login/otp', [AuthController::class, 'showLoginOtpForm'])->name('login.otp.form');
 Route::post('/login/otp', [AuthController::class, 'verifyLoginOtp'])->middleware('throttle:20,1')->name('login.otp.verify');

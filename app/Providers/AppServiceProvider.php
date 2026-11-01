@@ -27,6 +27,15 @@ class AppServiceProvider extends ServiceProvider
             );
         });
 
+        // ── Deferred Mail Transport (performance: SMTP after HTTP response) ──
+        // Replaces the default MailManager so ALL mail sends are non-blocking.
+        // The DeferredTransport fires the real SMTP handshake in a terminating()
+        // callback, after the browser has already received the HTTP response.
+        $this->app->singleton('mail.manager', function ($app) {
+            return new \App\Mail\DeferringMailManager($app);
+        });
+        $this->app->alias('mail.manager', \Illuminate\Mail\MailManager::class);
+
         //
     }
 

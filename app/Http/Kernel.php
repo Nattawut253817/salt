@@ -71,4 +71,22 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
     ];
+
+    /**
+     * Flush the HTTP response to the browser before running terminating callbacks
+     * (queued mail, activity log, etc.). This prevents SMTP from blocking the
+     * perceived page-load time on the PHP built-in server.
+     */
+    public function terminate($request, $response): void
+    {
+        if (function_exists('fastcgi_finish_request')) {
+            // PHP-FPM / production: closes the client connection immediately.
+            fastcgi_finish_request();
+        } else {
+            // PHP built-in dev server: best-effort flush before terminating callbacks.
+            @ob_flush();
+            @flush();
+        }
+        parent::terminate($request, $response);
+    }
 }
